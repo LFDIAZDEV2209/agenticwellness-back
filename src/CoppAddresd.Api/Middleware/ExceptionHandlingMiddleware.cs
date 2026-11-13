@@ -4,6 +4,7 @@ using CoppAddresd.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using CoppAddresd.Application.Features.ProgramProgress.Commands.PublishTemplate;
 
 namespace CoppAddresd.Api.Middleware;
 
@@ -118,6 +119,11 @@ public sealed class ExceptionHandlingMiddleware(
                     ["missingMealCodes"] = ex.MissingMealCodes.ToArray(),
                 });
         }
+        catch (TemplateContentGapsException ex)
+        {
+            await WriteProblemAsync(context, StatusCodes.Status422UnprocessableEntity, "Unprocessable Entity", ex.Message,
+                extensions: new() { ["gaps"] = ex.Gaps });
+        }
         catch (UnprocessableEntityException ex)
         {
             logger.LogWarning(ex, "Payload semánticamente inválido en {Method} {Path}",
@@ -182,7 +188,8 @@ public sealed class ExceptionHandlingMiddleware(
         int status,
         string title,
         string detail,
-        Dictionary<string, string[]>? errors = null)
+        Dictionary<string, string[]>? errors = null,
+        Dictionary<string, object?>? extensions = null)
     {
         var correlationId = context.Items.TryGetValue("CorrelationId", out var value)
             ? value?.ToString()
@@ -201,6 +208,8 @@ public sealed class ExceptionHandlingMiddleware(
         {
             problem["errors"] = errors;
         }
+        if (extensions is not null)
+            foreach (var extension in extensions) problem[extension.Key] = extension.Value;
 
         context.Response.StatusCode = status;
         context.Response.ContentType = "application/problem+json; charset=utf-8";

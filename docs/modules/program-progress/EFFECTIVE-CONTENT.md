@@ -78,3 +78,21 @@ semanas excluidas por estado/activación/completado o por haber alcanzado su fec
 local de inicio, incluyendo semanas anteriores. La inscripción agotada no recibe
 contenido futuro. Las consultas filtran alcance antes de materializar o contar y
 no se ejecuta SQL por paciente, semana o día.
+
+## Validación al publicar — 1.10a
+
+El modo normal de `POST templates/{id}/publish` exige tres contenidos válidos para
+cada día 1–83, incluidos los genéricos de respaldo. Simula la cuadrícula con el
+resolvedor, sin pacientes, prescripciones ni asignaciones particulares. No consulta
+por día ni admite que el contenido de un paciente enmascare una plantilla incompleta.
+Con huecos responde HTTP 422 `application/problem+json`, sin cambiar versión/estado:
+
+```json
+{"status":422,"detail":"TEMPLATE_CONTENT_GAPS: ...","gaps":[{"day":8,"weekNumber":2,"weekday":1,"taskCode":"podcast"}]}
+```
+
+`taskCode` usa `podcast`, `ejercicio` o `nut`. La lista ordena por día y clase.
+Completar el contenido permite publicar e incrementa versión como antes. La plantilla
+archivada mantiene su rechazo 409. El día 84 queda fuera de la simulación. Catálogos
+compartidos y lecturas de pacientes reutilizan los mismos filtros de publicación,
+actividad y propiedad de referencias. Esta tarea no crea migraciones.

@@ -173,3 +173,22 @@ sin conexión) y **70/70 PostgreSQL del módulo**, sin omisiones. Esta pasada co
 incluye los ocho casos finales de 1.9 y confirma su regresión conjunta en verde.
 Fetch de origen: dev avanzó a `5a5f9da` (SOS/WhatsApp); no se integró. La coordinación
 debe conservar registros de DI y ambas migraciones/snapshot. No hubo pull/rebase/push.
+
+
+## 1.10a — Publicación validada con lista de huecos
+
+Se validan exactamente 83 fechas con el resolvedor y catálogo general activo/publicado,
+sin prescripciones ni asignaciones particulares. HTTP 422 ProblemDetails incluye
+`gaps[{day,weekNumber,weekday,taskCode}]`; no cambia estado, versión ni fecha de publicación.
+Completa publica. Los tests por clase fuerzan un hueco en día 83 y confirman ausencia
+del 84; otro prueba el JSON HTTP estructurado. PostgreSQL fuerza hueco en día 8,
+comprueba rechazo sin cambios, lo completa y verifica publicación y conservación
+de las doce filas específicas.
+
+La integración detectó duplicación de filas específicas al publicar: Upsert conservaba
+las específicas pero intentaba insertarlas otra vez. Se corrige en su capa responsable:
+solo reemplaza genéricas, retirándolas antes de insertar por el índice COALESCE; las
+específicas no se reinsertan. Transacción conservada. No hay migración nueva.
+
+Validación: build Release correcto, 2.427 unitarios aprobados (105 omitidos sin
+conexión), 10/10 PostgreSQL de resolución/impacto/publicación. Sin push.

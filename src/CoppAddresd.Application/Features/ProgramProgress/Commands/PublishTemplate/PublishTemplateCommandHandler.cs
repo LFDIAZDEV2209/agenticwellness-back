@@ -4,6 +4,7 @@ using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Domain.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using CoppAddresd.Application.Services.ProgramProgress;
 
 namespace CoppAddresd.Application.Features.ProgramProgress.Commands.PublishTemplate;
 
@@ -16,7 +17,9 @@ namespace CoppAddresd.Application.Features.ProgramProgress.Commands.PublishTempl
 /// </summary>
 public sealed class PublishTemplateCommandHandler(
     IProgramRepository repository,
-    ILogger<PublishTemplateCommandHandler> logger) : IRequestHandler<PublishTemplateCommand, ProgramTemplateDto>
+    ILogger<PublishTemplateCommandHandler> logger,
+    IEffectiveDayContentStore contentStore,
+    IEffectiveDayContentResolver resolver) : IRequestHandler<PublishTemplateCommand, ProgramTemplateDto>
 {
     public async Task<ProgramTemplateDto> Handle(PublishTemplateCommand request, CancellationToken ct)
     {
@@ -28,6 +31,10 @@ public sealed class PublishTemplateCommandHandler(
             throw new BusinessRuleViolationException(
                 "TEMPLATE_STATE: no se puede publicar una plantilla archivada.");
         }
+
+        var catalog = await contentStore.LoadGeneralCatalogAsync(ct);
+        var gaps = TemplatePublication.Gaps(existing, catalog, resolver, ct);
+        if (gaps.Count > 0) throw new TemplateContentGapsException(gaps);
 
         existing.Version += 1;
         existing.Status = TemplateStatus.Active;

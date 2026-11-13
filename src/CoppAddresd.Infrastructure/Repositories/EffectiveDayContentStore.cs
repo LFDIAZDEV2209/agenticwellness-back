@@ -47,9 +47,8 @@ public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard
         var patients = enrollments.Select(e => e.PatientId).Distinct().ToArray();
         var weeks = await db.ProgramWeeks.AsNoTracking().Where(w => ids.Contains(w.EnrollmentId)
             && w.WeekStartDateLocal <= to && w.WeekEndDateLocal >= from).ToListAsync(ct);
-        var podcasts = await db.MediaItems.AsNoTracking().Where(m => m.MediaType == MediaType.Podcast && m.Status == MediaStatus.Published
-            && m.StorageKey != null && m.StorageKey.Trim() != "" && m.StorageKey.Trim().ToLower() != MediaPublishRules.DemoStorageKey).Select(m => m.Id).ToListAsync(ct);
-        var routines = await db.ExerciseRoutines.AsNoTracking().Where(r => r.Status == NutritionPlanStatus.Active).Select(r => r.Id).ToListAsync(ct);
+        var podcasts = await PublishedPodcastIdsAsync(ct);
+        var routines = await ActiveRoutineIdsAsync(ct);
         var headers = await db.NutritionPrescriptions.AsNoTracking().Where(p => patients.Contains(p.PatientId)
             && p.IsPublished && p.State == "aprobado" && p.StartDate != null && p.EndDate != null && p.StartDate <= to)
             .Select(p => new { p.Id, p.PatientId, p.StartDate, p.EndDate, p.ApprovedAt }).ToListAsync(ct);
@@ -57,16 +56,7 @@ public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard
         var prescriptionDays = await db.NutritionPrescriptionMeals.AsNoTracking().Where(m => prescriptionIds.Contains(m.PrescriptionId))
             .Select(m => new { m.PrescriptionId, m.DayNumber }).Distinct().ToListAsync(ct);
         var daysByPrescription = prescriptionDays.ToLookup(m => m.PrescriptionId, m => (int)m.DayNumber);
-        var plans = await db.NutritionPlans.AsNoTracking().Where(p => p.Status == NutritionPlanStatus.Active
-            && (p.IsTemplate && p.PatientId == null || p.PatientId.HasValue && patients.Contains(p.PatientId.Value)))
-            .Select(p => new NutritionPlan { Id = p.Id, IsTemplate = p.IsTemplate, PatientId = p.PatientId, Status = p.Status,
-                DurationDays = p.DurationDays, ReviewStatus = p.ReviewStatus, ApprovedAt = p.ApprovedAt, ApprovedBy = p.ApprovedBy }).ToListAsync(ct);
-        var planIds = plans.Select(p => p.Id).ToArray();
-        var planDays = await db.NutritionPlanDays.AsNoTracking().Where(d => planIds.Contains(d.PlanId))
-            .Select(d => new { d.PlanId, d.DayNumber }).Distinct().ToListAsync(ct);
-        var daysByPlan = planDays.ToLookup(d => d.PlanId, d => d.DayNumber);
-        foreach (var plan in plans)
-            plan.Days = daysByPlan[plan.Id].Select(day => new NutritionPlanDay { DayNumber = day }).ToList();
+        var plans = await LoadPlansAsync(patients, ct);
         var legacyRoutines = await db.RoutineAssignments.AsNoTracking().Where(a => patients.Contains(a.PatientId) && a.Status == AssignmentStatus.Active)
             .Select(a => new { a.PatientId, a.RoutineId, a.StartDate, a.EndDate }).ToListAsync(ct);
         var legacyPlans = await db.NutritionPlanAssignments.AsNoTracking().Where(a => patients.Contains(a.PatientId) && a.Status == AssignmentStatus.Active)
@@ -92,4 +82,35 @@ public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard
             EngineNutrition = enginePlans,
         };
     }
+    public async Task<EffectiveContentData> LoadGeneralCatalogAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return new() { PublishedPodcasts = (await PublishedPodcastIdsAsync(ct)).ToHashSet(),
+            ActiveRoutines = (await ActiveRoutineIdsAsync(ct)).ToHashSet(),
+            Plans = (await LoadPlansAsync([], ct)).Select(p => new EffectivePlan(p)).ToArray() };
+    }
+
+    private Task<List<Guid>> PublishedPodcastIdsAsync(CancellationToken ct) => db.MediaItems.AsNoTracking()
+        .Where(m => m.MediaType == MediaType.Podcast && m.Status == MediaStatus.Published && m.StorageKey != null
+            && m.StorageKey.Trim() != "" && m.StorageKey.Trim().ToLower() != MediaPublishRules.DemoStorageKey)
+        .Select(m => m.Id).ToListAsync(ct);
+
+    private Task<List<Guid>> ActiveRoutineIdsAsync(CancellationToken ct) => db.ExerciseRoutines.AsNoTracking()
+        .Where(r => r.Status == NutritionPlanStatus.Active).Select(r => r.Id).ToListAsync(ct);
+
+    private async Task<List<NutritionPlan>> LoadPlansAsync(Guid[] patients, CancellationToken ct)
+    {
+        var plans = await db.NutritionPlans.AsNoTracking().Where(p => p.Status == NutritionPlanStatus.Active
+            && (p.IsTemplate && p.PatientId == null || p.PatientId.HasValue && patients.Contains(p.PatientId.Value)))
+            .Select(p => new NutritionPlan { Id = p.Id, IsTemplate = p.IsTemplate, PatientId = p.PatientId, Status = p.Status,
+                DurationDays = p.DurationDays, ReviewStatus = p.ReviewStatus, ApprovedAt = p.ApprovedAt, ApprovedBy = p.ApprovedBy }).ToListAsync(ct);
+        var planIds = plans.Select(p => p.Id).ToArray();
+        var planDays = await db.NutritionPlanDays.AsNoTracking().Where(d => planIds.Contains(d.PlanId))
+            .Select(d => new { d.PlanId, d.DayNumber }).Distinct().ToListAsync(ct);
+        var daysByPlan = planDays.ToLookup(d => d.PlanId, d => d.DayNumber);
+        foreach (var plan in plans)
+            plan.Days = daysByPlan[plan.Id].Select(day => new NutritionPlanDay { DayNumber = day }).ToList();
+        return plans;
+    }
+
 }

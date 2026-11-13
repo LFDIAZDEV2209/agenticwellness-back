@@ -1,3 +1,7 @@
+using CoppAddresd.Application.Services.ProgramProgress;
+using CoppAddresd.Domain.Entities;
+using CoppAddresd.Domain.Enums;
+using NSubstitute;
 using CoppAddresd.Application.DTOs.ProgramProgress;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.ArchiveTemplate;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.CreateTemplate;
@@ -25,6 +29,7 @@ public class TemplateCommandHandlerTests
     private readonly PublishTemplateCommandHandler _publishHandler;
     private readonly ArchiveTemplateCommandHandler _archiveHandler;
     private readonly ReplaceWeekdayTasksCommandHandler _replaceHandler;
+    private readonly IEffectiveDayContentStore _publicationStore = Substitute.For<IEffectiveDayContentStore>();
     private readonly Guid _templateId = Guid.NewGuid();
 
     public TemplateCommandHandlerTests()
@@ -34,7 +39,8 @@ public class TemplateCommandHandlerTests
         _updateHandler = new UpdateTemplateCommandHandler(
             _repository, NullLogger<UpdateTemplateCommandHandler>.Instance);
         _publishHandler = new PublishTemplateCommandHandler(
-            _repository, NullLogger<PublishTemplateCommandHandler>.Instance);
+            _repository, NullLogger<PublishTemplateCommandHandler>.Instance, _publicationStore,
+            new EffectiveDayContentResolver(_publicationStore));
         _archiveHandler = new ArchiveTemplateCommandHandler(
             _repository, NullLogger<ArchiveTemplateCommandHandler>.Instance);
         _replaceHandler = new ReplaceWeekdayTasksCommandHandler(
@@ -146,6 +152,16 @@ public class TemplateCommandHandlerTests
     [Fact]
     public async Task Handle_Publicar_IncrementaVersionYActiva()
     {
+        var media = Guid.NewGuid(); var routine = Guid.NewGuid(); var plan = Guid.NewGuid();
+        _repository.Templates[_templateId].DayTemplates = Enumerable.Range(1, 7).SelectMany(d => new[] {
+            new WeeklyDayTemplate { Weekday = (short)d, TaskCode = TaskCode.podcast, MediaId = media },
+            new WeeklyDayTemplate { Weekday = (short)d, TaskCode = TaskCode.ejercicio, RoutineId = routine },
+            new WeeklyDayTemplate { Weekday = (short)d, TaskCode = TaskCode.nut, NutritionPlanId = plan },
+        }).ToList();
+        _publicationStore.LoadGeneralCatalogAsync(Arg.Any<CancellationToken>()).Returns(new EffectiveContentData {
+            PublishedPodcasts = new HashSet<Guid> { media }, ActiveRoutines = new HashSet<Guid> { routine },
+            Plans = [new(new NutritionPlan { Id = plan, Status = NutritionPlanStatus.Active,
+                Days = Enumerable.Range(1, 7).Select(d => new NutritionPlanDay { DayNumber = d }).ToList() })] });
         var dto = await _publishHandler.Handle(
             new PublishTemplateCommand(_templateId), CancellationToken.None);
 

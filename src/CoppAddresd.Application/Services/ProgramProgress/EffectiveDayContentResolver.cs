@@ -47,6 +47,7 @@ public sealed record EffectiveContentData
 
 public interface IEffectiveDayContentStore
 {
+    Task<EffectiveContentData> LoadGeneralCatalogAsync(CancellationToken ct);
     Task<EffectiveContentData> LoadScopedActiveAsync(Guid? templateId, string permission, CancellationToken ct);
     Task<EffectiveContentData> LoadPatientAsync(Guid patientId, DateOnly from, DateOnly to, CancellationToken ct);
     Task<EffectiveContentData> LoadAsync(IReadOnlyCollection<Guid> enrollmentIds, DateOnly from, DateOnly to, CancellationToken ct);

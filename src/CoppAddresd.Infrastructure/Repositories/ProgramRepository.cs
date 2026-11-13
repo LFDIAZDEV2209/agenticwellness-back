@@ -2834,8 +2834,15 @@ public sealed partial class ProgramRepository(
                     existing.UpdatedAt = now;
 
                     // El editor anterior solo reemplaza genéricas; conserva las semanas específicas.
-                    dbContext.WeeklyDayTemplates.RemoveRange(existing.DayTemplates.Where(d => d.WeekNumber == null));
-                    AddDayTemplates(existing.Id, dayTemplates, actorId);
+                    // El índice con COALESCE no permite insertar la nueva genérica antes de retirar la anterior.
+                    await dbContext.WeeklyDayTemplates.Where(d => d.TemplateId == existing.Id && d.WeekNumber == null).ExecuteDeleteAsync(ct);
+                    foreach (var prior in existing.DayTemplates.Where(d => d.WeekNumber == null).ToArray())
+                    {
+                        dbContext.Entry(prior).State = EntityState.Detached;
+                        existing.DayTemplates.Remove(prior);
+                    }
+                    // Publicar recibe también específicas desde GetTemplate; ya existen y no se duplican.
+                    AddDayTemplates(existing.Id, dayTemplates.Where(d => d.WeekNumber == null).ToList(), actorId);
                 }
 
                 await dbContext.SaveChangesAsync(ct);

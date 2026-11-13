@@ -215,4 +215,37 @@ public sealed class EffectiveDayContentResolverTests
         Assert.Empty(c.Store.ReceivedCalls());
     }
 
+    [Theory]
+    [InlineData(TaskCode.podcast)]
+    [InlineData(TaskCode.ejercicio)]
+    [InlineData(TaskCode.nut)]
+    public void Publicacion_ListaHuecoDelDia83PorClase_SinDia84(TaskCode code)
+    {
+        var c = new Case(); c.Remove(code);
+        for (var d = 1; d <= 82; d++)
+            c.Enrollment.Template!.DayTemplates.Add(new() { WeekNumber = (d - 1) / 7 + 1, Weekday = (short)((d - 1) % 7 + 1),
+                TaskCode = code, MediaId = c.Generic, RoutineId = c.Routine, NutritionPlanId = c.Plan });
+        var resolver = new EffectiveDayContentResolver(c.Store);
+        var gaps = CoppAddresd.Application.Features.ProgramProgress.Commands.PublishTemplate.TemplatePublication.Gaps(c.Enrollment.Template!, c.Data, resolver, CancellationToken.None);
+        var gap = Assert.Single(gaps); Assert.Equal(83, gap.Day); Assert.Equal(code.ToString(), gap.TaskCode);
+        c.Enrollment.Template!.DayTemplates.Add(new() { WeekNumber = 12, Weekday = 6, TaskCode = code,
+            MediaId = c.Generic, RoutineId = c.Routine, NutritionPlanId = c.Plan });
+        Assert.Empty(CoppAddresd.Application.Features.ProgramProgress.Commands.PublishTemplate.TemplatePublication.Gaps(c.Enrollment.Template, c.Data, resolver, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Publicacion_ProblemDetails422IncluyeListaEstructurada()
+    {
+        var error = new CoppAddresd.Application.Features.ProgramProgress.Commands.PublishTemplate.TemplateContentGapsException([
+            new(83, 12, 6, "podcast")]);
+        var context = new Microsoft.AspNetCore.Http.DefaultHttpContext(); context.Response.Body = new MemoryStream();
+        var middleware = new CoppAddresd.Api.Middleware.ExceptionHandlingMiddleware(_ => throw error,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<CoppAddresd.Api.Middleware.ExceptionHandlingMiddleware>.Instance);
+        await middleware.InvokeAsync(context); context.Response.Body.Position = 0;
+        using var json = await JsonDocument.ParseAsync(context.Response.Body);
+        Assert.Equal(422, context.Response.StatusCode); Assert.StartsWith("application/problem+json", context.Response.ContentType);
+        var gap = Assert.Single(json.RootElement.GetProperty("gaps").EnumerateArray());
+        Assert.Equal(83, gap.GetProperty("day").GetInt32()); Assert.Equal("podcast", gap.GetProperty("taskCode").GetString());
+    }
+
 }
