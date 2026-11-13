@@ -154,3 +154,22 @@ otro programa solapado del paciente. Cancelación y precarga por conjuntos verif
   de treinta menús y migración Up/Down/Up con 10.000 filas. Down rechaza menú 8.
 - Los nueve fallos heredados de ProgramRepository documentados arriba no se modifican.
 - Sin migrar la BD local, sin push/rebase/pull de dev, sin cambios de tasks/OVERVIEW.
+
+
+## 1.11 — Vista previa de impacto con alcance
+
+`POST templates/{id}/publish?preview=true` conserva versión, estado y snapshots.
+El cálculo simula futuras con el mismo resolvedor, conserva individuales y excluye
+iniciadas por estado/activación/fecha local. Devuelve los tres conteos acordados;
+los pacientes receptores y personalizados se cuentan distintos y pueden solaparse.
+Contrato y semántica detallados en `EFFECTIVE-CONTENT.md`.
+
+Tres escenarios unitarios: recepción general, personalización completa y semana
+iniciada excluida. PostgreSQL usa el guard real con asignación activa: propios,
+ajeno omitido, Admin y denegación por permiso, más cancelación y lectura sin cambios.
+
+Validación final: build Release correcto; 2.423 unitarios aprobados (105 omitidos
+sin conexión) y **70/70 PostgreSQL del módulo**, sin omisiones. Esta pasada completa
+incluye los ocho casos finales de 1.9 y confirma su regresión conjunta en verde.
+Fetch de origen: dev avanzó a `5a5f9da` (SOS/WhatsApp); no se integró. La coordinación
+debe conservar registros de DI y ambas migraciones/snapshot. No hubo pull/rebase/push.

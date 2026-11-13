@@ -194,4 +194,25 @@ public sealed class EffectiveDayContentResolverTests
         Assert.Equal(selected ? final : (Guid?)null, EffectiveDayContentResolver.EnginePlanId(json));
     }
 
+    [Theory]
+    [InlineData(false, false, 1, 0, 0)]
+    [InlineData(true, false, 0, 1, 0)]
+    [InlineData(false, true, 0, 0, 1)]
+    public void Impacto_FuturoPersonalizadoOIniciado(bool personal, bool started, int receivers, int personalized, int omitted)
+    {
+        var c = new Case(); c.Enrollment.Template!.TotalWeeks = 1;
+        c.Remove(TaskCode.ejercicio); c.Remove(TaskCode.nut);
+        var rows = Enumerable.Range(1, 7).Select(d => new WeekSnapshotTaskRow((short)d, "podcast", 1, 1,
+            MediaId: c.Personal, Origin: personal ? "individual" : "program")).ToList();
+        c.Data = c.Data with { Weeks = [new() { EnrollmentId = c.Enrollment.Id, WeekNumber = 1,
+            WeekStartDateLocal = c.Date, WeekEndDateLocal = c.Date.AddDays(6),
+            Status = started ? ProgramWeekStatus.Active : ProgramWeekStatus.Locked, TasksSnapshot = WeekSnapshotJson.Serialize(rows) }] };
+        var before = c.Data.Weeks[0].TasksSnapshot.GetRawText();
+        var result = TemplateImpactCalculator.Calculate(c.Data, new EffectiveDayContentResolver(c.Store),
+            c.Date.AddDays(-1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), CancellationToken.None);
+        Assert.Equal(new TemplateImpactDto(receivers, personalized, omitted), result);
+        Assert.Equal(before, c.Data.Weeks[0].TasksSnapshot.GetRawText());
+        Assert.Empty(c.Store.ReceivedCalls());
+    }
+
 }

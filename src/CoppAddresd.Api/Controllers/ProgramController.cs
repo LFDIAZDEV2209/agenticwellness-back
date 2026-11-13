@@ -896,10 +896,13 @@ public sealed class ProgramController(
     /// <summary>Publica una plantilla: bump de versión y Draft → Active (SPEC §7.6).</summary>
     [HttpPost("templates/{id:guid}/publish")]
     [RequireContextPermission("Program.Edit")]
-    public async Task<ActionResult<ProgramTemplateDto>> PublishTemplate(
+    public async Task<ActionResult> PublishTemplate(
         Guid id,
-        CancellationToken ct
-    ) => Ok(await mediator.Send(new PublishTemplateCommand(id, actorContext.UserId), ct));
+        CancellationToken ct,
+        [FromQuery] bool preview = false
+    ) => preview
+        ? Ok(await mediator.Send(new PreviewTemplateImpactQuery(id), ct))
+        : Ok(await mediator.Send(new PublishTemplateCommand(id, actorContext.UserId), ct));
 
     /// <summary>Archiva una plantilla (idempotente, conserva historia, SPEC §7.6).</summary>
     [HttpPost("templates/{id:guid}/archive")]

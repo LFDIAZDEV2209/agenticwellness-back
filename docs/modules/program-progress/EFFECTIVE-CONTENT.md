@@ -53,3 +53,28 @@ Las pruebas cubren cada clase y precedencia, semanas vacías/no materializadas,
 plantilla archivada, continuidad y sucesora, publicación local, referencias ajenas,
 legado 7/30, ausencia de tests, cancelación, activación por ambas rutas y consumidores.
 El número de SELECT es constante para uno y 581 días; no hay consultas en el recorrido.
+
+## Vista previa de publicación — 1.11
+
+`POST /api/v1/program/templates/{id}/publish?preview=true` devuelve:
+
+```json
+{"pacientesQueCambian": 12, "conPersonalizacionesFuturas": 3, "semanasOmitidasIniciadas": 18}
+```
+
+El modo normal conserva la respuesta de publicación existente. Vista previa no
+publica, no incrementa versión ni modifica snapshots. Requiere `Program.Edit` y
+el guard de alcance: Admin ve todos los activos; otros actores solo pacientes con
+asignación profesional activa. Sin permiso, incluso Admin recibe 403.
+
+`pacientesQueCambian` cuenta pacientes distintos que recibirán contenido de la
+plantilla desde alguna semana futura; es un conteo de recepción, no una diferencia
+contra un borrador histórico (el editor guarda las filas actuales). Se simula la
+activación quitando únicamente filas `program` futuras y se usa el resolvedor.
+`conPersonalizacionesFuturas` cuenta pacientes distintos con filas individuales
+que se conservarán; los orígenes antiguos desconocidos se preservan. Los dos
+conteos pueden solaparse. No se cuenta el día 84. `semanasOmitidasIniciadas` cuenta
+semanas excluidas por estado/activación/completado o por haber alcanzado su fecha
+local de inicio, incluyendo semanas anteriores. La inscripción agotada no recibe
+contenido futuro. Las consultas filtran alcance antes de materializar o contar y
+no se ejecuta SQL por paciente, semana o día.

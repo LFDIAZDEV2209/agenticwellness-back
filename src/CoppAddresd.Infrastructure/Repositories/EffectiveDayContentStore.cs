@@ -5,12 +5,27 @@ using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using CoppAddresd.Application.Interfaces;
 
 namespace CoppAddresd.Infrastructure.Repositories;
 
 /// <summary>Precarga por conjuntos: ningún SELECT se ejecuta dentro del calendario de pacientes/días.</summary>
-public sealed class EffectiveDayContentStore(AppDbContext db) : IEffectiveDayContentStore
+public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard? patientScope = null) : IEffectiveDayContentStore
 {
+    public async Task<EffectiveContentData> LoadScopedActiveAsync(Guid? templateId, string permission, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var guard = patientScope ?? throw new InvalidOperationException("Se requiere el guard de alcance.");
+        var query = db.ProgramEnrollments.AsNoTracking().Where(e => e.Status == ProgramEnrollmentStatus.Active
+            && e.Patient!.DeletedAt == null && (!templateId.HasValue || e.TemplateId == templateId));
+        query = await guard.FilterAsync(query, e => e.PatientId, permission, ct);
+        // El filtro de alcance precede a la materialización y a cualquier conteo.
+        var windows = await query.Select(e => new { e.Id, Start = e.StartLocalDate,
+            End = e.StartLocalDate.AddDays(e.Template!.TotalWeeks == 12 ? 82 : e.Template.TotalWeeks * 7 - 1) }).ToListAsync(ct);
+        if (windows.Count == 0) return new();
+        return await LoadAsync(windows.Select(e => e.Id).ToArray(), windows.Min(e => e.Start), windows.Max(e => e.End), ct);
+    }
+
     public async Task<EffectiveContentData> LoadPatientAsync(Guid patientId, DateOnly from, DateOnly to, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
