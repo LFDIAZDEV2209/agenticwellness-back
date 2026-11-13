@@ -24,7 +24,8 @@ public sealed class GetMyNutritionPlanQueryHandler(
     IWellnessRepository wellness,
     ILogger<GetMyNutritionPlanQueryHandler> logger,
     INutritionPrescriptionRepository prescriptions,
-    TimeProvider clock
+    TimeProvider clock,
+    IProgramContentResolver? contentResolver = null
 ) : IRequestHandler<GetMyNutritionPlanQuery, MyNutritionPlanDto?>
 {
     public async Task<MyNutritionPlanDto?> Handle(
@@ -43,13 +44,13 @@ public sealed class GetMyNutritionPlanQueryHandler(
             );
         }
 
-        return await ReadForPatientAsync(patient, wellness, logger, prescriptions, clock, ct);
+        return await ReadForPatientAsync(patient, wellness, logger, prescriptions, clock, ct, contentResolver);
     }
 
     // Lectura compartida con el contexto interno: misma vigencia y mapeo, sin resolver identidad dos veces.
     internal static async Task<MyNutritionPlanDto?> ReadForPatientAsync(
         PatientProfile patient, IWellnessRepository wellness, ILogger logger,
-        INutritionPrescriptionRepository prescriptions, TimeProvider clock, CancellationToken ct)
+        INutritionPrescriptionRepository prescriptions, TimeProvider clock, CancellationToken ct, IProgramContentResolver? contentResolver = null)
     {
         // 2) Día del paciente: primero publicación nueva; si no hay vigente,
         // se conserva el plan legacy aprobado con asignación Active y ventana
@@ -63,14 +64,32 @@ public sealed class GetMyNutritionPlanQueryHandler(
             catch (InvalidTimeZoneException) { }
         }
         var today = DateOnly.FromDateTime(now);
+        var resolved = contentResolver is null ? null : await contentResolver.ResolveAsync(patient.Id, today, ct);
+        if (resolved?.HasEffectiveContent == true)
+        {
+            if (resolved.SourcePrescriptionId is { } prescriptionId)
+            {
+                var selected = await prescriptions.GetByIdAsync(prescriptionId, ct);
+                return selected is { IsPublished: true, State: "aprobado" } && selected.PatientId == patient.Id
+                    ? Compose(selected, today, ct, resolved.PrescriptionDayNumber) : null;
+            }
+            if (resolved.NutritionPlanId is null) return null;
+            if (resolved.NutritionSource == "engine")
+            {
+                var general = await wellness.GetPlanByIdAsync(resolved.NutritionPlanId.Value, ct);
+                return general is { IsTemplate: true, PatientId: null, Status: NutritionPlanStatus.Active }
+                    ? ComposePlan(general, null, null, resolved.NutritionPlanDayNumber ?? 1, ct) : null;
+            }
+        }
         // La publicación vigente nueva tiene prioridad sobre cualquier asignación legacy.
         // Borradores y ciclos futuros/vencidos nunca ocultan una asignación vigente.
-        var prescription = await prescriptions.GetCurrentPublishedAsync(patient.Id, today, ct);
+        var prescription = resolved?.HasEffectiveContent == true ? null : await prescriptions.GetCurrentPublishedAsync(patient.Id, today, ct);
         if (prescription is not null) return Compose(prescription, today, ct);
         var assignments = await wellness.ListPlanAssignmentsByPatientAsync(patient.Id, ct);
         var active = assignments
             .Where(a =>
                 a.Status == AssignmentStatus.Active
+                && (resolved?.HasEffectiveContent != true || a.PlanId == resolved.NutritionPlanId)
                 && DateOnly.FromDateTime(a.StartDate) <= today
                 && (a.EndDate is null || DateOnly.FromDateTime(a.EndDate.Value) >= today)
             )
@@ -101,6 +120,13 @@ public sealed class GetMyNutritionPlanQueryHandler(
             return null;
         }
 
+        var start = DateOnly.FromDateTime(active.StartDate);
+        return ComposePlan(plan, start, start.AddDays(29), today.DayNumber - start.DayNumber + 1, ct);
+    }
+
+    private static MyNutritionPlanDto ComposePlan(NutritionPlan plan, DateOnly? start, DateOnly? end, int currentDay, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
         var days = plan
             .Days.GroupBy(d => d.DayNumber)
             .OrderBy(g => g.Key)
@@ -125,13 +151,6 @@ public sealed class GetMyNutritionPlanQueryHandler(
             ))
             .ToList();
 
-        logger.LogInformation(
-            "Me.NutritionPlan: paciente {PatientId} plan {PlanId} días {Days}",
-            patient.Id,
-            plan.Id,
-            days.Count
-        );
-
         return new MyNutritionPlanDto(
             plan.Id,
             plan.Name,
@@ -147,14 +166,14 @@ public sealed class GetMyNutritionPlanQueryHandler(
             plan.MealTiming,
             plan.Status.ToString(),
             days,
-            DateOnly.FromDateTime(active.StartDate),
-            DateOnly.FromDateTime(active.StartDate).AddDays(29),
-            today.DayNumber - DateOnly.FromDateTime(active.StartDate).DayNumber + 1,
+            start,
+            end,
+            currentDay,
             plan.Revision
         );
     }
 
-    private static MyNutritionPlanDto Compose(NutritionPrescription plan, DateOnly today, CancellationToken ct)
+    private static MyNutritionPlanDto Compose(NutritionPrescription plan, DateOnly today, CancellationToken ct, int? resolvedMenuDay = null)
     {
         var foods = plan.Meals.SelectMany(x => x.Items).Select(x => x.FoodItem!)
             .DistinctBy(x => x.Id).ToDictionary(x => x.Id);
@@ -185,6 +204,6 @@ public sealed class GetMyNutritionPlanQueryHandler(
             plan.WaterMl ?? 2000, null,
             string.Join(", ", plan.Meals.OrderBy(x => x.ScheduledTime).Select(x => x.ScheduledTime.ToString("HH:mm")).Distinct()),
             NutritionPlanStatus.Active.ToString(), days, plan.StartDate, plan.EndDate,
-            today.DayNumber - plan.StartDate!.Value.DayNumber + 1, plan.Revision);
+            resolvedMenuDay ?? today.DayNumber - plan.StartDate!.Value.DayNumber + 1, plan.Revision);
     }
 }

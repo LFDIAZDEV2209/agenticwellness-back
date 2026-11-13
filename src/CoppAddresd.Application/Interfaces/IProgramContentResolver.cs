@@ -53,6 +53,12 @@ public interface IProgramContentResolver
 public sealed record ProgramContentResolution
 {
     /// <summary>ID del plan de alimentación activo, o <c>null</c> si no hay asignación vigente.</summary>
+    public bool HasEffectiveContent { get; init; }
+    public Guid? PodcastMediaId { get; init; }
+    public string? PodcastSource { get; init; }
+    public string? RoutineSource { get; init; }
+    public string? NutritionSource { get; init; }
+    public bool Rest { get; init; }
     public Guid? NutritionPlanId { get; init; }
 
     /// <summary>Prescripción publicada de Nutrition; nunca se persiste como FK wellness.</summary>

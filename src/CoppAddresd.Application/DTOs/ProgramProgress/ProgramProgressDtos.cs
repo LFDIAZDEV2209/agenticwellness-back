@@ -276,7 +276,9 @@ public sealed record TodayTaskContentDto(
     IReadOnlyList<string>? Takeaways = null,
     bool ContentUnavailable = false,
     IReadOnlyList<ExerciseItemDto>? Exercises = null,
-    IReadOnlyList<NutritionIntakeLogDto>? NutritionIntakeLogs = null
+    IReadOnlyList<NutritionIntakeLogDto>? NutritionIntakeLogs = null,
+    bool? Rest = null,
+    Guid? SourcePrescriptionId = null
 );
 
 /// <summary>XP + nivel de gamificación (nunca métrica clínica, SPEC §6.15).</summary>
@@ -831,7 +833,10 @@ public sealed record EnrollmentWeekTaskDto(
     DateTime? CompletedAt,
     Guid? ContentRefId = null,
     string? ContentName = null,
-    string? DetailText = null
+    string? DetailText = null,
+    bool? Rest = null,
+    string? Source = null,
+    Guid? SourcePrescriptionId = null
 );
 
 /// <summary>

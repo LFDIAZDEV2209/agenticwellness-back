@@ -25,7 +25,7 @@ public sealed class GetPatientAiContextQueryHandler(
     IPatientRepository patients, IClinicalMeasurementRepository measurements,
     IPatientMeasurementRepository deviceMetrics, IWellnessRepository wellness,
     INutritionPrescriptionRepository prescriptions, TimeProvider clock,
-    ILogger<GetPatientAiContextQueryHandler> logger)
+    ILogger<GetPatientAiContextQueryHandler> logger, IProgramContentResolver? contentResolver = null)
     : IRequestHandler<GetPatientAiContextQuery, PatientAiContextDto?>
 {
     private static readonly string[] MetricCodes = ["weight", "height", "bmi", "body_fat",
@@ -44,7 +44,7 @@ public sealed class GetPatientAiContextQueryHandler(
             patient.Id, MetricCodes, Guid.Empty, ct),
             (IReadOnlyDictionary<string, LabExamMetricSnapshot>)new Dictionary<string, LabExamMetricSnapshot>(), "mediciones", ct);
         var plan = await ReadAsync(() => GetMyNutritionPlanQueryHandler.ReadForPatientAsync(
-            patient, wellness, logger, prescriptions, clock, ct), null, "plan nutricional", ct);
+            patient, wellness, logger, prescriptions, clock, ct, contentResolver), null, "plan nutricional", ct);
         var end = clock.GetUtcNow().UtcDateTime;
         var rows = await ReadAsync(() => deviceMetrics.GetDeviceWindowAsync(patient.Id, end.AddDays(-7), end, ct),
             (IReadOnlyList<MeasurementItemDto>)[], "dispositivo", ct);
@@ -52,7 +52,8 @@ public sealed class GetPatientAiContextQueryHandler(
 
         // Solo las comidas del día vigente; no se envía el calendario completo de treinta días.
         var menuDay = plan is { Days.Count: > 0, CurrentDay: > 0 }
-            ? (plan.CurrentDay.Value - 1) % plan.Days.Count + 1 : (int?)null;
+            ? plan.Days.Any(d => d.DayNumber == plan.CurrentDay.Value) ? plan.CurrentDay.Value
+                : (plan.CurrentDay.Value - 1) % plan.Days.Count + 1 : (int?)null;
         var meals = plan?.Days.FirstOrDefault(d => d.DayNumber == menuDay)?.Meals
             .Take(6).Select(m => new PatientAiMealDto(Clip(m.MealType, 24)!, Clip(m.Description, 100), m.Calories)).ToList() ?? [];
         var nutrition = plan is null ? null : new PatientAiNutritionDto(Clip(plan.Name, 80)!,

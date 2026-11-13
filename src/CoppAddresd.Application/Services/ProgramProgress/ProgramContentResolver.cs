@@ -25,14 +25,24 @@ namespace CoppAddresd.Application.Services.ProgramProgress;
 public sealed class ProgramContentResolver(
     IWellnessRepository wellnessRepository,
     ILogger<ProgramContentResolver> logger,
-    INutritionPrescriptionRepository prescriptions) : IProgramContentResolver
+    INutritionPrescriptionRepository prescriptions,
+    IEffectiveDayContentStore? effectiveStore = null,
+    IEffectiveDayContentResolver? effectiveResolver = null) : IProgramContentResolver
 {
     public async Task<ProgramContentResolution?> ResolveAsync(
         Guid patientId,
         DateOnly localDate,
         CancellationToken ct = default)
     {
-        // Nutrition es la fuente primaria por fecha local; bienestar solo suple su ausencia.
+        ct.ThrowIfCancellationRequested();
+        if (effectiveStore is not null && effectiveResolver is not null)
+        {
+            var data = await effectiveStore.LoadPatientAsync(patientId, localDate, localDate, ct);
+            var enrollment = data.Enrollments.OrderByDescending(e => e.StartLocalDate).ThenByDescending(e => e.CreatedAt).FirstOrDefault();
+            if (enrollment is not null)
+                return ToProgramResolution(effectiveResolver.Resolve(data, enrollment, localDate, ct));
+        }
+        // Pacientes sin inscripción conservan el contrato wellness anterior.
         var prescription = await prescriptions.GetCurrentPublishedAsync(patientId, localDate, ct);
         // --- 1. Cargar asignaciones del paciente (2 queries batch) ---
         var planAssignments = prescription is null
@@ -107,6 +117,20 @@ public sealed class ProgramContentResolver(
         DateOnly to,
         CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
+        if (effectiveStore is not null && effectiveResolver is not null)
+        {
+            var data = await effectiveStore.LoadPatientAsync(patientId, from, to, ct);
+            if (data.Enrollments.Count > 0)
+            {
+                // Una sola precarga y parseo por semana para todo el calendario.
+                var calendar = new Dictionary<DateOnly, ProgramContentResolution>();
+                foreach (var enrollment in data.Enrollments.OrderByDescending(e => e.StartLocalDate).ThenByDescending(e => e.CreatedAt))
+                    foreach (var day in effectiveResolver.ResolveRange(data, enrollment, from, to, ct))
+                        calendar.TryAdd(day.Date, ToProgramResolution(day));
+                return calendar;
+            }
+        }
         var published = await prescriptions.ListByPatientAsync(patientId, 1, 100, ct);
         // T-83 (B18): una sola carga de asignaciones para toda la ventana
         // (independiente del número de fechas) + cache de días por plan.
@@ -166,6 +190,17 @@ public sealed class ProgramContentResolver(
 
         return result;
     }
+
+    public static ProgramContentResolution ToProgramResolution(EffectiveDayContent day) => new()
+    {
+        HasEffectiveContent = true, PodcastMediaId = day.Podcast.Id, PodcastSource = day.Podcast.Source,
+        ExerciseRoutineId = day.Routine.Id, Rest = day.Routine.Rest, RoutineSource = day.Routine.Source,
+        NutritionSource = day.Nutrition.Source,
+        SourcePrescriptionId = day.Nutrition.Prescription ? day.Nutrition.Id : null,
+        PrescriptionDayNumber = day.Nutrition.Prescription ? day.Nutrition.DayNumber : null,
+        NutritionPlanId = day.Nutrition.Prescription ? null : day.Nutrition.Id,
+        NutritionPlanDayNumber = day.Nutrition.Prescription ? null : day.Nutrition.DayNumber,
+    };
 
     private void LogSource(ProgramContentResolution resolution)
         => logger.LogInformation("Program.ContentSource Source={Source} PrescriptionId={PrescriptionId} PlanId={PlanId} DayNumber={DayNumber}",
