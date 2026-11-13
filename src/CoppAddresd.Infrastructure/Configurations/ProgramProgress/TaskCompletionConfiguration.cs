@@ -18,7 +18,7 @@ public sealed class TaskCompletionConfiguration : IEntityTypeConfiguration<TaskC
         builder.ToTable("task_completions", "app", t =>
         {
             t.HasCheckConstraint("ck_task_completions_weekday_range", "\"weekday\" BETWEEN 1 AND 7");
-            t.HasCheckConstraint("ck_task_completions_plan_day_number_range", "\"nutrition_plan_day_number\" BETWEEN 1 AND 7");
+            t.HasCheckConstraint("ck_task_completions_plan_day_number_range", "\"nutrition_plan_day_number\" BETWEEN 1 AND 30");
         });
 
         builder.HasKey(x => x.Id);

@@ -86,6 +86,8 @@ public static class DependencyInjection
         services.AddTransient<AiConsentHttpHandler>();
         services.AddScoped<IWellnessRepository, WellnessRepository>();
         services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+        services.AddScoped<IEffectiveDayContentStore, EffectiveDayContentStore>();
+        services.AddScoped<IEffectiveDayContentResolver, EffectiveDayContentResolver>();
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<IProgramAssignmentRepository, ProgramAssignmentRepository>();
         services.AddScoped<IProgramAssignmentOperationsRepository, ProgramAssignmentOperationsRepository>();

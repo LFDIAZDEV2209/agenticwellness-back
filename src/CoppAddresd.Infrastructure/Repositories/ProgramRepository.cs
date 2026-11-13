@@ -63,7 +63,10 @@ public sealed partial class ProgramRepository(
     IProgramContentResolver? programContentResolver = null,
     IProgramAdaptationEngine? programAdaptationEngine = null,
     IProgramAssignmentNoticeRepository? assignmentNotices = null,
-    IPatientScopeGuard? patientScope = null
+    IPatientScopeGuard? patientScope = null,
+    IEffectiveDayContentStore? effectiveStore = null,
+    IEffectiveDayContentResolver? effectiveResolver = null,
+    Microsoft.Extensions.Logging.ILogger<ProgramRepository>? contentLogger = null
 ) : IProgramRepository
 {
     private const int MaxFreezes = 3;
@@ -881,14 +884,11 @@ public sealed partial class ProgramRepository(
         Guid? resolvedNutritionPlanId = input.NutritionPlanId;
         short? resolvedNutritionPlanDayNumber = input.NutritionPlanDayNumber;
         Guid? resolvedExerciseRoutineId = input.ExerciseRoutineId;
+        Guid? resolvedMediaId = input.MediaId;
 
         if (_programContentResolver is not null)
         {
-            var resolution = await _programContentResolver.ResolveAsync(
-                enrollment.PatientId,
-                input.LocalDate,
-                ct
-            );
+            var resolution = await ResolveEnrollmentContentAsync(enrollment.Id, enrollment.PatientId, input.LocalDate, ct);
 
             if (resolution is { })
             {
@@ -896,7 +896,7 @@ public sealed partial class ProgramRepository(
                 // Si el plan no tiene día para el weekday → ambos null (AC-13).
                 resolvedSourcePrescriptionId = resolution.SourcePrescriptionId;
                 resolvedPrescriptionDayNumber = resolution.PrescriptionDayNumber;
-                // Las FKs wellness y el CHECK 1..7 nunca reciben una prescripción ni su día 1..30.
+                // Las FKs de wellness nunca reciben IDs de prescripción; su día 1..30 se guarda aparte.
                 resolvedNutritionPlanId = resolution.SourcePrescriptionId is null ? resolution.NutritionPlanId : null;
                 resolvedNutritionPlanDayNumber = resolution.SourcePrescriptionId is null && resolution.NutritionPlanDayNumber.HasValue
                     ? (short?)resolution.NutritionPlanDayNumber.Value
@@ -904,6 +904,8 @@ public sealed partial class ProgramRepository(
 
                 // ejercicio: exercise_routine_id del resolvedor.
                 resolvedExerciseRoutineId = resolution.ExerciseRoutineId;
+                if (input.TaskCode == TaskCode.podcast && resolution.HasEffectiveContent)
+                    resolvedMediaId = resolution.PodcastMediaId;
             }
             else
             {
@@ -1003,7 +1005,7 @@ public sealed partial class ProgramRepository(
             NutritionPlanId = resolvedNutritionPlanId,
             NutritionPlanDayNumber = resolvedNutritionPlanDayNumber,
             ExerciseRoutineId = resolvedExerciseRoutineId,
-            MediaId = input.MediaId,
+            MediaId = resolvedMediaId,
             VitalSignsBatchId = vitalSignsBatchId,
             NutribioticProductId = input.NutribioticProductId,
             EmotionalRecordId = emotionalRecordId,
@@ -1799,6 +1801,7 @@ public sealed partial class ProgramRepository(
         week.Status = ProgramWeekStatus.Active;
         week.ActivatedAt = now;
         week.TasksSnapshot = await MergeActivationSnapshotAsync(template.Id, week, ct);
+        await MaterializeEffectiveWeekAsync(enrollment.Id, week, ct);
         week.TemplateVersionAtStart = template.Version;
         week.UpdatedAt = now;
 
@@ -1846,6 +1849,7 @@ public sealed partial class ProgramRepository(
                 nextWeek.Status = ProgramWeekStatus.Active;
                 nextWeek.ActivatedAt = now;
                 nextWeek.TasksSnapshot = await MergeActivationSnapshotAsync(template.Id, nextWeek, ct);
+                await MaterializeEffectiveWeekAsync(enrollment.Id, nextWeek, ct);
                 nextWeek.TemplateVersionAtStart = template.Version;
                 nextWeek.UpdatedAt = now;
                 enrollment.CurrentWeekNumber = nextWeek.WeekNumber;
@@ -1969,9 +1973,19 @@ public sealed partial class ProgramRepository(
             .Where(d => d.Weekday == weekday)
             .Select(d => new { TaskCode = d.TaskCode.ToString(), d.MediaId }).ToList();
 
+        // T-75: resolver contenido de nutrición y rutina para hoy.
+        // Una sola llamada al resolver (anti N+1): el resultado se reutiliza
+        // para todas las tareas nut/ejercicio del día.
+        ProgramContentResolution? contentResolution = null;
+        if (_programContentResolver is not null)
+        {
+            contentResolution = await ResolveEnrollmentContentAsync(enrollmentId, row.PatientId, todayLocalDate, ct);
+        }
+
         var mediaIds = todayCompletions
             .Where(c => c.MediaId.HasValue)
             .Select(c => c.MediaId!.Value)
+            .Concat(contentResolution?.PodcastMediaId is { } effectivePodcast ? new[] { effectivePodcast } : Array.Empty<Guid>())
             .Concat(todayScheduled.Where(s => s.MediaId.HasValue).Select(s => s.MediaId!.Value))
             .Concat(fallbackByTask.Where(f => f.MediaId.HasValue).Select(f => f.MediaId!.Value))
             .Distinct()
@@ -2032,19 +2046,6 @@ public sealed partial class ProgramRepository(
             .GroupBy(f => f.TaskCode)
             .ToDictionary(g => g.Key, g => g.First().MediaId!.Value);
 
-        // T-75: resolver contenido de nutrición y rutina para hoy.
-        // Una sola llamada al resolver (anti N+1): el resultado se reutiliza
-        // para todas las tareas nut/ejercicio del día.
-        ProgramContentResolution? contentResolution = null;
-        if (_programContentResolver is not null)
-        {
-            contentResolution = await _programContentResolver.ResolveAsync(
-                patientId: row.PatientId,
-                localDate: todayLocalDate,
-                ct
-            );
-        }
-
         // Pre-cargar nombres de plan/rutina para el contenido del snapshot
         // (anti N+1: batch por IDs resueltos).
         string? resolvedPlanName = null;
@@ -2083,9 +2084,9 @@ public sealed partial class ProgramRepository(
 
                 var planData = await dbContext
                     .NutritionPlans.AsNoTracking()
-                    .Where(p => p.Id == planId && p.PatientId == row.PatientId
-                        && p.ApprovedAt != null && p.ApprovedBy != null
-                        && p.ReviewStatus == "approved" && p.Status == NutritionPlanStatus.Active)
+                    .Where(p => p.Id == planId && p.Status == NutritionPlanStatus.Active
+                        && (p.IsTemplate && p.PatientId == null || p.PatientId == row.PatientId
+                            && p.ApprovedAt != null && p.ApprovedBy != null && p.ReviewStatus == "approved"))
                     .Select(p => new
                     {
                         p.Name,
@@ -2278,12 +2279,8 @@ public sealed partial class ProgramRepository(
                 {
                     var activeMediaId =
                         done?.MediaId
-                        ?? t.MediaId
-                        ?? (
-                            fallbackMediaByTask.TryGetValue(t.TaskCode, out var fbId)
-                                ? fbId
-                                : (Guid?)null
-                        );
+                        ?? (contentResolution?.HasEffectiveContent == true ? contentResolution.PodcastMediaId
+                            : t.MediaId ?? (fallbackMediaByTask.TryGetValue(t.TaskCode, out var fbId) ? fbId : (Guid?)null));
                     if (
                         activeMediaId.HasValue
                         && mediaById.TryGetValue(activeMediaId.Value, out var media)
@@ -2306,10 +2303,10 @@ public sealed partial class ProgramRepository(
                             ContentUnavailable: false
                         );
                     }
-                    else if (activeMediaId.HasValue)
+                    else
                     {
                         contentUnavailable = true;
-                        content = new TodayTaskContentDto(activeMediaId.Value, null, null, null, ContentUnavailable: true);
+                        content = new TodayTaskContentDto(activeMediaId, null, null, null, ContentUnavailable: true);
                     }
                 }
                 else if (taskCode == TaskCode.nut)
@@ -2334,7 +2331,8 @@ public sealed partial class ProgramRepository(
                             ExerciseRoutineId: null,
                             ExerciseRoutineName: null,
                             ContentUnavailable: false,
-                            NutritionIntakeLogs: intakeLogs
+                            NutritionIntakeLogs: intakeLogs,
+                            SourcePrescriptionId: nutrition.SourcePrescriptionId
                         );
                     }
                     else
@@ -2354,7 +2352,9 @@ public sealed partial class ProgramRepository(
                 else if (taskCode == TaskCode.ejercicio)
                 {
                     // T-75: ejercicio → campos exerciseRoutine* del resolvedor.
-                    if (contentResolution is { ExerciseRoutineId: { } routineId })
+                    if (contentResolution is { Rest: true })
+                        content = new TodayTaskContentDto(null, null, null, null, Rest: true);
+                    else if (contentResolution is { ExerciseRoutineId: { } routineId })
                     {
                         content = new TodayTaskContentDto(
                             MediaId: null,
@@ -4001,6 +4001,29 @@ public sealed partial class ProgramRepository(
             .Select(r => (string?)r.Name)
             .FirstOrDefaultAsync(ct);
         return name is not null ? (name, name) : null;
+    }
+
+    private async Task<ProgramContentResolution?> ResolveEnrollmentContentAsync(Guid enrollmentId, Guid patientId, DateOnly date, CancellationToken ct)
+    {
+        // Las rutas de inscripción conservan su identidad aunque exista otro programa solapado.
+        if (effectiveResolver is not null)
+            return ProgramContentResolver.ToProgramResolution(await effectiveResolver.ResolveAsync(enrollmentId, date, ct));
+        return _programContentResolver is null ? null : await _programContentResolver.ResolveAsync(patientId, date, ct);
+    }
+
+    private async Task MaterializeEffectiveWeekAsync(Guid enrollmentId, ProgramWeek week, CancellationToken ct)
+    {
+        if (effectiveStore is null || effectiveResolver is null) return;
+        var data = await effectiveStore.LoadAsync([enrollmentId], week.WeekStartDateLocal, week.WeekEndDateLocal, ct);
+        var enrollment = data.Enrollments.Single(e => e.Id == enrollmentId);
+        var materialized = EffectiveWeekMaterializer.Build(data, enrollment, week, effectiveResolver, ct);
+        week.TasksSnapshot = materialized.Snapshot;
+        if (materialized.Gaps > 0)
+            Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(contentLogger ?? NullLogger<ProgramRepository>.Instance,
+                "Program.ActivationContentGaps EnrollmentId={EnrollmentId} Week={Week} Days={Days}", enrollmentId, week.WeekNumber, materialized.Gaps);
+        if (materialized.ReplacedProgramItems > 0)
+            Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(contentLogger ?? NullLogger<ProgramRepository>.Instance,
+                "Program.ActivationFallback EnrollmentId={EnrollmentId} Week={Week} Items={Items}", enrollmentId, week.WeekNumber, materialized.ReplacedProgramItems);
     }
 
     private async Task<IReadOnlyList<WeeklyDayTemplate>> LoadTemplateDaysAsync(
@@ -8029,13 +8052,30 @@ public sealed partial class ProgramRepository(
 
         var checkinsLookup = checkins.ToDictionary(ci => ci.LocalDate, ci => ci);
 
+        var effectiveDays = new Dictionary<DateOnly, ProgramContentResolution>();
+        if (effectiveStore is not null && effectiveResolver is not null)
+        {
+            var data = await effectiveStore.LoadAsync([enrollment.Id], week.WeekStartDateLocal, week.WeekEndDateLocal, ct);
+            effectiveDays = effectiveResolver.ResolveRange(data, data.Enrollments.Single(e => e.Id == enrollment.Id),
+                week.WeekStartDateLocal, week.WeekEndDateLocal, ct).ToDictionary(d => d.Date, ProgramContentResolver.ToProgramResolution);
+        }
+        var effectiveRoutineIds = effectiveDays.Values.Where(d => d.ExerciseRoutineId.HasValue).Select(d => d.ExerciseRoutineId!.Value).Distinct().ToArray();
+        var effectivePlanIds = effectiveDays.Values.Where(d => d.NutritionPlanId.HasValue).Select(d => d.NutritionPlanId!.Value).Distinct().ToArray();
+        var effectivePodcastIds = effectiveDays.Values.Where(d => d.PodcastMediaId.HasValue).Select(d => d.PodcastMediaId!.Value).Distinct().ToArray();
+        var routineNames = await dbContext.ExerciseRoutines.AsNoTracking().Where(r => effectiveRoutineIds.Contains(r.Id))
+            .Select(r => new { r.Id, r.Name }).ToDictionaryAsync(r => r.Id, r => r.Name, ct);
+        var planNames = await dbContext.NutritionPlans.AsNoTracking().Where(p => effectivePlanIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name }).ToDictionaryAsync(p => p.Id, p => p.Name, ct);
+        var podcastNames = await dbContext.MediaItems.AsNoTracking().Where(m => effectivePodcastIds.Contains(m.Id))
+            .Select(m => new { m.Id, m.Title }).ToDictionaryAsync(m => m.Id, m => m.Title, ct);
+
         // 7. Resolver contenido activo (plan/rutina) al inicio de la semana.
         EnrollmentWeekContentRef? planRef = null;
         EnrollmentWeekContentRef? routineRef = null;
         string? routineDetailText = null;
         string? planDetailText = null;
 
-        if (_programContentResolver is not null)
+        if (effectiveDays.Count == 0 && _programContentResolver is not null)
         {
             var contentResolution = await _programContentResolver.ResolveAsync(
                 enrollment.PatientId,
@@ -8087,6 +8127,7 @@ public sealed partial class ProgramRepository(
             date = date.AddDays(1)
         )
         {
+            if (effectiveDays.Count > 0 && !effectiveDays.ContainsKey(date)) continue;
             var weekday = ToIsoWeekday(date);
             var dayLabel = EnrollmentWeekTaskLabels.DayLabel(weekday);
 
@@ -8105,8 +8146,29 @@ public sealed partial class ProgramRepository(
                 Guid? contentRefId = null;
                 string? contentName = null;
                 string? detailText = null;
+                bool? rest = null;
+                string? source = null;
+                Guid? sourcePrescriptionId = null;
 
-                if (string.Equals(taskCode, "ejercicio", StringComparison.OrdinalIgnoreCase))
+                if (effectiveDays.TryGetValue(date, out var effective))
+                {
+                    switch (taskCode)
+                    {
+                        case "podcast":
+                            contentRefId = effective.PodcastMediaId; source = effective.PodcastSource;
+                            contentName = contentRefId.HasValue ? podcastNames.GetValueOrDefault(contentRefId.Value) : null;
+                            break;
+                        case "ejercicio":
+                            contentRefId = effective.ExerciseRoutineId; rest = effective.Rest; source = effective.RoutineSource;
+                            contentName = contentRefId.HasValue ? routineNames.GetValueOrDefault(contentRefId.Value) : null;
+                            break;
+                        case "nut":
+                            contentRefId = effective.NutritionPlanId; sourcePrescriptionId = effective.SourcePrescriptionId; source = effective.NutritionSource;
+                            contentName = sourcePrescriptionId.HasValue ? "Plan nutricional" : contentRefId.HasValue ? planNames.GetValueOrDefault(contentRefId.Value) : null;
+                            break;
+                    }
+                }
+                else if (string.Equals(taskCode, "ejercicio", StringComparison.OrdinalIgnoreCase))
                 {
                     var activeRoutineId = task.RoutineId ?? routineRef?.Id;
                     if (activeRoutineId is { } rId)
@@ -8195,7 +8257,7 @@ public sealed partial class ProgramRepository(
                             : null,
                         ContentRefId: contentRefId,
                         ContentName: contentName,
-                        DetailText: detailText
+                        DetailText: detailText, Rest: rest, Source: source, SourcePrescriptionId: sourcePrescriptionId
                     )
                 );
             }

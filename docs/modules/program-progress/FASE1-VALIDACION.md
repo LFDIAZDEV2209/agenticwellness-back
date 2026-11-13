@@ -132,3 +132,25 @@ PostgreSQL: guardar solo podcasts conserva rutina/plan específicos; reenviar
 las misiones sin campos clínicos conserva las referencias; una semana nueva
 hereda genéricas y otras semanas permanecen intactas. GET devuelve ambas refs.
 Pruebas de 1.7 y regresión 1.7b: 2/2; build Release y módulo ProgramProgress.
+
+
+## 1.9 — Resolución efectiva común
+
+Contrato y decisión de Luis sobre snapshots iniciados en `EFFECTIVE-CONTENT.md`.
+Consumidores integrados: misión diaria, detalle semanal, completar tareas, Mi plan,
+contexto de IA y ambas activaciones. Una inscripción solicitada no se sustituye por
+otro programa solapado del paciente. Cancelación y precarga por conjuntos verificadas.
+
+- Build Release: correcto (Debug ocupado por servicios locales).
+- Unitarios completos: 2.420 aprobados, 105 omitidos sin conexión de pruebas;
+  27 casos nuevos de resolución por clase/caso y decisión final del motor.
+- PostgreSQL: suite del módulo 68/68 antes del último caso de propiedad del motor.
+  Al agregarlo, el caso sintético intentó violar la FK compuesta paciente/inscripción;
+  se corrigió para representar una recomendación ajena válida. Después del ajuste
+  y del aislamiento por inscripción: las ocho regresiones nuevas pasan 8/8.
+- PostgreSQL: 581 fechas de plantilla archivada, consultas constantes, snapshot
+  futuro vacío, sin tests clínicos, consumidores y continuidad del menú final,
+  activación por fecha/perfección, propiedad y publicación de referencias, legado
+  de treinta menús y migración Up/Down/Up con 10.000 filas. Down rechaza menú 8.
+- Los nueve fallos heredados de ProgramRepository documentados arriba no se modifican.
+- Sin migrar la BD local, sin push/rebase/pull de dev, sin cambios de tasks/OVERVIEW.
