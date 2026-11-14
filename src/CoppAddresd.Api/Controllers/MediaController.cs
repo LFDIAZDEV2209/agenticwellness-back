@@ -228,6 +228,20 @@ public class MediaController(
 
     // ===================== Acciones semánticas (REQ-PCA-03) =====================
 
+    /// <summary>Crea borradores de podcasts con resultado por archivo; una fila fallida no revierte las correctas.</summary>
+    [HttpPost("bulk/drafts")]
+    [RequireContextPermission(PermissionCodes.MediaCreate)]
+    public async Task<ActionResult<IReadOnlyList<BulkMediaFileResult>>> CreateBulkDrafts(
+        [FromBody] CreateBulkMediaDraftsCommand request, CancellationToken ct) =>
+        Ok(await mediator.Send(request with { ActorId = CurrentUserId() }, ct));
+
+    /// <summary>Publica un lote mediante la validación individual existente; admite reintentar solo los fallidos.</summary>
+    [HttpPost("bulk/publish")]
+    [RequireContextPermission(PermissionCodes.MediaPublish)]
+    public async Task<ActionResult<IReadOnlyList<BulkMediaFileResult>>> PublishBulk(
+        [FromBody] PublishBulkMediaCommand request, CancellationToken ct) =>
+        Ok(await mediator.Send(request, ct));
+
     /// <summary>
     /// Publica un medio (Draft → Published) tras la validación técnica
     /// estricta del blob (REQ-PCA-02): existencia física, MIME permitido,
