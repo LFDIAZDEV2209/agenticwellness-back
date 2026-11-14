@@ -1,5 +1,31 @@
 # Rutinas por día — Fase 2
 
+## Detalle de la sesión completada — 2.11
+
+`task_completions.detail_snapshot` es jsonb nullable, sin DEFAULT ni relleno masivo.
+El servidor lo captura solo al completar `ejercicio`, dentro de la transacción
+de completación/XP; ningún campo del cliente puede aportar ese detalle. Un replay
+conserva la captura original, aunque cambie el catálogo después.
+
+```json
+{"routineId":"UUID","name":"Sesión original","exercises":[{"name":"Sentadilla","sets":3,"reps":12,"mediaRef":"UUID"}],"capturedAt":"2026-11-14T14:00:00+00:00"}
+```
+
+También conserva descripción, duración, descanso, músculo, equipo, indicaciones,
+orden, peso, tempo y esfuerzo. `mediaRef` es un ID estable, nunca una URL firmada.
+El detalle semanal y el snapshot diario de una sesión completada leen el nombre
+y la prescripción de esa captura y la devuelven como `detailSnapshot` opcional.
+Las URLs de demostración se resuelven por conjuntos solo para medios todavía
+publicados; archivar un medio no lo reactiva desde el historial. Sesión sin rutina
+conocida conserva esa ausencia. El legado con columna null conserva la lectura
+anterior: no se inventan prescripciones históricas que no fueron capturadas.
+
+Migración `20261114141434_AddExerciseSessionDetailSnapshot`: aditiva, compatible
+con lectores anteriores, lock timeout 5 s. Down de mantenimiento rechaza retirar
+la columna si tiene sesiones; no puede perder capturas silenciosamente. Up/Down/Up
+se prueba con 10001 completaciones, y la edición posterior de rutina/ejercicios,
+replay y retiro de demostración se verifican contra PostgreSQL real.
+
 ## Editor semanal anterior — 2.9
 
 `SetWeekContentHandler` delega la escritura a `ReplaceEnrollmentWeekTasks`.

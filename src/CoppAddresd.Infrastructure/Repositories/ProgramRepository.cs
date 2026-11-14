@@ -987,6 +987,14 @@ public sealed partial class ProgramRepository(
         // 7. Completación (puntos congelados del snapshot; la regla del
         // catálogo puede ajustarlos en el paso 8).
         var now = DateTime.UtcNow;
+        JsonElement? exerciseDetail = null;
+        if (input.TaskCode == TaskCode.ejercicio)
+        {
+            var routine = resolvedExerciseRoutineId is { } routineId
+                ? await dbContext.ExerciseRoutines.AsNoTracking().Include(r => r.Exercises).FirstOrDefaultAsync(r => r.Id == routineId, ct)
+                : null;
+            exerciseDetail = CompletedExerciseDetail.Capture(routine, now);
+        }
         var completion = new TaskCompletion
         {
             Id = Guid.NewGuid(),
@@ -1002,6 +1010,7 @@ public sealed partial class ProgramRepository(
             ClientCompletedAt = input.ClientCompletedAt,
             SourceRefType = input.SourceRefType,
             ContentFingerprint = input.ContentFingerprint,
+            DetailSnapshot = exerciseDetail,
             // T-76: FKs de contenido resueltos por el resolvedor (o null si no
             // hay contenido activo). Si el input ya traía valores, se preservan
             // (backwards-compatible); si el resolvedor los calculó, prevalecen.
@@ -1953,6 +1962,7 @@ public sealed partial class ProgramRepository(
                 t.TaskCode,
                 t.CompletedAt,
                 t.MediaId,
+                t.DetailSnapshot,
                 EmotionalAssessment = t.EmotionalRecord == null ? null : new SavedEmotionalAssessmentDto(
                     t.EmotionalRecord.MoodScore, t.EmotionalRecord.Barriers,
                     new EmotionalAssessmentPayload(t.EmotionalRecord.StressScore, t.EmotionalRecord.MotivationScore,
@@ -2278,6 +2288,20 @@ public sealed partial class ProgramRepository(
             ct
         );
 
+        var completedExercise = CompletedExerciseDetail.Read(todayCompletions.FirstOrDefault(t => t.TaskCode == TaskCode.ejercicio)?.DetailSnapshot);
+        IReadOnlyList<ExerciseItemDto>? historicalExercises = completedExercise?.ToExercises();
+        if (historicalExercises is not null)
+        {
+            var ids = historicalExercises.Where(e => e.MediaId.HasValue).Select(e => e.MediaId!.Value).Distinct().ToArray();
+            var media = await dbContext.MediaItems.AsNoTracking().Where(m => ids.Contains(m.Id) && m.Status == MediaStatus.Published
+                && (m.MediaType == MediaType.Video || m.MediaType == MediaType.Image))
+                .Select(m => new { m.Id, m.SourceKind, m.ExternalUrl, m.Author, m.StorageKey, m.ThumbnailKey, m.MediaType }).ToDictionaryAsync(m => m.Id, ct);
+            historicalExercises = historicalExercises.Select(e => e.MediaId is { } id && media.TryGetValue(id, out var m)
+                ? e with { MediaUrl = m.SourceKind == "external" ? null : m.StorageKey, ThumbnailUrl = m.ThumbnailKey,
+                    MediaType = m.MediaType.ToString(), ReferenceVideo = m.SourceKind == "external"
+                        ? CoppAddresd.Application.DTOs.ExerciseReferenceVideo.FromExternal(e.Name, m.ExternalUrl, m.Author) : null }
+                : e with { MediaId = null }).ToArray();
+        }
         var todayTasks = todayScheduled
             .Select(t =>
             {
@@ -2364,8 +2388,14 @@ public sealed partial class ProgramRepository(
                 }
                 else if (taskCode == TaskCode.ejercicio)
                 {
+                    var historical = CompletedExerciseDetail.Read(done?.DetailSnapshot);
+                    if (historical is { RoutineId: null }) contentUnavailable = true;
                     // T-75: ejercicio → campos exerciseRoutine* del resolvedor.
-                    if (contentResolution is { Rest: true })
+                    if (historical is not null)
+                        content = new TodayTaskContentDto(null, historical.Name, null, null,
+                            ExerciseRoutineId: historical.RoutineId, ExerciseRoutineName: historical.Name,
+                            ContentUnavailable: historical.RoutineId is null, Exercises: historicalExercises, DetailSnapshot: done!.DetailSnapshot);
+                    else if (contentResolution is { Rest: true })
                         content = new TodayTaskContentDto(null, null, null, null, Rest: true);
                     else if (contentResolution is { ExerciseRoutineId: { } routineId })
                     {
@@ -8062,12 +8092,13 @@ public sealed partial class ProgramRepository(
                 tc.TaskCode,
                 tc.PointsAwarded,
                 tc.CompletedAt,
+                tc.DetailSnapshot,
             })
             .ToListAsync(ct);
 
         var completionsLookup = completions.ToDictionary(
             c => (c.LocalDate, TaskCode: c.TaskCode.ToString()),
-            c => new { c.PointsAwarded, c.CompletedAt }
+            c => new { c.PointsAwarded, c.CompletedAt, c.DetailSnapshot }
         );
 
         // 6. Query daily_checkins para la ventana.
@@ -8287,6 +8318,9 @@ public sealed partial class ProgramRepository(
                     }
                 }
 
+                var historical = taskCode == "ejercicio" ? CompletedExerciseDetail.Read(completion?.DetailSnapshot) : null;
+                if (historical is not null)
+                { contentRefId = historical.RoutineId; contentName = historical.Name; detailText = null; source = "completion"; rest = false; }
                 dayTasks.Add(
                     new EnrollmentWeekTaskDto(
                         TaskCode: taskCode,
@@ -8299,7 +8333,8 @@ public sealed partial class ProgramRepository(
                             : null,
                         ContentRefId: contentRefId,
                         ContentName: contentName,
-                        DetailText: detailText, Rest: rest, Source: source, SourcePrescriptionId: sourcePrescriptionId
+                        DetailText: detailText, Rest: rest, Source: source, SourcePrescriptionId: sourcePrescriptionId,
+                        DetailSnapshot: taskCode == "ejercicio" ? completion?.DetailSnapshot : null
                     )
                 );
             }

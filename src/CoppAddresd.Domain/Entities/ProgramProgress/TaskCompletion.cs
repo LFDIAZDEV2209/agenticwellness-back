@@ -42,6 +42,9 @@ public sealed class TaskCompletion
     /// <summary>hash(plan_day_id|routine_id|media_id|vitals_id|nutribiotic_id|emotional_id) para detectar contenido obsoleto.</summary>
     public string? ContentFingerprint { get; set; }
 
+    /// <summary>Detalle inmutable capturado por el servidor al completar ejercicio; null en el legado.</summary>
+    public System.Text.Json.JsonElement? DetailSnapshot { get; set; }
+
     // FKs de contenido (nullable, una por código de tarea; solo la que
     // corresponde se fija en runtime. Sin FKs polimórficas).
 

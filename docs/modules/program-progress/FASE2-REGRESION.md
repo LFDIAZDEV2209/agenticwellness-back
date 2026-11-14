@@ -44,3 +44,13 @@ dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Vali
 
 El directorio de salida propio evita bloquear las DLL de los servicios locales.
 No se reanuda la cadena posterior durante la reproducción del QA del orquestador.
+
+## 2.11 — después de la liberación de QA
+
+Build final `bin/Validation211Final/`: 0 errores. Unitarios completos: 2488
+aprobados y 105 omitidos. `NutritionPlanWorkflowTests` completa: **97/97**, sin
+omisiones ni fallos (7 min 45 s), incluidos ConservaPreedicion y CombinaJueves de
+ambas activaciones. Captura/replay/historial/medios y migración nullable con
+10001 completaciones en verde. SQL Up/Down revisado; no se aplicó la migración
+a la BD compartida ni se desplegaron servicios. Columna nueva requiere migración
+antes de ejecutar el backend nuevo. No hay backfill de historias anteriores.
