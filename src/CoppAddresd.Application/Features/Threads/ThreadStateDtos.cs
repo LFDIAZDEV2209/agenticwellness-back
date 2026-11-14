@@ -7,7 +7,7 @@ namespace CoppAddresd.Application.Features.Threads;
 public record ThreadMessageResult(string Role, string Text, string? MessageId = null,
     string Channel = "text", string Status = "final", int Revision = 1,
     string? Source = null, string? VoiceSessionId = null, string? ProviderMessageId = null,
-    long? SourceEventId = null);
+    long? SourceEventId = null, string? ExecutionId = null);
 
 /// <summary>
 /// Resumen del historial de un thread devuelto por el AI Service (proxy de

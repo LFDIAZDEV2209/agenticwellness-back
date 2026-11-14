@@ -132,6 +132,25 @@ public sealed class VitaUpstreamContractsTests
     }
 
     [Fact]
+    public async Task Historial_ExecutionIdRoundtripDirecto_TextoYNullEnLegadoOVoz()
+    {
+        var execution = Guid.NewGuid().ToString(); var calls = 0;
+        var client = Client(new((_, _) =>
+        {
+            calls++;
+            return Task.FromResult(Json($$"""{"thread_id":"t","message_count":3,"messages":[{"role":"bot","text":"Igual","message_id":"text-id","execution_id":"{{execution}}","channel":"text"},{"role":"bot","text":"Igual","message_id":"voice-id","channel":"voice","execution_id":null},{"role":"bot","text":"Igual","message_id":"legacy-id"}]}"""));
+        }));
+        var result = await client.GetThreadStateAsync("t", "owner");
+        var wire = JsonSerializer.SerializeToElement(result, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var messages = wire.GetProperty("messages");
+        Assert.Equal(execution, messages[0].GetProperty("executionId").GetString());
+        Assert.Equal("text-id", messages[0].GetProperty("messageId").GetString());
+        Assert.Equal(JsonValueKind.Null, messages[1].GetProperty("executionId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, messages[2].GetProperty("executionId").ValueKind);
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
     public async Task Sync_ActionsSourcesVersionCruzanClienteYHandlerSinPerderCamposCamelCase()
     {
         var id = Guid.NewGuid(); var version = Guid.NewGuid().ToString();

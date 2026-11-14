@@ -495,7 +495,7 @@ public class AiServiceClient : IAiServiceClient
             result.LastMessage,
             result.Messages?.Select(m => new ThreadMessageResult(m.Role, m.Text, m.MessageId,
                 m.Channel, m.Status, m.Revision, m.Source, m.VoiceSessionId,
-                m.ProviderMessageId, m.SourceEventId)).ToList() ?? [],
+                m.ProviderMessageId, m.SourceEventId, m.ExecutionId)).ToList() ?? [],
             result.HasMore,
             result.NextCursor, result.VoiceSyncStatus
         );
@@ -736,7 +736,8 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("source")] string? Source = null,
         [property: JsonPropertyName("voice_session_id")] string? VoiceSessionId = null,
         [property: JsonPropertyName("provider_message_id")] string? ProviderMessageId = null,
-        [property: JsonPropertyName("source_event_id")] long? SourceEventId = null
+        [property: JsonPropertyName("source_event_id")] long? SourceEventId = null,
+        [property: JsonPropertyName("execution_id")] string? ExecutionId = null
     );
 
     // Contrato del endpoint de feedback: eco del thread/rating más si la

@@ -234,6 +234,11 @@ además de IDs/estado/revisión. AI es único escritor del transcript verificado
 puede reintentar processing/busy de forma acotada; BACK no añade otro importador/LLM
 ni activa el flag AI de sincronización. Errores del sync conservan el chat disponible.
 
+Cada mensaje conserva también `executionId` opcional (`execution_id` de AI), para
+feedback desde el snapshot canónico. AI lo obtiene del ExecutionTracker real del
+mensaje de texto; legado/voz sin correlación conservan null. BACK lo proyecta
+directamente, sin inferir por texto/orden ni consultar una ejecución por mensaje.
+
 ## Verificación y límites
 
 Tests de unidad y pipeline HTTP con AI simulado cubren auth, claves, cabeceras,
