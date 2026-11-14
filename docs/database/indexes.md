@@ -292,3 +292,13 @@ No duplica índices de patient_id: lo cubre el prefijo izquierdo de la PK.
 Tabla nueva vacía al migrar. El contador de días usa el índice existente
 `ix_intake_logs_patient_date` de registros; no se añade índice de updated_at
 ni se duplica el prefijo patient_id de la PK.
+
+## Ejemplos anclados del ciclo (3.8b)
+
+| Índice | Tabla | Columnas | Tipo | Motivo/consulta | Impacto/costo |
+|---|---|---|---|---|---|
+| PK_nutrition_cycle_highlights | app.nutrition_cycle_highlights | cycle_id, intake_log_id | B-tree único | upsert sin duplicados y lista por ciclo; cubre FK cycle_id | una entrada por ejemplo |
+| ix_cycle_highlights_intake | app.nutrition_cycle_highlights | intake_log_id | B-tree | FK al registro vivo, protege anclajes al corregir | una entrada por ejemplo |
+
+Tabla nueva sin backfill; no se añade un índice redundante de cycle_id ni
+una copia de los datos nutricionales. Página limitada a 100 ejemplos por petición.

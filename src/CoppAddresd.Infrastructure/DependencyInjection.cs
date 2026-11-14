@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<CoppAddresd.Application.Features.Nutrition.Queries.INutritionCycleReadStore, NutritionCycleReadStore>();
         services.AddScoped<CoppAddresd.Application.Features.Nutrition.Queries.IPatientIntakeReadStore, PatientIntakeReadStore>();
         services.AddScoped<CoppAddresd.Application.Features.Nutrition.Commands.INutritionIntakeDayReviewStore, NutritionIntakeDayReviewStore>();
+        services.AddScoped<CoppAddresd.Application.Features.Nutrition.Commands.INutritionCycleHighlightStore, NutritionCycleHighlightStore>();
         services.AddScoped<INutritionWorkspaceRepository, NutritionWorkspaceRepository>();
         services.AddScoped<INutritionDraftReservationStore, NutritionDraftReservationStore>();
         services.AddScoped<INutritionDraftWorkflow, CoppAddresd.Application.Features.Nutrition.Cases.NutritionDraftWorkflow>();

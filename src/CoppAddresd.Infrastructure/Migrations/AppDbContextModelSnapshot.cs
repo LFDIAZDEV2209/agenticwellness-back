@@ -4562,6 +4562,37 @@ namespace CoppAddresd.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleHighlight", b =>
+                {
+                    b.Property<Guid>("CycleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cycle_id");
+
+                    b.Property<Guid>("IntakeLogId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("intake_log_id");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("note");
+
+                    b.Property<DateTime>("PinnedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pinned_at");
+
+                    b.Property<Guid>("PinnedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("pinned_by");
+
+                    b.HasKey("CycleId", "IntakeLogId");
+
+                    b.HasIndex("IntakeLogId")
+                        .HasDatabaseName("ix_cycle_highlights_intake");
+
+                    b.ToTable("nutrition_cycle_highlights", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionDraftReservation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -10672,6 +10703,21 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
                         .WithMany()
                         .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleHighlight", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.NutritionCycle", null)
+                        .WithMany()
+                        .HasForeignKey("CycleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.ProgramProgress.NutritionIntakeLog", null)
+                        .WithMany()
+                        .HasForeignKey("IntakeLogId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

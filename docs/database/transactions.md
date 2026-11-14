@@ -254,3 +254,13 @@ se comprueban antes del lock; no se consulta Auth ni almacenamiento dentro de é
 aplicación o por transacciones abiertas antes de obtener el lock. Las consultas
 de rango usan Repeatable Read READ ONLY; el contador es una sola sentencia SQL
 con el filtro de alcance aplicado antes de agrupar.
+
+## Ejemplos nutricionales anclados (3.8b)
+
+Pin/Unpin comprueba permiso y alcance de ciclo y registro antes de abrir la
+transacción. El lock `patient_profiles FOR UPDATE` serializa pin concurrente y
+cambios de calendario/ingesta; dentro se valida atribución y se hace un solo
+upsert/delete, sin I/O externo. Actor del JWT, hora PostgreSQL, token propagado
+a lock, consulta, escritura y commit. Fallo/cancelación revierte la operación.
+La lista paginada usa Repeatable Read READ ONLY; lee la comida actual por join,
+sin consultas por ítem ni copia que pueda quedar obsoleta tras una corrección.
