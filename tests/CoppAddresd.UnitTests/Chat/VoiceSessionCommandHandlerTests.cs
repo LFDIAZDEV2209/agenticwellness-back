@@ -5,6 +5,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Domain.Entities;
+using CoppAddresd.Api.Controllers;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace CoppAddresd.UnitTests.Chat;
 
@@ -95,5 +101,37 @@ public sealed class VoiceSessionCommandHandlerTests
         var result = validator.Validate(new VoiceSessionCommand("u1", null, new string('x', 201)));
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("ThreadId"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Controller_ClienteAntiguoONuevo_PreservaCapacidadEnComando(bool supports)
+    {
+        var body = supports ? """{"threadId":"thread","supportsVitaVoice":true}""" : """{"threadId":"thread"}""";
+        var input = JsonSerializer.Deserialize<VoiceSessionRequestDto>(body, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
+        var mediator = Substitute.For<IMediator>();
+        mediator.Send(Arg.Any<VoiceSessionCommand>(), Arg.Any<CancellationToken>())
+            .Returns(new VoiceSessionResponseDto("wss://synthetic", "agent", null, ThreadId: "thread", SessionId: "session"));
+        var controller = new ChatController(mediator, NullLogger<ChatController>.Instance)
+        { ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext {
+            User = new ClaimsPrincipal(new ClaimsIdentity([new(ClaimTypes.NameIdentifier, UserId.ToString())], "test")) } } };
+        var result = await controller.CreateVoiceSession(input, default);
+        Assert.IsType<OkObjectResult>(result.Result);
+        await mediator.Received(1).Send(Arg.Is<VoiceSessionCommand>(c => c.SupportsVitaVoice == supports), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handler_PropagaCapacidadSinForzarMotorVita(bool supports)
+    {
+        var client = Substitute.For<IAiServiceClient>();
+        client.CreateVoiceSessionAsync(Arg.Any<VoiceSessionInternalRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new VoiceSessionResponseDto("wss://synthetic", "agent", null, ThreadId: "thread", SessionId: "session"));
+        var result = await BuildHandler(client).Handle(new(UserId.ToString(), null, "thread", SupportsVitaVoice: supports), default);
+        Assert.Equal("legacy", result.RuntimeMode);
+        await client.Received(1).CreateVoiceSessionAsync(Arg.Is<VoiceSessionInternalRequest>(r =>
+            r.SupportsVitaVoice == supports && r.PatientId == PatientId.ToString()), Arg.Any<CancellationToken>());
     }
 }

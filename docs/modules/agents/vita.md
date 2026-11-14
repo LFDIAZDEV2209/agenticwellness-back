@@ -178,6 +178,14 @@ autoriza el hilo en namespace `user_id::thread_id`. BACK no mantiene otra firma
 ni tabla de conversaciones. AI es único escritor de turnos generados; no hay
 endpoint para importar una respuesta de bot arbitraria desde APP.
 
+Request de sesión: `supportsVitaVoice` boolean opcional, default `false`, propagado
+como `supports_vita_voice` al AI. Solo AI decide motor Vita cuando el cliente declara
+`true` y el modo está habilitado; clientes antiguos conservan legacy. Un cliente
+compatible puede recibir `runtimeMode=legacy` con `sessionId/threadId` durables para
+que AI importe al cerrar exclusivamente el transcript verificado del proveedor.
+BACK conserva esos campos y DELETE revoca; no acepta respuestas de bot del cliente.
+Esta ampliación no activa flags ni modifica configuración remota.
+
 El proxy Custom LLM acepta exclusivamente la clave dedicada configurada en
 `Vita:VoiceServiceKey` (mínimo 32 caracteres), independiente de JWT/clave interna.
 Reenvía exactamente `X-Vita-Session` (1–4096 caracteres opacos),

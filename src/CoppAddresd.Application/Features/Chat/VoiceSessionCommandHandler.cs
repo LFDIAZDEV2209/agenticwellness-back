@@ -30,7 +30,8 @@ public sealed class VoiceSessionCommandHandler(
         var patient = await access.RequireAsync(userId, "voice", ct);
 
         var result = await aiService.CreateVoiceSessionAsync(
-            new VoiceSessionInternalRequest(userId.ToString(), patient.Id.ToString(), request.ThreadId, request.Language),
+            new VoiceSessionInternalRequest(userId.ToString(), patient.Id.ToString(), request.ThreadId,
+                request.Language, request.SupportsVitaVoice),
             ct
         );
 

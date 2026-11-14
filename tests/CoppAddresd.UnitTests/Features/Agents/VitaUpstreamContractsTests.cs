@@ -34,7 +34,7 @@ public sealed class VitaUpstreamContractsTests
             Assert.Equal("thread", body.RootElement.GetProperty("thread_id").GetString());
             return Json("""{"signed_url":"wss://synthetic","agent_id":"agent","conversation_id":"conv","thread_id":"thread","session_id":"session","session_token":"synthetic-reduced-token","expires_at":"2026-11-14T14:10:00Z","runtime_mode":"vita"}""");
         }));
-        var result = await client.CreateVoiceSessionAsync(new("user", "patient", "thread", "es"));
+        var result = await client.CreateVoiceSessionAsync(new("user", "patient", "thread", "es", SupportsVitaVoice: true));
         Assert.Equal("thread", result.ThreadId); Assert.Equal("vita", result.RuntimeMode);
         Assert.Equal("session", result.SessionId); Assert.Equal("synthetic-reduced-token", result.SessionToken);
         var wire = JsonSerializer.SerializeToElement(result, new JsonSerializerOptions(JsonSerializerDefaults.Web));
@@ -48,6 +48,24 @@ public sealed class VitaUpstreamContractsTests
         var client = Client(new((_, _) => Task.FromResult(Json("""{"signed_url":"wss://synthetic","agent_id":"agent"}"""))));
         var result = await client.CreateVoiceSessionAsync(new("user", null, null));
         Assert.Equal("legacy", result.RuntimeMode); Assert.Null(result.SessionToken);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SesionVoz_PropagaSupportsVitaVoiceYConservaVinculoLegacy(bool supports)
+    {
+        var client = Client(new(async (request, ct) =>
+        {
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(ct));
+            Assert.Equal(supports, body.RootElement.GetProperty("supports_vita_voice").GetBoolean());
+            return Json("""{"signed_url":"wss://synthetic","agent_id":"agent","thread_id":"thread","session_id":"durable-legacy-session","runtime_mode":"legacy"}""");
+        }));
+        var input = supports ? new VoiceSessionInternalRequest("user", null, "thread", SupportsVitaVoice: true)
+            : new VoiceSessionInternalRequest("user", null, "thread");
+        var result = await client.CreateVoiceSessionAsync(input);
+        Assert.Equal("legacy", result.RuntimeMode); Assert.Equal("thread", result.ThreadId);
+        Assert.Equal("durable-legacy-session", result.SessionId);
     }
 
     [Fact]

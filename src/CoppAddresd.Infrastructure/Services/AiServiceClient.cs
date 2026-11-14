@@ -391,6 +391,7 @@ public class AiServiceClient : IAiServiceClient
             // voz hablando ese idioma antes de emitir el signed URL. Null ⇒
             // se omite (JsonOpts omit-null) y el ai-service no toca la config.
             language = request.Language,
+            supports_vita_voice = request.SupportsVitaVoice,
         };
 
         using var httpRequest = new HttpRequestMessage(

@@ -150,7 +150,8 @@ public class ChatController : ControllerBase
                 userId,
                 PatientId: null,
                 ThreadId: request.ThreadId,
-                Language: request.Language
+                Language: request.Language,
+                SupportsVitaVoice: request.SupportsVitaVoice
             );
             var result = await _mediator.Send(command, ct);
             return Ok(result);
