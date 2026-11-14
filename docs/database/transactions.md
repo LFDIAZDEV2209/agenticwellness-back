@@ -195,3 +195,9 @@ transacción, después de Save y antes de Commit. Un fallo del INSERT de auditor
 revierte el snapshot; se desacopla la semana fallida del tracking. La prueba de
 fallo inyectado verifica rollback y que una edición posterior no resucite cambios
 fallidos. No hay tabla nueva ni llamadas externas dentro de la transacción.
+
+La masiva de rutinas (2.16) comparte la transacción Serializable de podcasts 1.15:
+autorización antes de abrirla, consultas por conjuntos, validación completa antes
+de Save y un commit del lote. Conflictos 40001/23505 se traducen a 409; el intento
+siguiente recarga datos y tracking. Solo escribe snapshots; los rechazos y la
+cancelación no dejan aplicaciones parciales ni asignaciones antiguas.

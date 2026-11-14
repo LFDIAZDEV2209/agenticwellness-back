@@ -11,12 +11,18 @@ namespace CoppAddresd.Infrastructure.Repositories;
 
 /// <summary>Carga por conjuntos y escritura atómica del lote, con alcance antes de materializar y sin lecturas por paciente.</summary>
 public sealed class BulkPatientPodcastStore(AppDbContext db, IPatientScopeGuard guard, IPatientScopeActor actor,
-    TimeProvider clock) : IBulkPatientPodcastStore
+    TimeProvider clock) : IBulkPatientPodcastStore, IBulkPatientRoutineStore
 {
-    public async Task<BulkAssignPatientPodcastsResult> AssignAsync(BulkAssignPatientPodcastsCommand request, CancellationToken ct)
+    public Task<BulkAssignPatientPodcastsResult> AssignAsync(BulkAssignPatientPodcastsCommand request, CancellationToken ct)
+        => AssignCoreAsync(request.PatientIds, request.MediaId, request.SemanaDesde, request.SemanaHasta, false, ct);
+
+    public Task<BulkAssignPatientPodcastsResult> AssignRoutinesAsync(BulkAssignPatientRoutinesCommand request, CancellationToken ct)
+        => AssignCoreAsync(request.PatientIds, request.RoutineId, request.SemanaDesde, request.SemanaHasta, true, ct);
+
+    private async Task<BulkAssignPatientPodcastsResult> AssignCoreAsync(IReadOnlyList<Guid> patientIds, Guid contentId, int from, int to, bool exercise, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        var requested = request.PatientIds.Distinct().ToArray();
+        var requested = patientIds.Distinct().ToArray();
         // Resolver autorización antes de abrir la transacción evita llamadas de Auth dentro de ella.
         var visibleQuery = await guard.FilterAsync(db.PatientProfiles.AsNoTracking().Where(p => requested.Contains(p.Id) && p.DeletedAt == null),
             p => p.Id, "Program.Edit", ct);
@@ -28,14 +34,17 @@ public sealed class BulkPatientPodcastStore(AppDbContext db, IPatientScopeGuard 
                 db.ChangeTracker.Clear();
                 await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
                 var visible = await visibleQuery.Select(p => p.Id).ToArrayAsync(ct);
-                var media = await db.MediaItems.AsNoTracking().SingleOrDefaultAsync(m => m.Id == request.MediaId, ct)
-                    ?? throw new NotFoundException("Medio no encontrado.");
+                var media = exercise ? null : await db.MediaItems.AsNoTracking().SingleOrDefaultAsync(m => m.Id == contentId, ct)
+                    ?? (exercise ? null : throw new NotFoundException("Medio no encontrado."));
+                var routine = exercise ? await db.ExerciseRoutines.AsNoTracking().SingleOrDefaultAsync(r => r.Id == contentId, ct)
+                    ?? throw new NotFoundException("Rutina no encontrada.") : null;
                 var enrollments = await db.ProgramEnrollments.AsNoTracking().Where(e => visible.Contains(e.PatientId) && e.Status == ProgramEnrollmentStatus.Active)
                     .Include(e => e.Template).ThenInclude(t => t!.DayTemplates).AsSplitQuery().ToListAsync(ct);
                 var ids = enrollments.Select(e => e.Id).ToArray();
                 var weeks = await db.ProgramWeeks.AsNoTracking().Where(w => ids.Contains(w.EnrollmentId)
-                    && w.WeekNumber >= request.SemanaDesde && w.WeekNumber <= request.SemanaHasta).ToListAsync(ct);
-                var plan = BulkPatientPodcastPlanner.Build(request, media, visible, enrollments, weeks, actorId, clock.GetUtcNow(), ct);
+                    && w.WeekNumber >= from && w.WeekNumber <= to).ToListAsync(ct);
+                var plan = exercise ? BulkPatientRoutinePlanner.Build(new(requested, contentId, from, to), routine!, visible, enrollments, weeks, actorId, clock.GetUtcNow(), ct)
+                    : BulkPatientPodcastPlanner.Build(new(requested, contentId, from, to), media!, visible, enrollments, weeks, actorId, clock.GetUtcNow(), ct);
                 foreach (var update in plan.Updates)
                 {
                     if (update.IsNew) db.ProgramWeeks.Add(update.Week);

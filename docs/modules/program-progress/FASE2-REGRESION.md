@@ -63,3 +63,12 @@ preimagen/postimagen, alcance ajeno/Admin, paginación y fallo de auditoría con
 rollback), edición semanal y contenido, tres límites de fecha y cuatro casos
 de activación de Fase 1. Acción Update compatible con lectores anteriores y
 evento identificado en metadata; no añade migraciones.
+
+## 2.16 — rutina masiva
+
+Build verde y unitarios completos **2497 aprobados/105 omitidos**. PostgreSQL
+**6/6**: lotes reales de podcast y rutina (10 pacientes, 2 iniciados, 2 ajenos,
+6 aplicados, Admin, permiso, cancelación, idempotencia y lecturas constantes) y
+los cuatro recorridos de preedición/activación de Fase 1. El planificador común
+conserva el contrato anterior de podcasts. Sin migraciones ni cambios locales
+de pacientes fuera de las bases efímeras de pruebas.

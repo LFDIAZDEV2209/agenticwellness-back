@@ -91,6 +91,7 @@ public static class DependencyInjection
         services.AddScoped<IEffectiveDayContentResolver, EffectiveDayContentResolver>();
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent.IBulkPatientPodcastStore, BulkPatientPodcastStore>();
+        services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent.IBulkPatientRoutineStore, BulkPatientPodcastStore>();
         services.AddScoped<IProgramAssignmentRepository, ProgramAssignmentRepository>();
         services.AddScoped<IProgramAssignmentOperationsRepository, ProgramAssignmentOperationsRepository>();
         services.AddScoped<IProgramAssignmentNoticeRepository, ProgramAssignmentNoticeRepository>();

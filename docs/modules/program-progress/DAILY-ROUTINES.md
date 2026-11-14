@@ -1,5 +1,26 @@
 # Rutinas por día — Fase 2
 
+## Asignación masiva de rutina — 2.16
+
+`POST /api/v1/program/content/bulk-assign-patient-routines`
+recibe `{patientIds,routineId,semanaDesde,semanaHasta}` y devuelve el mismo resultado
+de 1.15: `{aplicadas,omitidasSemanaIniciada,omitidasSinAlcance}`. Program.Edit y
+alcance por paciente, como la masiva de podcasts; Admin exceptúa alcance, nunca
+permiso. Hasta 100 pacientes; rutina activa y rangos compatibles con inscripciones
+activas. No exige que la plantilla ya usada por un paciente siga activa.
+
+Ambas masivas comparten planificador y escritura serializable por conjuntos.
+Solo se cambia ejercicio, como `individual`, con actor/fecha; una asignación
+explícita de rutina retira el descanso de esas celdas. Preserva podcasts, nutrición
+y sus metadatos. Omite semanas iniciadas por calendario derivado de la inscripción
+o estado/activación/finalización; no usa fechas denormalizadas para decidirlo.
+Las omitidas por alcance solo contienen IDs enviados por el solicitante.
+
+Los conteos son pacientes distintos, no semanas, y aplicadas/omitidas por inicio
+pueden solaparse en rangos mixtos. Repetir no reescribe snapshots ni timestamps.
+La semana final tiene seis celdas y termina en el día 83. No crea asignaciones
+antiguas. Cancelación, validación o conflicto concurrente revierte el lote entero.
+
 ## Bitácora del plan — 2.12
 
 Cada PUT de tareas semanales confirmado añade un evento `ProgramWeekTasksChanged`

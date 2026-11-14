@@ -771,6 +771,12 @@ public sealed class ProgramController(
         [FromBody] BulkAssignPatientPodcastsCommand command, CancellationToken ct) =>
         Ok(await mediator.Send(command, ct));
 
+    /// <summary>Asigna rutina individual por pacientes y rango, con la política masiva de podcasts.</summary>
+    [HttpPost("content/bulk-assign-patient-routines")]
+    [RequireContextPermission("Program.Edit")]
+    public async Task<ActionResult<BulkAssignPatientPodcastsResult>> BulkAssignPatientRoutines(
+        [FromBody] BulkAssignPatientRoutinesCommand command, CancellationToken ct) => Ok(await mediator.Send(command, ct));
+
     /// <summary>
     /// Detalle de una semana específica de una inscripción (tareas programadas,
     /// completaciones, puntos y contenido activo). Requiere <c>Program.View</c>
