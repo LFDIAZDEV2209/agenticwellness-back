@@ -820,7 +820,8 @@ public sealed record EnrollmentWeekDayDto(
     int TotalPoints,
     int MaxPoints,
     int BonusAwarded,
-    IReadOnlyList<EnrollmentWeekTaskDto> Tasks
+    IReadOnlyList<EnrollmentWeekTaskDto> Tasks,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] bool? Rest = null
 );
 
 /// <summary>Tarea individual de un día (completada o pendiente) con metadatos de contenido resuelto.</summary>

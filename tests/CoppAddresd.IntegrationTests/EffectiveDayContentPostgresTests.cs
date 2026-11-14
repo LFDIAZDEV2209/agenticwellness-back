@@ -113,8 +113,7 @@ public sealed partial class NutritionPlanWorkflowTests
         rows = rows.Select(t => t.TaskCode == "ejercicio" ? t with { Origin = "individual", Rest = true } : t).ToList();
         week.TasksSnapshot = WeekSnapshotJson.Serialize(rows); await db.SaveChangesAsync();
         snapshot = await EffectiveRepository(db).GetSnapshotAsync(seed.Enrollment, seed.Start, CancellationToken.None);
-        var exercise = Assert.Single(snapshot!.TodayTasks, t => t.TaskCode == TaskCode.ejercicio).Content;
-        Assert.True(exercise!.Rest); Assert.Null(exercise.ExerciseRoutineId); Assert.False(exercise.ContentUnavailable);
+        Assert.DoesNotContain(snapshot!.TodayTasks, t => t.TaskCode == TaskCode.ejercicio);
     }
 
     [NutritionPostgresFact]

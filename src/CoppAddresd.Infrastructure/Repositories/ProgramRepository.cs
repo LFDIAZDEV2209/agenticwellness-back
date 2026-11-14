@@ -1935,10 +1935,8 @@ public sealed partial class ProgramRepository(
 
         var weekday = ToIsoWeekday(todayLocalDate);
         var snapshotTasks = ParseSnapshot(week.TasksSnapshot);
-        var todayScheduled = snapshotTasks
-            .Where(t => t.Weekday == weekday)
-            .OrderBy(t => t.SortOrder)
-            .ToList();
+        if (snapshotTasks.Count == 0)
+            snapshotTasks = ParseSnapshot(await BuildSnapshotFromTemplateAsync(row.TemplateId, week.WeekNumber, ct));
 
         var todayCompletions = await dbContext
             .TaskCompletions.AsNoTracking()
@@ -1977,10 +1975,12 @@ public sealed partial class ProgramRepository(
         // Una sola llamada al resolver (anti N+1): el resultado se reutiliza
         // para todas las tareas nut/ejercicio del día.
         ProgramContentResolution? contentResolution = null;
-        if (_programContentResolver is not null)
+        if (_programContentResolver is not null || effectiveResolver is not null)
         {
             contentResolution = await ResolveEnrollmentContentAsync(enrollmentId, row.PatientId, todayLocalDate, ct);
         }
+        var todayScheduled = ProgramDayMissionPolicy.ForDay(snapshotTasks, weekday, contentResolution?.Rest == true
+            || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true));
 
         var mediaIds = todayCompletions
             .Where(c => c.MediaId.HasValue)
@@ -8014,9 +8014,6 @@ public sealed partial class ProgramRepository(
         {
             snapshotTasks = ParseSnapshot(await BuildSnapshotFromTemplateAsync(enrollment.TemplateId, weekNumber, ct));
         }
-        var tasksByWeekday = snapshotTasks
-            .GroupBy(t => t.Weekday)
-            .ToDictionary(g => g.Key, g => g.OrderBy(t => t.SortOrder).ToList());
 
         // 5. Query task_completions para la ventana [weekStart, weekEnd].
         var completions = await dbContext
@@ -8066,6 +8063,9 @@ public sealed partial class ProgramRepository(
             effectiveDays = effectiveResolver.ResolveRange(data, data.Enrollments.Single(e => e.Id == enrollment.Id),
                 week.WeekStartDateLocal, week.WeekEndDateLocal, ct).ToDictionary(d => d.Date, ProgramContentResolver.ToProgramResolution);
         }
+        else if (_programContentResolver is not null)
+            effectiveDays = (await _programContentResolver.ResolveRangeAsync(enrollment.PatientId,
+                week.WeekStartDateLocal, week.WeekEndDateLocal, ct)).ToDictionary(d => d.Key, d => d.Value);
         var effectiveRoutineIds = effectiveDays.Values.Where(d => d.ExerciseRoutineId.HasValue).Select(d => d.ExerciseRoutineId!.Value).Distinct().ToArray();
         var effectivePlanIds = effectiveDays.Values.Where(d => d.NutritionPlanId.HasValue).Select(d => d.NutritionPlanId!.Value).Distinct().ToArray();
         var effectivePodcastIds = effectiveDays.Values.Where(d => d.PodcastMediaId.HasValue).Select(d => d.PodcastMediaId!.Value).Distinct().ToArray();
@@ -8138,7 +8138,9 @@ public sealed partial class ProgramRepository(
             var weekday = ToIsoWeekday(date);
             var dayLabel = EnrollmentWeekTaskLabels.DayLabel(weekday);
 
-            var scheduled = tasksByWeekday.TryGetValue(weekday, out var tasks) ? tasks : [];
+            var isRest = effectiveDays.GetValueOrDefault(date)?.Rest == true
+                || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true);
+            var scheduled = ProgramDayMissionPolicy.ForDay(snapshotTasks, weekday, isRest);
 
             var maxPoints = scheduled.Sum(t => t.Points);
 
@@ -8283,7 +8285,8 @@ public sealed partial class ProgramRepository(
                     TotalPoints: totalPoints,
                     MaxPoints: maxPoints,
                     BonusAwarded: bonusAwarded,
-                    Tasks: dayTasks
+                    Tasks: dayTasks,
+                    Rest: isRest ? true : null
                 )
             );
         }
