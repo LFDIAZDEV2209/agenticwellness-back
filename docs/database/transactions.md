@@ -136,3 +136,14 @@ commit antes de llamar a Meta. Updates finales condicionados a Pending y lease
 evitan deshacer una cancelación concurrente. El webhook actualiza actividad y
 cancelaciones antes del ACK. Los hooks clínicos corren después del commit del
 módulo propietario; si fallan, polling revalida y cancela antes de otro envío.
+
+### Retiro de medios con sustitución (1.12)
+
+`MediaRetirementStore` ejecuta lectura, sustitución de plantilla/semanas futuras y
+retiro en una transacción serializable bajo la estrategia de ejecución Npgsql.
+Evita carreras entre validar dependencias y retirar el medio; errores o cancelación
+revierten todo. DELETE con referencias conservadas devuelve 409 y revierte también
+la sustitución. Los blobs se eliminan solo después del commit y cuando no queda
+ninguna referencia. Repetir archivo/despublicación conserva el resultado; ninguna
+llamada externa mantiene abierta la transacción. Detalle en
+`docs/modules/program-progress/MEDIA-RETIREMENT.md`.

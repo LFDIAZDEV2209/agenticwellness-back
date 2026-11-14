@@ -10,6 +10,7 @@ using CoppAddresd.Infrastructure.Repositories;
 using CoppAddresd.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace CoppAddresd.IntegrationTests;
 
@@ -32,6 +33,7 @@ public sealed class MediaIntegrationTests : IAsyncLifetime
     private MediaItemRepository _repository = null!;
     private string _storageRoot = null!;
     private LocalObjectStorageService _storage = null!;
+    private readonly string _database = "copp_media_test_" + Guid.NewGuid().ToString("N");
 
     public async Task InitializeAsync()
     {
@@ -41,10 +43,18 @@ public sealed class MediaIntegrationTests : IAsyncLifetime
             return;
         }
 
+        await using (var admin = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(_connectionString) { Database = "postgres" }.ConnectionString))
+        {
+            await admin.OpenAsync();
+            await using var command = new NpgsqlCommand($"CREATE DATABASE \"{_database}\" TEMPLATE template0", admin);
+            await command.ExecuteNonQueryAsync();
+        }
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(_connectionString)
+            .UseNpgsql(new NpgsqlConnectionStringBuilder(_connectionString) { Database = _database }.ConnectionString)
             .Options;
         _db = new AppDbContext(options);
+        await _db.Database.ExecuteSqlRawAsync("CREATE SCHEMA auth; CREATE TABLE auth.\"Users\" (\"Id\" uuid PRIMARY KEY, \"SecurityStamp\" text NULL);");
+        await _db.Database.MigrateAsync();
         _repository = new MediaItemRepository(_db);
         _storageRoot = Path.Combine(Path.GetTempPath(), "media-it-" + Guid.NewGuid().ToString("N"));
         _storage = new LocalObjectStorageService(
@@ -64,6 +74,12 @@ public sealed class MediaIntegrationTests : IAsyncLifetime
 
         await _transaction.RollbackAsync();
         await _db.DisposeAsync();
+        await using (var admin = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(_connectionString) { Database = "postgres" }.ConnectionString))
+        {
+            await admin.OpenAsync();
+            await using var command = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{_database}\" WITH (FORCE)", admin);
+            await command.ExecuteNonQueryAsync();
+        }
         try
         {
             if (Directory.Exists(_storageRoot))
@@ -176,9 +192,7 @@ public sealed class MediaIntegrationTests : IAsyncLifetime
         // Auth Service): se crea la fila mínima.
         var userId = Guid.NewGuid();
         await _db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO auth.\"Users\" (\"Id\", \"FirstName\", \"LastName\", \"IsActive\", \"CreatedAt\", "
-                + "\"EmailConfirmed\", \"PhoneNumberConfirmed\", \"TwoFactorEnabled\", \"LockoutEnabled\", \"AccessFailedCount\") "
-                + "VALUES ({0}, 'IT', 'Paciente', true, now(), true, false, false, false, 0) ON CONFLICT DO NOTHING;",
+            "INSERT INTO auth.\"Users\" (\"Id\") VALUES ({0}) ON CONFLICT DO NOTHING;",
             userId
         );
 

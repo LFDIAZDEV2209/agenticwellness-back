@@ -70,6 +70,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditActorContext, HttpAuditActorContext>();
 
         services.AddScoped<IMediaItemRepository, MediaItemRepository>();
+        services.AddScoped<CoppAddresd.Application.Features.Media.IMediaRetirementStore, MediaRetirementStore>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IPatientDashboardRepository, PatientDashboardRepository>();

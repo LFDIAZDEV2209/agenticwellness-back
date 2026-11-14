@@ -219,28 +219,10 @@ public class MediaController(
 
     [HttpDelete("{id:guid}")]
     [RequireContextPermission(PermissionCodes.MediaDelete)]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct, [FromQuery] Guid? replacementMediaId = null)
     {
-        var result = await mediator.Send(new DeleteMediaItemCommand(id), ct);
-        if (result.NotFound)
-            return NotFound(new { message = "Medio no encontrado" });
-
-        // Guardia de integridad (REQ-PCA-07): con referencias activas → 409
-        // Conflict con el detalle de las dependencias que bloquean la
-        // eliminación (el front sugiere archivar en vez de eliminar).
-        if (result.Blocked)
-            return Conflict(
-                new
-                {
-                    type = "https://httpstatuses.io/409",
-                    title = "Conflict",
-                    status = 409,
-                    detail = "El medio no puede eliminarse porque tiene referencias activas "
-                        + "(plantillas o semanas de pacientes). Sugerencia: archivar en lugar de eliminar.",
-                    references = result.BlockingReferences,
-                }
-            );
-
+        var result = await mediator.Send(new RetireMediaCommand(id, MediaRetirementOperation.Delete, replacementMediaId), ct);
+        if (result.Blocked) return RetirementConflict(result);
         return NoContent();
     }
 
@@ -264,8 +246,13 @@ public class MediaController(
     /// </summary>
     [HttpPost("{id:guid}/unpublish")]
     [RequireContextPermission(PermissionCodes.MediaPublish)]
-    public async Task<ActionResult<MediaItemDto>> Unpublish(Guid id, CancellationToken ct) =>
-        Ok(await mediator.Send(new UnpublishMediaItemCommand(id), ct));
+    public async Task<ActionResult<MediaItemDto>> Unpublish(Guid id, CancellationToken ct,
+        [FromQuery] Guid? replacementMediaId = null,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] MediaReplacementRequest? request = null)
+    {
+        var result = await mediator.Send(new RetireMediaCommand(id, MediaRetirementOperation.Unpublish, request?.ReplacementMediaId ?? replacementMediaId), ct);
+        return result.Blocked ? RetirementConflict(result) : Ok(result.Media with { RetirementImpact = result.Impact });
+    }
 
     /// <summary>
     /// Archiva un medio (cualquier estado → Archived): sale de los selectores
@@ -273,8 +260,26 @@ public class MediaController(
     /// </summary>
     [HttpPost("{id:guid}/archive")]
     [RequireContextPermission(PermissionCodes.MediaArchive)]
-    public async Task<ActionResult<MediaItemDto>> Archive(Guid id, CancellationToken ct) =>
-        Ok(await mediator.Send(new ArchiveMediaItemCommand(id), ct));
+    public async Task<ActionResult<MediaItemDto>> Archive(Guid id, CancellationToken ct,
+        [FromQuery] Guid? replacementMediaId = null,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] MediaReplacementRequest? request = null)
+    {
+        var result = await mediator.Send(new RetireMediaCommand(id, MediaRetirementOperation.Archive, request?.ReplacementMediaId ?? replacementMediaId), ct);
+        return result.Blocked ? RetirementConflict(result) : Ok(result.Media with { RetirementImpact = result.Impact });
+    }
+
+    /// <summary>Conteo previo para el diálogo: plantillas activas y pacientes asignados con contenido futuro afectado.</summary>
+    [HttpGet("{id:guid}/retirement-impact")]
+    [RequireContextPermission(PermissionCodes.MediaView)]
+    public async Task<ActionResult<MediaRetirementImpact>> GetRetirementImpact(Guid id, CancellationToken ct) =>
+        Ok(await mediator.Send(new GetMediaRetirementImpactQuery(id), ct));
+
+    private ConflictObjectResult RetirementConflict(MediaRetirementResult result) => Conflict(new
+    {
+        type = "https://httpstatuses.io/409", title = "Conflict", status = 409,
+        detail = "MEDIA_REPLACEMENT_REQUIRED: exige sustituto publicado para referencias activas. DELETE conserva el bloqueo mientras existan referencias históricas o individuales.",
+        impact = result.Impact
+    });
 
     /// <summary>
     /// Reordenamiento en lote del catálogo (SortOrder), en una única

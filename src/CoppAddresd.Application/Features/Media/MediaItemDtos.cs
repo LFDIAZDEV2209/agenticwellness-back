@@ -87,6 +87,7 @@ public record MediaItemDto(
     [property: JsonPropertyName("source_kind")] string SourceKind = "file",
     [property: JsonPropertyName("external_url")] string? ExternalUrl = null)
 {
+    public MediaRetirementImpact? RetirementImpact { get; init; }
     public string? Provider => ExternalMediaRules.ProviderFor(ExternalUrl);
     public string? ThumbnailUrl => ExternalMediaRules.IsHttpsUrl(ThumbnailKey) ? ThumbnailKey : null;
     public int? DurationSeconds => DurationSecs;
