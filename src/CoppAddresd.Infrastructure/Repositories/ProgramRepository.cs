@@ -362,33 +362,47 @@ public sealed partial class ProgramRepository(
         CancellationToken ct = default
     )
     {
-        var now = DateTime.UtcNow;
-        var updated = await dbContext
-            .ProgramEnrollments.Where(e =>
-                e.Id == enrollmentId
-                && e.Status != ProgramEnrollmentStatus.Completed
-                && e.Status != ProgramEnrollmentStatus.Withdrawn
-            )
-            .ExecuteUpdateAsync(
-                s =>
-                    s.SetProperty(e => e.Status, ProgramEnrollmentStatus.Withdrawn)
-                        .SetProperty(e => e.WithdrawnAt, now)
-                        .SetProperty(e => e.UpdatedBy, actorId)
-                        .SetProperty(e => e.UpdatedAt, now),
-                ct
-            );
-
-        if (updated == 0)
+        return await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async strategyCt =>
         {
-            await EnsureEnrollmentExistsAsync(enrollmentId, ct);
-            throw new BusinessRuleViolationException(
-                "INVALID_ENROLLMENT_STATE: la inscripción ya está retirada o completada."
-            );
-        }
+            await using var tx = await dbContext.Database.BeginTransactionAsync(strategyCt);
+            var enrollment = await dbContext.ProgramEnrollments.AsNoTracking().SingleOrDefaultAsync(e => e.Id == enrollmentId, strategyCt)
+                ?? throw new NotFoundException("Inscripción no encontrada.");
+            // Mismo orden de lock que publicación de nutrición: paciente antes de inscripción.
+            await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM app.patient_profiles WHERE id={enrollment.PatientId} FOR UPDATE", strategyCt);
+            var now = (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime;
+            var updated = await dbContext
+                .ProgramEnrollments.Where(e =>
+                    e.Id == enrollmentId
+                    && e.Status != ProgramEnrollmentStatus.Completed
+                    && e.Status != ProgramEnrollmentStatus.Withdrawn
+                )
+                .ExecuteUpdateAsync(
+                    s =>
+                        s.SetProperty(e => e.Status, ProgramEnrollmentStatus.Withdrawn)
+                            .SetProperty(e => e.WithdrawnAt, now)
+                            .SetProperty(e => e.UpdatedBy, actorId)
+                            .SetProperty(e => e.UpdatedAt, now),
+                    strategyCt
+                );
 
-        return await dbContext
-            .ProgramEnrollments.AsNoTracking()
-            .SingleAsync(e => e.Id == enrollmentId, ct);
+            if (updated == 0)
+            {
+                await EnsureEnrollmentExistsAsync(enrollmentId, strategyCt);
+                throw new BusinessRuleViolationException(
+                    "INVALID_ENROLLMENT_STATE: la inscripción ya está retirada o completada."
+                );
+            }
+
+            var today = CoppAddresd.Application.Features.Nutrition.Cases.NutritionStateMachine.Today(new DateTimeOffset(now), enrollment.Timezone);
+            var currentCycle = await dbContext.NutritionCycles.AsNoTracking()
+                .Where(c => c.PatientId == enrollment.PatientId && c.Number != null && c.StartDate <= today)
+                .OrderByDescending(c => c.StartDate).ThenByDescending(c => c.Number).Select(c => (Guid?)c.Id).FirstOrDefaultAsync(strategyCt);
+            await dbContext.NutritionCycles.Where(c => c.Id == currentCycle && (c.State == "en_curso" || c.State == "por_revisar"))
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.State, "interrumpido").SetProperty(c => c.InterruptedAt, now), strategyCt);
+            var result = await dbContext.ProgramEnrollments.AsNoTracking().SingleAsync(e => e.Id == enrollmentId, strategyCt);
+            await tx.CommitAsync(strategyCt);
+            return result;
+        }, ct);
     }
 
     // ---------------------------------------------------------------- Lecturas de inscripciones

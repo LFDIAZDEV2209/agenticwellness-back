@@ -217,3 +217,12 @@ son parte de la transacción de la prescripción; fallo/cancelación revierte
 ambos y no consume un número. El índice paciente/número respalda el MAX y la
 unicidad. No hay I/O externo. No se elimina ni renumera una cabecera al
 sustituir una versión publicada. La migración limita espera de locks a 5 s.
+
+## Retiro y ciclo nutricional (3.2)
+
+WithdrawAsync ejecuta inscripción + ciclo vigente en Read Committed dentro de la
+estrategia retriable. Lock de paciente antes de mutar inscripción, consistente
+con publicación nutricional. La transición condicional de inscripción evita dos
+retiros; fallo de la actualización del ciclo revierte también la inscripción.
+No hay red ni reescritura de snapshots/historial. El reloj inyectado permite
+probar límites locales y continuidad de forma reproducible.

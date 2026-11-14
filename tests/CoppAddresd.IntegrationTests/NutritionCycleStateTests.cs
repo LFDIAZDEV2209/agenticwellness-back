@@ -44,7 +44,8 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Equal(new DateOnly(2026, 11, 5), plan.StartDate); Assert.Equal(new DateOnly(2026, 12, 4), plan.EndDate);
         var other = await cases.ExecuteAsync(new(NutritionOperation.Generate, patient.Id, null, null, actor, CompleteNutritionInput), CancellationToken.None);
         other = await cases.ExecuteAsync(Mutation(other, NutritionOperation.Submit, actor), CancellationToken.None);
-        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => cases.ExecuteAsync(Mutation(other, NutritionOperation.Approve, actor, confirm: true), CancellationToken.None));
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => cases.ExecuteAsync(
+            Mutation(other, NutritionOperation.Approve, actor, confirm: true) with { StartDate = plan.StartDate }, CancellationToken.None));
         time.Now = DateTimeOffset.Parse("2026-11-29T17:00:00Z");
         Assert.Equal("por_renovar", (await cases.GetAsync(new(patient.Id, plan.Id, actor), CancellationToken.None)).State);
         time.Now = DateTimeOffset.Parse("2026-12-05T17:00:00Z");

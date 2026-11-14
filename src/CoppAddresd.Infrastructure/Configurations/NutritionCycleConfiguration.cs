@@ -20,6 +20,7 @@ public sealed class NutritionCycleConfiguration : IEntityTypeConfiguration<Nutri
         b.Property(x => x.StartDate).HasColumnName("start_date");
         b.Property(x => x.EndDate).HasColumnName("end_date");
         b.Property(x => x.State).HasColumnName("state").HasMaxLength(30);
+        b.Property(x => x.InterruptedAt).HasColumnName("interrupted_at").HasColumnType("timestamptz");
         b.HasOne<PatientProfile>().WithMany().HasForeignKey(x => x.PatientId).OnDelete(DeleteBehavior.Restrict);
         b.HasIndex(x => new { x.PatientId, x.Number }).IsUnique().HasDatabaseName("uq_nutrition_cycles_patient_number");
     }

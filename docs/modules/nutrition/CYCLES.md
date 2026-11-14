@@ -57,3 +57,45 @@ tuvo un fallo de expiración de Valkey; repetición completa verde. El test de
 volumen usa 10.004 prescripciones y verifica Up/Down/Up, FK y ausencia de cambios;
 el de concurrencia prueba borradores sin número, dos publicaciones serializadas,
 unicidad y ciclo ajeno rechazado. No hay endpoints nuevos en esta tarea.
+
+## 3.2 — Fechas, cierre y retiro
+
+La primera publicación de cada paciente inicia hoy local. Un ciclo sucesor
+publicado antes del cierre comienza al día siguiente del fin anterior; uno
+publicado tarde empieza hoy local. Una fecha solicitada distinta de ese inicio
+se rechaza: no se crean huecos ni se retrotrae la publicación. Una nueva versión
+conserva la ventana del mismo ciclo. El trigger de 3.1 asigna el número en esa
+misma transacción, sin consumirlo para borradores abandonados.
+
+`NutritionCycleCalendar.State` deriva `por_revisar` desde la medianoche local
+posterior al día 30. No necesita una escritura desde GET ni un reloj del servidor
+para cambiar la presentación. Estados terminales/revisado se conservan. La
+continuidad termina el día anterior al inicio del sucesor; se limita a hoy y
+ningún día futuro cuenta. Una pausa no desplaza fechas ni cambia esta atribución.
+
+Retirar el programa interrumpe el ciclo publicado vigente, incluso si está en
+continuidad, preservando los anteriores y otros pacientes. El cambio de
+inscripción y ciclo es atómico bajo lock de paciente, sin tocar semanas, XP ni
+prescripciones. `interrupted_at` nullable (migración aditiva
+`20261114174950_AddNutritionCycleInterruption`) conserva el instante del retiro
+para que el período no siga creciendo después; se interpreta en zona del
+paciente. Down exige conservar las fechas existentes antes de retirar la columna.
+No añade endpoints; conserva la autorización de las rutas actuales.
+
+Evidencia 3.2: build verde, unitarios 2504 aprobados/105 omitidos, clase completa
+PostgreSQL NutritionPlanWorkflowTests **104/104**, sin omisiones (8 min 21 s),
+incluidos ambos ConservaPreedicion y las dos combinaciones de activación.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/Validation32Final/ -v quiet
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation32Final/ -v normal
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation32Final/ --filter 'FullyQualifiedName~NutritionPlanWorkflowTests' -v normal
+```
+
+SQL Up/Down revisado; Up aplicado solo en local con `Get-Content -Raw -Encoding
+UTF8 $env:TEMP/copp-32-up.sql | docker exec -i coppAddresd psql -v ON_ERROR_STOP=1
+-U app_user -d coppaddresd`: 4 ciclos conservados y 0 fechas de retiro inventadas.
+Down/Up y rechazo de Down con retiro se probaron en BD efímera. El caso anterior
+que esperaba rechazar un sucesor sin fecha se actualiza para solicitar un inicio
+explícitamente solapado y conservar su rechazo 409; el nuevo inicio automático
+respeta el cierre anterior. No se modificaron las regresiones de preedición.

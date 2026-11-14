@@ -4526,6 +4526,10 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("date")
                         .HasColumnName("end_date");
 
+                    b.Property<DateTime?>("InterruptedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("interrupted_at");
+
                     b.Property<int?>("Number")
                         .HasColumnType("integer")
                         .HasColumnName("number");

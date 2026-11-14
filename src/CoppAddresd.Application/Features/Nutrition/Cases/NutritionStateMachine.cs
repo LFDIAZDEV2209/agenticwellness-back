@@ -25,7 +25,8 @@ public static class NutritionStateMachine
         catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
         { throw new UnprocessableEntityException("La zona horaria del paciente no es válida."); }
     }
-    public static (DateOnly Start, DateOnly End) Dates(DateOnly today, DateOnly? requested, NutritionPrescription? previous)
+    public static (DateOnly Start, DateOnly End) Dates(DateOnly today, DateOnly? requested, NutritionPrescription? previous,
+        NutritionPrescription? predecessor = null)
     {
         if (previous is not null)
         {
@@ -35,8 +36,13 @@ public static class NutritionStateMachine
                 throw new BusinessRuleViolationException("Una nueva versión conserva la vigencia del ciclo.");
             return (start, start.AddDays(29));
         }
-        var begin = requested ?? today;
-        if (begin < today) throw new UnprocessableEntityException("No se permite publicar con fecha anterior a hoy local.");
+        var begin = predecessor?.EndDate is { } end && end >= today ? end.AddDays(1) : today;
+        if (requested.HasValue && requested < today)
+            throw new UnprocessableEntityException("No se permite publicar con fecha anterior a hoy local.");
+        if (requested.HasValue && requested < begin)
+            throw new BusinessRuleViolationException("Existe otro ciclo publicado con vigencia solapada.");
+        if (requested.HasValue && requested != begin)
+            throw new UnprocessableEntityException("El ciclo inicia hoy local o el día siguiente al cierre del anterior; no se permiten huecos ni fechas retroactivas.");
         return (begin, begin.AddDays(29));
     }
     public static string DisplayState(NutritionPrescription plan, DateOnly today)

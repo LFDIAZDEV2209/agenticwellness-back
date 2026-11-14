@@ -9,4 +9,5 @@ public sealed class NutritionCycle
     public DateOnly? StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
     public string State { get; set; } = "borrador";
+    public DateTime? InterruptedAt { get; set; }
 }

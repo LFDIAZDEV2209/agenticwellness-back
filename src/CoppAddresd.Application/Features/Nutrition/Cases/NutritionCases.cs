@@ -166,7 +166,9 @@ public sealed class NutritionCases(INutritionPrescriptionRepository repository, 
                             if (command.Operation == NutritionOperation.Approve && !NutritionEngine.CanApprove(alerts, command.CriticalConfirmed)) Invalid("Confirma que revisaste personalmente las alertas críticas.");
                             var published = await store.PublishedAsync(plan.PatientId, txCt);
                             var previous = published.SingleOrDefault(x => x.CycleId == plan.CycleId);
-                            var dates = NutritionStateMachine.Dates(Today(currentContext), command.StartDate, previous);
+                            var predecessor = published.Where(x => x.CycleId != plan.CycleId)
+                                .OrderByDescending(x => x.StartDate).ThenByDescending(x => x.Id).FirstOrDefault();
+                            var dates = NutritionStateMachine.Dates(Today(currentContext), command.StartDate, previous, predecessor);
                             plan.StartDate = dates.Start; plan.EndDate = dates.End;
                             if (published.Any(x => x.CycleId != plan.CycleId && x.StartDate <= plan.EndDate && x.EndDate >= plan.StartDate))
                                 Conflict("Existe otro ciclo publicado con vigencia solapada.");
