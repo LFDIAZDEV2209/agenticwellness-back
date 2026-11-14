@@ -24,15 +24,16 @@ public sealed class PatientScopeRouteTests
             foreach (var method in type.GetMethods())
                 foreach (var attribute in method.GetCustomAttributes<PatientScopeAttribute>())
                     foreach (var scenario in new[] { "asignado", "ajeno", "Admin", "sin_permiso" })
-                        yield return [type, method.Name, attribute.Parameter, scenario];
+                        yield return [type, method.Name, attribute.Parameter, attribute.Permission, scenario];
     }
 
     [Theory]
     [MemberData(nameof(Routes))]
-    public async Task Route_ChecksPermissionAndPatientBeforeExecuting(Type type, string methodName, string parameter, string scenario)
+    public async Task Route_ChecksPermissionAndPatientBeforeExecuting(Type type, string methodName, string parameter, string permission, string scenario)
     {
         var method = type.GetMethod(methodName)!;
-        var attribute = method.GetCustomAttributes<PatientScopeAttribute>().Single(x => x.Parameter == parameter);
+        var attribute = method.GetCustomAttributes<PatientScopeAttribute>()
+            .Single(x => x.Parameter == parameter && x.Permission == permission);
         var path = parameter.Split('.');
         var parameterType = method.GetParameters().Single(p => p.Name == path[0]).ParameterType;
         if (path.Length > 1) Assert.NotNull(parameterType.GetProperty(path[1]));

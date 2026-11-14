@@ -15,6 +15,14 @@ namespace CoppAddresd.Api.Controllers;
 [Route("api/v1/nutrition")]
 public sealed class NutritionReadController(IMediator mediator, ICurrentContext context) : ControllerBase
 {
+    [HttpGet("patients/{patientId:guid}/intake")]
+    [PatientScope("patientId", "Nutrition.View")]
+    [PatientScope("patientId", "Nutrition.RecordsView")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<PatientIntakePage>> Intake(Guid patientId, [FromQuery] DateOnly from, [FromQuery] DateOnly to,
+        CancellationToken ct, [FromQuery] int page = 1, [FromQuery] int pageSize = 30)
+        => Ok(await mediator.Send(new PatientIntakeQuery(patientId, from, to, page, pageSize), ct));
+
     /// <summary>Bandeja del alcance efectivo del actor; incluye pacientes sin prescripción.</summary>
     [HttpGet("inbox")]
     [RequireContextPermission(PermissionCodes.NutritionView)]

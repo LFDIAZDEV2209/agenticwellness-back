@@ -55,3 +55,51 @@ SQL Up/Down generado y revisado; Up aplicado SOLO en PostgreSQL LOCAL por
 coppAddresd psql -v ON_ERROR_STOP=1 -U app_user -d coppaddresd`. Tabla nueva
 vacía, sin alterar registros de comida existentes; no se desplegaron servicios.
 Down/Up y rechazo de Down con claves se comprobaron solo en BD efímera.
+
+## 3.7 — Bandeja clínica por día
+
+`GET /api/v1/nutrition/patients/{patientId}/intake?from=2026-11-01&to=2026-11-30&page=1&pageSize=30`
+requiere `Nutrition.View` y `Nutrition.RecordsView`, además del alcance del paciente
+asignado; ajeno → 404 antes de cargar registros o firmar fotos. Fechas obligatorias,
+rango máximo 366 días, páginas de 1–100 días, orden descendente y límite en hoy de
+la zona del paciente. Incluye días vacíos; una página fuera del rango queda vacía.
+
+Respuesta: `from`, `through`, `timezone`, `page`, `pageSize`, `totalDays`,
+`totalPages`, `days`. Cada día contiene `localDate`, `cycleId`, `cycleNumber`,
+`continuity`, `menu` y `records`. El menú aporta `prescriptionId`, `version`,
+`dayNumber` y comidas con macros planificados. Se selecciona la publicación
+vigente en esa fecha local mediante el mismo calendario de 3.3/3.4, conservando
+la continuidad del último día; no se aplica retrospectivamente la versión actual.
+
+Cada registro aporta `id`, `mealCode`, macros `recorded`, `waterMl`, `origin`,
+`photo`, `analysis` y `patientCorrection`. El análisis contiene su estimación
+original y alimentos detectados, separados de los valores confirmados/corregidos.
+Decisión de Luis: solo `ai_estimated` y `patient_confirmed`; el origen clínico
+queda reservado para un futuro canal profesional verificable. Un `source` libre
+enviado por la app nunca acredita autoría profesional.
+
+Fotos solo con `Nutrition.PhotosView` y alcance, URL protegida de cinco minutos
+(firma HMAC local o URL privada del almacenamiento), reutilizada por análisis en
+la página. Coordinación conserva los datos permitidos por RecordsView pero recibe
+`photo: null`; no se materializa su clave en la consulta. Un enlace histórico a
+un análisis de otro usuario se oculta. Nunca se exponen claves, máscaras ni datos
+internos del análisis. Respuesta HTTP sin caché.
+
+Lectura en transacción Repeatable Read READ ONLY; consultas por conjuntos,
+menús acotados a las versiones necesarias de la página, firmas fuera de la
+transacción. No crea auditoría ni modifica contenido. Sin migración.
+
+Validación: firma temporal local/nube, análisis original frente a corrección,
+menú por fecha, coordinación sin fotos, permisos, paciente ajeno, enlace antiguo
+ajeno y origen clínico falsificado. La prueba genérica de alcance distingue
+parámetro y permiso para verificar ambos atributos del endpoint.
+
+Evidencia 3.7: build verde, unitarios **2520 aprobados/105 omitidos**;
+PostgreSQL **110/110**, suite `NutritionPlanWorkflowTests` completa (8 min46s),
+incluidas ambas regresiones ConservaPreedicion y Fase 2.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/Validation37/ -v quiet
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation37/ -v normal
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation37/ --filter 'FullyQualifiedName~NutritionPlanWorkflowTests' -v normal
+```
