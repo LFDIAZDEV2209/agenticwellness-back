@@ -152,6 +152,21 @@ public sealed class EffectiveDayContentResolverTests
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Nutricion_VersionFinalEnContinuidad_NoReviveOtraVersionSiFaltaMenu(bool complete)
+    {
+        var c = new Case(); var first = Guid.NewGuid(); var last = Guid.NewGuid();
+        c.Data = c.Data with { Prescriptions = [
+            new(first, c.Enrollment.PatientId, c.Date, c.Date.AddDays(29), null, [30], 1),
+            new(last, c.Enrollment.PatientId, c.Date, c.Date.AddDays(29), null, complete ? [30] : [], 2)] };
+        var day = c.Result(c.Date.AddDays(35));
+        Assert.Equal(complete ? "continuity" : "engine", day.Nutrition.Source);
+        Assert.Equal(complete ? last : c.Plan, day.Nutrition.Id);
+        Assert.False(day.Nutrition.Missing);
+    }
+
+    [Theory]
     [InlineData(30, 5, 6)]
     [InlineData(7, 10, 4)]
     public void Legado_MenuDayUsaTranscurridos_SinAsumirWeekday(int menus, int elapsed, int expected)

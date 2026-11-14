@@ -70,8 +70,11 @@ public sealed class GetMyNutritionPlanQueryHandler(
             if (resolved.SourcePrescriptionId is { } prescriptionId)
             {
                 var selected = await prescriptions.GetByIdAsync(prescriptionId, ct);
-                return selected is { IsPublished: true, State: "aprobado" } && selected.PatientId == patient.Id
-                    ? Compose(selected, today, ct, resolved.PrescriptionDayNumber) : null;
+                var visible = selected is { State: "aprobado" } && selected.PatientId == patient.Id
+                    && (selected.IsPublished || selected.ApprovedAt.HasValue
+                        && (await prescriptions.ListCycleHeadersAsync(patient.Id, ct)).Any(h => h.CycleId == selected.CycleId && h.IsPublished));
+                return visible
+                    ? Compose(selected!, today, ct, resolved.PrescriptionDayNumber) : null;
             }
             if (resolved.NutritionPlanId is null) return null;
             if (resolved.NutritionSource == "engine")

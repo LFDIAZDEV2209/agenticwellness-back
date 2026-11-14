@@ -154,3 +154,54 @@ dotnet build --no-restore -p:OutputPath=bin/Validation33/ -v quiet
 dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation33/ -v normal
 dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation33/ --filter 'FullyQualifiedName~CicloAdherencia_|FullyQualifiedName~CicloFechas_|FullyQualifiedName~ActivacionPorFecha_|FullyQualifiedName~ActivacionPorSemanaPerfecta_' -v normal
 ```
+
+## 3.4 — Continuidad en la resolución efectiva
+
+Para inscritos, `EffectiveDayContentResolver` comparte
+`NutritionPublicationTimeline` con la adherencia: primero el ciclo ya iniciado
+más reciente y dentro de él la publicación vigente en esa fecha local. Al vencer
+sin sucesor iniciado devuelve el último día de ese menú con source=continuity;
+no repite semanas ni cambia las fechas del ciclo. Un sucesor publicado tarde
+solo toma sus días desde su inicio real.
+
+La precarga incluye versiones sustituidas cuando el mismo ciclo mantiene una
+publicación, para que el pasado use su menú real. Misión y lectura móvil validan
+además paciente y publicación actual del mismo ciclo antes de leer esa versión.
+Un ciclo cuya publicación se retiró completamente no se revive desde historia.
+Una versión/sucesora ya vigente sin el menú requerido cae al motor general;
+no recupera un menú anterior del mismo ciclo. Se conserva la precedencia de
+respaldo del motor/plantilla y asignaciones antiguas aprobadas.
+
+No crea migraciones ni escribe snapshots. Los pacientes sin inscripción mantienen
+el contrato previo de bienestar. La consulta 1.10b usa esta misma selección.
+Auditoría LOCAL READ ONLY tras el cambio: 50.840 días con hueco de podcast,
+**ejercicio 0, nutrición 0**, escrituras 0. El total global no se presenta como
+cero: los podcasts siguen pendientes de los mp3 reales de 1.14 (salvedad ya
+aceptada por Luis), sin rellenarlos con demo. Evidencia operativa en
+`.ai/operations/organizar-experiencia-bienestar/3.4-content-gaps-local.json` del workspace.
+
+Comando de auditoría (con conexión local comprobada y resuelta solo en memoria
+mediante COP_PROGRAM_AUDIT_CONNECTION):
+
+```powershell
+dotnet run --project scripts/ProgramContentAudit/ProgramContentAudit.csproj --configuration Audit34 --no-launch-profile
+```
+
+Evidencia 3.4 y cierre: build verde; unitarios **2508 aprobados/105 omitidos**;
+PostgreSQL, clase completa **NutritionPlanWorkflowTests 107/107**, sin omisiones
+ni fallos (6 min 28 s). Incluye ambas ConservaPreedicion y las combinaciones por
+fecha/semana perfecta. La prueba nueva verifica versión histórica, calendario,
+misión, app, sucesor tardío, respaldo del motor y consulta de huecos cero en el
+escenario completo. La auditoría de desarrollo anterior permanece sin escrituras.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/Validation34/ -v quiet
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation34/ -v normal
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation34/ --filter 'FullyQualifiedName~NutritionPlanWorkflowTests' -v normal
+```
+
+También pasó el filtro PostgreSQL de humo 7/7 (continuidad nueva, adherencia y
+cuatro activaciones). Las omisiones unitarias son los casos opt-in de la suite;
+la clase PostgreSQL completa se ejecutó con conexión local real resuelta en el
+proceso, sin registrar credenciales. No se acredita ejecución en producción ni
+se cambian las asignaciones antiguas o inscripciones con esta tarea.

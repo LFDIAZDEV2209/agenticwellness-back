@@ -51,8 +51,9 @@ public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard
         var podcasts = await PublishedPodcastIdsAsync(ct);
         var routines = await ActiveRoutineIdsAsync(ct);
         var headers = await db.NutritionPrescriptions.AsNoTracking().Where(p => patients.Contains(p.PatientId)
-            && p.IsPublished && p.State == "aprobado" && p.StartDate != null && p.EndDate != null && p.StartDate <= to)
-            .Select(p => new { p.Id, p.PatientId, p.StartDate, p.EndDate, p.ApprovedAt }).ToListAsync(ct);
+            && p.State == "aprobado" && p.ApprovedAt != null && p.StartDate != null && p.EndDate != null && p.StartDate <= to
+            && (p.IsPublished || db.NutritionPrescriptions.Any(v => v.PatientId == p.PatientId && v.CycleId == p.CycleId && v.IsPublished && v.State == "aprobado")))
+            .Select(p => new { p.Id, p.PatientId, p.StartDate, p.EndDate, p.ApprovedAt, p.Version }).ToListAsync(ct);
         var prescriptionIds = headers.Select(p => p.Id).ToArray();
         var prescriptionDays = await db.NutritionPrescriptionMeals.AsNoTracking().Where(m => prescriptionIds.Contains(m.PrescriptionId))
             .Select(m => new { m.PrescriptionId, m.DayNumber }).Distinct().ToListAsync(ct);
@@ -74,7 +75,7 @@ public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard
         {
             Enrollments = enrollments, Weeks = weeks, PublishedPodcasts = podcasts.ToHashSet(), ActiveRoutines = routines.ToHashSet(),
             Prescriptions = headers.Where(p => p.EndDate >= p.StartDate && p.EndDate!.Value <= p.StartDate!.Value.AddDays(29))
-                .Select(p => new EffectivePrescription(p.Id, p.PatientId, p.StartDate!.Value, p.EndDate!.Value, p.ApprovedAt, daysByPrescription[p.Id].ToArray())).ToArray(),
+                .Select(p => new EffectivePrescription(p.Id, p.PatientId, p.StartDate!.Value, p.EndDate!.Value, p.ApprovedAt, daysByPrescription[p.Id].ToArray(), p.Version)).ToArray(),
             Plans = plans.Select(p => new EffectivePlan(p)).ToArray(),
             Legacy = legacyRoutines.Select(a => new EffectiveLegacyAssignment(a.PatientId, a.RoutineId, DateOnly.FromDateTime(a.StartDate),
                     a.EndDate.HasValue ? DateOnly.FromDateTime(a.EndDate.Value) : null, false))

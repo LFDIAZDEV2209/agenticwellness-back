@@ -1,3 +1,4 @@
+using CoppAddresd.Application.Features.Nutrition.Cases;
 using System.Text.Json;
 using CoppAddresd.Application.Features.Wellness;
 using CoppAddresd.Domain.Entities;
@@ -136,39 +137,32 @@ public sealed class EffectiveDayContentResolver(IEffectiveDayContentStore store)
 
         var routine = EffectiveRoutineResolver.Resolve(data, enrollment.PatientId, date, rows, days);
 
-        var published = data.Prescriptions.Where(p => p.PatientId == enrollment.PatientId && p.Start <= date
-                && (p.PublishedAt is null || LocalDate(p.PublishedAt.Value, enrollment.Timezone) <= date))
-            .OrderByDescending(p => p.Start).ThenByDescending(p => p.PublishedAt).ThenByDescending(p => p.Id).ToArray();
-        var current = published.FirstOrDefault(p => p.End >= date);
+        var selected = NutritionPublicationTimeline.Select(data.Prescriptions, enrollment.PatientId, date, enrollment.Timezone);
+        var selectedDay = selected is null ? (int?)null : NutritionPublicationTimeline.MenuDay(selected, date);
         EffectiveContentRef nutrition;
-        if (current is not null && current.MenuDays.Contains(date.DayNumber - current.Start.DayNumber + 1)) nutrition = new(current.Id, "prescription", date.DayNumber - current.Start.DayNumber + 1, true);
+        if (selected is not null && selected.MenuDays.Contains(selectedDay!.Value))
+            nutrition = new(selected.Id, date > selected.End ? "continuity" : "prescription", selectedDay, true);
         else
         {
-            var previous = published.FirstOrDefault(p => p.End < date && p.MenuDays.Contains(p.End.DayNumber - p.Start.DayNumber + 1));
-            // Un sucesor ya iniciado bloquea continuidad de ciclos anteriores, aunque su menú esté incompleto.
-            if (previous is not null && !published.Any(p => p.Start > previous.Start))
-                nutrition = new(previous.Id, "continuity", previous.End.DayNumber - previous.Start.DayNumber + 1, true);
+            // Una versión/sucesora publicada incompleta no revive un menú anterior.
+            var engineId = data.EngineNutrition.GetValueOrDefault(enrollment.Id);
+            var engine = data.Plans.FirstOrDefault(p => p.Id == engineId && p.IsTemplate && p.Plan.Status == NutritionPlanStatus.Active && p.MenuDays.Contains(weekday));
+            // El motor existente declara useTemplateNutritionDefault cuando no selecciona una regla.
+            engine ??= days.Where(d => d.TaskCode.ToString() == "nut").Select(d => data.Plans.FirstOrDefault(p => p.Id == d.NutritionPlanId && p.IsTemplate && p.Plan.Status == NutritionPlanStatus.Active && p.MenuDays.Contains(weekday)))
+                .FirstOrDefault(p => p is not null);
+            if (engine is not null) nutrition = new(engine.Id, "engine", weekday);
             else
             {
-                var engineId = data.EngineNutrition.GetValueOrDefault(enrollment.Id);
-                var engine = data.Plans.FirstOrDefault(p => p.Id == engineId && p.IsTemplate && p.Plan.Status == NutritionPlanStatus.Active && p.MenuDays.Contains(weekday));
-                // El motor existente declara useTemplateNutritionDefault cuando no selecciona una regla.
-                engine ??= days.Where(d => d.TaskCode.ToString() == "nut").Select(d => data.Plans.FirstOrDefault(p => p.Id == d.NutritionPlanId && p.IsTemplate && p.Plan.Status == NutritionPlanStatus.Active && p.MenuDays.Contains(weekday)))
-                    .FirstOrDefault(p => p is not null);
-                if (engine is not null) nutrition = new(engine.Id, "engine", weekday);
-                else
+                nutrition = EffectiveContentRef.Gap;
+                foreach (var assignment in data.Legacy.Where(a => a.PatientId == enrollment.PatientId && a.Nutrition && Covers(a, date))
+                    .OrderByDescending(a => a.Start).ThenBy(a => a.ContentId))
                 {
-                    nutrition = EffectiveContentRef.Gap;
-                    foreach (var assignment in data.Legacy.Where(a => a.PatientId == enrollment.PatientId && a.Nutrition && Covers(a, date))
-                        .OrderByDescending(a => a.Start).ThenBy(a => a.ContentId))
-                    {
-                        var legacy = data.Plans.FirstOrDefault(p => p.Id == assignment.ContentId && p.Plan.PatientId == enrollment.PatientId && !p.Plan.IsTemplate);
-                        if (legacy is null) continue;
-                        // El legado de 7/30 menús usa días transcurridos y aprobación exacta, nunca weekday.
-                        var menuDay = NutritionPlanReviewRules.MenuDay(legacy.Plan, assignment.Start.ToDateTime(TimeOnly.MinValue), date);
-                        if (menuDay.HasValue && legacy.MenuDays.Contains(menuDay.Value))
-                        { nutrition = new(legacy.Id, "legacy", menuDay.Value); break; }
-                    }
+                    var legacy = data.Plans.FirstOrDefault(p => p.Id == assignment.ContentId && p.Plan.PatientId == enrollment.PatientId && !p.Plan.IsTemplate);
+                    if (legacy is null) continue;
+                    // El legado de 7/30 menús usa días transcurridos y aprobación exacta, nunca weekday.
+                    var menuDay = NutritionPlanReviewRules.MenuDay(legacy.Plan, assignment.Start.ToDateTime(TimeOnly.MinValue), date);
+                    if (menuDay.HasValue && legacy.MenuDays.Contains(menuDay.Value))
+                    { nutrition = new(legacy.Id, "legacy", menuDay.Value); break; }
                 }
             }
         }
@@ -176,7 +170,6 @@ public sealed class EffectiveDayContentResolver(IEffectiveDayContentStore store)
     }
 
     private static bool Covers(EffectiveLegacyAssignment assignment, DateOnly date) => assignment.Start <= date && (assignment.End is null || assignment.End >= date);
-    private static DateOnly LocalDate(DateTime utc, string timezone) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), TimeZoneInfo.FindSystemTimeZoneById(timezone)));
 
     /// <summary>Decisión aplicada; una elección explícitamente vacía no revive la propuesta original.</summary>
     public static Guid? EnginePlanId(string proposal)

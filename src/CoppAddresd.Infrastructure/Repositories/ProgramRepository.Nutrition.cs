@@ -13,7 +13,9 @@ public sealed partial class ProgramRepository
     /// <summary>Carga únicamente el día prescrito; no trae los treinta días para una misión.</summary>
     private Task<NutritionPrescription?> ReadMissionPrescriptionAsync(Guid patientId, Guid id, int dayNumber, CancellationToken ct)
         => dbContext.NutritionPrescriptions.AsNoTracking()
-            .Where(p => p.Id == id && p.PatientId == patientId && p.IsPublished && p.State == "aprobado")
+            .Where(p => p.Id == id && p.PatientId == patientId && p.State == "aprobado"
+                && (p.IsPublished || p.ApprovedAt != null && dbContext.NutritionPrescriptions.Any(v =>
+                    v.PatientId == patientId && v.CycleId == p.CycleId && v.IsPublished && v.State == "aprobado")))
             .Include(p => p.Meals.Where(m => m.DayNumber == dayNumber))
             .ThenInclude(m => m.Items.OrderBy(i => i.SortOrder).ThenBy(i => i.Id))
             .ThenInclude(i => i.FoodItem)

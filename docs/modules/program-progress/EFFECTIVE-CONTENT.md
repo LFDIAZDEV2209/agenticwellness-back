@@ -112,3 +112,14 @@ archivado conserva su duración. Usa el resolvedor 1.9 y precarga por conjuntos:
 snapshot futuro vacío no implica hueco y descanso explícito cubre ejercicio.
 No escribe datos ni devuelve nombres, identificadores o conteos de pacientes ajenos.
 La reparación 1.14 debe dejar este resultado en cero; 1.10b no repara por sí misma.
+
+## Continuidad y versiones por fecha — 3.4
+
+La nutrición delega la selección en NutritionPublicationTimeline, compartida con
+la adherencia de ciclos. Precarga versiones históricas de ciclos que conservan
+publicación, ordena por ciclo iniciado/publicación local/versión y usa el día
+final del menú durante continuidad. La ausencia del menú en la versión vigente
+activa el respaldo del motor; no revive una versión anterior con ese día.
+Misión y lectura móvil permiten la versión histórica solo dentro de su paciente
+y un ciclo todavía publicado. El resto de precedencias y el contrato sin
+inscripción no cambian. Validación y evidencia: nutrition/CYCLES.md.
