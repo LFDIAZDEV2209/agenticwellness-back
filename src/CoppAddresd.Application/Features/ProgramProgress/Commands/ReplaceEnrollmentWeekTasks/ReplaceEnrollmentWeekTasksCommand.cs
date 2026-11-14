@@ -36,7 +36,7 @@ public sealed class ReplaceEnrollmentWeekTasksCommandValidator : AbstractValidat
             .WithMessage("Debe enviarse al menos una tarea.");
 
         RuleForEach(x => x.Tasks)
-            .SetValidator(new CreateTemplate.WeeklyDayTemplateRequestValidator());
+            .SetValidator(new CreateTemplate.WeeklyDayTemplateRequestValidator(allowRest: true));
 
         RuleFor(x => x.Tasks)
             .Must(tasks => tasks is null || NoDuplicateWeekdayTask(tasks))

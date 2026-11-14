@@ -2934,9 +2934,11 @@ public sealed partial class ProgramRepository(
         int weekNumber,
         IReadOnlyList<WeeklyDayTemplate> tasks,
         Guid? actorId = null,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        EnrollmentWeekTaskEdits? edits = null
     )
     {
+        ProgramRestDayPolicy.EnsureAllowed(configuration[ProgramRestDayPolicy.ConfigurationKey], edits?.RestDays.Count > 0);
         var strategy = dbContext.Database.CreateExecutionStrategy();
         var result = await strategy.ExecuteAsync(async () =>
         {
@@ -2972,7 +2974,8 @@ public sealed partial class ProgramRepository(
                 }
 
                 var now = DateTime.UtcNow;
-                week.TasksSnapshot = BuildSnapshot(tasks, "individual", actorId);
+                week.TasksSnapshot = WeekSnapshotJson.Serialize(ParseSnapshot(BuildSnapshot(tasks, "individual", actorId))
+                    .Select(row => row with { Rest = row.TaskCode == "ejercicio" && edits?.RestDays.Contains(row.Weekday) == true }).ToList());
                 week.UpdatedAt = now;
                 await dbContext.SaveChangesAsync(ct);
                 await transaction.CommitAsync(ct);

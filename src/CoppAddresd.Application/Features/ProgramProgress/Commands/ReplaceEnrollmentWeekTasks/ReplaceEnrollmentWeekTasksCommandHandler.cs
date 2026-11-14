@@ -19,7 +19,8 @@ public sealed class ReplaceEnrollmentWeekTasksCommandHandler(
         var tasks = ProgramProgressTemplateMapper.ToEntities(request.Tasks);
 
         var updatedWeek = await repository.ReplaceEnrollmentWeekTasksAsync(
-            request.EnrollmentId, request.WeekNumber, tasks, request.ActorId, ct);
+            request.EnrollmentId, request.WeekNumber, tasks, request.ActorId, ct,
+            new EnrollmentWeekTaskEdits(request.Tasks.Where(t => t.Rest).Select(t => t.Weekday).ToHashSet()));
 
         logger.LogInformation(
             "Program.ReplaceEnrollmentWeekTasks: enrollment={EnrollmentId} week={WeekNumber} tasks={Count}",

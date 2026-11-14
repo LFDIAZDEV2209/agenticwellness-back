@@ -91,8 +91,12 @@ public sealed class CreateTemplateCommandValidator : AbstractValidator<CreateTem
 /// <summary>Reglas de una fila por día de la semana (compartidas por los comandos de plantilla).</summary>
 public sealed class WeeklyDayTemplateRequestValidator : AbstractValidator<WeeklyDayTemplateRequest>
 {
-    public WeeklyDayTemplateRequestValidator()
+    public WeeklyDayTemplateRequestValidator(bool allowRest = false)
     {
+        RuleFor(x => x.Rest).Must(rest => !rest || allowRest)
+            .WithMessage("El descanso se edita en la semana del paciente, no en el catálogo.");
+        RuleFor(x => x).Must(x => !x.Rest || (x.TaskCode == TaskCode.ejercicio && x.RoutineId is null))
+            .WithMessage("El descanso requiere taskCode ejercicio y no admite routineId.");
         RuleFor(x => x.Weekday)
             .InclusiveBetween((short)1, (short)7)
             .WithMessage("weekday debe estar entre 1 (lunes) y 7 (domingo).");

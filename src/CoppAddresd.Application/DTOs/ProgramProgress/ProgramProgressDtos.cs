@@ -485,7 +485,8 @@ public sealed record WeeklyDayTemplateRequest(
     int SortOrder = 0,
     Guid? MediaId = null,
     Guid? RoutineId = null,
-    Guid? NutritionPlanId = null
+    Guid? NutritionPlanId = null,
+    bool Rest = false
 );
 
 /// <summary>Fila por día de la semana de una plantilla (respuesta).</summary>

@@ -1,4 +1,5 @@
 using CoppAddresd.Application.DTOs.ProgramProgress;
+using CoppAddresd.Application.Features.ProgramProgress;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.ReconcileStreaks;
 using CoppAddresd.Application.Features.ProgramProgress.DTOs.ActivityLog;
@@ -1391,7 +1392,8 @@ internal sealed class FakeProgramRepository : IProgramRepository
         int weekNumber,
         IReadOnlyList<WeeklyDayTemplate> tasks,
         Guid? actorId = null,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        EnrollmentWeekTaskEdits? edits = null
     ) =>
         Task.FromResult(
             new EnrollmentWeekDetailDto(

@@ -1,4 +1,5 @@
 using CoppAddresd.Application.DTOs.ProgramProgress;
+using CoppAddresd.Application.Features.ProgramProgress;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.ReconcileStreaks;
 using CoppAddresd.Application.Features.ProgramProgress.DTOs.ActivityLog;
@@ -202,7 +203,8 @@ public interface IProgramRepository
         int weekNumber,
         IReadOnlyList<WeeklyDayTemplate> tasks,
         Guid? actorId = null,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        EnrollmentWeekTaskEdits? edits = null
     );
 
     // --- Asignación masiva de contenido (change erp-program-content-admin) ---

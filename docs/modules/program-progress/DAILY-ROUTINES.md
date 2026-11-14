@@ -1,5 +1,15 @@
 # Rutinas por día — Fase 2
 
+## Interruptor de descanso — 2.7
+
+`Program:RestDays:Enabled` (entorno `Program__RestDays__Enabled`) queda apagado
+si falta, vale false o es inválido. Solo true permite `rest:true` en el PUT de
+tareas semanales del paciente; apagado responde 422 `REST_DAYS_DISABLED` antes
+de escribir. El campo opcional solo admite ejercicio sin routineId y no se
+admite en el catálogo de plantillas. La lectura de descansos existentes sigue
+siendo tolerante. No se habilita automáticamente tras 2.6: la app anterior tuvo
+un error de consola `No queryFn`, aunque no mostró un error visible.
+
 Rama `org/f2-coppAddresdBack`, base Fase 1 `185364e`.
 
 ## Resolución — 2.2
