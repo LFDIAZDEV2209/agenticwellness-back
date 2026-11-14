@@ -11,11 +11,11 @@ namespace CoppAddresd.Application.Services.ProgramProgress;
 /// (SPEC §4.2/§4.3/§6.10). Para un par (patientId, localDate):
 /// <list type="bullet">
 ///   <item>Devuelve el plan de alimentación activo con su día correspondiente al weekday.</item>
-///   <item>Devuelve la rutina de ejercicio activa (o <c>null</c> si no hay).</item>
+///   <item>Rutina por día: descanso terminal → snapshot → plantilla semanal/genérica → asignación antigua.</item>
 /// </list>
 ///
-/// Selección nutricional: prescripción publicada vigente por fecha local;
-/// sin ella, se conserva la selección wellness por ventana de asignación.
+/// Para inscritos delega en la resolución efectiva única, sin reinterpretar sus fuentes.
+/// Pacientes sin inscripción conservan el contrato anterior de bienestar.
 ///
 /// Servicio de solo lectura; consume Nutrition y <see cref="IWellnessRepository"/> (MVP:
 /// lectura completa por paciente + filtrado en memoria, aceptable para single
@@ -194,7 +194,7 @@ public sealed class ProgramContentResolver(
     public static ProgramContentResolution ToProgramResolution(EffectiveDayContent day) => new()
     {
         HasEffectiveContent = true, PodcastMediaId = day.Podcast.Id, PodcastSource = day.Podcast.Source,
-        ExerciseRoutineId = day.Routine.Id, Rest = day.Routine.Rest, RoutineSource = day.Routine.Source,
+        ExerciseRoutineId = day.Routine.Rest ? null : day.Routine.Id, Rest = day.Routine.Rest, RoutineSource = day.Routine.Source,
         NutritionSource = day.Nutrition.Source,
         SourcePrescriptionId = day.Nutrition.Prescription ? day.Nutrition.Id : null,
         PrescriptionDayNumber = day.Nutrition.Prescription ? day.Nutrition.DayNumber : null,
