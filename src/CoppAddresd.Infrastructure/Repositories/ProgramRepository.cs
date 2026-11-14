@@ -66,7 +66,8 @@ public sealed partial class ProgramRepository(
     IPatientScopeGuard? patientScope = null,
     IEffectiveDayContentStore? effectiveStore = null,
     IEffectiveDayContentResolver? effectiveResolver = null,
-    Microsoft.Extensions.Logging.ILogger<ProgramRepository>? contentLogger = null
+    Microsoft.Extensions.Logging.ILogger<ProgramRepository>? contentLogger = null,
+    TimeProvider? clock = null
 ) : IProgramRepository
 {
     private const int MaxFreezes = 3;
@@ -2973,14 +2974,14 @@ public sealed partial class ProgramRepository(
                     );
                 }
 
-                var now = DateTime.UtcNow;
-                var today = PatientLocalToday(enrollment.Timezone);
-                if (TemplateImpactCalculator.Started(week, today)
-                    || await dbContext.TaskCompletions.AnyAsync(c => c.ProgramWeekId == week.Id, ct))
-                    throw new BusinessRuleViolationException("PROGRAM_WEEK_STARTED: no se puede editar una semana iniciada.");
+                var now = (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime;
+                var today = PatientLocalToday(enrollment.Timezone, now);
+                var hasHistory = await dbContext.TaskCompletions.AnyAsync(c => c.ProgramWeekId == week.Id, ct)
+                    || await dbContext.DailyCheckIns.AnyAsync(c => c.ProgramWeekId == week.Id, ct);
+                var weekStart = ProgramWeekTaskEditor.EditableWeekStart(enrollment.StartLocalDate, week, today, hasHistory);
                 var last = enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(enrollment.Template!) - 1);
-                var allowed = Enumerable.Range(0, Math.Max(0, Math.Min(7, last.DayNumber - week.WeekStartDateLocal.DayNumber + 1)))
-                    .Select(offset => (short)(week.WeekStartDateLocal.AddDays(offset).DayOfWeek == DayOfWeek.Sunday ? 7 : (int)week.WeekStartDateLocal.AddDays(offset).DayOfWeek)).ToHashSet();
+                var allowed = Enumerable.Range(0, Math.Max(0, Math.Min(7, last.DayNumber - weekStart.DayNumber + 1)))
+                    .Select(offset => (short)(weekStart.AddDays(offset).DayOfWeek == DayOfWeek.Sunday ? 7 : (int)weekStart.AddDays(offset).DayOfWeek)).ToHashSet();
                 if (tasks.Any(t => !allowed.Contains(t.Weekday)) || tasks.GroupBy(t => (t.Weekday, t.TaskCode)).Any(g => g.Count() > 1))
                     throw new UnprocessableEntityException("PROGRAM_DAY_INVALID: día fuera del programa o celda duplicada.");
                 var routineIds = tasks.Where(t => t.RoutineId.HasValue).Select(t => t.RoutineId!.Value).Distinct().ToArray();
@@ -8379,16 +8380,17 @@ public sealed partial class ProgramRepository(
     /// Fecha local de hoy del paciente desde su zona IANA. Fallback a UTC si la
     /// zona no está disponible en el SO (Windows mapea las IANA comunes).
     /// </summary>
-    private static DateOnly PatientLocalToday(string timezone)
+    private static DateOnly PatientLocalToday(string timezone, DateTime? utcNow = null)
     {
+        var instant = utcNow ?? DateTime.UtcNow;
         try
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timezone);
-            return DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz));
+            return DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(instant, tz));
         }
         catch (TimeZoneNotFoundException)
         {
-            return DateOnly.FromDateTime(DateTime.UtcNow.Date);
+            return DateOnly.FromDateTime(instant.Date);
         }
     }
 

@@ -8,6 +8,16 @@ namespace CoppAddresd.Application.Services.ProgramProgress;
 /// <summary>Edición por celda: conserva las decisiones omitidas y restablece desde la plantilla vigente.</summary>
 public static class ProgramWeekTaskEditor
 {
+    /// <summary>La inscripción determina el calendario; las fechas denormalizadas no prueban que una semana haya empezado.</summary>
+    public static DateOnly EditableWeekStart(DateOnly enrollmentStart, ProgramWeek week, DateOnly today, bool hasHistory)
+    {
+        var start = enrollmentStart.AddDays((week.WeekNumber - 1) * 7);
+        if (start < today || week.Status == CoppAddresd.Domain.Enums.ProgramProgress.ProgramWeekStatus.Completed
+            || week.ActivatedAt.HasValue || week.CompletedAt.HasValue || hasHistory)
+            throw new BusinessRuleViolationException("PROGRAM_WEEK_STARTED: no se puede editar una semana iniciada.");
+        return start;
+    }
+
     public static IReadOnlyList<WeekSnapshotTaskRow> Apply(IReadOnlyList<WeekSnapshotTaskRow> template,
         IReadOnlyList<WeekSnapshotTaskRow> snapshot, IReadOnlyList<WeeklyDayTemplate> changes,
         EnrollmentWeekTaskEdits? edits, Guid? actor, DateTimeOffset now)

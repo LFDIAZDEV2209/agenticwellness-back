@@ -20,12 +20,21 @@ a la plantilla semanal vigente (antes que la genérica). Las dos primeras son
 `individual`; restablecer devuelve `program` (§5). Guarda actor y fecha.
 No elimina días ni clases omitidos; un campo clínico null conserva el vínculo.
 
-Solo edita semanas Locked futuras, sin activación, completación ni historial.
+El inicio se calcula desde `start_local_date + (weekNumber-1)*7`, nunca desde
+las fechas denormalizadas de la semana. Hoy o futuro es editable mientras no
+haya activación, finalización ni historial; días anteriores quedan bloqueados.
+El hoy se obtiene de la zona del paciente con TimeProvider (System por defecto).
 Semana iniciada o pasada → 409 `PROGRAM_WEEK_STARTED`, sin cambiar historial,
 XP ni snapshot. Respeta zona del paciente y los 83 días. Inscripción ajena → 404
 con Program.Edit y paciente asignado, también dentro del handler; Admin exceptúa
 asignación, nunca permiso. Rutina debe existir y estar activa. Los campos nuevos
 son opcionales; el cuerpo del editor anterior sigue siendo válido.
+
+La regresión 2.8-fix cubre fechas denormalizadas desfasadas en ambos sentidos,
+ayer/hoy/mañana en zona Bogotá y conservación de la preedición al activar por
+fecha y por semana perfecta. Los escenarios históricos fijan su reloj antes de
+la preedición, para que el resultado no cambie según el día de ejecución del CI.
+Se exige la suite completa `NutritionPlanWorkflowTests` antes del handoff.
 
 ## Interruptor de descanso — 2.7
 

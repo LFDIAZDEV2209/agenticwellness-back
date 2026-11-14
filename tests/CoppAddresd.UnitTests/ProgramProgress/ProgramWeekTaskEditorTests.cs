@@ -3,11 +3,39 @@ using CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgra
 using CoppAddresd.Application.Services.ProgramProgress;
 using CoppAddresd.Domain.Entities.ProgramProgress;
 using CoppAddresd.Domain.Enums.ProgramProgress;
+using CoppAddresd.Domain.Exceptions;
 
 namespace CoppAddresd.UnitTests.ProgramProgress;
 
 public sealed class ProgramWeekTaskEditorTests
 {
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public void Guardia_UsaInicioDeInscripcion_YPermiteHoyOFuturo(int offset, bool editable)
+    {
+        var today = new DateOnly(2026, 11, 3);
+        var week = new ProgramWeek { WeekNumber = 2, Status = ProgramWeekStatus.Locked,
+            WeekStartDateLocal = offset < 0 ? today.AddYears(5) : today.AddYears(-5) };
+        var enrollmentStart = today.AddDays(offset - 7);
+        if (editable) Assert.Equal(today.AddDays(offset), ProgramWeekTaskEditor.EditableWeekStart(enrollmentStart, week, today, false));
+        else Assert.Throws<BusinessRuleViolationException>(() => ProgramWeekTaskEditor.EditableWeekStart(enrollmentStart, week, today, false));
+    }
+
+    [Theory]
+    [InlineData("activada")]
+    [InlineData("finalizada")]
+    [InlineData("estado_finalizado")]
+    [InlineData("historial")]
+    public void Guardia_ActividadRealBloqueaAunqueElCalendarioSeaFuturo(string evidence)
+    {
+        var today = new DateOnly(2026, 11, 3);
+        var week = new ProgramWeek { WeekNumber = 2, Status = evidence == "estado_finalizado" ? ProgramWeekStatus.Completed : ProgramWeekStatus.Locked,
+            ActivatedAt = evidence == "activada" ? DateTime.UtcNow : null, CompletedAt = evidence == "finalizada" ? DateTime.UtcNow : null };
+        Assert.Throws<BusinessRuleViolationException>(() => ProgramWeekTaskEditor.EditableWeekStart(today, week, today, evidence == "historial"));
+    }
+
     [Fact]
     public void EditarUnaCelda_ConservaIndividuales_RestableceContraPlantillaActual()
     {

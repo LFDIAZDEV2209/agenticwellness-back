@@ -44,7 +44,9 @@ public sealed partial class NutritionPlanWorkflowTests
             TasksSnapshot = JsonSerializer.SerializeToElement(Array.Empty<object>()) };
         db.ProgramEnrollments.Add(enrollment); db.ProgramWeeks.AddRange(first, next);
         await db.SaveChangesAsync();
-        var repository = new ProgramRepository(db, new ConfigurationBuilder().Build());
+        // El escenario comienza antes de la semana preeditada; no depende del día real del CI.
+        var repository = new ProgramRepository(db, new ConfigurationBuilder().Build(),
+            clock: new EffectiveClock(start.AddDays(1).ToDateTime(new TimeOnly(12, 0), DateTimeKind.Utc)));
 
         // Se usa la misma escritura que el ERP; la segunda semana aún está bloqueada.
         var edited = days.Where(d => !combinar || d.Weekday == 4).Select(d => new WeeklyDayTemplate { Weekday = d.Weekday, TaskCode = d.TaskCode,
