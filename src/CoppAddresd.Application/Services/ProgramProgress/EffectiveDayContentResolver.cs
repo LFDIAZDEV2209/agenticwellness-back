@@ -132,22 +132,7 @@ public sealed class EffectiveDayContentResolver(IEffectiveDayContentStore store)
                 { podcast = new(id, row.WeekNumber.HasValue ? "template_week" : "template_generic"); break; }
         }
 
-        var exercise = rows.FirstOrDefault(t => t.TaskCode == "ejercicio");
-        EffectiveRoutine routine;
-        if (exercise?.Rest == true) routine = new(null, true, "rest");
-        else if (exercise?.RoutineId is { } routineId && data.ActiveRoutines.Contains(routineId))
-            routine = new(routineId, false, "snapshot");
-        else
-        {
-            var row = days.FirstOrDefault(t => t.TaskCode.ToString() == "ejercicio" && t.RoutineId.HasValue && data.ActiveRoutines.Contains(t.RoutineId.Value));
-            if (row is not null) routine = new(row.RoutineId, false, row.WeekNumber.HasValue ? "template_week" : "template_generic");
-            else
-            {
-                var legacy = data.Legacy.Where(a => a.PatientId == enrollment.PatientId && !a.Nutrition && Covers(a, date) && data.ActiveRoutines.Contains(a.ContentId))
-                    .OrderByDescending(a => a.Start).ThenBy(a => a.ContentId).FirstOrDefault();
-                routine = new(legacy?.ContentId, false, legacy is null ? "missing" : "legacy");
-            }
-        }
+        var routine = EffectiveRoutineResolver.Resolve(data, enrollment.PatientId, date, rows, days);
 
         var published = data.Prescriptions.Where(p => p.PatientId == enrollment.PatientId && p.Start <= date
                 && (p.PublishedAt is null || LocalDate(p.PublishedAt.Value, enrollment.Timezone) <= date))
