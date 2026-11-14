@@ -31,7 +31,7 @@ public sealed record LogNutritionCommand(
     MealCode MealCode,
     DateOnly? LocalDate = null,
     Guid? ActorId = null,
-    NutritionIntakePayload? Intake = null) : IRequest<NutritionLogResultDto>;
+    NutritionIntakePayload? Intake = null, string? ClientRequestId = null) : IRequest<NutritionLogResultDto>;
 
 /// <summary>
 /// Validación de forma del payload (SPEC §18, B): el <c>mealCode</c> es un
@@ -58,6 +58,7 @@ public sealed class LogNutritionCommandValidator : AbstractValidator<LogNutritio
         RuleFor(x => x.Intake!)
             .SetValidator(new NutritionIntakePayloadValidator())
             .When(x => x.Intake is not null);
+        RuleFor(x => x.ClientRequestId).NotEmpty().MaximumLength(128).When(x => x.ClientRequestId is not null);
     }
 }
 
@@ -81,7 +82,9 @@ public sealed class LogNutritionCommandHandler(
 
     public async Task<NutritionLogResultDto> Handle(LogNutritionCommand request, CancellationToken ct)
     {
-        var result = await repository.LogNutritionAsync(
+        var result = request.ClientRequestId is { } key
+            ? await repository.LogNutritionAsync(request.PatientId, request.MealCode, request.LocalDate, request.Intake, request.ActorId, key, ct)
+            : await repository.LogNutritionAsync(
             request.PatientId,
             request.MealCode,
             request.LocalDate,

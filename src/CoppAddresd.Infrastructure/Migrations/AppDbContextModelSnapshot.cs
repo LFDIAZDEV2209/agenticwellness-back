@@ -7672,6 +7672,39 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("nutrition_intake_logs", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.ProgramProgress.NutritionIntakeRequest", b =>
+                {
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("ClientRequestId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("client_request_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("HabitCheckId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("habit_check_id");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("request_hash");
+
+                    b.HasKey("PatientId", "ClientRequestId");
+
+                    b.HasIndex("HabitCheckId")
+                        .HasDatabaseName("ix_intake_requests_habit");
+
+                    b.ToTable("nutrition_intake_requests", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.ProgramProgress.ProgramAssignmentNotice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -11181,6 +11214,21 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Navigation("HabitCheck");
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.ProgramProgress.NutritionIntakeRequest", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.ProgramProgress.HabitCheck", null)
+                        .WithMany()
+                        .HasForeignKey("HabitCheckId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.ProgramProgress.ProgramAssignmentNotice", b =>

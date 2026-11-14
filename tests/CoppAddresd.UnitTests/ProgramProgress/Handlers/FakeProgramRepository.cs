@@ -763,6 +763,10 @@ internal sealed class FakeProgramRepository : IProgramRepository
             );
     }
 
+    public Task<NutritionLogResultDto> LogNutritionAsync(Guid patientId, MealCode mealCode, DateOnly? localDate,
+        NutritionIntakePayload? intake, Guid? actorId, string clientRequestId, CancellationToken ct)
+        => LogNutritionAsync(patientId, mealCode, localDate, intake, actorId, ct);
+
     public Task<NutritionWeeklyAwardsResult> EvaluateNutritionAwardsAsync(
         Guid patientId,
         DateOnly? periodEndLocalDate = null,

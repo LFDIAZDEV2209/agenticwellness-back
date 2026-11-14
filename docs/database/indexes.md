@@ -271,3 +271,13 @@ La PK id cubre la FK desde prescripciones. El índice existente
 `uq_nutrition_prescriptions_cycle_version` ya cubre el prefijo cycle_id; no se
 añade un índice redundante para esa FK. El índice compuesto de ciclos cubre
 también la FK patient_id.
+
+## Reintentos de registros nutricionales (3.6)
+
+| Índice | Tabla | Columnas | Tipo | Motivo/consulta | Impacto/costo |
+|---|---|---|---|---|---|
+| PK_nutrition_intake_requests | app.nutrition_intake_requests | patient_id, client_request_id | B-tree único | dedupe por paciente/clave, también FK patient_id | una entrada por operación con clave |
+| ix_intake_requests_habit | app.nutrition_intake_requests | habit_check_id | B-tree | FK y búsqueda de operaciones vinculadas al hábito | una entrada por operación con clave |
+
+Tabla nueva vacía al migrar: índices normales sin bloqueo de tablas existentes.
+No duplica índices de patient_id: lo cubre el prefijo izquierdo de la PK.

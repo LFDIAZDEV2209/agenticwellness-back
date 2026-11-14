@@ -1,3 +1,4 @@
+using CoppAddresd.Application.Features.ProgramProgress.Commands.LogNutrition;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using CoppAddresd.Application.DTOs.ProgramProgress;
@@ -5212,21 +5213,60 @@ public sealed partial class ProgramRepository(
     /// auto-completa aquí: el log granular es aditivo y su flujo queda intacto
     /// en <c>CompleteTaskAsync</c>.
     /// </summary>
-    public async Task<NutritionLogResultDto> LogNutritionAsync(
-        Guid patientId,
-        MealCode mealCode,
-        DateOnly? localDate = null,
-        NutritionIntakePayload? intake = null,
-        Guid? actorId = null,
-        CancellationToken ct = default
-    )
+    public Task<NutritionLogResultDto> LogNutritionAsync(Guid patientId, MealCode mealCode, DateOnly? localDate = null,
+        NutritionIntakePayload? intake = null, Guid? actorId = null, CancellationToken ct = default)
+        => LogNutritionCoreAsync(patientId, mealCode, localDate, intake, actorId, null, ct);
+
+    public Task<NutritionLogResultDto> LogNutritionAsync(Guid patientId, MealCode mealCode, DateOnly? localDate,
+        NutritionIntakePayload? intake, Guid? actorId, string clientRequestId, CancellationToken ct)
+        => LogNutritionCoreAsync(patientId, mealCode, localDate, intake, actorId, clientRequestId, ct);
+
+    private async Task<NutritionLogResultDto> LogNutritionCoreAsync(Guid patientId, MealCode mealCode, DateOnly? localDate,
+        NutritionIntakePayload? intake, Guid? actorId, string? clientRequestId, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+        if (clientRequestId is not null && (string.IsNullOrWhiteSpace(clientRequestId) || clientRequestId.Length > 128))
+            throw new UnprocessableEntityException("CLIENT_REQUEST_ID_INVALID: clave de reintento inválida.");
+        var fingerprint = clientRequestId is null ? null : NutritionIntakeRequestFingerprint.Create(mealCode, localDate, intake);
         var strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
             await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+            var trackedBefore = dbContext.ChangeTracker.Entries().Select(e => e.Entity).ToHashSet(ReferenceEqualityComparer.Instance);
+            var rowsBefore = dbContext.ChangeTracker.Entries<NutritionIntakeLog>().Where(e => e.Entity.PatientId == patientId)
+                .ToDictionary(e => e.Entity, e => e.CurrentValues.Clone());
+            void RestoreTracking()
+            {
+                foreach (var row in rowsBefore)
+                {
+                    var entry = dbContext.Entry(row.Key); entry.CurrentValues.SetValues(row.Value); entry.State = EntityState.Unchanged;
+                }
+                foreach (var entry in dbContext.ChangeTracker.Entries().Where(e => !trackedBefore.Contains(e.Entity)).ToArray())
+                    entry.State = EntityState.Detached;
+            }
+
             try
             {
+                await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM app.patient_profiles WHERE id={patientId} FOR UPDATE", ct);
+                await EnsureIntakeAnalysisOwnedAsync(patientId, actorId, intake?.FoodAnalysisId, ct);
+                if (clientRequestId is not null)
+                {
+                    var request = await dbContext.NutritionIntakeRequests.AsNoTracking()
+                        .SingleOrDefaultAsync(l => l.PatientId == patientId && l.ClientRequestId == clientRequestId, ct);
+                    if (request is not null)
+                    {
+                        if (request.RequestHash != fingerprint)
+                            throw new BusinessRuleViolationException("CLIENT_REQUEST_ID_REUSED: clave usada con otra comida, fecha o contenido.");
+                        var previous = await dbContext.NutritionIntakeLogs.AsNoTracking().SingleAsync(l => l.HabitCheckId == request.HabitCheckId, ct);
+                        var originalEnrollment = await dbContext.XpLedgerEntries.AsNoTracking()
+                            .Where(x => x.SourceRefType == HabitLogSourceRefType && x.SourceRefId == previous.HabitCheckId)
+                            .Select(x => (Guid?)x.EnrollmentId).FirstOrDefaultAsync(ct);
+                        var priorBalance = originalEnrollment is { } enrollmentKey ? await CurrentBalanceAsync(enrollmentKey, ct) : 0;
+                        await transaction.CommitAsync(ct);
+                        return new(previous.HabitCheckId, previous.MealCode.ToString(), previous.LocalDate, true, 0, priorBalance);
+                    }
+                }
+
                 // Inscripción activa del paciente, bloqueada FOR UPDATE (misma
                 // técnica que CompleteTaskCoreAsync: Npgsql 10 no expone
                 // .ForUpdate(); el lock se toma por SQL directo).
@@ -5348,6 +5388,7 @@ public sealed partial class ProgramRepository(
 
                     var waterRepeatBalance = await CurrentBalanceAsync(enrollment.Id, ct);
                     await dbContext.SaveChangesAsync(ct);
+                    await SaveIntakeRequestAsync(patientId, clientRequestId, fingerprint, existing.Id, ct);
                     await transaction.CommitAsync(ct);
 
                     return new NutritionLogResultDto(
@@ -5383,34 +5424,6 @@ public sealed partial class ProgramRepository(
                 // intacta (sin revocación, decisión 24).
                 Guid? resolvedPlanId = null;
                 short? resolvedPlanDayNumber = null;
-
-                // (b) Ownership del análisis (D6, fail-closed): el análisis
-                // debe existir y, si tiene dueño, el dueño debe ser el actor
-                // del JWT. user_id null (anónimo — analyze es
-                // [AllowAnonymous] hoy) se acepta en v1; cuando analyze
-                // autentique, el mismo chequeo exige ownership completo sin
-                // cambios. Comparación SIEMPRE contra el subject del JWT,
-                // nunca contra un id del cliente.
-                if (intake?.FoodAnalysisId is { } analysisId)
-                {
-                    var analysis = await dbContext
-                        .FoodAnalyses.AsNoTracking()
-                        .FirstOrDefaultAsync(a => a.AnalysisId == analysisId, ct);
-                    if (analysis is null)
-                    {
-                        throw new UnprocessableEntityException(
-                            $"FOOD_ANALYSIS_UNKNOWN: el análisis {analysisId} no existe."
-                        );
-                    }
-
-                    if (analysis.UserId is { } ownerId && ownerId != actorId)
-                    {
-                        throw new UnprocessableEntityException(
-                            $"FOOD_ANALYSIS_OWNER_MISMATCH: el análisis {analysisId} "
-                                + "pertenece a otro usuario."
-                        );
-                    }
-                }
 
                 // (c) Resolución server-side del plan-day activo (D5): misma
                 // resolución que el snapshot; sin resolver o sin resolver
@@ -5495,6 +5508,7 @@ public sealed partial class ProgramRepository(
                 );
 
                 await dbContext.SaveChangesAsync(ct);
+                await SaveIntakeRequestAsync(patientId, clientRequestId, fingerprint, check.Id, ct);
                 await transaction.CommitAsync(ct);
 
                 return new NutritionLogResultDto(
@@ -5511,14 +5525,14 @@ public sealed partial class ProgramRepository(
                 // Carrera: otra petición registró la misma comida/hidratación.
                 // El único de habit_checks y el dedupe parcial del libro mayor
                 // protegen; el duplicado se reporta con la misma semántica 409.
-                await transaction.RollbackAsync(ct);
+                try { await transaction.RollbackAsync(ct); } finally { RestoreTracking(); }
                 throw new BusinessRuleViolationException(
                     "HABIT_ALREADY_LOGGED: la comida/hidratación de esa fecha ya fue registrada."
                 );
             }
             catch
             {
-                await transaction.RollbackAsync(ct);
+                try { await transaction.RollbackAsync(ct); } finally { RestoreTracking(); }
                 throw;
             }
         });
@@ -5539,6 +5553,8 @@ public sealed partial class ProgramRepository(
             await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
             try
             {
+                await dbContext.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM app.patient_profiles WHERE id={patientId} FOR UPDATE", ct);
+                await EnsureIntakeAnalysisOwnedAsync(patientId, actorId, intake?.FoodAnalysisId, ct);
                 var enrollment =
                     await dbContext
                         .ProgramEnrollments.FromSqlInterpolated(
@@ -5580,27 +5596,6 @@ public sealed partial class ProgramRepository(
                     );
 
                 // Ownership del análisis (D6, fail-closed): misma regla que el POST.
-                if (intake?.FoodAnalysisId is { } analysisId)
-                {
-                    var analysis = await dbContext
-                        .FoodAnalyses.AsNoTracking()
-                        .FirstOrDefaultAsync(a => a.AnalysisId == analysisId, ct);
-                    if (analysis is null)
-                    {
-                        throw new UnprocessableEntityException(
-                            $"FOOD_ANALYSIS_UNKNOWN: el análisis {analysisId} no existe."
-                        );
-                    }
-
-                    if (analysis.UserId is { } ownerId && ownerId != actorId)
-                    {
-                        throw new UnprocessableEntityException(
-                            $"FOOD_ANALYSIS_OWNER_MISMATCH: el análisis {analysisId} "
-                                + "pertenece a otro usuario."
-                        );
-                    }
-                }
-
                 // Reemplazo completo de la fila de intake anclada al MISMO
                 // habit_check (sin duplicados, sin XP: la edición no otorga).
                 var row = await dbContext.NutritionIntakeLogs.FirstOrDefaultAsync(

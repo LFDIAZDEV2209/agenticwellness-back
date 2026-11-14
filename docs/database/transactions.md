@@ -234,3 +234,13 @@ versiones publicadas históricas, conteos de comidas y registros por rango forma
 un snapshot consistente. El guard se ejecuta antes de entrar; cada query vuelve
 a acotar por el paciente resuelto. Transacción corta sin servicios externos ni
 cargas de fotos; cancelación aborta la lectura y nunca deja escrituras.
+
+## LogNutrition con clave (3.6)
+
+Read Committed, lock paciente → inscripción, igual orden que publicar/retirar.
+Validación de dueño precede a cualquier mutación y cubre POST, replay y PUT.
+Hábito/intake/XP/clave se confirman juntos; la PK por paciente/clave es el backstop
+contra duplicados. El replay devuelve XP0 sin SaveChanges; una clave con otro
+contenido se rechaza. Un fallo tras guardar XP pero antes de guardar la clave
+revierte todo y limpia/restaura solo el tracking introducido por la operación.
+No hay red ni firma de URLs en la transacción.

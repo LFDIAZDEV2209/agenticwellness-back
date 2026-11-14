@@ -496,8 +496,8 @@ public interface IProgramRepository
     /// <c>habit_check</c> de la misma transacción, resuelve el plan-day activo
     /// server-side (referencia null sin plan) y verifica la ownership del
     /// <c>foodAnalysisId</c> contra el <paramref name="actorId"/> (subject del
-    /// JWT, D6): análisis inexistente o de otro usuario → 422
-    /// <c>FOOD_ANALYSIS_*</c>; análisis anónimo → aceptado en v1.
+    /// JWT): análisis inexistente, ajeno o anónimo → 404 sin escritura.
+    /// El actor debe ser también el usuario vinculado al paciente.
     /// </summary>
     Task<NutritionLogResultDto> LogNutritionAsync(
         Guid patientId,
@@ -507,6 +507,10 @@ public interface IProgramRepository
         Guid? actorId = null,
         CancellationToken ct = default
     );
+
+    /// <summary>Alta con clave de reintento; mismo payload no escribe ni vuelve a otorgar XP.</summary>
+    Task<NutritionLogResultDto> LogNutritionAsync(Guid patientId, MealCode mealCode, DateOnly? localDate,
+        NutritionIntakePayload? intake, Guid? actorId, string clientRequestId, CancellationToken ct);
 
     /// <summary>
     /// Actualiza el intake de un log nutricional EXISTENTE (edición del móvil):

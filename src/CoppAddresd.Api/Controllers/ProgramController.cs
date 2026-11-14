@@ -1435,7 +1435,7 @@ public sealed class ProgramController(
                 request.MealCode,
                 request.LocalDate,
                 actorContext.UserId,
-                request.Intake
+                request.Intake, request.ClientRequestId
             ),
             ct
         );
@@ -2308,7 +2308,8 @@ public sealed record DecideClinicalReviewRequest(bool Approve);
 public sealed record LogNutritionRequest(
     MealCode MealCode,
     DateOnly? LocalDate,
-    NutritionIntakePayload? Intake = null
+    NutritionIntakePayload? Intake = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("client_request_id")] string? ClientRequestId = null
 );
 
 /// <summary>
