@@ -81,3 +81,24 @@ de aplicar, verifica los mismos conteos (6 aplicados, 2 iniciados, 2 ajenos),
 prueba solo ajenos y compara todas las semanas/timestamps y el número de filas
 de auditoría antes/después: sin escrituras. La ruta preview fuerza simulación
 aunque el cuerpo pida escribir. La masiva de rutinas también permanece verde.
+
+## 1.29 y cierre de la cadena autorizada
+
+Build final `bin/Validation129/`: 0 errores, advertencias existentes. Unitarios
+completos: **2500 aprobados, 105 omitidos, 0 fallos**. PostgreSQL, clase completa
+`NutritionPlanWorkflowTests`: **100/100**, sin omisiones ni fallos (10 min 32 s).
+Incluye ambos ConservaPreedicion, ambas combinaciones con plantilla vigente y
+los casos nuevos de captura histórica, bitácora, rutina masiva, preview y copia
+de plantilla. Los cuatro recorridos de activación también se ejecutaron antes
+de cada commit de esta cadena.
+
+La copia prueba 83 podcasts y las otras clases, borrador editable, fuente activa,
+otra plantilla e inscripciones intactas; también rechazo de borrador fuente,
+ID inexistente y permiso ausente sin creación parcial.
+
+2.10 queda aceptada por decisión explícita de Luis: relleno legado validado con
+simulación, ejecución, idempotencia y reversa; cero huecos de ejercicio/nutrición.
+Los 50.840 días con huecos de podcast locales siguen pendientes de contenido real
+en 1.14 y no bloquean esta cadena. No se modificaron tasks.md ni OVERVIEW, no se
+hizo push ni despliegue. La migración aditiva de 2.11 requiere aplicación antes
+de desplegar el backend nuevo y solo se ejercitó en las BD efímeras de pruebas.

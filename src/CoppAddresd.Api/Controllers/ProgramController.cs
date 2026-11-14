@@ -846,6 +846,15 @@ public sealed class ProgramController(
 
     // ===================== CLÍNICO/ERP: plantillas =====================
 
+    /// <summary>Crea una nueva versión editable copiando la plantilla activa, sin modificar la fuente.</summary>
+    [HttpPost("templates/{id:guid}/versions")]
+    [RequireContextPermission("Program.Edit")]
+    public async Task<ActionResult<ProgramTemplateDto>> CreateTemplateVersion(Guid id, CancellationToken ct)
+    {
+        var created = await mediator.Send(new CreateTemplateVersionCommand(id), ct);
+        return CreatedAtAction(nameof(GetTemplate), new { id = created.Id }, created);
+    }
+
     /// <summary>Bitácora de una semana, con alcance clínico de la inscripción.</summary>
     [HttpGet("enrollments/{id:guid}/week/{weekNumber:int}/changes")]
     [RequireContextPermission(PermissionCodes.ProgramProfile360View)]
