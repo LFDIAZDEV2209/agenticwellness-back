@@ -158,3 +158,13 @@ Conflictos persistentes dan 409. Validación y cancelación revierten todo el lo
 repetir una selección idéntica no modifica los snapshots. No hay HTTP ni storage
 dentro de la transacción. El detalle del contrato y conteos vive en
 `docs/modules/program-progress/BULK-PATIENT-PODCASTS.md`.
+
+### Archivo administrativo de default-83w (1.16)
+
+`scripts/archive_default_83w.py` bloquea una sola fila de catálogo con FOR UPDATE
+en Read Committed y cambia únicamente su estado. Persiste la preimagen fuera de
+la BD antes del UPDATE; un fallo revierte la transacción y deja el respaldo como
+reversa inocua. No cambia inscripciones/semanas ni hace llamadas externas.
+La simulación es de solo lectura. La reversa comprueba la postimagen completa
+antes de restaurar; repetir archivo o reversa no ejecuta UPDATE. Instrucciones
+y evidencia local en `scripts/README-archive-default-83w.md`.
