@@ -445,6 +445,37 @@ public class AiServiceClient : IAiServiceClient
     )
         => GetThreadStateCoreAsync(threadId, userId, limit, before, false, ct);
 
+    public async Task<ThreadHistoryClearResult> ClearThreadHistoryAsync(
+        string threadId, string userId, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(_settings.InternalApiKey))
+            throw new AiServiceException(503, "Canal interno de historial no configurado.");
+        using var request = new HttpRequestMessage(HttpMethod.Delete,
+            $"{_settings.ApiPrefix}/threads/{Uri.EscapeDataString(threadId)}/state?user_id={Uri.EscapeDataString(userId)}");
+        request.Options.Set(AiConsentHttpHandler.ThreadHistoryDeletion, true);
+        AddInternalKeyHeader(request);
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) await ThrowForResponseAsync(response, ct);
+        if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            throw new AiServiceException(502, "Limpieza de historial sin confirmación válida.");
+
+        ThreadHistoryClearResponseJson? result;
+        try
+        {
+            result = await response.Content.ReadFromJsonAsync<ThreadHistoryClearResponseJson>(JsonOpts, ct);
+        }
+        catch (JsonException)
+        {
+            throw new AiServiceException(502, "Confirmación de limpieza de historial inválida.");
+        }
+        if (result is null || result.ThreadId != threadId || result.HistoryRevision is null or < 0
+            || result.ClearedAt is null || result.ResetReason is not ("manual" or "monthly"))
+            throw new AiServiceException(502, "Confirmación de limpieza de historial incompleta.");
+
+        return new(result.ThreadId, result.HistoryRevision.Value, result.ClearedAt.Value, result.ResetReason);
+    }
+
     public Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
         int? limit = null, int? before = null, CancellationToken ct = default)
         => GetThreadStateCoreAsync(threadId, userId, limit, before, true, ct);
@@ -497,7 +528,8 @@ public class AiServiceClient : IAiServiceClient
                 m.Channel, m.Status, m.Revision, m.Source, m.VoiceSessionId,
                 m.ProviderMessageId, m.SourceEventId, m.ExecutionId)).ToList() ?? [],
             result.HasMore,
-            result.NextCursor, result.VoiceSyncStatus
+            result.NextCursor, result.VoiceSyncStatus,
+            result.HistoryRevision, result.ClearedAt, result.ResetReason
         );
     }
 
@@ -722,8 +754,17 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("messages")] IReadOnlyList<ThreadMessageJson>? Messages = null,
         [property: JsonPropertyName("has_more")] bool HasMore = false,
         [property: JsonPropertyName("next_cursor")] int? NextCursor = null,
-        [property: JsonPropertyName("voice_sync_status")] string? VoiceSyncStatus = null
+        [property: JsonPropertyName("voice_sync_status")] string? VoiceSyncStatus = null,
+        [property: JsonPropertyName("history_revision")] long HistoryRevision = 0,
+        [property: JsonPropertyName("cleared_at")] DateTimeOffset? ClearedAt = null,
+        [property: JsonPropertyName("reset_reason")] string? ResetReason = null
     );
+
+    private sealed record ThreadHistoryClearResponseJson(
+        [property: JsonPropertyName("thread_id")] string? ThreadId,
+        [property: JsonPropertyName("history_revision")] long? HistoryRevision,
+        [property: JsonPropertyName("cleared_at")] DateTimeOffset? ClearedAt,
+        [property: JsonPropertyName("reset_reason")] string? ResetReason);
 
     // Mensaje visible del thread según el contrato del AI Service.
     private sealed record ThreadMessageJson(

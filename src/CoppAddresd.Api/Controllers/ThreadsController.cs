@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CoppAddresd.Application.Features.Threads;
+using CoppAddresd.Application.Common;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Domain.Exceptions;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CoppAddresd.Api.Controllers;
 
 /// <summary>
-/// Lectura (proxy) del estado de un thread del paciente desde el AI Service.
+/// Lectura y limpieza (proxy) del historial de un thread del paciente desde el AI Service.
 /// El frontend NUNCA llama al AI Service directo: este controlador hace de
 /// puente y la X-Internal-Key vive solo en el backend.
 /// </summary>
@@ -21,6 +22,43 @@ public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsContro
     VitaPatientAccess? patientAccess = null)
     : ControllerBase
 {
+    /// <summary>
+    /// Vacía el historial y contexto conversacional de Vita del propietario del JWT (audiencia app).
+    /// No requiere consentimientos de lectura y solo confirma lo que AI haya borrado.
+    /// </summary>
+    [HttpDelete("{threadId}/messages")]
+    [ProducesResponseType(typeof(ThreadHistoryClearResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    public async Task<ActionResult<ThreadHistoryClearResult>> ClearMessages(string threadId, CancellationToken ct)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var ownerId) || ownerId == Guid.Empty)
+            return Unauthorized(new { message = "Usuario no identificado." });
+        if (!User.HasClaim("aud", "app")) return Forbid();
+        ct.ThrowIfCancellationRequested();
+        try
+        {
+            return Ok(await aiService.ClearThreadHistoryAsync(threadId, ownerId.ToString(), ct));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { return HistoryUnavailable(StatusCodes.Status504GatewayTimeout); }
+        catch (AiServiceException ex) when (ex.StatusCode == 404) { return NotFound(); }
+        catch (AiServiceException ex) when (ex.StatusCode == 403) { return Forbid(); }
+        catch (AiServiceException) { return HistoryUnavailable(StatusCodes.Status502BadGateway); }
+        catch (HttpRequestException) { return HistoryUnavailable(StatusCodes.Status503ServiceUnavailable); }
+    }
+
+    private ObjectResult HistoryUnavailable(int status)
+    {
+        logger.LogWarning("No se pudo confirmar la limpieza del historial ({StatusCode})", status);
+        return Problem(statusCode: status, title: "No se pudo vaciar la conversación.",
+            detail: "No se pudo confirmar la limpieza del historial. Inténtalo de nuevo.");
+    }
+
     /// <summary>
     /// Devuelve el historial de un thread (messageCount + lastMessage +
     /// messages en orden) que el paciente verá al abrir el chat tras un

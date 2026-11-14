@@ -23,8 +23,16 @@ public sealed record AiConsentSubject(string Scope, Guid? PatientId = null, Guid
 public sealed class AiConsentHttpHandler(IServiceScopeFactory scopes, IHttpContextAccessor http,
     IOptionsMonitor<LegalConsentSettings>? policy = null) : DelegatingHandler
 {
+    // Solo el cliente interno de historial puede marcar esta retirada; no viene de cabeceras del usuario.
+    internal static readonly HttpRequestOptionsKey<bool> ThreadHistoryDeletion = new("CoppAddresd.ThreadHistoryDeletion");
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
+        // Borrar sigue permitido tras retirar el consentimiento de lectura/procesamiento.
+        if (request.Method == HttpMethod.Delete
+            && request.Options.TryGetValue(ThreadHistoryDeletion, out var clearHistory) && clearHistory)
+            return await base.SendAsync(request, ct);
+
         request.Options.TryGetValue(AiConsentSubject.Key, out var subject);
         if (subject?.RequireVoiceConsent == true)
         {

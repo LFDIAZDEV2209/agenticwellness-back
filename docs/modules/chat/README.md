@@ -18,7 +18,8 @@ historial se documentan en [Vita](../agents/vita.md). AI conserva la persistenci
 │  │   ├── POST /api/v1/chat/stream   → Streaming SSE         │
 │  │   └── POST /api/v1/chat/feedback → Feedback (Fase 9)     │
 │  └── ThreadsController [Authorize] (Fase 9, anti-IDOR)      │
-│      └── GET /api/v1/threads/{id}/messages → Historial      │
+│      ├── GET /api/v1/threads/{id}/messages → Historial      │
+│      └── DELETE /api/v1/threads/{id}/messages → Vaciar Vita │
 ├─────────────────────────────────────────────────────────────┤
 │  Application (MediatR)                                      │
 │  ├── ChatCommand / ChatCommandHandler                       │
@@ -86,7 +87,7 @@ La app móvil reconstruye la conversación tras un re-login con
    (ClaimTypes.NameIdentifier); el query param `userId` se conserva por
    compatibilidad pero se IGNORA siempre — nunca define identidad ni alcance.
 3. Backend → AI Service GET /api/v1/threads/{thread_id}/state?user_id=…&limit=…&before=… (canal interno X-Internal-Key).
-4. Respuesta: { threadId, messageCount, lastMessage, messages: [{ role: "user"|"bot", text }], hasMore, nextCursor }
+4. Respuesta: { threadId, messageCount, lastMessage, messages: [{ role: "user"|"bot", text }], hasMore, nextCursor, historyRevision, clearedAt, resetReason }
 5. Paginación hacia atrás: `before` saltea mensajes visibles desde el más nuevo y `nextCursor` es el `before` de la próxima página.
 6. Si el AI Service falla o el thread no existe → 200 con estado vacío (nunca 500).
 ```
@@ -95,6 +96,99 @@ Contrato aditivo: `messages` viaja en orden cronológico y el AI Service
 devuelve la página solicitada (paginación por `limit`/`before`, tope 100
 visibles). Un ai-service anterior no envía el campo: el backend lo degrada a
 lista vacía sin romper `messageCount` ni `lastMessage`.
+
+## Limpieza del historial Vita (manual y mensual)
+
+Contrato coordinado: `openspec/changes/vita-asistente-integral/HISTORIAL-MENSUAL.md`
+del workspace. `DELETE /api/v1/threads/{threadId}/messages` requiere un JWT válido
+con audiencia `app` y propietario UUID en `sub` (mapeado a
+`ClaimTypes.NameIdentifier`). El servidor ignora cualquier autoridad de usuario
+en query, cuerpo o cabeceras del cliente. No requiere perfil clínico activo ni
+consentimientos de lectura/chat/voz: retirar el consentimiento no impide borrar.
+El bypass de consentimiento es una opción interna del cliente HTTP, exclusiva
+de esta operación DELETE; no es una cabecera aceptada del usuario.
+
+BACK envía `DELETE /api/v1/threads/{thread_id}/state?user_id=…` a AI con
+`X-Internal-Key`, sin cuerpo. AI comprueba el namespace del propietario y es
+autoridad del borrado de checkpoints, mensajes y vínculos de voz. BACK no borra
+tablas clínicas ni crea un historial paralelo.
+
+Confirmación pública (HTTP 200, camelCase):
+
+```json
+{
+  "threadId": "thread-synthetic",
+  "historyRevision": 3,
+  "clearedAt": "2026-11-01T05:00:00Z",
+  "resetReason": "manual"
+}
+```
+
+AI devuelve exactamente estos campos en snake_case. BACK exige HTTP 200, hilo
+coincidente, revisión entera no negativa, fecha válida y motivo `manual|monthly`.
+Un 202/204, JSON inválido o confirmación incompleta nunca se convierten en éxito.
+La idempotencia y la revisión persistida las controla AI: BACK no incrementa ni
+inventa metadatos y permite repetir la petición tras un fallo de transporte.
+
+| Resultado de AI/transporte | Respuesta pública DELETE |
+| --- | --- |
+| Confirmación válida | 200 con los cuatro campos |
+| Propiedad rechazada / hilo ausente | 403 / 404, sin detalle privado |
+| Otro error HTTP, confirmación inválida o incompleta | 502 ProblemDetails |
+| Error de red | 503 ProblemDetails |
+| Timeout sin cancelación del cliente | 504 ProblemDetails |
+| Cancelación del cliente | Se propaga; middleware existente usa 499 si puede responder |
+
+Los errores no exponen cuerpos de AI ni credenciales; nunca devuelven una
+confirmación local. Un timeout no permite saber si AI alcanzó a borrar: el
+cliente debe reintentar y usar la confirmación persistida, no asumir éxito.
+`CancellationToken` se propaga desde HTTP hasta envío y lectura de respuesta AI.
+
+GET añade `historyRevision` (entero inicial 0), `clearedAt` y `resetReason`
+(null antes de una limpieza). Conserva todos los campos anteriores, incluso
+`voiceSyncStatus` cuando se solicita sincronización autorizada de voz. AI legado
+sin metadatos conserva defaults `0/null/null`. Un hilo limpiado puede devolver
+`messageCount=0`, `lastMessage=null`, `messages=[]` con revisión mayor: la app debe
+invalidar su caché por revisión, aunque no exista último mensaje. La degradación
+histórica de GET ante fallo sigue en 200 vacío con revisión 0; ese fallback no
+acredita una limpieza y no debe reemplazar una revisión mayor ya conocida.
+
+La retención mensual corresponde a AI: primer día del mes a las 00:00 de
+`America/Bogota`, exclusivamente conversaciones Vita opt-in de app, con mes
+persistido, comprobación al abrir/turno y barrido periódico. BACK solo proyecta
+los metadatos. Planes, resultados, documentos y registros clínicos se conservan.
+La app termina la llamada, confirma localmente la limpieza manual e invalida
+peticiones/streams, mensajes y cursores manteniendo `threadId`.
+
+Pruebas locales:
+
+```powershell
+dotnet test tests/CoppAddresd.UnitTests --filter "FullyQualifiedName~ThreadHistory"
+```
+
+Cubren JWT firmado (ausente, vencido,
+firma incorrecta, audiencia y propietario), suplantación por body/query/header,
+propiedad enviada a AI, confirmación/errores, consentimiento retirado,
+compatibilidad GET y cancelación HTTP hasta transporte. Usan únicamente fixtures
+sintéticos y transporte AI simulado, sin BD ni proveedor de voz. No acreditan el
+borrado real de checkpoints, retención o aislamiento entre réplicas de AI;
+root debe verificar AI→BACK→app con los commits integrados antes de publicar.
+
+Validación de esta ampliación en `vita-history-back` (2026-11-14):
+
+| Comando | Resultado local |
+| --- | --- |
+| `dotnet build --no-restore --nologo` | 0 errores, 0 advertencias (incremental; build inicial: 13 advertencias en archivos ajenos) |
+| `dotnet test tests/CoppAddresd.UnitTests --no-restore --filter "FullyQualifiedName~ThreadHistory" --logger "console;verbosity=minimal"` | 50 correctas, 0 fallos, 0 omitidas |
+| `dotnet test tests/CoppAddresd.UnitTests --no-restore --logger "console;verbosity=minimal"` | 2595 correctas, 0 fallos, 105 omitidas |
+| `git diff --check` | Sin errores |
+
+La suite completa se ejecutó antes de corregir únicamente el nombre del setting
+de consentimiento del nuevo host de pruebas (`LegalConsents`); las 50 específicas
+se repitieron después con enforcement activo. Las omitidas pertenecen a pruebas
+existentes que requieren PostgreSQL. No se ejecutó integración contra AI/voz ni
+se aplicaron migraciones. Postman CLI 1.76.0 responde `unknown command 'status'`;
+la evidencia se conserva en pruebas .NET locales, sin publicar recursos Postman.
 
 ## Feedback del chat (Fase 9, adaptive memory)
 

@@ -71,6 +71,13 @@ public interface IAiServiceClient
         CancellationToken ct = default
     );
 
+    /// <summary>
+    /// Vacía el historial del propietario autenticado y devuelve la confirmación persistida por AI.
+    /// No exige consentimiento de lectura; nunca degrada fallos a una confirmación local.
+    /// </summary>
+    Task<ThreadHistoryClearResult> ClearThreadHistoryAsync(
+        string threadId, string userId, CancellationToken ct = default);
+
     /// <summary>Opt-in interno solo tras autorizar paciente/propiedad y consentimiento chat+voz.</summary>
     async Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
         int? limit = null, int? before = null, CancellationToken ct = default)

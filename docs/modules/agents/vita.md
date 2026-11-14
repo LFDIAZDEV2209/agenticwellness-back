@@ -239,6 +239,22 @@ feedback desde el snapshot canónico. AI lo obtiene del ExecutionTracker real de
 mensaje de texto; legado/voz sin correlación conservan null. BACK lo proyecta
 directamente, sin inferir por texto/orden ni consultar una ejecución por mensaje.
 
+### Limpieza del historial (ampliación autorizada)
+
+`DELETE /api/v1/threads/{threadId}/messages` permite al propietario del JWT
+(`aud=app`) vaciar la conversación sin exigir consentimientos de lectura. Proxy
+interno: `DELETE /api/v1/threads/{thread_id}/state?user_id=…` con `X-Internal-Key`;
+AI sigue siendo la autoridad de checkpoints, proyecciones y vínculos de voz.
+Solo una confirmación AI válida produce 200 `{threadId, historyRevision,
+clearedAt, resetReason}`; fallos nunca generan éxito local. GET añade esos
+metadatos conservando paginación y campos existentes, también con historial
+vacío. AI legado usa revisión 0 y fecha/motivo null.
+
+El mes se corta en AI el primer día a las 00:00 de America/Bogota, únicamente
+para Vita opt-in de app. BACK no programa barridos ni modifica registros
+clínicos. Alcance, errores, compatibilidad, cancelación y límites de las pruebas:
+[contrato del módulo de chat](../chat/README.md#limpieza-del-historial-vita-manual-y-mensual).
+
 ## Verificación y límites
 
 Tests de unidad y pipeline HTTP con AI simulado cubren auth, claves, cabeceras,

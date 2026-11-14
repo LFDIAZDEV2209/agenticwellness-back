@@ -64,6 +64,10 @@ public class ChatCommandHandlerTests
             CancellationToken ct = default
         ) => throw new NotImplementedException();
 
+        public Task<ThreadHistoryClearResult> ClearThreadHistoryAsync(
+            string threadId, string userId, CancellationToken ct = default
+        ) => throw new NotImplementedException();
+
         public Task<CoppAddresd.Application.DTOs.LabExam.LabExamAiResponse> ExtractLabMetricsAsync(
             Guid patientId,
             Guid batchId,
