@@ -4,7 +4,8 @@ namespace CoppAddresd.Application.Features.Threads;
 /// Mensaje visible del historial de un thread (contrato aditivo del AI
 /// Service): <c>role</c> ("user" | "bot") + <c>text</c>, en el orden del thread.
 /// </summary>
-public record ThreadMessageResult(string Role, string Text);
+public record ThreadMessageResult(string Role, string Text, string? MessageId = null,
+    string Channel = "text", string Status = "final", int Revision = 1);
 
 /// <summary>
 /// Resumen del historial de un thread devuelto por el AI Service (proxy de

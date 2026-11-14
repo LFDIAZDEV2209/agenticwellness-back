@@ -126,4 +126,8 @@ public interface IAiServiceClient
         VoiceSessionInternalRequest request,
         CancellationToken ct = default
     );
+
+    /// <summary>Revoca una sesión de voz del mismo usuario, sin depender del consentimiento retirado.</summary>
+    Task RevokeVoiceSessionAsync(string sessionId, string userId, CancellationToken ct = default)
+        => throw new NotSupportedException("Revocación de voz no implementada.");
 }

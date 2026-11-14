@@ -2,6 +2,10 @@
 
 Integración con el AI Service (Python) vía HTTP, con soporte para chat síncrono y streaming SSE.
 
+La fachada de capacidades Vita, el proxy de voz y los campos aditivos del
+historial se documentan en [Vita](../agents/vita.md). AI conserva la persistencia
+única del hilo; BACK preserva IDs/canal/estado/revisión y las acciones/fuentes.
+
 ## Arquitectura
 
 ```

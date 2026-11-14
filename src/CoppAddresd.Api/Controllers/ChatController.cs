@@ -130,6 +130,7 @@ public class ChatController : ControllerBase
     /// </summary>
     [HttpPost("voice/session")]
     [CoppAddresd.Api.Authorization.RequireAiConsent("voice")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [ProducesResponseType(typeof(VoiceSessionResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
@@ -158,15 +159,8 @@ public class ChatController : ControllerBase
         {
             // El ai-service (o ElevenLabs) rechazó la emisión: detalle interno
             // en log, al paciente un mensaje amigable sin trazas.
-            _logger.LogError(
-                ex,
-                "AI Service rechazó la sesión de voz (status {Status}): {Detail}",
-                ex.StatusCode,
-                ex.Detail
-            );
-            var status = ex.StatusCode is 503
-                ? StatusCodes.Status503ServiceUnavailable
-                : StatusCodes.Status502BadGateway;
+            _logger.LogWarning("AI Service rechazó la sesión de voz (status {Status})", ex.StatusCode);
+            var status = ex.StatusCode switch { 403 => 403, 404 => 404, 503 => 503, _ => 502 };
             return StatusCode(
                 status,
                 new ProblemDetails
@@ -201,6 +195,8 @@ public class ChatController : ControllerBase
             );
         }
         catch (CoppAddresd.Domain.Exceptions.AiConsentException) { throw; }
+        catch (CoppAddresd.Domain.Exceptions.ForbiddenException) { throw; }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Voice session request failed");

@@ -132,7 +132,7 @@ public class AiServiceClient : IAiServiceClient
             result.ExecutionId,
             result.Agent,
             result.Suggestions,
-            result.ControlSignal
+            result.ControlSignal, result.Actions, result.Sources ?? result.DataSources, result.VersionId
         );
     }
 
@@ -420,8 +420,18 @@ public class AiServiceClient : IAiServiceClient
         return new VoiceSessionResponseDto(
             result.SignedUrl,
             result.AgentId ?? string.Empty,
-            result.ConversationId
+            result.ConversationId, result.ThreadId, result.SessionId, result.SessionToken,
+            result.ExpiresAt, result.RuntimeMode ?? "legacy"
         );
+    }
+
+    public async Task RevokeVoiceSessionAsync(string sessionId, string userId, CancellationToken ct = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete,
+            $"{_settings.VoiceSessionEndpoint.TrimEnd('/')}/{Uri.EscapeDataString(sessionId)}?user_id={Uri.EscapeDataString(userId)}");
+        AddInternalKeyHeader(request);
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) await ThrowForResponseAsync(response, ct);
     }
 
     public async Task<ThreadStateResult> GetThreadStateAsync(
@@ -468,7 +478,8 @@ public class AiServiceClient : IAiServiceClient
             result.ThreadId,
             result.MessageCount,
             result.LastMessage,
-            result.Messages?.Select(m => new ThreadMessageResult(m.Role, m.Text)).ToList() ?? [],
+            result.Messages?.Select(m => new ThreadMessageResult(m.Role, m.Text, m.MessageId,
+                m.Channel, m.Status, m.Revision)).ToList() ?? [],
             result.HasMore,
             result.NextCursor
         );
@@ -654,7 +665,11 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("agent")] string? Agent = null,
         [property: JsonPropertyName("suggestions")]
             IReadOnlyList<ChatSuggestion>? Suggestions = null,
-        [property: JsonPropertyName("control_signal")] string? ControlSignal = null
+        [property: JsonPropertyName("control_signal")] string? ControlSignal = null,
+        [property: JsonPropertyName("actions")] IReadOnlyList<CoppAddresd.Application.Features.Agents.Vita.VitaActionDto>? Actions = null,
+        [property: JsonPropertyName("sources")] JsonElement? Sources = null,
+        [property: JsonPropertyName("data_sources")] JsonElement? DataSources = null,
+        [property: JsonPropertyName("version_id")] string? VersionId = null
     );
 
     private record DoneJson(string ThreadId);
@@ -696,7 +711,11 @@ public class AiServiceClient : IAiServiceClient
     // Mensaje visible del thread según el contrato del AI Service.
     private sealed record ThreadMessageJson(
         [property: JsonPropertyName("role")] string Role,
-        [property: JsonPropertyName("text")] string Text
+        [property: JsonPropertyName("text")] string Text,
+        [property: JsonPropertyName("message_id")] string? MessageId = null,
+        [property: JsonPropertyName("channel")] string Channel = "text",
+        [property: JsonPropertyName("status")] string Status = "final",
+        [property: JsonPropertyName("revision")] int Revision = 1
     );
 
     // Contrato del endpoint de feedback: eco del thread/rating más si la
@@ -720,6 +739,11 @@ public class AiServiceClient : IAiServiceClient
     private sealed record VoiceSessionResponseJson(
         [property: JsonPropertyName("signed_url")] string? SignedUrl,
         [property: JsonPropertyName("agent_id")] string? AgentId,
-        [property: JsonPropertyName("conversation_id")] string? ConversationId = null
+        [property: JsonPropertyName("conversation_id")] string? ConversationId = null,
+        [property: JsonPropertyName("thread_id")] string? ThreadId = null,
+        [property: JsonPropertyName("session_id")] string? SessionId = null,
+        [property: JsonPropertyName("session_token")] string? SessionToken = null,
+        [property: JsonPropertyName("expires_at")] DateTimeOffset? ExpiresAt = null,
+        [property: JsonPropertyName("runtime_mode")] string? RuntimeMode = null
     );
 }

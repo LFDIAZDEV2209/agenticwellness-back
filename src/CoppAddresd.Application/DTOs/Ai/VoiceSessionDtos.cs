@@ -23,4 +23,6 @@ public record VoiceSessionInternalRequest(string UserId, string? PatientId, stri
 /// El <c>SignedUrl</c> es de vida corta y solo viaja por HTTPS en esta
 /// respuesta: jamás se persiste, se loguea ni se expone la API key.
 /// </summary>
-public record VoiceSessionResponseDto(string SignedUrl, string AgentId, string? ConversationId);
+public record VoiceSessionResponseDto(string SignedUrl, string AgentId, string? ConversationId,
+    string? ThreadId = null, string? SessionId = null, string? SessionToken = null,
+    DateTimeOffset? ExpiresAt = null, string RuntimeMode = "legacy");

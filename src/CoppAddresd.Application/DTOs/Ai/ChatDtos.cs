@@ -1,3 +1,6 @@
+using System.Text.Json;
+using CoppAddresd.Application.Features.Agents.Vita;
+
 namespace CoppAddresd.Application.DTOs.Ai;
 
 /// <summary>
@@ -56,7 +59,10 @@ public record ChatResponse(
     string? ExecutionId = null,
     string? Agent = null,
     IReadOnlyList<ChatSuggestion>? Suggestions = null,
-    string? ControlSignal = null);
+    string? ControlSignal = null,
+    IReadOnlyList<VitaActionDto>? Actions = null,
+    JsonElement? Sources = null,
+    string? VersionId = null);
 
 /// <summary>
 /// Resultado de la inyección proactiva de un mensaje del bot en el thread

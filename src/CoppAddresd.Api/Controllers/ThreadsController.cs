@@ -14,6 +14,7 @@ namespace CoppAddresd.Api.Controllers;
 [ApiController]
 [Route("api/v1/threads")]
 [Authorize]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsController> logger)
     : ControllerBase
 {
@@ -57,6 +58,7 @@ public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsContro
             var state = await aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct);
             return Ok(state);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             // Degradación: el AI Service puede no estar disponible o el thread
