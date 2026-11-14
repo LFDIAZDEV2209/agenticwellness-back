@@ -2,6 +2,7 @@ using CoppAddresd.Application.DTOs.ProgramProgress;
 using CoppAddresd.Application.Features.ProgramProgress;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.ReplaceEnrollmentWeekTasks;
+using CoppAddresd.Application.Features.ProgramProgress.Commands.SetWeekContent;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Application.Services;
 using CoppAddresd.Domain.Entities;
@@ -14,11 +15,54 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using MediatR;
 
 namespace CoppAddresd.IntegrationTests;
 
 public sealed partial class NutritionPlanWorkflowTests
 {
+    [NutritionPostgresFact]
+    public async Task SemanaContenido_GuardaSoloSnapshot_NoCreaNiModificaAsignacionesAntiguas_YAjenoRechazado()
+    {
+        await using var db = Context(); var seed = await FutureEditingSeedAsync(db);
+        var patient = await db.PatientProfiles.SingleAsync(p => p.Id == seed.Patient);
+        var professional = NutritionProfessional(seed.Patient); db.Professionals.Add(professional);
+        db.PatientProfessionalAssignments.Add(new() { PatientId = seed.Patient, ProfessionalId = professional.Id });
+        var replacement = new ExerciseRoutine { Id = Guid.NewGuid(), Name = "Rutina nueva", Status = NutritionPlanStatus.Active };
+        var legacyRoutine = new RoutineAssignment { Id = Guid.NewGuid(), PatientId = seed.Patient, RoutineId = seed.Routine,
+            Status = AssignmentStatus.Active, StartDate = seed.Start.ToDateTime(TimeOnly.MinValue) };
+        var legacyPlan = new NutritionPlanAssignment { Id = Guid.NewGuid(), PatientId = seed.Patient, PlanId = seed.Plan,
+            Status = AssignmentStatus.Active, StartDate = seed.Start.ToDateTime(TimeOnly.MinValue) };
+        db.ExerciseRoutines.Add(replacement); db.RoutineAssignments.Add(legacyRoutine); db.NutritionPlanAssignments.Add(legacyPlan); await db.SaveChangesAsync();
+        var actor = Substitute.For<IPatientScopeActor>(); actor.UserId.Returns(patient.UserId);
+        actor.ProfessionalIdAsync(Arg.Any<CancellationToken>()).Returns(professional.Id);
+        actor.HasPermissionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+        var guard = new PatientScopeGuard(actor, new PatientScopeStore(db)); var repo = EffectiveRepository(db);
+        var editor = new ReplaceEnrollmentWeekTasksCommandHandler(repo, NullLogger<ReplaceEnrollmentWeekTasksCommandHandler>.Instance, guard);
+        var sender = Substitute.For<ISender>();
+        sender.Send(Arg.Any<ReplaceEnrollmentWeekTasksCommand>(), Arg.Any<CancellationToken>())
+            .Returns(call => editor.Handle(call.Arg<ReplaceEnrollmentWeekTasksCommand>(), call.Arg<CancellationToken>()));
+        var handler = new SetWeekContentHandler(repo, new WellnessRepository(db), sender, guard);
+        var saved = await handler.Handle(new(seed.Enrollment, 2, seed.Plan, replacement.Id, patient.UserId), default);
+        Assert.Equal(replacement.Id, saved.ExerciseRoutine!.Id);
+        var week = await db.ProgramWeeks.AsNoTracking().SingleAsync(w => w.EnrollmentId == seed.Enrollment && w.WeekNumber == 2);
+        var rows = WeekSnapshotJson.Parse(week.TasksSnapshot);
+        Assert.Equal(7, rows.Count(r => r.TaskCode == "ejercicio" && r.RoutineId == replacement.Id && r.Origin == "individual"));
+        Assert.Equal(7, rows.Count(r => r.TaskCode == "nut" && r.NutritionPlanId == seed.Plan && r.Origin == "individual"));
+        Assert.Equal(7, rows.Count(r => r.TaskCode == "podcast" && r.MediaId == seed.Podcast));
+        await handler.Handle(new(seed.Enrollment, 2, null, null, patient.UserId), default);
+        var reset = WeekSnapshotJson.Parse((await db.ProgramWeeks.AsNoTracking().SingleAsync(w => w.Id == week.Id)).TasksSnapshot);
+        Assert.All(reset, row => Assert.Equal("program", row.Origin));
+        var oldRoutine = Assert.Single(await db.RoutineAssignments.AsNoTracking().ToArrayAsync());
+        Assert.Equal(legacyRoutine.Id, oldRoutine.Id); Assert.Equal(AssignmentStatus.Active, oldRoutine.Status); Assert.Null(oldRoutine.EndDate); Assert.Null(oldRoutine.UpdatedAt);
+        var oldPlan = Assert.Single(await db.NutritionPlanAssignments.AsNoTracking().ToArrayAsync());
+        Assert.Equal(legacyPlan.Id, oldPlan.Id); Assert.Equal(AssignmentStatus.Active, oldPlan.Status); Assert.Null(oldPlan.EndDate); Assert.Null(oldPlan.UpdatedAt);
+        var foreign = await PatientAsync(db); var other = new ProgramEnrollment { Id = Guid.NewGuid(), PatientId = foreign.Id, TemplateId = seed.Template, StartLocalDate = seed.Start };
+        db.ProgramEnrollments.Add(other); await db.SaveChangesAsync();
+        await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new(other.Id, 2, seed.Plan, replacement.Id, patient.UserId), default));
+        Assert.False(await db.ProgramWeeks.AnyAsync(w => w.EnrollmentId == other.Id));
+    }
+
     private async Task<EffectiveSeed> FutureEditingSeedAsync(CoppAddresd.Infrastructure.Persistence.AppDbContext db)
     {
         var seed = await EffectiveSeedAsync(db); var start = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(21);

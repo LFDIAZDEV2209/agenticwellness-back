@@ -1,5 +1,16 @@
 # Rutinas por día — Fase 2
 
+## Editor semanal anterior — 2.9
+
+`SetWeekContentHandler` delega la escritura a `ReplaceEnrollmentWeekTasks`.
+Asigna plan/rutina en las celdas de los días reales de esa semana como individual,
+conservando podcasts y otras clases. Un ID null restablece esa dimensión al
+programa; no elimina su misión ni su respaldo. Respeta semana iniciada y alcance
+antes de leer la inscripción. No crea, completa ni recorta ninguna fila de
+`routine_assignments` o `nutrition_plan_assignments`: este flujo las conserva
+solo como lectura de respaldo. El rango antiguo reutiliza la misma operación
+por semana. La semana 12 termina en el día 83.
+
 ## Edición semanal — 2.8
 
 El PUT existente `/api/v1/program/enrollments/{id}/week/{weekNumber}/tasks`
