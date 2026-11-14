@@ -145,6 +145,17 @@ public class WellnessController(
         return result is null ? NotFound(new { message = "Rutina de ejercicio no encontrada" }) : Ok(result);
     }
 
+    /// <summary>Duplica una rutina y sus ejercicios conservando las demostraciones; paciente opcional sujeto a alcance.</summary>
+    [HttpPost("exercise-routines/{sourceRoutineId:guid}/clone")]
+    [RequireContextPermission(PermissionCodes.WellnessManage)]
+    [PatientScope("request.PatientId", "Wellness.Manage", Optional = true)]
+    public async Task<ActionResult<ExerciseRoutineDto>> CloneExerciseRoutine(Guid sourceRoutineId, CancellationToken ct,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] CloneExerciseRoutineRequest? request = null)
+    {
+        var result = await mediator.Send(new CloneExerciseRoutineCommand(sourceRoutineId, request ?? new()), ct);
+        return CreatedAtAction(nameof(GetExerciseRoutine), new { id = result.Id }, result);
+    }
+
     [HttpDelete("exercise-routines/{id:guid}")]
     [RequireContextPermission(PermissionCodes.WellnessManage)]
     public async Task<IActionResult> DeleteExerciseRoutine(Guid id, CancellationToken ct)

@@ -62,6 +62,7 @@ public sealed class CreateExerciseRoutineCommandHandler(
             Id = Guid.NewGuid(),
             Name = r.Name.Trim(),
             Description = string.IsNullOrWhiteSpace(r.Description) ? null : r.Description.Trim(),
+            Contraindications = string.IsNullOrWhiteSpace(r.Contraindications) ? null : r.Contraindications.Trim(),
             Difficulty = r.Difficulty,
             EstimatedMinutes = r.EstimatedMinutes,
             Category = r.Category,
@@ -154,6 +155,9 @@ public sealed class UpdateExerciseRoutineCommandHandler(
         var r = request.Request;
         routine.Name = r.Name.Trim();
         routine.Description = string.IsNullOrWhiteSpace(r.Description) ? null : r.Description.Trim();
+        // Clientes anteriores omiten el campo: no deben borrar advertencias ya guardadas.
+        if (r.Contraindications is not null)
+            routine.Contraindications = string.IsNullOrWhiteSpace(r.Contraindications) ? null : r.Contraindications.Trim();
         routine.Difficulty = r.Difficulty;
         routine.EstimatedMinutes = r.EstimatedMinutes;
         routine.Category = r.Category;

@@ -24,6 +24,10 @@ public sealed class ExerciseRoutineConfiguration : IEntityTypeConfiguration<Exer
         builder.Property(x => x.Description)
             .HasColumnName("description");
 
+        builder.Property(x => x.Contraindications)
+            .HasColumnName("contraindications")
+            .HasColumnType("text");
+
         builder.Property(x => x.Difficulty)
             .HasColumnName("difficulty")
             .HasMaxLength(20);

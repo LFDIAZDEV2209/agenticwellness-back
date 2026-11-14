@@ -117,7 +117,8 @@ public record ExerciseRoutineDto(
     Guid? MediaId, Guid? CreatedBy,
     DateTime CreatedAt, DateTime? UpdatedAt,
     IReadOnlyList<RoutineExerciseDto> Exercises,
-    Guid? AssignmentId = null)
+    Guid? AssignmentId = null,
+    string? Contraindications = null)
 {
     public static ExerciseRoutineDto FromEntity(Domain.Entities.ExerciseRoutine r, Guid? assignmentId = null) => new(
         r.Id, r.Name, r.Description,
@@ -128,7 +129,7 @@ public record ExerciseRoutineDto(
         r.MediaId, r.CreatedBy,
         r.CreatedAt, r.UpdatedAt,
         r.Exercises.Select(RoutineExerciseDto.FromEntity).ToList(),
-        assignmentId);
+        assignmentId, r.Contraindications);
 }
 
 public record ExerciseRoutineListItemDto(
@@ -136,14 +137,14 @@ public record ExerciseRoutineListItemDto(
     RoutineDifficulty Difficulty, int? EstimatedMinutes,
     RoutineCategory Category, NutritionPlanStatus Status,
     string? TargetMuscles, string? Equipment,
-    DateTime CreatedAt)
+    DateTime CreatedAt, string? Contraindications = null)
 {
     public static ExerciseRoutineListItemDto FromEntity(Domain.Entities.ExerciseRoutine r) => new(
         r.Id, r.Name, r.Description,
         r.Difficulty, r.EstimatedMinutes,
         r.Category, r.Status,
         r.TargetMuscles, r.Equipment,
-        r.CreatedAt);
+        r.CreatedAt, r.Contraindications);
 }
 
 public record RoutineExerciseDto(
@@ -171,7 +172,8 @@ public record CreateExerciseRoutineRequest(
     string? WarmupNotes, string? CooldownNotes,
     Guid? MediaId,
     IReadOnlyList<CreateRoutineExerciseRequest>? Exercises,
-    Guid? PatientId = null);
+    Guid? PatientId = null,
+    string? Contraindications = null);
 
 public record CreateRoutineExerciseRequest(
     string Name, string? Description,
@@ -188,7 +190,8 @@ public record UpdateExerciseRoutineRequest(
     string? TargetMuscles, string? Equipment,
     string? WarmupNotes, string? CooldownNotes,
     Guid? MediaId,
-    IReadOnlyList<CreateRoutineExerciseRequest>? Exercises);
+    IReadOnlyList<CreateRoutineExerciseRequest>? Exercises,
+    string? Contraindications = null);
 
 public record PaginatedExerciseRoutineResult(
     IReadOnlyList<ExerciseRoutineListItemDto> Data, int Total, int Page, int PageSize, int TotalPages);

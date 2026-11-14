@@ -1342,6 +1342,10 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("category");
 
+                    b.Property<string>("Contraindications")
+                        .HasColumnType("text")
+                        .HasColumnName("contraindications");
+
                     b.Property<string>("CooldownNotes")
                         .HasColumnType("text")
                         .HasColumnName("cooldown_notes");

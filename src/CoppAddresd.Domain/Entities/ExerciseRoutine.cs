@@ -14,6 +14,9 @@ public sealed class ExerciseRoutine
 
     public string? Description { get; set; }
 
+    /// <summary>Advertencias y contraindicaciones para revisar antes de asignar la rutina.</summary>
+    public string? Contraindications { get; set; }
+
     public RoutineDifficulty Difficulty { get; set; } = RoutineDifficulty.Moderado;
 
     /// <summary>Duración estimada de la rutina completa en minutos.</summary>
