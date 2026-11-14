@@ -17,7 +17,8 @@ public sealed class EffectiveDayContentStore(AppDbContext db, IPatientScopeGuard
         ct.ThrowIfCancellationRequested();
         var guard = patientScope ?? throw new InvalidOperationException("Se requiere el guard de alcance.");
         var query = db.ProgramEnrollments.AsNoTracking().Where(e => e.Status == ProgramEnrollmentStatus.Active
-            && e.Patient!.DeletedAt == null && (!templateId.HasValue || e.TemplateId == templateId));
+            && e.Patient!.DeletedAt == null && e.Patient.Status == "Activo"
+            && (!templateId.HasValue || e.TemplateId == templateId));
         query = await guard.FilterAsync(query, e => e.PatientId, permission, ct);
         // El filtro de alcance precede a la materialización y a cualquier conteo.
         var windows = await query.Select(e => new { e.Id, Start = e.StartLocalDate,

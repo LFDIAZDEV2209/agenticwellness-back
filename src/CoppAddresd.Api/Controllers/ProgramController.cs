@@ -1871,10 +1871,14 @@ public sealed class ProgramController(
         return new EmptyResult();
     }
 
-    /// <summary>
-    /// Vista de hoy para el ERP (SPEC §23, AC-51): KPIs por misión, feed en vivo,
-    /// pendientes críticos y heatmap semanal.
-    /// </summary>
+    /// <summary>Huecos de podcast, rutina y nutrición en los días restantes de pacientes activos asignados.</summary>
+    [HttpGet("erp/content-gaps")]
+    [RequireContextPermission("Program.View")]
+    public async Task<ActionResult<ContentGapsDto>> GetContentGaps(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default) =>
+        Ok(await mediator.Send(new GetContentGapsQuery(page, pageSize), ct));
+
+    /// <summary>Vista de hoy para el ERP: KPIs por misión, pendientes críticos y heatmap semanal.</summary>
     [HttpGet("erp/today")]
     [RequirePermission("Program.View")]
     public async Task<ActionResult<ProgramErpTodayDto>> GetErpToday(CancellationToken ct) =>

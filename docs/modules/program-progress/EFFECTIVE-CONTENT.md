@@ -96,3 +96,19 @@ Completar el contenido permite publicar e incrementa versión como antes. La pla
 archivada mantiene su rechazo 409. El día 84 queda fuera de la simulación. Catálogos
 compartidos y lecturas de pacientes reutilizan los mismos filtros de publicación,
 actividad y propiedad de referencias. Esta tarea no crea migraciones.
+
+## Consulta de huecos — 1.10b
+
+`GET /api/v1/program/erp/content-gaps?page=1&pageSize=20` requiere `Program.View`
+y alcance por paciente asignado (Admin ve todos). Devuelve `{items, total, page,
+pageSize, totalPages}`; cada ítem contiene `patientId`, `enrollmentId`, `date`,
+`weekNumber`, `weekday` y `missingClasses` (`podcast`, `ejercicio`, `nut`). Total
+cuenta días con hueco, no clases. Orden estable por paciente, inscripción y fecha;
+pageSize entre 1 y 100. Una página fuera del rango conserva total y devuelve items vacío.
+
+Evalúa inscripciones activas desde hoy en su zona horaria hasta el último día;
+excluye pasado, inscripciones agotadas y el día 84 del programa nuevo. El legado
+archivado conserva su duración. Usa el resolvedor 1.9 y precarga por conjuntos:
+snapshot futuro vacío no implica hueco y descanso explícito cubre ejercicio.
+No escribe datos ni devuelve nombres, identificadores o conteos de pacientes ajenos.
+La reparación 1.14 debe dejar este resultado en cero; 1.10b no repara por sí misma.
