@@ -171,6 +171,14 @@ respuestas de tests y cambios de plan quedan fuera de estas escrituras.
 
 ## Voz, historial y compatibilidad
 
+Texto: `POST /api/v1/chat` y `/api/v1/chat/stream` admiten `supportsVita:boolean`
+opcional default false. DTO y commands conservan firmas mediante parámetro opcional
+final; upstream envía `supports_vita`. AI solo usa runtime nuevo con enabled+true.
+False/ausente mantiene legacy, playground ERP y consumidores internos/WhatsApp.
+El opt-in declara compatibilidad, no concede permisos: usuario desde JWT y catálogo/
+agente autorizado siguen siendo autoridad. No se aceptan userId/customerId del body
+como identidad ni se activa configuración remota desde este campo.
+
 Crear sesión preserva `signedUrl/agentId/conversationId` y añade opcionales
 `threadId/sessionId/sessionToken/expiresAt/runtimeMode`. BACK resuelve el perfil
 y no acepta `patientId` del cliente. AI firma/verifica el token reducido y

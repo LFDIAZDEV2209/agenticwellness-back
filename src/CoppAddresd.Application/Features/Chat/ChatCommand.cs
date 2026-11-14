@@ -11,7 +11,8 @@ public record ChatCommand(
     string? UserId = null,
     string? Language = null,
     bool IncludeControlContext = true,
-    string? PatientId = null)
+    string? PatientId = null,
+    bool SupportsVita = false)
     : IRequest<ChatResult>;
 
 /// <summary>

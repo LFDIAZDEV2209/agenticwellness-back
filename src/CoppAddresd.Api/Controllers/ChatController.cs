@@ -44,7 +44,8 @@ public class ChatController : ControllerBase
                 request.ThreadId,
                 request.AgentTypeId,
                 AuthenticatedUserId,
-                request.Language
+                request.Language,
+                SupportsVita: request.SupportsVita
             );
             var result = await _mediator.Send(command, ct);
             return Ok(result);
@@ -83,7 +84,8 @@ public class ChatController : ControllerBase
                 request.ThreadId,
                 request.AgentTypeId,
                 AuthenticatedUserId,
-                request.Language
+                request.Language,
+                SupportsVita: request.SupportsVita
             );
             var chunks = await _mediator.Send(command, ct);
 
@@ -287,5 +289,6 @@ public record ChatRequestDto(
     string? Agent = null,
     string? ThreadId = null,
     string? AgentTypeId = null,
-    string? Language = null
+    string? Language = null,
+    bool SupportsVita = false
 );

@@ -18,7 +18,8 @@ public record ChatRequest(
     string? UserId = null,
     object? ControlContext = null,
     string? Language = null,
-    string? PatientId = null);
+    string? PatientId = null,
+    bool SupportsVita = false);
 
 /// <summary>
 /// Contexto de control de programa abierto adjunto al request de chat (fase 2,

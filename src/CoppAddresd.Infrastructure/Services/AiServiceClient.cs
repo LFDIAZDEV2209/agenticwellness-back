@@ -62,6 +62,7 @@ public class AiServiceClient : IAiServiceClient
             // Idioma de la app del paciente ('es' | 'en'): JsonOpts omite el campo
             // cuando es null (comportamiento byte-idéntico para clientes viejos).
             language = request.Language,
+            supports_vita = request.SupportsVita,
         };
 
     /// <summary>

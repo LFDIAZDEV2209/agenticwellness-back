@@ -55,7 +55,8 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             // turno para el AI Service (permite cambiar de idioma a mitad de
             // conversación). Null ⇒ el AI Service mantiene su espejo.
             request.Language,
-            request.PatientId);
+            request.PatientId,
+            request.SupportsVita);
 
         try
         {

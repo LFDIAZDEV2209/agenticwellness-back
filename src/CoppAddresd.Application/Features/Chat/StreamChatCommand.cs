@@ -8,7 +8,8 @@ public record StreamChatCommand(
     string? ThreadId = null,
     string? AgentTypeId = null,
     string? UserId = null,
-    string? Language = null)
+    string? Language = null,
+    bool SupportsVita = false)
     : IRequest<IAsyncEnumerable<StreamChatChunk>>;
 
 public record StreamChatChunk(string RawData);
