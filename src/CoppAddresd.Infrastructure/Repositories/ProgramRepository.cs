@@ -735,9 +735,11 @@ public sealed partial class ProgramRepository(
 
         // 4. La tarea debe estar en el snapshot de la semana (SPEC §6.1).
         var snapshotTasks = ParseSnapshot(week.TasksSnapshot);
-        var scheduled = snapshotTasks.FirstOrDefault(t =>
-            t.Weekday == weekday && t.TaskCode == input.TaskCode.ToString()
-        );
+        var dayContent = _programContentResolver is not null || effectiveResolver is not null
+            ? await ResolveEnrollmentContentAsync(enrollment.Id, enrollment.PatientId, input.LocalDate, ct) : null;
+        var scheduledForDay = ProgramDayMissionPolicy.ForDay(snapshotTasks, weekday, dayContent?.Rest == true
+            || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true));
+        var scheduled = scheduledForDay.FirstOrDefault(t => t.TaskCode == input.TaskCode.ToString());
         if (scheduled is null)
         {
             throw new BusinessRuleViolationException(
@@ -886,9 +888,9 @@ public sealed partial class ProgramRepository(
         Guid? resolvedExerciseRoutineId = input.ExerciseRoutineId;
         Guid? resolvedMediaId = input.MediaId;
 
-        if (_programContentResolver is not null)
+        if (_programContentResolver is not null || effectiveResolver is not null)
         {
-            var resolution = await ResolveEnrollmentContentAsync(enrollment.Id, enrollment.PatientId, input.LocalDate, ct);
+            var resolution = dayContent;
 
             if (resolution is { })
             {
@@ -1053,7 +1055,6 @@ public sealed partial class ProgramRepository(
         // 9. Día perfecto: todas las tareas programadas del día completadas
         //    (SPEC §6.3); el bonus se otorga una única vez (dedupe parcial de
         //    xp_ledger con source_ref_id = daily_checkin.id).
-        var scheduledForDay = snapshotTasks.Where(t => t.Weekday == weekday).ToList();
         var completedForDay = await dbContext
             .TaskCompletions.AsNoTracking()
             .Where(t => t.EnrollmentId == enrollment.Id && t.LocalDate == input.LocalDate)
@@ -1070,7 +1071,8 @@ public sealed partial class ProgramRepository(
         // de 2 tareas no la mantiene). El día perfecto sigue siendo "todas las
         // tareas programadas" y se usa sin cambios para el bonus y la concesión
         // de congelamientos (SPEC §6.3/§6.6).
-        var meetsThreshold = completedForDay.Count >= template.StreakMinTasks;
+        var requiredCompleted = scheduledForDay.Count(t => completedForDay.Contains(t.TaskCode));
+        var meetsThreshold = ProgramDayMissionPolicy.QualifiesForStreak(requiredCompleted, scheduledForDay.Count, template.StreakMinTasks);
 
         checkin.TotalPoints += taskPoints;
         checkin.UpdatedAt = now;
@@ -1646,8 +1648,8 @@ public sealed partial class ProgramRepository(
     /// Corrida del modelo que termina en <paramref name="anchorDate"/> (enmienda
     /// F1/F4): días calificados en la ventana [windowStart, anchorDate] con la
     /// MISMA definición que <see cref="ReconcileStreaksAsync"/> (completaciones
-    /// con conteo ≥ umbral UNION congelamientos consumidos) y la corrida
-    /// consecutiva desde el ancla. Set-based, sin N+1 (2 queries, como el
+    /// con conteo ≥ umbral UNION días perfectos UNION congelamientos consumidos) y la corrida
+    /// consecutiva desde el ancla. Set-based, sin N+1 (3 queries, como el
     /// reconciliador). Lo usan el rescate y el fast path contiguo con stored 0
     /// para derivar el current del modelo en vez del escalar almacenado.
     /// </summary>
@@ -1689,7 +1691,11 @@ public sealed partial class ProgramRepository(
             .Select(f => f.UsedOnLocalDate!.Value)
             .ToListAsync(ct);
 
-        var qualifying = completionDates.Concat(consumedDates).ToHashSet();
+        // Un día perfecto con menos misiones (descanso) también califica para el modelo y sus rescates.
+        var perfectDates = await dbContext.DailyCheckIns.AsNoTracking().Where(d => d.EnrollmentId == enrollmentId
+                && d.LocalDate >= windowStart && d.LocalDate <= anchorDate && d.IsPerfectDay)
+            .Select(d => d.LocalDate).ToListAsync(ct);
+        var qualifying = completionDates.Concat(consumedDates).Concat(perfectDates).ToHashSet();
         return CountModelRunEndingAt(qualifying, anchorDate, windowStart);
     }
 
@@ -2539,7 +2545,7 @@ public sealed partial class ProgramRepository(
             checkin?.IsPerfectDay != true,
             // Máximo alcanzable del día: puntos base + base del bonus de día
             // perfecto de la regla DAY_BONUS (SPEC §7.1/§14).
-            todayScheduled.Sum(t => t.Points) + dayBonusBase,
+            ComputeDayPointsMax(todayScheduled, dayBonusBase),
             new XpInfoDto(xpBalance, level.Level, level.NextLevelAt),
             new StreakInfoDto(
                 streakCurrent,
@@ -3409,8 +3415,9 @@ public sealed partial class ProgramRepository(
         }
 
         var weekday = ToIsoWeekday(localDate);
+        var snapshot = ParseSnapshot(week.TasksSnapshot);
         return ComputeDayPointsMax(
-            ParseSnapshot(week.TasksSnapshot).Where(t => t.Weekday == weekday),
+            ProgramDayMissionPolicy.ForDay(snapshot, weekday, snapshot.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true)),
             await ResolveDayBonusBaseAsync(ct)
         );
     }
@@ -3431,8 +3438,11 @@ public sealed partial class ProgramRepository(
     /// NO se persiste deliberadamente por ahora (persistirlo exigiría una
     /// migración que este cambio no contempla).
     /// </summary>
-    private static int ComputeDayPointsMax(IEnumerable<WeekSnapshotTaskRow> dayTasks, int bonusAmount) =>
-        dayTasks.Sum(t => t.Points) + bonusAmount;
+    private static int ComputeDayPointsMax(IEnumerable<WeekSnapshotTaskRow> dayTasks, int bonusAmount)
+    {
+        var tasks = dayTasks.ToArray();
+        return tasks.Length == 0 ? 0 : tasks.Sum(t => t.Points) + bonusAmount;
+    }
 
     // ---------------------------------------------------------------- Catálogo de reglas XP (SPEC §14)
 
@@ -6309,6 +6319,9 @@ public sealed partial class ProgramRepository(
             .Select(f => new { f.EnrollmentId, Date = f.UsedOnLocalDate!.Value })
             .ToListAsync(ct);
 
+        var perfectDays = (await dbContext.DailyCheckIns.AsNoTracking().Where(d => d.IsPerfectDay)
+            .Select(d => new { d.EnrollmentId, d.LocalDate }).ToListAsync(ct)).ToLookup(d => d.EnrollmentId, d => d.LocalDate);
+
         var scanned = 0;
         var fixedRows = 0;
         var discrepancies = new List<string>();
@@ -6329,6 +6342,7 @@ public sealed partial class ProgramRepository(
             qualifying.UnionWith(
                 consumedFreezes.Where(f => f.EnrollmentId == enrollment.Id).Select(f => f.Date)
             );
+            qualifying.UnionWith(perfectDays[enrollment.Id]);
 
             var (expectedCurrent, expectedLongest) = ComputeStreakRuns(
                 qualifying,

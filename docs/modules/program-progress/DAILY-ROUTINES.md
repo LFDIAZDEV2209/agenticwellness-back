@@ -28,3 +28,18 @@ Snapshot semanal vacío usa la plantilla en ambas rutas, sin escribir datos.
 Las pruebas parametrizadas PostgreSQL cubren rutina explícita, descanso, JSON
 antiguo y snapshot vacío. Se mantienen las guardias de inscripción/paciente de
 los endpoints existentes; no se añade ningún identificador ni acceso clínico.
+
+## Completación, máximo y racha — 2.4
+
+La escritura, el replay y el snapshot calculan el máximo sobre las misiones
+exigibles del día y la base vigente de DAY_BONUS. En descanso no se pueden
+completar ejercicios ni recibir su XP; la ausencia de ejercicio no deja puntos
+imposibles en el denominador. Completar las otras misiones alcanza el 100% y
+otorga el bonus una vez. Sin misiones, el máximo es cero.
+
+La racha califica por umbral o por completar todas las misiones exigibles,
+incluido un día de descanso con menos tareas que `streak_min_tasks`. Un día
+incompleto bajo el umbral no aumenta la racha ni gana bonus. El modelo de rescate
+y el reconciliador incluyen también los días perfectos persistidos, para no
+borrar después la calificación de un descanso completo. No se altera el decaimiento
+temporal de las rachas vencidas ni se añaden XP ficticias por ejercicio.
