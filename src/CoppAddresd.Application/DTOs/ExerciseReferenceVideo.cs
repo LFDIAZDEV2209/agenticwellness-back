@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using CoppAddresd.Application.Features.Media;
 
 namespace CoppAddresd.Application.DTOs;
 
@@ -7,6 +8,18 @@ namespace CoppAddresd.Application.DTOs;
 /// An uploaded exercise medium takes precedence. Unknown names have no automatic match.</summary>
 public sealed record ExerciseReferenceVideo(string EmbedUrl, string SourceUrl, string Author)
 {
+    /// <summary>Convierte un medio externo publicado al contrato de iframe existente.</summary>
+    public static ExerciseReferenceVideo? FromExternal(string name, string? url, string author)
+    {
+        if (!ExternalMediaRules.TryParseVideo(url, out var provider, out var id)) return null;
+        var curated = ForExercise(name);
+        if (curated is not null && ExternalMediaRules.TryParseVideo(curated.EmbedUrl, out var curatedProvider, out var curatedId)
+            && provider == curatedProvider && id == curatedId) return curated;
+        return provider == "youtube"
+            ? new($"https://www.youtube-nocookie.com/embed/{id}", $"https://www.youtube.com/watch?v={id}", author)
+            : new($"https://player.vimeo.com/video/{id}?dnt=1", $"https://vimeo.com/{id}", author);
+    }
+
     public static ExerciseReferenceVideo? ForExercise(string name)
     {
         var normalized = new string(name.Normalize(NormalizationForm.FormD)

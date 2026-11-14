@@ -29,3 +29,15 @@ Down es de mantenimiento, bloquea la tabla y rechaza retirar la columna si hay
 alguna advertencia, para no perder contenido. No se aplica Down automáticamente.
 Las pruebas PostgreSQL verifican Up/Down/Up con 10.000 filas, el rechazo con datos,
 la copia profunda de ejercicios/demostraciones y los casos propio/ajeno/Admin.
+
+## Demostraciones externas — 2.14
+
+Semilla y manifiesto en `scripts/seed_exercise_reference_media.py` y
+`scripts/exercise_reference_videos.json`. Usa los cuatro videos editoriales de la
+app y claves de `ExternalMediaRules` (1.8). Solo enlaza ejercicios sin demostración
+y con un alias explícito; no sustituye variantes clínicas ni medios configurados.
+Es de solo lectura por defecto y la segunda aplicación no cambia datos.
+Procedimiento e informe en `scripts/README-exercise-reference-media.md`.
+El snapshot sirve los externos publicados mediante `referenceVideo` (iframe),
+sin enviar claves externas al proxy de storage. Conserva atribución editorial
+para las cuatro referencias y respeta el retiro de medios configurados.

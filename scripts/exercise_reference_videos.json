@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Marcha en el lugar",
+    "aliases": ["marcha en el lugar", "marcha en el sitio"],
+    "embedUrl": "https://player.vimeo.com/video/418873416?dnt=1",
+    "sourceUrl": "https://www.lancsteachinghospitals.nhs.uk/trauma-exercises",
+    "author": "Lancashire Teaching Hospitals · NHS"
+  },
+  {
+    "name": "Sentarse y levantarse",
+    "aliases": ["sentarse y levantarse", "sentarse y levantarse de la silla"],
+    "embedUrl": "https://www.youtube-nocookie.com/embed/0FkRr45YeEQ",
+    "sourceUrl": "https://www.youtube.com/watch?v=0FkRr45YeEQ",
+    "author": "NHS Ayrshire & Arran"
+  },
+  {
+    "name": "Plancha",
+    "aliases": ["plancha", "plancha abdominal", "plancha isometrica"],
+    "embedUrl": "https://www.youtube-nocookie.com/embed/cCMob-mi19U",
+    "sourceUrl": "https://www.youtube.com/watch?v=cCMob-mi19U",
+    "author": "Smart Fit Chile"
+  },
+  {
+    "name": "Estocada",
+    "aliases": ["estocada", "estocadas"],
+    "embedUrl": "https://www.youtube-nocookie.com/embed/3U9IbwjkOfk",
+    "sourceUrl": "https://www.youtube.com/watch?v=3U9IbwjkOfk",
+    "author": "Smart Fit Chile"
+  }
+]

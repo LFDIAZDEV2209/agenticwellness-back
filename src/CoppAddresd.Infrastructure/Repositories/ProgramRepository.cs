@@ -2145,6 +2145,9 @@ public sealed partial class ProgramRepository(
                             .Select(e => new
                             {
                                 HasConfiguredMedia = e.MediaId != null,
+                                ExternalUrl = e.Media != null && e.Media.Status == MediaStatus.Published
+                                    && e.Media.MediaType == MediaType.Video && e.Media.SourceKind == "external" ? e.Media.ExternalUrl : null,
+                                ExternalAuthor = e.Media != null ? e.Media.Author : "",
                                 Content = new ExerciseItemDto(
                                     e.Name,
                                     e.Description,
@@ -2159,6 +2162,7 @@ public sealed partial class ProgramRepository(
                                     e.Media != null && e.Media.Status == MediaStatus.Published
                                         && (e.Media.MediaType == MediaType.Video || e.Media.MediaType == MediaType.Image) ? e.MediaId : null,
                                     e.Media != null && e.Media.Status == MediaStatus.Published
+                                        && e.Media.SourceKind != "external"
                                         && (e.Media.MediaType == MediaType.Video || e.Media.MediaType == MediaType.Image) ? e.Media.StorageKey : null,
                                     e.Media != null && e.Media.Status == MediaStatus.Published
                                         && (e.Media.MediaType == MediaType.Video || e.Media.MediaType == MediaType.Image) ? e.Media.ThumbnailKey : null,
@@ -2176,7 +2180,9 @@ public sealed partial class ProgramRepository(
                 resolvedRoutineName = routineData?.Name;
                 resolvedExercises = routineData?.Exercises.Select(e => e.Content with
                 {
-                    ReferenceVideo = !e.HasConfiguredMedia ? CoppAddresd.Application.DTOs.ExerciseReferenceVideo.ForExercise(e.Content.Name) : null,
+                    ReferenceVideo = e.ExternalUrl is not null
+                        ? CoppAddresd.Application.DTOs.ExerciseReferenceVideo.FromExternal(e.Content.Name, e.ExternalUrl, e.ExternalAuthor)
+                        : !e.HasConfiguredMedia ? CoppAddresd.Application.DTOs.ExerciseReferenceVideo.ForExercise(e.Content.Name) : null,
                 }).ToList();
             }
         }
