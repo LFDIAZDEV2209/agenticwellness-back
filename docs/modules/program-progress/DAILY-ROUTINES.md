@@ -43,3 +43,29 @@ incompleto bajo el umbral no aumenta la racha ni gana bonus. El modelo de rescat
 y el reconciliador incluyen también los días perfectos persistidos, para no
 borrar después la calificación de un descanso completo. No se altera el decaimiento
 temporal de las rachas vencidas ni se añaden XP ficticias por ejercicio.
+
+## Próximos seis días y contrato — 2.5
+
+`GET /api/v1/program/me/snapshot` y la lectura autorizada de snapshot ERP conservan
+los campos anteriores. Añaden `upcoming` y `rest` opcionales; lectores de respuestas
+anteriores deben tolerar su ausencia. `rest` solo se serializa cuando es true.
+
+```json
+{"rest":true,"upcoming":[{"date":"2026-11-03","day":2,"weekNumber":1,"rest":true,"missions":[{"type":"podcast","title":"Episodio","mediaId":"UUID","contentUnavailable":false}]}]}
+```
+
+`upcoming` va de mañana a hoy+6 en la fecha local recibida del handler. Cada día
+incluye `date`, día absoluto de programa `day`, `weekNumber`, `missions` y `rest`
+opcional. Cada misión declara `type`, `title` y, según el contenido, `routineId`,
+`mediaId`, `nutritionPlanId` o `sourcePrescriptionId`. Los IDs ausentes se omiten.
+`contentUnavailable` indica un hueco real; no se presenta el demo como publicado
+válido. Descanso no lleva misión de ejercicio. Al terminar el programa se devuelve
+una lista vacía, nunca día 84 para las doce semanas; el legado conserva 581 días.
+
+La vista previa usa la misma mezcla de plantilla e individuales que la activación.
+Las semanas iniciadas conservan su snapshot; las futuras rehacen únicamente filas
+de programa y conservan decisiones individuales, incluso las de origen antiguo.
+El cálculo es puro: no activa ni materializa semanas. Catálogos y nombres se cargan
+por conjuntos, sin SQL por día ni por semana. Todas las cargas quedan acotadas a
+la inscripción ya autorizada; un snapshot de otro paciente no participa. Las
+pruebas cubren ambos casos, límite, compatibilidad JSON y número constante de lecturas.

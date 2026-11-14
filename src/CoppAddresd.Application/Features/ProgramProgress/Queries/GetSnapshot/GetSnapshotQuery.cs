@@ -15,7 +15,7 @@ public sealed record GetSnapshotQuery(
     Guid EnrollmentId,
     DateOnly? TodayLocalDate = null) : IRequest<ProgramSnapshotDto>;
 
-/// <summary>Orquesta la lectura del snapshot (una sola proyección del repositorio, sin N+1).</summary>
+/// <summary>Orquesta el snapshot con próximos seis días opcionales y descanso; lecturas por conjuntos sin N+1.</summary>
 public sealed class GetSnapshotQueryHandler(
     IProgramRepository repository) : IRequestHandler<GetSnapshotQuery, ProgramSnapshotDto>
 {

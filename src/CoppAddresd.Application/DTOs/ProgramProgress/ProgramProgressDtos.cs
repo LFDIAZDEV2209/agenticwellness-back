@@ -125,7 +125,9 @@ public sealed record ProgramSnapshotDto(
     int NextMilestoneDays,
     IReadOnlyList<CalendarDayDto> Calendar,
     IReadOnlyList<StreakChestDto>? StreakChests = null,
-    int? DailyBonusAmount = null
+    int? DailyBonusAmount = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<ProgramUpcomingDayDto>? Upcoming = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? Rest = null
 );
 
 /// <summary>

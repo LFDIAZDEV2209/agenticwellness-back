@@ -2562,7 +2562,9 @@ public sealed partial class ProgramRepository(
             nextMilestone,
             calendar,
             streakChests,
-            dayBonusBase
+            dayBonusBase,
+            await BuildUpcomingAsync(enrollmentId, todayLocalDate, ct),
+            contentResolution?.Rest == true || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true) ? true : null
         );
     }
 
@@ -4064,15 +4066,9 @@ public sealed partial class ProgramRepository(
     private async Task<JsonElement> MergeActivationSnapshotAsync(
         Guid templateId, ProgramWeek week, CancellationToken ct)
     {
-        var merged = ParseSnapshot(await BuildSnapshotFromTemplateAsync(templateId, week.WeekNumber, ct))
-            .ToDictionary(t => (t.Weekday, t.TaskCode));
-        foreach (var item in ParseSnapshot(week.TasksSnapshot).Where(t => t.Origin != "program"))
-        {
-            // Hasta clasificar los antiguos, un origen ausente o desconocido se
-            // conserva como individual; nunca se pierde una posible decisión humana.
-            merged[(item.Weekday, item.TaskCode)] = item with { Origin = "individual" };
-        }
-        return WeekSnapshotJson.Serialize(merged.Values.OrderBy(t => t.Weekday).ThenBy(t => t.SortOrder).ToList());
+        var merged = ProgramWeekSnapshotMerge.Merge(ParseSnapshot(await BuildSnapshotFromTemplateAsync(templateId, week.WeekNumber, ct)),
+            ParseSnapshot(week.TasksSnapshot));
+        return WeekSnapshotJson.Serialize(merged);
     }
 
     /// <summary>Serialize el snapshot con el shape de la SPEC §3.4 (jsonb).</summary>
