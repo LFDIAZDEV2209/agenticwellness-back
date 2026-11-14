@@ -19,6 +19,7 @@ public sealed record PatientScopeFilter(bool IsAdmin, Guid? ProfessionalId);
 /// <summary>Persistencia del alcance; la consulta permanece diferida hasta contar o paginar.</summary>
 public interface IPatientScopeStore
 {
+    Task<Guid?> SelfPatientAsync(Guid userId, CancellationToken ct);
     IQueryable<Guid> VisiblePatients(Guid? professionalId, bool isAdmin);
     Task<bool> ContainsAsync(IQueryable<Guid> patientIds, Guid patientId, CancellationToken ct);
     Task<Guid?> OwnerAsync(PatientResource resource, Guid id, CancellationToken ct);
@@ -28,6 +29,8 @@ public interface IPatientScopeStore
 /// <summary>Permiso Y paciente asignado. Admin solo exceptúa la asignación, nunca el permiso.</summary>
 public interface IPatientScopeGuard
 {
+    /// <summary>Autoservicio: paciente del usuario autenticado; no acepta un patientId del cliente ni exige permisos ERP.</summary>
+    Task<Guid> EnsureSelfAsync(Guid userId, CancellationToken ct);
     Task<PatientScopeFilter> GetFilterAsync(string permission, CancellationToken ct);
     Task EnsureNutritionPlansAsync(IEnumerable<Guid> ids, CancellationToken ct);
     Task EnsureAsync(Guid patientId, CancellationToken ct);

@@ -7,6 +7,13 @@ namespace CoppAddresd.Application.Services;
 /// <summary>Política común para accesos directos, recursos indirectos y consultas de listas.</summary>
 public sealed class PatientScopeGuard(IPatientScopeActor actor, IPatientScopeStore store) : IPatientScopeGuard
 {
+    public async Task<Guid> EnsureSelfAsync(Guid userId, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (userId == Guid.Empty || actor.UserId != userId) throw new ForbiddenException("Se requiere la identidad del paciente autenticado.");
+        return await store.SelfPatientAsync(userId, ct) ?? throw Missing();
+    }
+
     public async Task EnsureNutritionPlansAsync(IEnumerable<Guid> ids, CancellationToken ct)
     {
         var requested = ids.Distinct().ToArray();

@@ -7,6 +7,9 @@ namespace CoppAddresd.Infrastructure.Repositories;
 /// <summary>Reutiliza patient_professionals con asignación activa, incluyendo listas y recursos indirectos.</summary>
 public sealed class PatientScopeStore(AppDbContext db) : IPatientScopeStore
 {
+    public Task<Guid?> SelfPatientAsync(Guid userId, CancellationToken ct)
+        => db.PatientProfiles.AsNoTracking().Where(p => p.UserId == userId && p.DeletedAt == null).Select(p => (Guid?)p.Id).SingleOrDefaultAsync(ct);
+
     public IQueryable<Guid> VisiblePatients(Guid? professionalId, bool isAdmin)
         => db.PatientProfiles.AsNoTracking().Where(p => p.DeletedAt == null && (isAdmin
             || professionalId != null && db.PatientProfessionalAssignments.Any(a =>

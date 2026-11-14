@@ -11,6 +11,8 @@ public sealed class PatientScopeGuardTests
 
     private sealed class Store : IPatientScopeStore
     {
+        public Task<Guid?> SelfPatientAsync(Guid userId, CancellationToken ct)
+            => Task.FromResult<Guid?>(userId == Own ? Own : null);
         public IQueryable<Guid> VisiblePatients(Guid? professionalId, bool isAdmin)
             => (isAdmin ? new[] { Own, Foreign } : professionalId is null ? [] : new[] { Own }).AsQueryable();
         public Task<bool> ContainsAsync(IQueryable<Guid> patientIds, Guid patientId, CancellationToken ct)
@@ -31,6 +33,16 @@ public sealed class PatientScopeGuardTests
     }
 
     [Fact] public Task Assigned_WithPermission_Allows() => Guard().EnsureAsync(Own, CancellationToken.None);
+    [Fact] public async Task Self_UsesAuthenticatedUserWithoutErpPermission_RejectsAnotherIdentity()
+    {
+        var actor = Substitute.For<IPatientScopeActor>(); actor.UserId.Returns(Own);
+        var guard = new PatientScopeGuard(actor, new Store());
+        Assert.Equal(Own, await guard.EnsureSelfAsync(Own, default));
+        await Assert.ThrowsAsync<ForbiddenException>(() => guard.EnsureSelfAsync(Foreign, default));
+        actor.UserId.Returns(Foreign);
+        await Assert.ThrowsAsync<NotFoundException>(() => guard.EnsureSelfAsync(Foreign, default));
+        await actor.DidNotReceive().HasPermissionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
     [Fact] public Task Admin_WithPermission_AllowsForeign() => Guard(admin: true, professional: false).EnsureAsync(Foreign, CancellationToken.None);
     [Fact] public async Task Assigned_WithoutPermission_Denies()
         => await Assert.ThrowsAsync<ForbiddenException>(() => Guard(permission: false).EnsureAsync(Own, CancellationToken.None));
