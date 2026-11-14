@@ -8547,6 +8547,10 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("daily_checkin_id");
 
+                    b.Property<JsonElement?>("DetailSnapshot")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("detail_snapshot");
+
                     b.Property<Guid?>("EmotionalRecordId")
                         .HasColumnType("uuid")
                         .HasColumnName("emotional_record_id");

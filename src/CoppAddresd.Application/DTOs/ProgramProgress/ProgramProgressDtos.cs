@@ -278,7 +278,8 @@ public sealed record TodayTaskContentDto(
     IReadOnlyList<ExerciseItemDto>? Exercises = null,
     IReadOnlyList<NutritionIntakeLogDto>? NutritionIntakeLogs = null,
     bool? Rest = null,
-    Guid? SourcePrescriptionId = null
+    Guid? SourcePrescriptionId = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] System.Text.Json.JsonElement? DetailSnapshot = null
 );
 
 /// <summary>XP + nivel de gamificación (nunca métrica clínica, SPEC §6.15).</summary>
@@ -837,7 +838,8 @@ public sealed record EnrollmentWeekTaskDto(
     string? DetailText = null,
     bool? Rest = null,
     string? Source = null,
-    Guid? SourcePrescriptionId = null
+    Guid? SourcePrescriptionId = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] System.Text.Json.JsonElement? DetailSnapshot = null
 );
 
 /// <summary>

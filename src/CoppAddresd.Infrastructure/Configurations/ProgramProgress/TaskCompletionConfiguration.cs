@@ -71,6 +71,8 @@ public sealed class TaskCompletionConfiguration : IEntityTypeConfiguration<TaskC
             .HasColumnName("content_fingerprint")
             .HasMaxLength(64);
 
+        builder.Property(x => x.DetailSnapshot).HasColumnName("detail_snapshot").HasColumnType("jsonb");
+
         // FKs de contenido (nullable, una por código de tarea).
         builder.Property(x => x.NutritionPlanId)
             .HasColumnName("nutrition_plan_id");
