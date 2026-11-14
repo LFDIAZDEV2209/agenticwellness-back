@@ -6,6 +6,7 @@ namespace CoppAddresd.Application.Features.Nutrition.Cases;
 /// <summary>Estados persistidos y vigencia por calendario local; por_renovar es virtual.</summary>
 public static class NutritionStateMachine
 {
+    public const int RenewalLeadDays = 5;
     public static void Ensure(NutritionOperation operation, string state)
     {
         var allowed = operation switch
@@ -46,5 +47,5 @@ public static class NutritionStateMachine
         return (begin, begin.AddDays(29));
     }
     public static string DisplayState(NutritionPrescription plan, DateOnly today)
-        => plan.State == "aprobado" && plan.IsPublished && plan.EndDate <= today.AddDays(5) ? "por_renovar" : plan.State;
+        => plan.State == "aprobado" && plan.IsPublished && plan.EndDate <= today.AddDays(RenewalLeadDays) ? "por_renovar" : plan.State;
 }

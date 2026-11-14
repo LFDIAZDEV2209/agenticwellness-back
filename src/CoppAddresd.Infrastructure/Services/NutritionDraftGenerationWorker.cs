@@ -18,6 +18,13 @@ public sealed class NutritionDraftGenerationWorker(IServiceScopeFactory scopes, 
                 var workflow = scope.ServiceProvider.GetRequiredService<INutritionDraftWorkflow>();
                 if (DateTime.UtcNow >= nextReconcile)
                 {
+                    // Reutiliza el tick existente; el aviso ERP no introduce otra cola ni otro hosted service.
+                    if (scope.ServiceProvider.GetService<CoppAddresd.Application.Features.Nutrition.Queries.INutritionCycleClosingNoticeStore>() is { } notices)
+                    {
+                        try { await notices.EmitAsync(DateTimeOffset.UtcNow, stoppingToken); }
+                        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { throw; }
+                        catch (Exception ex) { logger.LogWarning("Nutrition.ClosingNoticeRetry FailureType={FailureType}", ex.GetType().Name); }
+                    }
                     await workflow.ReconcileAsync(stoppingToken);
                     nextReconcile = DateTime.UtcNow.AddMinutes(1);
                 }
