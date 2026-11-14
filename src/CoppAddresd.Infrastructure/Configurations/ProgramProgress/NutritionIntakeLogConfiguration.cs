@@ -66,6 +66,10 @@ public sealed class NutritionIntakeLogConfiguration : IEntityTypeConfiguration<N
 
         builder.Property(x => x.NutritionPlanDayNumber).HasColumnName("nutrition_plan_day_number");
 
+        var updated = builder.Property(x => x.UpdatedAt).HasColumnName("updated_at").ValueGeneratedOnAddOrUpdate();
+        updated.Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+        updated.Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+
         builder
             .Property(x => x.CreatedAt)
             .HasColumnName("created_at")

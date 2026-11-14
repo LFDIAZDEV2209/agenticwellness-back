@@ -80,6 +80,9 @@ public sealed class NutritionIntakeLog
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>Último cambio real del registro, medido por PostgreSQL para invalidar revisiones anteriores.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     public PatientProfile? Patient { get; set; }
 
     public HabitCheck? HabitCheck { get; set; }

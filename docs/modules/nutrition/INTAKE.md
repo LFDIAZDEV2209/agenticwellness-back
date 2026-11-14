@@ -103,3 +103,54 @@ dotnet build --no-restore -p:OutputPath=bin/Validation37/ -v quiet
 dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation37/ -v normal
 dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation37/ --filter 'FullyQualifiedName~NutritionPlanWorkflowTests' -v normal
 ```
+
+## 3.8a — Revisión diaria persistida
+
+Rutas bajo `/api/v1/nutrition`:
+
+- `POST cycles/{id}/days/{day}/review` marca la lectura (`Nutrition.Manage`).
+- `DELETE cycles/{id}/days/{day}/review` elimina la marca (`Nutrition.Manage`).
+- `GET cycles/{id}/days/reviews?from&to` lista hasta 100 días del tramo
+  transcurrido del ciclo (`Nutrition.View` y `Nutrition.RecordsView`).
+- `GET intake/unreviewed-count` devuelve `{ days }` con ambos permisos de lectura.
+
+Las rutas por ciclo resuelven su dueño con `IPatientScopeGuard`: ajeno → 404,
+Admin exceptúa asignación, nunca permiso. El contador filtra pacientes activos
+asignados antes de agrupar; no devuelve IDs ni conteos ajenos. Una fecha fuera
+del ciclo, posterior al día local actual o al tramo de continuidad atribuible
+se rechaza. La consulta de rango devuelve `localDate`, `hasRecords`,
+`reviewedAt`, `reviewedBy`, `unreviewed`, `modifiedSinceReview` por día.
+
+`app.nutrition_intake_day_reviews` tiene PK `(patient_id, local_date)`, ciclo,
+actor del JWT y hora del servidor. Marcar de nuevo actualiza la marca, no duplica
+filas; desmarcar es idempotente. Puede marcarse un día sin registros: la primera
+comida posterior lo reabre. No cierra el ciclo ni concede XP.
+
+`unreviewed` se deriva: día con registros sin marca, o con cambio posterior a
+ella. `modifiedSinceReview` conserva la evidencia de la marca previa. Un trigger
+de PostgreSQL sella `nutrition_intake_logs.updated_at` solo ante cambios reales;
+insertar también lo sella. Los registros antiguos conservan NULL y se usa
+`created_at`, sin backfill masivo. No cambia `created_at` al corregir. Repetir la
+clave de 3.6 o guardar datos idénticos no reabre el día. Ambos sellos usan
+`clock_timestamp()`; el lock de paciente serializa marcar frente a POST/PUT y
+publicación. No hay I/O externo dentro de esa transacción.
+
+Migración `20261114193738_AddNutritionIntakeDayReviews`, aditiva, aplicada solo
+a la BD local. SQL Up/Down revisado; reversa de mantenimiento bloqueada mientras
+existan marcas que deben conservarse. Up/Down vacío y rechazo con datos se prueban
+en PostgreSQL efímero. No elimina registros de comida.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/Validation38a/ -v quiet
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation38a/ -v normal
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation38a/ --filter 'FullyQualifiedName~NutritionPlanWorkflowTests' -v normal
+```
+
+Evidencia 3.8a: build verde, unitarios **2540 aprobados/105 omitidos**;
+PostgreSQL **111/111** en 8 min59s, suite completa con Fase 1/F2 y ambas
+ConservaPreedicion. La prueba nueva cubre corrección tras revisar, reintento y
+guardado idéntico, marcas repetidas, desmarcado repetido, fechas inválidas,
+paciente ajeno, contador propio/Admin, permiso, cancelación y reversa protegida.
+Aplicación local exacta: `Get-Content -Raw -Encoding UTF8
+$env:TEMP/copp-38a-up.sql | docker exec -i coppAddresd psql -v ON_ERROR_STOP=1
+-U app_user -d coppaddresd` (salida: tabla nueva sin filas).

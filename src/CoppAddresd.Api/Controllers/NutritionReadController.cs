@@ -4,6 +4,7 @@ using CoppAddresd.Api.Constants;
 using CoppAddresd.Api.Context;
 using CoppAddresd.Application.Features.Nutrition.Cases;
 using CoppAddresd.Application.Features.Nutrition.Queries;
+using CoppAddresd.Application.Features.Nutrition.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,11 @@ namespace CoppAddresd.Api.Controllers;
 [Route("api/v1/nutrition")]
 public sealed class NutritionReadController(IMediator mediator, ICurrentContext context) : ControllerBase
 {
+    [HttpGet("intake/unreviewed-count")]
+    [RequireContextPermission(PermissionCodes.NutritionView)]
+    public async Task<ActionResult<UnreviewedIntakeDaysDto>> UnreviewedDays(CancellationToken ct)
+        => Ok(await mediator.Send(new GetUnreviewedIntakeDays(), ct));
+
     [HttpGet("patients/{patientId:guid}/intake")]
     [PatientScope("patientId", "Nutrition.View")]
     [PatientScope("patientId", "Nutrition.RecordsView")]

@@ -20,7 +20,7 @@ public sealed class PatientScopeRouteTests
     public static IEnumerable<object[]> Routes()
     {
         foreach (var type in new[] { typeof(ProgramController), typeof(WellnessController), typeof(ProgramControlsController),
-            typeof(NutritionController), typeof(NutritionReadController), typeof(NutritionPlanReviewController) })
+            typeof(NutritionController), typeof(NutritionReadController), typeof(NutritionPlanReviewController), typeof(NutritionCyclesController) })
             foreach (var method in type.GetMethods())
                 foreach (var attribute in method.GetCustomAttributes<PatientScopeAttribute>())
                     foreach (var scenario in new[] { "asignado", "ajeno", "Admin", "sin_permiso" })

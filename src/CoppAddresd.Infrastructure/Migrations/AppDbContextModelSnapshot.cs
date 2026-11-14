@@ -4710,6 +4710,36 @@ namespace CoppAddresd.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionIntakeDayReview", b =>
+                {
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<DateOnly>("LocalDate")
+                        .HasColumnType("date")
+                        .HasColumnName("local_date");
+
+                    b.Property<Guid>("CycleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cycle_id");
+
+                    b.Property<DateTime>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<Guid>("ReviewedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewed_by");
+
+                    b.HasKey("PatientId", "LocalDate");
+
+                    b.HasIndex("CycleId")
+                        .HasDatabaseName("ix_intake_day_reviews_cycle");
+
+                    b.ToTable("nutrition_intake_day_reviews", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionPlan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -7649,6 +7679,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("character varying(20)")
                         .HasDefaultValue("manual")
                         .HasColumnName("source");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<int?>("WaterMl")
                         .HasColumnType("integer")
@@ -10643,6 +10678,21 @@ namespace CoppAddresd.Infrastructure.Migrations
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionDraftReservation", b =>
                 {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionIntakeDayReview", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.NutritionCycle", null)
+                        .WithMany()
+                        .HasForeignKey("CycleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
                         .WithMany()
                         .HasForeignKey("PatientId")

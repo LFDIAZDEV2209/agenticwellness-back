@@ -244,3 +244,13 @@ contra duplicados. El replay devuelve XP0 sin SaveChanges; una clave con otro
 contenido se rechaza. Un fallo tras guardar XP pero antes de guardar la clave
 revierte todo y limpia/restaura solo el tracking introducido por la operación.
 No hay red ni firma de URLs en la transacción.
+## Revisión diaria nutricional (3.8a)
+
+Marcar/desmarcar toma primero `app.patient_profiles FOR UPDATE`, como POST/PUT de
+ingesta y publicar/retirar. Bajo ese lock valida calendario, modifica la marca y
+lee el estado derivado; commit atómico, cancelación revierte. El actor y alcance
+se comprueban antes del lock; no se consulta Auth ni almacenamiento dentro de él.
+`clock_timestamp()` en marcas y trigger de ingesta evita desorden por relojes de
+aplicación o por transacciones abiertas antes de obtener el lock. Las consultas
+de rango usan Repeatable Read READ ONLY; el contador es una sola sentencia SQL
+con el filtro de alcance aplicado antes de agrupar.

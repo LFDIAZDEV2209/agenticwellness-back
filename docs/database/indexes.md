@@ -281,3 +281,14 @@ también la FK patient_id.
 
 Tabla nueva vacía al migrar: índices normales sin bloqueo de tablas existentes.
 No duplica índices de patient_id: lo cubre el prefijo izquierdo de la PK.
+
+## Revisión diaria nutricional (3.8a)
+
+| Índice | Tabla | Columnas | Tipo | Motivo/consulta | Impacto/costo |
+|---|---|---|---|---|---|
+| PK_nutrition_intake_day_reviews | app.nutrition_intake_day_reviews | patient_id, local_date | B-tree único | una marca por paciente/día; unión del contador y rango | una entrada por día revisado; cubre FK patient_id |
+| ix_intake_day_reviews_cycle | app.nutrition_intake_day_reviews | cycle_id | B-tree | FK y consulta de revisiones por ciclo | una entrada por marca |
+
+Tabla nueva vacía al migrar. El contador de días usa el índice existente
+`ix_intake_logs_patient_date` de registros; no se añade índice de updated_at
+ni se duplica el prefijo patient_id de la PK.
