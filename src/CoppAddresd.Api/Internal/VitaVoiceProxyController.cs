@@ -15,7 +15,8 @@ namespace CoppAddresd.Api.Internal;
 public sealed class VitaVoiceProxyController(IHttpClientFactory clients, IConfiguration config) : ControllerBase
 {
     [HttpPost("chat/completions")]
-    [RequestSizeLimit(65536)]
+    // Historial + schemas de tools del proveedor pueden superar 64 KiB; mantener un límite acotado.
+    [RequestSizeLimit(1024 * 1024)]
     public async Task Stream([FromBody] JsonElement body, CancellationToken ct)
     {
         var names = new[] { "X-Vita-Session", "X-Vita-Conversation", "X-Vita-Turn" };

@@ -71,6 +71,16 @@ Si no hay menú vigente, `nutrition` devuelve `empty` y
 `assessments_pending`, etc.). Nunca incluye el borrador. Las capacidades F3 de
 reviews/highlights todavía no existen en esta base y no se simulan.
 
+Límite verificado de `GetVitaContextQuery` (2026-11-14): no consulta ni entrega
+protocolos clínicos/asignaciones de protocolos o nutracéuticos. `nutrition`
+resuelve la prescripción publicada o asignación de plan vigente mediante el caso
+de uso existente, pero proyecta únicamente el menú del día seleccionado: ID,
+nombre, estado/revisión, ventana, día actual, disclaimer, metas diarias de
+calorías/macros/fibra, número de día, agua y comidas con indicaciones para paciente.
+No entrega todos los días del plan ni un protocolo completo. `day` solo resume
+tareas de hoy; `assessments` son asignaciones de tests, no protocolos. Esta
+revisión no amplía el contrato ni incorpora dependencias de Bienestar.
+
 Progreso wearable usa una consulta existente indexada por paciente/rango UTC,
 desde el lunes local hasta la lectura. Expone `fromLocalDate`, `toLocalDate`,
 `fromUtc`, `timezone`, `aggregation=latest-per-metric-local-day`,
@@ -203,6 +213,44 @@ cliente no cruzan. El cuerpo JSON conserva su significado y AI valida sesión,
 conversación, ordinal y contenido permitido. SSE se transmite con flush por
 chunk, límite total 90 segundos y cancelación, sin reintentos de generación.
 Errores upstream se reducen a códigos públicos sin sus detalles.
+
+El cuerpo JSON se deserializa completo como `JsonElement` antes de reenviarse,
+preservando campos de OpenAI como `tools`, `tool_choice`, `tool_calls`, contenido
+null y mensajes `role=tool` con `tool_call_id`. El límite de petición es **1 MiB**:
+64 KiB podía rechazar historial + schemas de herramientas. Sigue siendo acotado;
+no es streaming del cuerpo de entrada. La respuesta SSE sí se transmite por
+chunks sin esperar al cierre, incluidos deltas de function calls y `[DONE]`.
+`language_detection` se ejecuta en el proveedor/AI, nunca en BACK. Formato de
+referencia: [Custom LLM y system tools de ElevenLabs](https://elevenlabs.io/docs/eleven-agents/customization/llm/custom-llm#system-tools-integration).
+
+Configuración declarativa preparada: `.github/workflows/deploy-backend.yml`
+añade `Vita__VoiceProxyEnabled=true` exclusivamente a `extra_env` de `api`, junto
+a los flags Vita existentes. Es el workflow de la rama `dev` que apunta al
+cluster ECS existente `cooppadresd-cluster` y sirve `erp.coppadresd.com`; no crea
+un entorno separado. La clave dedicada continúa como referencia `valueFrom`
+en Secrets Manager y debe coincidir con AI. Localmente el default sigue apagado.
+Este cambio de Git no activa el runtime AI ni configura el agente del proveedor:
+root valida transporte y activación antes de publicar/desplegar.
+
+Verificación local del transporte/configuración: fixture JSON con tools superior
+a 96 KiB y roundtrip `language_detection` → `role=tool`, SSE recibido antes de
+EOF, Bearer y tres cabeceras de contexto, cancelación, timeout del cliente 90 s,
+flag exclusivo de API y clave como secret. TestServer no aplica el límite de
+Kestrel: el test verifica además su metadata de 1 MiB. No se ha medido el plazo
+real de 90 s ni se ha probado el límite a través del ALB/proveedor; root conserva
+esa validación integral. Pruebas seleccionadas de proxy/config y contexto:
+37 correctas, 0 fallos, 0 omitidas; sin llamadas a proveedores ni datos de pacientes.
+
+Comandos de esta revisión:
+
+```powershell
+dotnet test tests/CoppAddresd.UnitTests --no-restore --filter "FullyQualifiedName~VitaVoiceProxyHttpTests|FullyQualifiedName~VitaContextTests" --logger "console;verbosity=minimal"
+dotnet build --no-restore --nologo
+git diff --check
+```
+
+Build de solución: 0 errores, 12 advertencias en pruebas existentes ajenas al
+cambio. `git diff --check` sin errores. No hubo push ni despliegue desde esta tarea.
 
 Configuración ElevenLabs demostrada por el POC del coordinador: URL **base**
 `https://<backend>/api/v1/internal/vita/voice/v1`; el proveedor añade
