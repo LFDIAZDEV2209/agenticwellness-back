@@ -31,7 +31,9 @@ Guardar:
 Revisión inicial 0; cada escritura devuelve la nueva `revision`. Una revisión
 obsoleta obtiene 409. Se puede guardar incompleto; publicar exige notas de
 evaluación, mensaje es/en y alertas confirmadas (pasos 4 y 6). Si existe
-`ai_draft_json`, también exige confirmación expresa del borrador actual.
+un borrador IA con texto, también exige confirmación expresa del borrador actual.
+El resultado `insufficient` vacío solo conserva trazabilidad y no requiere esa
+confirmación. Generación a pedido y contrato ERP: [3.13](AI-CYCLE-SUMMARY.md).
 El cliente nunca envía `summary_json` ni `ai_draft_json` como mensaje aprobado.
 
 Publicar:

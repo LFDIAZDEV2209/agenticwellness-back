@@ -142,6 +142,16 @@ public static class ApplicationServiceExtensions
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.Assignment.ProgramNarrativeRecovery>();
         services.AddSingleton<IProgramNarrativeQueue, ProgramNarrativeQueue>();
         services.AddSingleton<ProgramNarrativeResilience>();
+        services.AddHttpClient<CoppAddresd.Application.Features.Nutrition.Commands.INutritionCycleSummaryClient, NutritionCycleSummaryClient>((sp, client) =>
+            {
+                var settings = sp.GetRequiredService<IOptions<AiServiceSettings>>().Value;
+                client.BaseAddress = new Uri(settings.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(Math.Clamp(settings.TimeoutSeconds, 1, 25));
+                client.MaxResponseContentBufferSize = 65536;
+            })
+            .AddPolicyHandler((sp, _) => sp.GetRequiredService<ProgramNarrativeResilience>().Policy)
+            .AddHttpMessageHandler<AiConsentHttpHandler>()
+            .AddHttpMessageHandler<CorrelationIdDelegatingHandler>();
         services.AddHostedService<ProgramNarrativeWorker>();
         services
             .AddHttpClient<IProgramNarrativeClient, ProgramNarrativeClient>(

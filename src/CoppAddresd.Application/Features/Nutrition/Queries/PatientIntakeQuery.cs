@@ -83,7 +83,7 @@ public sealed class PatientIntakeQueryHandler(IPatientScopeGuard scope, IPatient
             {
                 var a = r.AnalysisId is { } id ? analysis.GetValueOrDefault(id)?.Analysis : null;
                 var correction = a is not null && r.Recorded != a.Estimated;
-                var origin = a is not null && r.Source == "ai_photo" && !correction ? "ai_estimated" : "patient_confirmed";
+                var origin = NutritionIntakeOrigin.Resolve(r.Source, r.Recorded, a?.Estimated);
                 return new IntakeRecordDto(r.Id, r.MealCode, r.Recorded, r.WaterMl, origin,
                     a is not null ? signed.GetValueOrDefault(a.AnalysisId) : null, a, correction);
             }).ToArray();

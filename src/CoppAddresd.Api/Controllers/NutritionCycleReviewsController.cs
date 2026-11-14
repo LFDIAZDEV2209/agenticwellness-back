@@ -16,6 +16,7 @@ public sealed class NutritionCycleReviewsController(IMediator mediator) : Contro
     public sealed record ReviewRequest(int Revision, string? ProfessionalNotes, CyclePatientMessage? PatientMessage,
         bool CriticalAlertsConfirmed = false, bool AiDraftConfirmed = false);
     public sealed record PublishRequest(int Revision, Guid NextPrescriptionId, int NextPrescriptionRevision);
+    public sealed record AiDraftRequest(int Revision = 0, string Language = "es");
     public sealed record AttachmentForm(IFormFile File, int Revision, string? Caption = null, bool VisibleToPatient = false);
 
     [HttpGet("{id:guid}/review")]
@@ -23,6 +24,13 @@ public sealed class NutritionCycleReviewsController(IMediator mediator) : Contro
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<ActionResult<CycleReviewDto?>> GetReview(Guid id, CancellationToken ct)
         => Ok(await mediator.Send(new GetNutritionCycleReview(id), ct));
+
+    [HttpPost("{id:guid}/review/ai-draft")]
+    [PatientScope(PatientResource.Cycle, "id", "Nutrition.Approve")]
+    [PatientScope(PatientResource.Cycle, "id", "Nutrition.NotesView")]
+    [PatientScope(PatientResource.Cycle, "id", "Nutrition.RecordsView")]
+    public async Task<ActionResult<GenerateCycleAiDraftResult>> GenerateAiDraft(Guid id, [FromBody] AiDraftRequest body, CancellationToken ct)
+        => Ok(await mediator.Send(new GenerateCycleAiDraft(id, body.Revision, body.Language), ct));
 
     [HttpPost("{id:guid}/review")]
     [PatientScope(PatientResource.Cycle, "id", "Nutrition.Approve")]

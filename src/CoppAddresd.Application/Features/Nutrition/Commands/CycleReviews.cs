@@ -89,7 +89,7 @@ public sealed class CycleReviewHandler(IPatientScopeGuard scope, IPatientScopeAc
             var message = JsonSerializer.Deserialize<CyclePatientMessage>(current.PatientMessageJson, Json);
             if (string.IsNullOrWhiteSpace(current.ProfessionalNotes) || string.IsNullOrWhiteSpace(message?.Es) || string.IsNullOrWhiteSpace(message?.En)
                 || !current.CriticalAlertsConfirmed) throw new UnprocessableEntityException("Completa evaluación, mensaje es/en y validación de alertas (pasos 4 y 6).");
-            if (current.AiDraftJson is not null && !current.AiDraftConfirmed)
+            if (HasAiDraft(current.AiDraftJson) && !current.AiDraftConfirmed)
                 throw new UnprocessableEntityException("Confirma el borrador de IA antes de publicar.");
             var header = await reading.HeaderAsync(request.CycleId, patient, writeCt) ?? throw new NotFoundException("Ciclo no encontrado.");
             var today = NutritionStateMachine.Today(clock.GetUtcNow(), header.Timezone);
@@ -127,6 +127,19 @@ public sealed class CycleReviewHandler(IPatientScopeGuard scope, IPatientScopeAc
     {
         if (review?.PublishedAt is not null) throw new BusinessRuleViolationException("La revisión publicada es inmutable.");
         if ((review?.Revision ?? 0) != revision) throw new BusinessRuleViolationException("La revisión cambió; vuelve a cargarla.");
+    }
+
+    private static bool HasAiDraft(string? json)
+    {
+        if (json is null) return false;
+        using var value = JsonDocument.Parse(json);
+        // insufficient conserva la trazabilidad de la consulta, pero no hay texto IA que confirmar.
+        var root = value.RootElement;
+        return root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("status", out var status)
+            || status.ValueKind != JsonValueKind.String || status.GetString() != "insufficient"
+            || !root.TryGetProperty("draft", out var draft) || draft.ValueKind != JsonValueKind.Object
+            || !draft.TryGetProperty("es", out var es) || es.ValueKind != JsonValueKind.String || es.GetString() != ""
+            || !draft.TryGetProperty("en", out var en) || en.ValueKind != JsonValueKind.String || en.GetString() != "";
     }
 
     private async Task<string> SnapshotAsync(Guid cycleId, Guid patient, CancellationToken ct)

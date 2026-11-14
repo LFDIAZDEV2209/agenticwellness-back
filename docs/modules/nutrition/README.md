@@ -1,5 +1,8 @@
 # Módulo: Nutrición — generación, revisión clínica y lectura del paciente
 
+Cierre del ciclo: [revisión y publicación](CYCLE-REVIEWS.md),
+[borrador IA a pedido para ERP 3.17](AI-CYCLE-SUMMARY.md).
+
 ## Cambio vigente: publicación automática (KAN-61, 2026-11-12)
 
 Este requisito sustituye la aprobación profesional obligatoria descrita en las olas históricas de este documento. Al completar la batería inicial configurada, el worker genera y valida el mes, publica con el actor técnico `system:nutrition` y después marca la reserva como lista. No solicita `Nutrition.Approve` ni simula una revisión clínica. Conserva validaciones estructurales, versiones, vigencia de 30 días, exclusión de solapamientos y auditoría. El estado persistido `aprobado` significa publicado por compatibilidad del contrato; el nuevo evento es `publish`, con `AutoApproved=true` para el actor técnico y sin `CriticalConfirmed`.

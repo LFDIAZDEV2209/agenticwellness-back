@@ -280,3 +280,16 @@ revisión optimista juntas en DB. El fallo limpia el original con token propio d
 cinco segundos, incluso si se canceló la petición. Desadjuntar retira la referencia
 en DB y luego limpia el objeto; un fallo de limpieza nunca expone el huérfano.
 Firmas y lectura de almacenamiento no se ejecutan dentro de la transacción SQL.
+
+## Borrador IA del ciclo a pedido (3.13)
+
+Snapshot de entradas con Repeatable Read READ ONLY. Tras cerrarlo se llama por
+HTTP sin transacción abierta; el hash y las entradas conservan ese instante aun
+si después se corrige una ingesta. Antes de persistir se revalidan permisos y
+alcance; bajo el lock de paciente se comprueba de nuevo revisión optimista y
+estado editable. El borrador, su revisión y bitácora se confirman juntos.
+Edición/publicación concurrente produce 409; revocación devuelve 404. Fallo de IA
+o cancelación no escriben ni borran el borrador previo. `insufficient` guarda la
+trazabilidad, sin texto a confirmar; la publicación manual sigue siendo atómica
+con el plan siguiente. No hay red dentro de los locks ni cambios de mensaje
+aprobado, notas o calendario causados por la IA.
