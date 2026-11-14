@@ -61,10 +61,19 @@ public sealed partial class NutritionPlanWorkflowTests
         actor.HasPermissionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
         var handler = AdherenceHandler(db, actor, new(2026, 11, 8, 15, 0, 0, DateTimeKind.Utc));
         var result = await handler.Handle(new(p.CycleId, new(2026, 11, 6), new(2026, 11, 30), PageSize: 2), default);
-        Assert.Equal(.83m, result.Adherence); Assert.Equal(2, result.DaysWithData); Assert.Equal(3, result.ElapsedDays); Assert.Equal(1, result.Interruptions);
+        Assert.Equal(.83m, result.Adherence); Assert.Equal(2, result.DaysWithData); Assert.Equal(2, result.ElapsedDays); Assert.Equal(0, result.Interruptions);
         Assert.Equal(new DateOnly(2026, 11, 8), result.Through); Assert.Equal(2, result.Days.Count);
         var last = await handler.Handle(new(p.CycleId, new(2026, 11, 6), Page: 2, PageSize: 2), default);
-        Assert.True(Assert.Single(last.Days).Interruption);
+        Assert.False(Assert.Single(last.Days).Interruption);
+        var beforeMidnight = await AdherenceHandler(db, actor, new(2026, 11, 9, 4, 59, 0, DateTimeKind.Utc))
+            .Handle(new(p.CycleId, new(2026, 11, 6), new(2026, 11, 8)), default);
+        Assert.Equal(2, beforeMidnight.ElapsedDays); Assert.Equal(0, beforeMidnight.Interruptions);
+        var afterMidnight = await AdherenceHandler(db, actor, new(2026, 11, 9, 5, 0, 0, DateTimeKind.Utc))
+            .Handle(new(p.CycleId, new(2026, 11, 6), new(2026, 11, 8)), default);
+        Assert.Equal(3, afterMidnight.ElapsedDays); Assert.Equal(1, afterMidnight.Interruptions); Assert.True(afterMidnight.Days[^1].Interruption);
+        await AddCycleIntakesAsync(db, seed.Patient, new(2026, 11, 8), MealCode.mer);
+        var partialToday = await handler.Handle(new(p.CycleId, new(2026, 11, 6), PageSize: 2), default);
+        Assert.Equal(3, partialToday.DaysWithData); Assert.Equal(3, partialToday.ElapsedDays); Assert.Equal(0, partialToday.Interruptions);
         Assert.Empty((await handler.Handle(new(p.CycleId, Page: 100, PageSize: 100), default)).Days);
         await Assert.ThrowsAsync<NotFoundException>(() => handler.Handle(new(f.CycleId), default));
         actor.IsAdmin.Returns(true); Assert.Equal(1, (await handler.Handle(new(f.CycleId, new(2026, 11, 6), new(2026, 11, 6)), default)).DaysWithData);

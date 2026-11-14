@@ -115,8 +115,14 @@ todo el rango efectivo, independientemente de la página. Sin from/to se usa el
 inicio del ciclo hasta hoy o el día anterior al sucesor, lo que ocurra primero;
 con retiro se limita además a su fecha local. Un borrador no tiene días.
 
-El ejemplo de los días 6/7/8 se consulta precisamente con from=6 y to=8: 3/3,
-2/3 y sin registro producen adherencia 0,83, cobertura 2 de 3 e interrupción 1.
+El ejemplo de los días 6/7/8 se consulta precisamente con from=6 y to=8 cuando
+el día 8 ya terminó: 3/3, 2/3 y sin registro producen adherencia 0,83, cobertura
+2 de 3 e interrupción 1. Si el 8 es hoy local y aún no tiene registros, sigue
+visible en `days`, pero `interruption=false`, `elapsedDays=2`, `interruptions=0`.
+Un día en curso con registros sí suma `daysWithData` y `elapsedDays` y mantiene
+su adherencia proporcional; D2 no cambia. Al cruzar la medianoche del paciente,
+un día vacío pasa a interrupción y suma elapsedDays, incluso durante una pausa
+o continuidad. R7-03 no cambia calendario, rango, paginación ni días históricos.
 Si se consulta desde el inicio del ciclo el 5-nov, ese día también forma parte
 de la cobertura, sin inventar registros. Los días sin comida no entran al
 promedio, con o sin pausa; una comida durante la pausa sí cuenta. Agua no es una
@@ -205,3 +211,17 @@ cuatro activaciones). Las omisiones unitarias son los casos opt-in de la suite;
 la clase PostgreSQL completa se ejecutó con conexión local real resuelta en el
 proceso, sin registrar credenciales. No se acredita ejecución en producción ni
 se cambian las asignaciones antiguas o inscripciones con esta tarea.
+
+## Verificación conjunta R7-03 / R7-14
+
+Build verde; unitarios **2630 aprobados/105 omitidos**; clase completa PostgreSQL
+**NutritionPlanWorkflowTests 119/119**, sin omisiones ni fallos (11 min 10 s),
+incluidos ambos ConservaPreedicion. R7-03 verifica hoy vacío/parcial/completo,
+medianoche de Bogotá, pausa, rango y paginación; R7-14 verifica nombres en ES/EN,
+respuesta exacta y conservación del valor histórico almacenado. No hay migración.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/ValidationR7/ -v quiet
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/ValidationR7/ -v normal
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/ValidationR7/ --filter 'FullyQualifiedName~NutritionPlanWorkflowTests' -v normal
+```

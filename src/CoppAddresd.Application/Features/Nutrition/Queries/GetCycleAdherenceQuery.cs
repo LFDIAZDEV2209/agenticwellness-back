@@ -70,15 +70,17 @@ public static class NutritionCycleAdherence
             var planned = version is not null && menus.TryGetValue((version.Id, menuDay!.Value), out var meals) && meals > 0 ? (int?)meals : null;
             var recorded = intake.Select(i => i.MealCode).Distinct().Count();
             rows.Add(new(day, NutritionCycleCalendar.IsContinuity(header.Cycle, day), recorded, planned,
-                planned.HasValue && recorded > 0 ? (decimal)recorded / planned.Value : null, recorded == 0,
+                planned.HasValue && recorded > 0 ? (decimal)recorded / planned.Value : null, recorded == 0 && day < today,
                 version?.Id, menuDay, intake.Select(i => i.Id).Order().ToArray()));
         }
         var measured = rows.Where(d => d.RecordedMeals > 0).ToArray();
         var unknown = measured.Count(d => !d.PlannedMeals.HasValue);
+        // Hoy sin datos sigue en la tira como día en curso; todavía no es una interrupción ni un día cerrado.
+        var interruptions = rows.Count(d => d.Interruption);
         var adherence = measured.Length > 0 && unknown == 0 ? (decimal?)decimal.Round(measured.Average(d => d.Adherence!.Value), 2) : null;
         return new(header.Cycle.Id, header.Cycle.Number, NutritionCycleCalendar.State(header.Cycle, today),
-            header.Cycle.StartDate, header.Cycle.EndDate, from, through, adherence, measured.Length, rows.Count,
-            rows.Count(d => d.Interruption), unknown, page, pageSize,
+            header.Cycle.StartDate, header.Cycle.EndDate, from, through, adherence, measured.Length, measured.Length + interruptions,
+            interruptions, unknown, page, pageSize,
             rows.Skip((page - 1) * pageSize).Take(pageSize).ToArray());
     }
 }
