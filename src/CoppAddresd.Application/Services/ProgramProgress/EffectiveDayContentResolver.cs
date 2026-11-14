@@ -23,7 +23,7 @@ public sealed record EffectiveDayContent(Guid EnrollmentId, Guid PatientId, Date
     public bool HasGaps => Podcast.Missing || Routine.Missing || Nutrition.Missing;
 }
 public sealed record EffectivePrescription(Guid Id, Guid PatientId, DateOnly Start, DateOnly End,
-    DateTime? PublishedAt, IReadOnlyCollection<int> MenuDays);
+    DateTime? PublishedAt, IReadOnlyCollection<int> MenuDays, int Version = 1);
 public sealed record EffectivePlan(NutritionPlan Plan)
 {
     public Guid Id => Plan.Id;

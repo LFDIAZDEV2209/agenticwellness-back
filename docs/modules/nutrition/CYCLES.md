@@ -99,3 +99,58 @@ Down/Up y rechazo de Down con retiro se probaron en BD efímera. El caso anterio
 que esperaba rechazar un sucesor sin fecha se actualiza para solicitar un inicio
 explícitamente solapado y conservar su rechazo 409; el nuevo inicio automático
 respeta el cierre anterior. No se modificaron las regresiones de preedición.
+
+## 3.3 — Atribución y adherencia por rango
+
+`GET /api/v1/nutrition/cycles/{id}/adherence?from=2026-11-06&to=2026-11-08&page=1&pageSize=30`
+exige audiencia ERP y `Nutrition.View`. API y handler ejecutan
+`IPatientScopeGuard` sobre el ciclo; ajeno/inexistente → 404, permiso ausente →
+403, incluso para Admin. Admin solo exceptúa la asignación. No devuelve fotos,
+notas internas ni datos de otro paciente.
+
+Devuelve cabecera, rango efectivo, adherencia (fracción, redondeada a 2 decimales),
+`daysWithData`, `elapsedDays`, `interruptions`, `daysWithUnknownMenu` y días
+paginados (1..100 por página, orden ascendente estable). Los agregados cubren
+todo el rango efectivo, independientemente de la página. Sin from/to se usa el
+inicio del ciclo hasta hoy o el día anterior al sucesor, lo que ocurra primero;
+con retiro se limita además a su fecha local. Un borrador no tiene días.
+
+El ejemplo de los días 6/7/8 se consulta precisamente con from=6 y to=8: 3/3,
+2/3 y sin registro producen adherencia 0,83, cobertura 2 de 3 e interrupción 1.
+Si se consulta desde el inicio del ciclo el 5-nov, ese día también forma parte
+de la cobertura, sin inventar registros. Los días sin comida no entran al
+promedio, con o sin pausa; una comida durante la pausa sí cuenta. Agua no es una
+comida y se conserva fuera del numerador/cobertura de comidas. Los registros de
+comida sin macros (marcador de hábito) sí acreditan presencia de la comida.
+
+Cada día incluye fecha, continuidad, comidas registradas/planificadas, fracción
+del día, interrupción, versión/día del menú e IDs de sus registros. Los IDs se
+obtienen por paciente y fecha, nunca por cycle_id del registro. La continuidad
+usa el día final del último menú publicado del ciclo anterior. Un sucesor el
+9-dic deja 5–8-dic en el ciclo anterior y recibe registros solo desde el 9-dic.
+Se consultan versiones históricamente publicadas, aunque hayan sido sustituidas;
+una publicación dentro del ciclo solo cambia la comparación desde su día local.
+
+No se asigna adherencia cero por falta de menú: si un día con datos no tiene
+comidas planificadas conocidas, la adherencia queda null y se cuenta en
+`daysWithUnknownMenu`. Sin días con datos también es null. No se limita la
+fórmula ni se redondea cada día antes del promedio.
+
+Lectura Repeatable Read READ ONLY para que versiones, sucesor y registros
+pertenezcan al mismo snapshot. Precarga por conjuntos, sin SELECT por día;
+proyecta cabeceras, conteos de comidas e IDs/fechas/tipos de registro, sin cargar
+alimentos, imágenes ni menús completos. Reutiliza índices existentes de
+paciente/fecha y ciclo/versión. Es una lectura operacional por paciente, sin
+nuevas métricas de dashboard ni rollups. No requiere migración ni backfill.
+
+Evidencia 3.3: build 0 errores, unitarios 2506 aprobados/105 omitidos,
+PostgreSQL 8/8 sin omisiones. Pruebas de 0,83/cobertura 2 de 3, pausa con comidas,
+futuros excluidos, alcance ajeno/Admin/permiso, paginación vacía/última, cancelación,
+versiones históricas por fecha local y continuidad sin duplicados. Incluye fechas
+y retiro de 3.2 y cuatro regresiones de activación Fase 1.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/Validation33/ -v quiet
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation33/ -v normal
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation33/ --filter 'FullyQualifiedName~CicloAdherencia_|FullyQualifiedName~CicloFechas_|FullyQualifiedName~ActivacionPorFecha_|FullyQualifiedName~ActivacionPorSemanaPerfecta_' -v normal
+```

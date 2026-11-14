@@ -226,3 +226,11 @@ con publicación nutricional. La transición condicional de inscripción evita d
 retiros; fallo de la actualización del ciclo revierte también la inscripción.
 No hay red ni reescritura de snapshots/historial. El reloj inyectado permite
 probar límites locales y continuidad de forma reproducible.
+
+## Adherencia por ciclo (3.3)
+
+NutritionCycleReadStore usa Repeatable Read READ ONLY: cabecera/sucesor,
+versiones publicadas históricas, conteos de comidas y registros por rango forman
+un snapshot consistente. El guard se ejecuta antes de entrar; cada query vuelve
+a acotar por el paciente resuelto. Transacción corta sin servicios externos ni
+cargas de fotos; cancelación aborta la lectura y nunca deja escrituras.
