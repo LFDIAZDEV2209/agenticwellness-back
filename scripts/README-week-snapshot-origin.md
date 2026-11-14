@@ -1,5 +1,59 @@
 # Clasificación del origen — tarea 1.6
 
+## Relleno y ejecución — 2.10
+
+`--fill-legacy` activa una operación separada de la clasificación original:
+copia asignaciones Active vigentes por fecha, con contenido activo y del paciente
+correcto, a celdas `individual` de semanas futuras sin activación ni historial.
+Usa el calendario derivado de la inscripción, puntos/orden de plantilla específica
+antes que genérica, y nunca inventa puntos. No reemplaza individuales ni descansos.
+Dos contenidos vigentes solapados se informan y se conservan sin elegir uno.
+
+```text
+python scripts/classify_week_snapshot_origin.py --mode simulate --fill-legacy
+python scripts/classify_week_snapshot_origin.py --mode apply --fill-legacy
+python scripts/classify_week_snapshot_origin.py --mode apply --fill-legacy
+python scripts/classify_week_snapshot_origin.py --mode simulate --reverse --fill-legacy
+python scripts/classify_week_snapshot_origin.py --mode reverse --fill-legacy
+```
+
+Cada celda copiada lleva `backfill_version:2` y `_legacy_backfill_v2`, con preimagen
+y postimagen. Reversa elimina celdas nuevas o restaura las reemplazadas solo si
+todavía coinciden con lo aplicado y la semana sigue siendo futura. Una edición
+posterior se conserva. La reversa de v2 no retira clasificaciones v1 anteriores.
+Las tablas de asignaciones antiguas nunca se modifican. CAS del snapshot y
+estado/fecha/historial revalidados impiden pisar activaciones o ediciones concurrentes.
+
+Para consultar el mismo handler de huecos 1.10b con alcance administrativo global:
+
+```text
+dotnet run --project scripts/ProgramContentAudit
+```
+
+Requiere `COP_PROGRAM_AUDIT_CONNECTION` del entorno seguro. No exponer esta
+herramienta como API: la opera un administrador con credenciales de BD, en una
+transacción PostgreSQL de solo lectura; imprime únicamente conteos, sin pacientes.
+
+### Ejecución local del 14-11-2026
+
+- Clasificación v1: simulación y aplicación, cero cambios.
+- Relleno: **4906 celdas en 762 semanas**, todas `individual`; 377 solapamientos
+  conservados sin cambiar la asignación clínica. Se evaluaron 8457 semanas futuras.
+- Segunda aplicación: cero escrituras.
+- Reversa simulada y ejecutada: 762 semanas restauradas; repetición, cero escrituras.
+  La huella SHA-256 de todas las semanas coincide exactamente con la anterior.
+- Reaplicación final: 762 semanas; repetición final, cero escrituras.
+  Las huellas de ambas tablas antiguas permanecen idénticas antes/después.
+- Consulta 1.10b antes/después: ejercicio **0**, nutrición **0**, podcast **50840**
+  días con huecos. Luis aceptó cerrar el relleno validado y continuar; los podcasts
+  quedan explícitamente pendientes de los audios de 1.14, sin sustituirlos por demos.
+
+Informes sin datos clínicos en `.ai/operations/organizar-experiencia-bienestar/`:
+`2.10-local-execution.json` y `2.10-content-gaps-after.json`. Prueba PostgreSQL:
+copias individuales, descanso conservado, conflictos, simulación, repetición,
+reversa exacta y protección de una edición posterior; las cuatro activaciones
+de Fase 1 también se ejecutan antes del commit.
+
 Ejecutar con Python + `psycopg2` y las variables estándar `PGHOST`, `PGPORT`,
 `PGDATABASE`, `PGUSER`, `PGPASSWORD` resueltas desde el entorno seguro. Nunca
 pasar credenciales por argumentos ni guardarlas en un archivo del workspace.

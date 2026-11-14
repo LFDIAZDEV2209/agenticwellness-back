@@ -169,6 +169,17 @@ La simulación es de solo lectura. La reversa comprueba la postimagen completa
 antes de restaurar; repetir archivo o reversa no ejecuta UPDATE. Instrucciones
 y evidencia local en `scripts/README-archive-default-83w.md`.
 
+### Relleno legado (2.10)
+
+El script de origen usa lotes de hasta 500 semanas (máximo configurable 5000),
+Read Committed, lock timeout 5 s y statement timeout 60 s. El UPDATE por conjunto
+compara el snapshot original y revalida fecha derivada, activación, finalización
+e historial. Un conflicto concurrente se cuenta y conserva; un error revierte
+el lote actual, los anteriores pueden estar confirmados. Repetir no reescribe
+celdas v2. La reversa compara la postimagen antes de restaurar. No modifica
+asignaciones antiguas ni consulta servicios externos. Procedimiento y ejecución
+local en `scripts/README-week-snapshot-origin.md`.
+
 ### Edición del plan semanal (2.8)
 
 Read Committed dentro de la estrategia Npgsql; bloquea inscripción y semana con

@@ -55,7 +55,7 @@ public sealed partial class NutritionPlanWorkflowTests
         await db.Entry(historical).ReloadAsync(); Assert.False(historical.TasksSnapshot[0].TryGetProperty("origin", out _));
     }
 
-    private async Task<JsonElement> OriginScriptAsync(string mode, bool reverse = false)
+    private async Task<JsonElement> OriginScriptAsync(string mode, bool reverse = false, bool fillLegacy = false)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "scripts", "classify_week_snapshot_origin.py"))) directory = directory.Parent;
@@ -66,6 +66,7 @@ public sealed partial class NutritionPlanWorkflowTests
         start.ArgumentList.Add("--today"); start.ArgumentList.Add("2026-11-13");
         start.ArgumentList.Add("--batch-size"); start.ArgumentList.Add("1");
         if (reverse) start.ArgumentList.Add("--reverse");
+        if (fillLegacy) start.ArgumentList.Add("--fill-legacy");
         var builder = new NpgsqlConnectionStringBuilder(connection);
         start.Environment["PGHOST"] = builder.Host; start.Environment["PGPORT"] = builder.Port.ToString();
         start.Environment["PGDATABASE"] = builder.Database; start.Environment["PGUSER"] = builder.Username;
