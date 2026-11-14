@@ -70,6 +70,19 @@ public sealed partial class NutritionPlanWorkflowTests
             .Any(e => e.Id == w.EnrollmentId && patients.Skip(6).Contains(e.PatientId))).Select(w => w.Id).ToArrayAsync();
         var before = await db.ProgramWeeks.AsNoTracking().Where(w => protectedIds.Contains(w.Id)).OrderBy(w => w.Id).Select(w => w.TasksSnapshot).ToArrayAsync();
         var uncreatedEnrollment = await db.ProgramEnrollments.Where(e => e.PatientId == patients[1]).Select(e => e.Id).SingleAsync();
+        if (!exercise)
+        {
+            var snapshotsBefore = await db.ProgramWeeks.AsNoTracking().OrderBy(w => w.Id).Select(w => new { w.Id, w.TasksSnapshot, w.UpdatedAt }).ToArrayAsync();
+            var auditBefore = await db.ActivityLogs.CountAsync();
+            var preview = await store.AssignAsync(new(patients, target.Id, 2, 2, Simulate: true), default);
+            Assert.Equal(6, preview.Aplicadas); Assert.Equal(2, preview.OmitidasSemanaIniciada); Assert.Equal(patients.Skip(8), preview.OmitidasSinAlcance);
+            var foreignOnly = await store.AssignAsync(new(patients.Skip(8).ToArray(), target.Id, 2, 2, Simulate: true), default);
+            Assert.Equal(0, foreignOnly.Aplicadas); Assert.Equal(patients.Skip(8), foreignOnly.OmitidasSinAlcance);
+            Assert.Equal(System.Text.Json.JsonSerializer.Serialize(snapshotsBefore), System.Text.Json.JsonSerializer.Serialize(
+                await db.ProgramWeeks.AsNoTracking().OrderBy(w => w.Id).Select(w => new { w.Id, w.TasksSnapshot, w.UpdatedAt }).ToArrayAsync()));
+            Assert.Equal(auditBefore, await db.ActivityLogs.CountAsync());
+            Assert.Equal(0, await db.RoutineAssignments.CountAsync()); Assert.Equal(0, await db.NutritionPlanAssignments.CountAsync());
+        }
         counter.Reads = 0;
         await Assign([seed.Patient]);
         var oneReads = counter.Reads; counter.Reads = 0;

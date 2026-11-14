@@ -72,3 +72,12 @@ Build verde y unitarios completos **2497 aprobados/105 omitidos**. PostgreSQL
 los cuatro recorridos de preedición/activación de Fase 1. El planificador común
 conserva el contrato anterior de podcasts. Sin migraciones ni cambios locales
 de pacientes fuera de las bases efímeras de pruebas.
+
+## 1.15b — vista previa real
+
+Build verde y unitarios completos **2498 aprobados/105 omitidos**. PostgreSQL
+**6/6**, incluidos los cuatro casos de Fase 1. El lote de podcasts simula antes
+de aplicar, verifica los mismos conteos (6 aplicados, 2 iniciados, 2 ajenos),
+prueba solo ajenos y compara todas las semanas/timestamps y el número de filas
+de auditoría antes/después: sin escrituras. La ruta preview fuerza simulación
+aunque el cuerpo pida escribir. La masiva de rutinas también permanece verde.

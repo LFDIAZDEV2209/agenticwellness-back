@@ -201,3 +201,9 @@ autorización antes de abrirla, consultas por conjuntos, validación completa an
 de Save y un commit del lote. Conflictos 40001/23505 se traducen a 409; el intento
 siguiente recarga datos y tracking. Solo escribe snapshots; los rechazos y la
 cancelación no dejan aplicaciones parciales ni asignaciones antiguas.
+
+El modo simulación de podcasts (1.15b) usa Repeatable Read con `SET TRANSACTION
+READ ONLY` antes de materializar consultas. Comparte alcance, validación y
+planificador; retorna antes de adjuntar entidades o Save. La protección de BD
+impide escrituras accidentales. El modo normal mantiene Serializable. La vista
+previa no reserva datos entre solicitudes; confirmar reevalúa el estado actual.

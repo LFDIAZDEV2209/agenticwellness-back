@@ -14,12 +14,12 @@ public sealed class BulkPatientPodcastStore(AppDbContext db, IPatientScopeGuard 
     TimeProvider clock) : IBulkPatientPodcastStore, IBulkPatientRoutineStore
 {
     public Task<BulkAssignPatientPodcastsResult> AssignAsync(BulkAssignPatientPodcastsCommand request, CancellationToken ct)
-        => AssignCoreAsync(request.PatientIds, request.MediaId, request.SemanaDesde, request.SemanaHasta, false, ct);
+        => AssignCoreAsync(request.PatientIds, request.MediaId, request.SemanaDesde, request.SemanaHasta, false, request.Simulate, ct);
 
     public Task<BulkAssignPatientPodcastsResult> AssignRoutinesAsync(BulkAssignPatientRoutinesCommand request, CancellationToken ct)
-        => AssignCoreAsync(request.PatientIds, request.RoutineId, request.SemanaDesde, request.SemanaHasta, true, ct);
+        => AssignCoreAsync(request.PatientIds, request.RoutineId, request.SemanaDesde, request.SemanaHasta, true, false, ct);
 
-    private async Task<BulkAssignPatientPodcastsResult> AssignCoreAsync(IReadOnlyList<Guid> patientIds, Guid contentId, int from, int to, bool exercise, CancellationToken ct)
+    private async Task<BulkAssignPatientPodcastsResult> AssignCoreAsync(IReadOnlyList<Guid> patientIds, Guid contentId, int from, int to, bool exercise, bool simulate, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var requested = patientIds.Distinct().ToArray();
@@ -32,7 +32,8 @@ public sealed class BulkPatientPodcastStore(AppDbContext db, IPatientScopeGuard 
             return await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
                 db.ChangeTracker.Clear();
-                await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+                await using var tx = await db.Database.BeginTransactionAsync(simulate ? IsolationLevel.RepeatableRead : IsolationLevel.Serializable, ct);
+                if (simulate) await db.Database.ExecuteSqlRawAsync("SET TRANSACTION READ ONLY", ct);
                 var visible = await visibleQuery.Select(p => p.Id).ToArrayAsync(ct);
                 var media = exercise ? null : await db.MediaItems.AsNoTracking().SingleOrDefaultAsync(m => m.Id == contentId, ct)
                     ?? (exercise ? null : throw new NotFoundException("Medio no encontrado."));
@@ -45,6 +46,11 @@ public sealed class BulkPatientPodcastStore(AppDbContext db, IPatientScopeGuard 
                     && w.WeekNumber >= from && w.WeekNumber <= to).ToListAsync(ct);
                 var plan = exercise ? BulkPatientRoutinePlanner.Build(new(requested, contentId, from, to), routine!, visible, enrollments, weeks, actorId, clock.GetUtcNow(), ct)
                     : BulkPatientPodcastPlanner.Build(new(requested, contentId, from, to), media!, visible, enrollments, weeks, actorId, clock.GetUtcNow(), ct);
+                if (simulate)
+                {
+                    await tx.CommitAsync(ct);
+                    return plan.Result;
+                }
                 foreach (var update in plan.Updates)
                 {
                     if (update.IsNew) db.ProgramWeeks.Add(update.Week);

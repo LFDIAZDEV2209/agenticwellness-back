@@ -10,7 +10,7 @@ using MediatR;
 namespace CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent;
 
 public sealed record BulkAssignPatientPodcastsCommand(IReadOnlyList<Guid> PatientIds, Guid MediaId,
-    int SemanaDesde, int SemanaHasta) : IRequest<BulkAssignPatientPodcastsResult>;
+    int SemanaDesde, int SemanaHasta, bool Simulate = false) : IRequest<BulkAssignPatientPodcastsResult>;
 public sealed record BulkAssignPatientPodcastsResult(int Aplicadas, int OmitidasSemanaIniciada, IReadOnlyList<Guid> OmitidasSinAlcance);
 public interface IBulkPatientPodcastStore
 {

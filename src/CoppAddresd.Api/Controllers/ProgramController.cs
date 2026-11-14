@@ -771,6 +771,13 @@ public sealed class ProgramController(
         [FromBody] BulkAssignPatientPodcastsCommand command, CancellationToken ct) =>
         Ok(await mediator.Send(command, ct));
 
+    /// <summary>Vista previa real: fuerza simulación, incluso si el cuerpo solicita escritura.</summary>
+    [HttpPost("content/bulk-assign-patients/preview")]
+    [RequireContextPermission("Program.Edit")]
+    public async Task<ActionResult<BulkAssignPatientPodcastsResult>> PreviewBulkAssignPatientPodcasts(
+        [FromBody] BulkAssignPatientPodcastsCommand command, CancellationToken ct)
+        => Ok(await mediator.Send(command with { Simulate = true }, ct));
+
     /// <summary>Asigna rutina individual por pacientes y rango, con la política masiva de podcasts.</summary>
     [HttpPost("content/bulk-assign-patient-routines")]
     [RequireContextPermission("Program.Edit")]

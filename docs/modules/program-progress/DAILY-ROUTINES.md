@@ -1,5 +1,23 @@
 # Rutinas por día — Fase 2
 
+## Vista previa de la masiva de podcasts — 1.15b
+
+Para la confirmación real de 1.24 usar
+`POST /api/v1/program/content/bulk-assign-patients/preview` con el mismo cuerpo
+`{patientIds,mediaId,semanaDesde,semanaHasta}`. La ruta fuerza simulación incluso
+si se recibe `simulate:false`; una API anterior responde 404 a esta ruta.
+El POST de aplicación también admite `simulate:true` opcional, apagado por defecto.
+
+La simulación devuelve exactamente el resultado de 1.15, incluyendo
+`aplicadas`, `omitidasSemanaIniciada` y `omitidasSinAlcance`, calculado por el mismo
+planificador, validación y alcance. No reserva semanas: al confirmar se reevalúa
+el estado vigente. Program.Edit sigue siendo obligatorio y los IDs ajenos solo
+se devuelven si venían en la solicitud, sin datos clínicos ni nombres.
+
+Usa Repeatable Read y `SET TRANSACTION READ ONLY` como protección de BD; retorna
+antes de adjuntar entidades o Save. No cambia snapshots, timestamps, auditoría
+ni asignaciones antiguas. El modo normal conserva la transacción Serializable.
+
 ## Asignación masiva de rutina — 2.16
 
 `POST /api/v1/program/content/bulk-assign-patient-routines`
