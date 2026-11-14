@@ -435,13 +435,21 @@ public class AiServiceClient : IAiServiceClient
         if (!response.IsSuccessStatusCode) await ThrowForResponseAsync(response, ct);
     }
 
-    public async Task<ThreadStateResult> GetThreadStateAsync(
+    public Task<ThreadStateResult> GetThreadStateAsync(
         string threadId,
         string userId,
         int? limit = null,
         int? before = null,
         CancellationToken ct = default
     )
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, false, ct);
+
+    public Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit = null, int? before = null, CancellationToken ct = default)
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, true, ct);
+
+    private async Task<ThreadStateResult> GetThreadStateCoreAsync(string threadId, string userId,
+        int? limit, int? before, bool syncVoice, CancellationToken ct)
     {
         // Proxy de lectura del historial de un thread (canal interno). El AI
         // Service aísla el thread por user_id (`{user_id}::{thread_id}`) y
@@ -456,8 +464,13 @@ public class AiServiceClient : IAiServiceClient
             url += $"&limit={limit.Value.ToString(CultureInfo.InvariantCulture)}";
         if (before is not null)
             url += $"&before={before.Value.ToString(CultureInfo.InvariantCulture)}";
+        if (syncVoice) url += "&sync_voice=true";
 
         using var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+        if (syncVoice)
+            httpRequest.Options.Set(AiConsentSubject.Key, new("chat",
+                UserId: Guid.TryParse(userId, out var syncOwner) ? syncOwner : null,
+                RequireRecipientConsent: true, RequireVoiceConsent: true));
         AddInternalKeyHeader(httpRequest);
 
         using var response = await _httpClient.SendAsync(httpRequest, ct);
@@ -480,9 +493,10 @@ public class AiServiceClient : IAiServiceClient
             result.MessageCount,
             result.LastMessage,
             result.Messages?.Select(m => new ThreadMessageResult(m.Role, m.Text, m.MessageId,
-                m.Channel, m.Status, m.Revision)).ToList() ?? [],
+                m.Channel, m.Status, m.Revision, m.Source, m.VoiceSessionId,
+                m.ProviderMessageId, m.SourceEventId)).ToList() ?? [],
             result.HasMore,
-            result.NextCursor
+            result.NextCursor, result.VoiceSyncStatus
         );
     }
 
@@ -706,7 +720,8 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("last_message")] string? LastMessage,
         [property: JsonPropertyName("messages")] IReadOnlyList<ThreadMessageJson>? Messages = null,
         [property: JsonPropertyName("has_more")] bool HasMore = false,
-        [property: JsonPropertyName("next_cursor")] int? NextCursor = null
+        [property: JsonPropertyName("next_cursor")] int? NextCursor = null,
+        [property: JsonPropertyName("voice_sync_status")] string? VoiceSyncStatus = null
     );
 
     // Mensaje visible del thread según el contrato del AI Service.
@@ -716,7 +731,11 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("message_id")] string? MessageId = null,
         [property: JsonPropertyName("channel")] string Channel = "text",
         [property: JsonPropertyName("status")] string Status = "final",
-        [property: JsonPropertyName("revision")] int Revision = 1
+        [property: JsonPropertyName("revision")] int Revision = 1,
+        [property: JsonPropertyName("source")] string? Source = null,
+        [property: JsonPropertyName("voice_session_id")] string? VoiceSessionId = null,
+        [property: JsonPropertyName("provider_message_id")] string? ProviderMessageId = null,
+        [property: JsonPropertyName("source_event_id")] long? SourceEventId = null
     );
 
     // Contrato del endpoint de feedback: eco del thread/rating más si la

@@ -212,6 +212,20 @@ Historial conserva mensajes por identidad: `role/text/messageId/channel/status/r
 `thread_id/execution_id/version_id/agent/actions/sources`. APP conserva esa
 compatibilidad snake_case en SSE y camelCase en JSON sync/historial.
 
+El GET de historial acepta `syncVoice=false` opcional. Solo con opt-in, JWT de app,
+paciente activo/vinculado y consentimientos actuales chat+voz se solicita internamente
+`sync_voice=true`. También se revalidan al salir por HTTP: este GET con efectos de
+reconciliación no hereda el bypass de lecturas internas normales. Sin permiso de voz
+o paciente válido se conserva la lectura de chat sin sync, no se bloquea el texto.
+Propiedad: AI recibe siempre el userId del JWT, usa su namespace user::thread y sus
+vínculos durables; no se acepta conversationId ni texto de bot del cliente.
+
+La respuesta preserva `voiceSyncStatus` nullable (`synchronized|processing|unavailable|busy`)
+y por mensaje `source/voiceSessionId/providerMessageId/sourceEventId` opcionales,
+además de IDs/estado/revisión. AI es único escritor del transcript verificado. La APP
+puede reintentar processing/busy de forma acotada; BACK no añade otro importador/LLM
+ni activa el flag AI de sincronización. Errores del sync conservan el chat disponible.
+
 ## Verificación y límites
 
 Tests de unidad y pipeline HTTP con AI simulado cubren auth, claves, cabeceras,

@@ -5,7 +5,9 @@ namespace CoppAddresd.Application.Features.Threads;
 /// Service): <c>role</c> ("user" | "bot") + <c>text</c>, en el orden del thread.
 /// </summary>
 public record ThreadMessageResult(string Role, string Text, string? MessageId = null,
-    string Channel = "text", string Status = "final", int Revision = 1);
+    string Channel = "text", string Status = "final", int Revision = 1,
+    string? Source = null, string? VoiceSessionId = null, string? ProviderMessageId = null,
+    long? SourceEventId = null);
 
 /// <summary>
 /// Resumen del historial de un thread devuelto por el AI Service (proxy de
@@ -25,4 +27,5 @@ public record ThreadStateResult(
     string? LastMessage,
     IReadOnlyList<ThreadMessageResult>? Messages = null,
     bool HasMore = false,
-    int? NextCursor = null);
+    int? NextCursor = null,
+    string? VoiceSyncStatus = null);

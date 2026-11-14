@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using CoppAddresd.Application.Features.Threads;
 using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Application.Features.Agents.Vita;
+using CoppAddresd.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +17,8 @@ namespace CoppAddresd.Api.Controllers;
 [Route("api/v1/threads")]
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsController> logger)
+public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsController> logger,
+    VitaPatientAccess? patientAccess = null)
     : ControllerBase
 {
     /// <summary>
@@ -43,7 +46,8 @@ public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsContro
         [FromQuery] string? userId,
         [FromQuery] int? limit,
         [FromQuery] int? before,
-        CancellationToken ct
+        CancellationToken ct,
+        [FromQuery] bool syncVoice = false
     )
     {
         // Anti-IDOR: el query param userId se ignora deliberadamente
@@ -55,6 +59,25 @@ public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsContro
 
         try
         {
+            if (syncVoice && User.HasClaim("aud", "app") && Guid.TryParse(ownerId, out var syncUser)
+                && patientAccess is not null)
+            {
+                try
+                {
+                    await patientAccess.RequireChatAndVoiceAsync(syncUser, ct);
+                    // Propiedad en AI: ownerId del JWT + namespace de hilo y vínculos durables propios.
+                    return Ok(await aiService.GetThreadStateWithVoiceSyncAsync(threadId, ownerId, limit, before, ct));
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                catch (AiConsentException) { /* Sin autorización de voz se conserva la lectura normal de chat. */ }
+                catch (ForbiddenException) { /* No conceder sync por el bool ni por conocer un ID. */ }
+                catch (Exception ex)
+                {
+                    logger.LogWarning("Sync de voz no disponible ({ErrorType}); se conserva lectura de chat", ex.GetType().Name);
+                    var existing = await aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct);
+                    return Ok(existing with { VoiceSyncStatus = "unavailable" });
+                }
+            }
             var state = await aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct);
             return Ok(state);
         }

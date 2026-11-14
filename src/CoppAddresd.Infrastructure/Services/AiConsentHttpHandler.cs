@@ -5,12 +5,13 @@ using CoppAddresd.Domain.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using CoppAddresd.Application.Features.Agents.Vita;
 
 namespace CoppAddresd.Infrastructure.Services;
 
 /// <summary>Server-only metadata: never serialized or sent to an AI provider.</summary>
 public sealed record AiConsentSubject(string Scope, Guid? PatientId = null, Guid? UserId = null,
-    bool RequireRecipientConsent = false)
+    bool RequireRecipientConsent = false, bool RequireVoiceConsent = false)
 {
     public static readonly HttpRequestOptionsKey<AiConsentSubject> Key = new("CoppAddresd.AiConsentSubject");
 }
@@ -24,6 +25,15 @@ public sealed class AiConsentHttpHandler(IServiceScopeFactory scopes, IHttpConte
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
+        request.Options.TryGetValue(AiConsentSubject.Key, out var subject);
+        if (subject?.RequireVoiceConsent == true)
+        {
+            if (subject.UserId is not { } syncUser) throw new AiConsentException("CONSENT_SUBJECT_REQUIRED", "voice", 503);
+            // Este GET sí procesa voz: no hereda el bypass de lecturas internas ni de operadores ERP.
+            using var syncScope = scopes.CreateScope();
+            await syncScope.ServiceProvider.GetRequiredService<VitaPatientAccess>().RequireChatAndVoiceAsync(syncUser, ct);
+            return await base.SendAsync(request, ct);
+        }
         if (policy?.CurrentValue.EnforcementEnabled == false)
             return await base.SendAsync(request, ct);
 
@@ -34,7 +44,6 @@ public sealed class AiConsentHttpHandler(IServiceScopeFactory scopes, IHttpConte
 
         var user = http.HttpContext?.User;
         // Deliberately preserve authenticated ERP/operator workflows; not a background bypass.
-        request.Options.TryGetValue(AiConsentSubject.Key, out var subject);
         if (subject?.RequireRecipientConsent != true
             && user?.Identity?.IsAuthenticated == true && user.HasClaim("aud", "erp") && !user.HasClaim("aud", "app"))
             return await base.SendAsync(request, ct);

@@ -71,6 +71,14 @@ public interface IAiServiceClient
         CancellationToken ct = default
     );
 
+    /// <summary>Opt-in interno solo tras autorizar paciente/propiedad y consentimiento chat+voz.</summary>
+    async Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit = null, int? before = null, CancellationToken ct = default)
+    {
+        var state = await GetThreadStateAsync(threadId, userId, limit, before, ct);
+        return state with { VoiceSyncStatus = "unavailable" };
+    }
+
     /// <summary>
     /// Registra el feedback del paciente sobre una respuesta del chat
     /// (rating 1-5 + comentario opcional). Canal interno con X-Internal-Key;

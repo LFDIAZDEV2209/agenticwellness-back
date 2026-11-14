@@ -95,6 +95,42 @@ public sealed class VitaUpstreamContractsTests
         Assert.Equal("interrupted", state.Messages[1].Status); Assert.True(state.HasMore); Assert.Equal(2, state.NextCursor);
     }
 
+    [Theory]
+    [InlineData("synchronized")]
+    [InlineData("processing")]
+    [InlineData("unavailable")]
+    [InlineData("busy")]
+    public async Task Historial_SyncOptInPreservaEstadoYProcedenciaCamelCase(string status)
+    {
+        var client = Client(new((request, _) =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method); Assert.Contains("sync_voice=true", request.RequestUri!.Query);
+            Assert.True(request.Options.TryGetValue(AiConsentSubject.Key, out var subject)); Assert.True(subject!.RequireVoiceConsent);
+            return Task.FromResult(Json($$"""{"thread_id":"t","message_count":1,"voice_sync_status":"{{status}}","messages":[{"role":"bot","text":"Verificado","message_id":"canonical-id","channel":"voice","status":"provider_final","revision":2,"source":"elevenlabs_transcript","voice_session_id":"session","provider_message_id":"provider-id","source_event_id":3}]}"""));
+        }));
+        var result = await client.GetThreadStateWithVoiceSyncAsync("t", Guid.NewGuid().ToString());
+        var wire = JsonSerializer.SerializeToElement(result, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.Equal(status, wire.GetProperty("voiceSyncStatus").GetString());
+        var message = wire.GetProperty("messages")[0];
+        Assert.Equal("elevenlabs_transcript", message.GetProperty("source").GetString());
+        Assert.Equal("session", message.GetProperty("voiceSessionId").GetString());
+        Assert.Equal("provider-id", message.GetProperty("providerMessageId").GetString());
+        Assert.Equal(3, message.GetProperty("sourceEventId").GetInt64());
+        Assert.Equal("canonical-id", message.GetProperty("messageId").GetString());
+    }
+
+    [Fact]
+    public async Task HistorialAntiguo_NoSolicitaSyncYCambiosOpcionalesQuedanNull()
+    {
+        var client = Client(new((request, _) =>
+        {
+            Assert.DoesNotContain("sync_voice", request.RequestUri!.Query);
+            return Task.FromResult(Json("""{"thread_id":"t","message_count":1,"messages":[{"role":"bot","text":"Texto"}]}"""));
+        }));
+        var result = await client.GetThreadStateAsync("t", "owner");
+        Assert.Null(result.VoiceSyncStatus); Assert.Null(Assert.Single(result.Messages!).SourceEventId);
+    }
+
     [Fact]
     public async Task Sync_ActionsSourcesVersionCruzanClienteYHandlerSinPerderCamposCamelCase()
     {

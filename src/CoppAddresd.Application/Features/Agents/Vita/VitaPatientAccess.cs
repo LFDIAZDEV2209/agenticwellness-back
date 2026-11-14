@@ -21,4 +21,12 @@ public sealed class VitaPatientAccess(IPatientRepository patients, ILegalConsent
 
     public DateOnly Today(string timezone) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(
         clock.GetUtcNow(), TimeZoneInfo.FindSystemTimeZoneById(timezone)).DateTime);
+
+    /// <summary>Sincronizar transcript procesa voz; exige los dos consentimientos actuales y paciente activo.</summary>
+    public async Task<PatientProfile> RequireChatAndVoiceAsync(Guid userId, CancellationToken ct)
+    {
+        var patient = await RequireAsync(userId, "chat", ct);
+        await consent.EnsureUserAsync(userId, "voice", ct);
+        return patient;
+    }
 }
