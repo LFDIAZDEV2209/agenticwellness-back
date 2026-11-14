@@ -27,7 +27,7 @@ public sealed class VitaController(ISender sender, IConfiguration configuration)
         return StatusCode(VitaHttpStatus.For(result.Status), result);
     }
 
-    /// <summary>Especialistas asignados, activos y con versión activa; sin prompts ni herramientas.</summary>
+    /// <summary>Especialistas publicados activos para todo paciente autorizado; sin prompts ni herramientas.</summary>
     [HttpGet("agents")]
     public async Task<ActionResult<IReadOnlyList<VitaAgentDto>>> Agents(CancellationToken ct)
     {

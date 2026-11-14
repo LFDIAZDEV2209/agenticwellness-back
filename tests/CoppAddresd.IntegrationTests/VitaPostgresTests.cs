@@ -95,25 +95,55 @@ public sealed partial class NutritionPlanWorkflowTests
     }
 
     [NutritionPostgresFact]
-    public async Task Vita_CatalogoRealSoloAsignadoActivoYVersionActualSinConfig()
+    public async Task Vita_CatalogoComunSinInstancias_PublicacionRevocacionYVersionPropiaSinConfig()
     {
         await using var db = VitaDb(); var (_, user, _) = await SeedVitaAsync(db);
         var other = await PatientAsync(db);
         var type = new AgentType { Id = Guid.NewGuid(), Name = "Nuevo especialista", Slug = "repetido", Status = AgentStatus.Activo,
             Metadata = """{"routing":{"topics":["movimiento"],"channels":["text","voice"]}}""" };
-        db.AgentTypes.Add(type); await db.SaveChangesAsync();
-        var version = new AgentTypeVersion { Id = Guid.NewGuid(), AgentTypeId = type.Id, IsActive = true, VersionNumber = 1, Config = "{\"system_prompt\":\"secreto\"}" };
-        db.AgentTypeVersions.Add(version); db.AgentInstances.Add(new() { Id = Guid.NewGuid(), UserId = user, AgentTypeId = type.Id });
+        var specialist = new AgentType { Id = Guid.NewGuid(), Name = "Otro especialista", Status = AgentStatus.Activo };
+        var draft = new AgentType { Id = Guid.NewGuid(), Name = "Borrador", Status = AgentStatus.Borrador };
+        var inactive = new AgentType { Id = Guid.NewGuid(), Name = "Inactivo", Status = AgentStatus.Inactivo };
+        var unpublished = new AgentType { Id = Guid.NewGuid(), Name = "Version no activa", Status = AgentStatus.Activo };
+        var wrongType = new AgentType { Id = Guid.NewGuid(), Name = "Version ajena", Status = AgentStatus.Activo };
+        var noVersion = new AgentType { Id = Guid.NewGuid(), Name = "Sin version", Status = AgentStatus.Activo };
+        db.AgentTypes.AddRange(type, specialist, draft, inactive, unpublished, wrongType, noVersion);
         await db.SaveChangesAsync();
-        await db.AgentTypes.Where(t => t.Id == type.Id).ExecuteUpdateAsync(s => s.SetProperty(t => t.ActiveVersionId, version.Id));
+        var version = new AgentTypeVersion { Id = Guid.NewGuid(), AgentTypeId = type.Id, IsActive = true, VersionNumber = 1, Config = "{\"system_prompt\":\"secreto\"}" };
+        AgentTypeVersion Version(AgentType owner, bool active = true) => new()
+            { Id = Guid.NewGuid(), AgentTypeId = owner.Id, IsActive = active, VersionNumber = 1, Config = "{\"knowledge_bases\":[\"privado\"],\"api_key\":\"synthetic-private\"}" };
+        var specialistVersion = Version(specialist); var draftVersion = Version(draft);
+        var inactiveVersion = Version(inactive); var unpublishedVersion = Version(unpublished, false);
+        db.AgentTypeVersions.AddRange(version, specialistVersion, draftVersion, inactiveVersion, unpublishedVersion);
+        await db.SaveChangesAsync();
+        type.ActiveVersionId = version.Id; specialist.ActiveVersionId = specialistVersion.Id;
+        draft.ActiveVersionId = draftVersion.Id; inactive.ActiveVersionId = inactiveVersion.Id;
+        unpublished.ActiveVersionId = unpublishedVersion.Id; wrongType.ActiveVersionId = specialistVersion.Id;
+        await db.SaveChangesAsync(); db.ChangeTracker.Clear();
+        Assert.Empty(await db.AgentInstances.AsNoTracking().ToListAsync());
         var reader = new VitaAgentCatalogReader(db);
-        Assert.Empty(await reader.ListAuthorizedAsync(other.UserId!.Value, default));
         var handler = new GetVitaAgentsQueryHandler(Vita(db).Access, reader);
-        var result = Assert.Single(await handler.Handle(new(user), default));
+        var own = await handler.Handle(new(user), default);
+        Assert.Equal(2, own.Count);
+        Assert.Equal(System.Text.Json.JsonSerializer.Serialize(own, VitaVersions.JsonOptions),
+            System.Text.Json.JsonSerializer.Serialize(await handler.Handle(new(other.UserId!.Value), default), VitaVersions.JsonOptions));
+        var result = Assert.Single(own, a => a.Id == type.Id);
         Assert.Equal(type.Id, result.Id); Assert.Equal(version.Id, result.VersionId);
+        Assert.Equal(new[] { "text", "voice" }, result.Routing.Channels);
         Assert.DoesNotContain("secreto", System.Text.Json.JsonSerializer.Serialize(result));
+        Assert.DoesNotContain("synthetic-private", System.Text.Json.JsonSerializer.Serialize(own));
+        Assert.DoesNotContain("knowledge_bases", System.Text.Json.JsonSerializer.Serialize(own));
+        Assert.All(await reader.ListAuthorizedAsync(user, default), t => Assert.Equal("{}", t.ActiveVersion!.Config));
+
+        await db.AgentTypeVersions.Where(v => v.Id == version.Id).ExecuteUpdateAsync(s => s.SetProperty(v => v.IsActive, false));
+        Assert.Equal(specialist.Id, Assert.Single(await handler.Handle(new(user), default)).Id);
+        await db.AgentTypeVersions.Where(v => v.Id == version.Id).ExecuteUpdateAsync(s => s.SetProperty(v => v.IsActive, true));
         await db.AgentTypes.Where(t => t.Id == type.Id).ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, AgentStatus.Inactivo));
-        Assert.Empty(await handler.Handle(new(user), default));
+        Assert.Equal(specialist.Id, Assert.Single(await handler.Handle(new(other.UserId.Value), default)).Id);
+        await db.AgentTypes.Where(t => t.Id == type.Id).ExecuteUpdateAsync(s => s.SetProperty(t => t.Status, AgentStatus.Activo)
+            .SetProperty(t => t.ActiveVersionId, specialistVersion.Id));
+        Assert.Equal(specialist.Id, Assert.Single(await handler.Handle(new(user), default)).Id);
+        Assert.False(db.ChangeTracker.HasChanges());
     }
 
     [NutritionPostgresFact]

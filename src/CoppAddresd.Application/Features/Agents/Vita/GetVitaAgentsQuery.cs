@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace CoppAddresd.Application.Features.Agents.Vita;
 
-/// <summary>Lectura por conjunto de agentes asignados activos y su versión activa.</summary>
+/// <summary>Tipos publicados activos de Vita; el acceso del paciente se valida antes de leer el catálogo común.</summary>
 public interface IVitaAgentCatalogReader
 {
     Task<IReadOnlyList<AgentType>> ListAuthorizedAsync(Guid userId, CancellationToken ct);

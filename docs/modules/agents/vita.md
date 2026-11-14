@@ -9,7 +9,7 @@ tokens de voz y persistencia del hilo. No hay migraciones nuevas de backend.
 | Método | Ruta | Acceso |
 | --- | --- | --- |
 | GET | `/api/v1/vita/me/context?scope=day` | JWT `aud=app`, identidad del JWT |
-| GET | `/api/v1/vita/me/agents` | Igual; solo instancias asignadas activas |
+| GET | `/api/v1/vita/me/agents` | Igual; todos los tipos activos con versión publicada activa coincidente |
 | GET | `/api/v1/internal/vita/context?userId=<uuid>&scope=day` | `X-Internal-Key` de AI y `Vita:InternalEnabled=true` |
 | GET | `/api/v1/internal/vita/agents?userId=<uuid>` | Igual |
 | POST | `/api/v1/vita/me/task-completion-proposals` | JWT app y `Vita:TaskCompletionEnabled=true` |
@@ -112,18 +112,63 @@ IDs vacíos → 400; sin autenticación → 401; sin Agents.Update → 403; éxi
 Se conservan reglas de tipo activo, duplicado user+tipo y FK a Auth; no existe permiso
 `Agents.Assign`. No sustituir el userId ausente por patientId, correo o nombre.
 
-Una consulta por conjuntos filtra instancia asignada activa, tipo activo y
-versión activa coincidente. Proyecta `id/runtimeKey` GUID, `slug`, nombre,
+## Catálogo Vita: política autorizada por Luis (14-11-2026)
+
+Autorización directa de Luis en esta tarea: «TODOS los agentes publicados y
+activos deben estar disponibles automaticamente para TODOS los pacientes activos
+con consentimiento». Por tanto, `IVitaAgentCatalogReader` **no exige
+AgentInstance ni asignación individual** para Vita. El diagnóstico de cero
+instancias de la cuenta lo aportó root; este carril no consultó esa cuenta ni
+datos personales para implementar/probar la política.
+
+Una consulta por conjuntos filtra tipo `Status=Activo` y versión publicada activa
+coincidente: `ActiveVersionId` no nulo, versión referenciada `IsActive=true`,
+`ActiveVersion.Id=ActiveVersionId` y `ActiveVersion.AgentTypeId=AgentType.Id`.
+El modelo actual no tiene otro campo `Published`: la publicación visible se
+representa con esos estados y el puntero a versión activa. Un borrador, tipo
+inactivo, tipo sin versión, versión no activa o puntero a otro tipo queda fuera.
+La desactivación se aplica en la siguiente lectura, sin caché de catálogo.
+
+La consulta proyecta `id/runtimeKey` GUID, `slug`, nombre,
 descripción/especialidad, `versionId/versionNumber` y `routing` con
 `topics/keywords/channels`. El GUID es autoridad; el slug no es único. Un
-especialista nuevo debe activarse y asignarse en ERP para aparecer.
+especialista publicado y activo aparece automáticamente, aunque el paciente no
+tenga instancias. `VitaPatientAccess` sigue validando identidad propia, paciente
+activo/no eliminado y consentimiento `chat` antes de consultar el catálogo.
+El parámetro `userId` del lector se conserva por compatibilidad, pero el catálogo
+común no depende de asignaciones del usuario.
 
 Routing procede solo de `AgentType.Metadata.routing`; arrays acotados a 32
 strings de 80 caracteres. Canales permitidos `text/voice`; ausencia conserva
 ambos y lista explícita vacía no concede canales. Metadata nunca concede
 permisos. La configuración efectiva permanece en el runtime sincronizado por
-ID/versión. El catálogo es el conjunto pequeño autorizado de asignaciones del
-usuario, sin cargar documentos ni configuraciones, y no se cachea entre turnos.
+ID/versión. El catálogo común no carga documentos/configuraciones, prompts, KB,
+secretos ni overrides en el DTO. La consulta conserva `AsNoTracking`, orden
+estable nombre/ID y `ToListAsync(ct)`; desaparece el EXISTS sobre instancias,
+sin índices nuevos, N+1 ni migraciones. No se modifican resolución/asignaciones
+de ERP, otros canales, autorización de tools ni el alcance de datos del paciente.
+
+Verificación de la política autorizada (14-11-2026):
+
+| Comando / alcance | Resultado |
+| --- | --- |
+| Unitarias con filtro `FullyQualifiedName~VitaCatalogTests\|FullyQualifiedName~VitaApiHttpTests\|FullyQualifiedName~VitaContextTests` | 40 correctas, 0 fallos, 0 omitidas |
+| `dotnet test tests/CoppAddresd.UnitTests --no-build --no-restore` | 2615 correctas, 0 fallos, 105 omitidas existentes |
+| Integración PostgreSQL con filtro `FullyQualifiedName~Vita_` | 7 correctas, 0 fallos, 0 omitidas |
+| `dotnet build --no-restore --nologo` | 0 errores, 3 advertencias en pruebas existentes de WhatsApp/Telemedicine |
+| `git diff --check` | Sin errores |
+
+PostgreSQL 18.6 temporal propio, solo loopback y `data_directory` verificado;
+fixture crea BD únicas `copp_nutrition_test_*` con datos sintéticos. Primer
+intento: 7 fallos de inicialización por ausencia del rol `app_user` requerido por
+migraciones existentes. Tras crear ese rol NOLOGIN solo en el cluster temporal,
+las 7 pasaron. Se limpiaron también las 7 BD que dejó la inicialización fallida
+y se detuvo el cluster propio. No se consultó ni migró BD compartida/producción.
+No se midió rendimiento con volumen representativo ni compatibilidad específica
+con PostgreSQL 16. Las regresiones reales comprueban dos pacientes sin instancias,
+ambos especialistas visibles, revocación de estado/versión, puntero a versión
+ajena y progreso wearable propio; las unitarias conservan rechazo de paciente
+inactivo/eliminado/ajeno, consentimiento retirado y cancelación.
 
 ## Navegación y confirmación
 
@@ -316,7 +361,7 @@ clínicos. Alcance, errores, compatibilidad, cancelación y límites de las prue
 Tests de unidad y pipeline HTTP con AI simulado cubren auth, claves, cabeceras,
 SSE, cancelación, mapeos aditivos, ausencia/pendiente/descanso/stale y propiedad.
 Tests PostgreSQL usan BD únicas descartables del fixture: lecturas sin mutación,
-catálogo asignado, confirmación concurrente, stale/cuenta ajena, rollback por
+catálogo común publicado sin instancias, confirmación concurrente, stale/cuenta ajena, rollback por
 cancelación y wearable propio. Ninguna migración se aplica a la BD compartida.
 
 Validación final local: build de solución 0 errores; suite unitaria completa
