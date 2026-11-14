@@ -125,25 +125,46 @@ public sealed class ThreadHistoryClientTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Get_MapeaMetadatosInclusoVacioYConservaCamposPrevios(bool syncVoice)
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task Get_MapeaMetadatosInclusoVacioYConservaCamposPrevios(bool syncVoice, bool supportsVita)
     {
         var transport = new Transport((request, _) =>
         {
             Assert.Equal(syncVoice, request.RequestUri!.Query.Contains("sync_voice=true", StringComparison.Ordinal));
+            Assert.Equal(supportsVita, request.RequestUri.Query.Contains("supports_vita=true", StringComparison.Ordinal));
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(
                 """{"thread_id":"thread","message_count":0,"last_message":null,"messages":[],"has_more":false,"next_cursor":null,"voice_sync_status":"synchronized","history_revision":8,"cleared_at":"2026-11-01T05:00:00Z","reset_reason":"monthly"}""") });
         });
         using var http = new HttpClient(transport);
         var client = Client(http);
-        var result = syncVoice ? await client.GetThreadStateWithVoiceSyncAsync("thread", "owner")
-            : await client.GetThreadStateAsync("thread", "owner");
+        var result = syncVoice ? await client.GetThreadStateWithVoiceSyncAsync("thread", "owner", null, null, default, supportsVita)
+            : await client.GetThreadStateAsync("thread", "owner", null, null, default, supportsVita);
         Assert.Equal("thread", result.ThreadId); Assert.Equal(0, result.MessageCount); Assert.Null(result.LastMessage);
         Assert.Empty(result.Messages!); Assert.False(result.HasMore); Assert.Null(result.NextCursor);
         Assert.Equal("synchronized", result.VoiceSyncStatus);
         Assert.Equal(8, result.HistoryRevision); Assert.Equal("monthly", result.ResetReason);
         Assert.Equal(DateTimeOffset.Parse("2026-11-01T05:00:00Z"), result.ClearedAt);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Get_FirmasAnteriores_NoAgreganSenialVita(bool syncVoice)
+    {
+        using var http = new HttpClient(new Transport((request, _) =>
+        {
+            Assert.DoesNotContain("supports_vita", request.RequestUri!.Query);
+            Assert.Contains("limit=5&before=10", request.RequestUri.Query);
+            Assert.Equal(syncVoice, request.RequestUri.Query.Contains("sync_voice=true", StringComparison.Ordinal));
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                { Content = new StringContent("""{"thread_id":"thread","message_count":0}""") });
+        }));
+        var client = Client(http);
+        if (syncVoice) await client.GetThreadStateWithVoiceSyncAsync("thread", "owner", 5, 10);
+        else await client.GetThreadStateAsync("thread", "owner", 5, 10);
     }
 
     [Fact]

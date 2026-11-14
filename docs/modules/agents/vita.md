@@ -276,6 +276,14 @@ o paciente válido se conserva la lectura de chat sin sync, no se bloquea el tex
 Propiedad: AI recibe siempre el userId del JWT, usa su namespace user::thread y sus
 vínculos durables; no se acepta conversationId ni texto de bot del cliente.
 
+Para registrar también hilos que solo se abren, el GET interno añade
+`supports_vita=true` derivado exclusivamente del JWT `aud=app`, tanto en lectura
+normal como con sync autorizado. La lectura normal y sus fallbacks conservan
+esa señal aunque se haya retirado el consentimiento de voz; no autorizan voz
+por ella. ERP y llamadas antiguas al cliente no añaden la señal. Ni query/body
+del cliente pueden activarla o desactivarla. El registro durable/retención
+pertenece a AI; no se modifica el permiso para borrar tras retirar consentimiento.
+
 La respuesta preserva `voiceSyncStatus` nullable (`synchronized|processing|unavailable|busy`)
 y por mensaje `source/voiceSessionId/providerMessageId/sourceEventId` opcionales,
 además de IDs/estado/revisión. AI es único escritor del transcript verificado. La APP

@@ -72,6 +72,14 @@ public interface IAiServiceClient
     );
 
     /// <summary>
+    /// Señal interna de apertura Vita derivada por BACK de aud=app, nunca del cliente.
+    /// Registra la retención sin exigir procesamiento de voz; la firma anterior conserva su comportamiento.
+    /// </summary>
+    Task<ThreadStateResult> GetThreadStateAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateAsync(threadId, userId, limit, before, ct);
+
+    /// <summary>
     /// Vacía el historial del propietario autenticado y devuelve la confirmación persistida por AI.
     /// No exige consentimiento de lectura; nunca degrada fallos a una confirmación local.
     /// </summary>
@@ -85,6 +93,11 @@ public interface IAiServiceClient
         var state = await GetThreadStateAsync(threadId, userId, limit, before, ct);
         return state with { VoiceSyncStatus = "unavailable" };
     }
+
+    /// <summary>Sincronización de voz autorizada con señal interna de apertura de la app.</summary>
+    Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateWithVoiceSyncAsync(threadId, userId, limit, before, ct);
 
     /// <summary>
     /// Registra el feedback del paciente sobre una respuesta del chat

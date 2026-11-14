@@ -443,7 +443,11 @@ public class AiServiceClient : IAiServiceClient
         int? before = null,
         CancellationToken ct = default
     )
-        => GetThreadStateCoreAsync(threadId, userId, limit, before, false, ct);
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, false, false, ct);
+
+    public Task<ThreadStateResult> GetThreadStateAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, false, supportsVita, ct);
 
     public async Task<ThreadHistoryClearResult> ClearThreadHistoryAsync(
         string threadId, string userId, CancellationToken ct = default)
@@ -478,10 +482,14 @@ public class AiServiceClient : IAiServiceClient
 
     public Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
         int? limit = null, int? before = null, CancellationToken ct = default)
-        => GetThreadStateCoreAsync(threadId, userId, limit, before, true, ct);
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, true, false, ct);
+
+    public Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, true, supportsVita, ct);
 
     private async Task<ThreadStateResult> GetThreadStateCoreAsync(string threadId, string userId,
-        int? limit, int? before, bool syncVoice, CancellationToken ct)
+        int? limit, int? before, bool syncVoice, bool supportsVita, CancellationToken ct)
     {
         // Proxy de lectura del historial de un thread (canal interno). El AI
         // Service aísla el thread por user_id (`{user_id}::{thread_id}`) y
@@ -497,6 +505,7 @@ public class AiServiceClient : IAiServiceClient
         if (before is not null)
             url += $"&before={before.Value.ToString(CultureInfo.InvariantCulture)}";
         if (syncVoice) url += "&sync_voice=true";
+        if (supportsVita) url += "&supports_vita=true";
 
         using var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
         if (syncVoice)

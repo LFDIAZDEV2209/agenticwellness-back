@@ -7,6 +7,8 @@ using System.Text.Json;
 using CoppAddresd.Api;
 using CoppAddresd.Api.Controllers;
 using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Domain.Entities;
+using CoppAddresd.Domain.Exceptions;
 using CoppAddresd.Infrastructure.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,7 +38,8 @@ public sealed class ThreadHistoryHttpTests
         { Interlocked.Increment(ref Calls); return send(request, ct); }
     }
 
-    private static WebApplicationFactory<ApiEntryPoint> Host(Transport upstream, ILegalConsentService? consents = null) =>
+    private static WebApplicationFactory<ApiEntryPoint> Host(Transport upstream, ILegalConsentService? consents = null,
+        IPatientRepository? patients = null) =>
         new WebApplicationFactory<ApiEntryPoint>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Testing"); builder.UseSetting("SkipDatabaseInitialization", "true");
@@ -52,6 +55,7 @@ public sealed class ThreadHistoryHttpTests
             {
                 services.RemoveAll<IHostedService>();
                 services.AddSingleton(consents ?? Substitute.For<ILegalConsentService>());
+                if (patients is not null) services.AddSingleton(patients);
                 // Conserva cliente/guarda reales, con transporte aislado y sin esperas de reintentos.
                 services.AddHttpClient<IAiServiceClient, AiServiceClient>("HistoryTests")
                     .ConfigurePrimaryHttpMessageHandler(() => upstream).AddHttpMessageHandler<AiConsentHttpHandler>();
@@ -72,6 +76,46 @@ public sealed class ThreadHistoryHttpTests
 
     private static HttpResponseMessage Response(int status = 200, string body = Confirmation) => new((HttpStatusCode)status)
         { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+
+    [Theory]
+    [InlineData("app", false, false)]
+    [InlineData("app", true, false)]
+    [InlineData("app", true, true)]
+    [InlineData("erp", false, false)]
+    [InlineData("erp", true, false)]
+    public async Task Get_SenialVitaSoloDeJwtApp_SeConservaSinVozYSeIgnoraSpoofing(string audience, bool syncVoice, bool deniedVoice)
+    {
+        var isApp = audience == "app";
+        var consents = Substitute.For<ILegalConsentService>();
+        if (deniedVoice) consents.EnsureUserAsync(Guid.Parse(Owner), "voice", Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new AiConsentException("CONSENT_REQUIRED", "voice", 403)));
+        var patients = Substitute.For<IPatientRepository>();
+        patients.GetByUserIdAsync(Guid.Parse(Owner), Arg.Any<CancellationToken>()).Returns(new PatientProfile
+            { Id = Guid.Parse(Other), UserId = Guid.Parse(Owner), Status = "Activo", Timezone = "America/Bogota" });
+        var upstream = new Transport((request, ct) =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method); Assert.True(ct.CanBeCanceled);
+            Assert.Equal("synthetic-internal", request.Headers.GetValues("X-Internal-Key").Single());
+            Assert.Null(request.Content);
+            var query = request.RequestUri!.Query;
+            Assert.Contains("user_id=" + Owner, query); Assert.DoesNotContain(Other, query);
+            Assert.Contains("limit=5&before=10", query);
+            Assert.Equal(isApp, query.Contains("supports_vita=true", StringComparison.Ordinal));
+            Assert.Equal(isApp && syncVoice && !deniedVoice, query.Contains("sync_voice=true", StringComparison.Ordinal));
+            return Task.FromResult(Response(200, """{"thread_id":"thread","message_count":0,"history_revision":2,"reset_reason":"monthly","cleared_at":"2026-11-01T05:00:00Z"}"""));
+        });
+        await using var host = Host(upstream, consents, patients); using var client = host.CreateClient();
+        var spoofed = isApp ? "false" : "true";
+        using var request = new HttpRequestMessage(HttpMethod.Get,
+            $"/api/v1/threads/thread/messages?syncVoice={syncVoice}&limit=5&before=10&userId={Other}&supports_vita={spoofed}&supportsVita={spoofed}")
+            { Content = JsonContent.Create(new { userId = Other, supportsVita = !isApp, supports_vita = !isApp }) };
+        request.Headers.Authorization = new("Bearer", Jwt(audience: audience));
+        using var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode); Assert.Equal(1, upstream.Calls);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(2, json.RootElement.GetProperty("historyRevision").GetInt64());
+        if (!syncVoice || !isApp) { Assert.Empty(consents.ReceivedCalls()); Assert.Empty(patients.ReceivedCalls()); }
+    }
 
     [Theory]
     [InlineData("absent", HttpStatusCode.Unauthorized)]

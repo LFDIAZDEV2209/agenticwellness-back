@@ -160,6 +160,25 @@ los metadatos. Planes, resultados, documentos y registros clínicos se conservan
 La app termina la llamada, confirma localmente la limpieza manual e invalida
 peticiones/streams, mensajes y cursores manteniendo `threadId`.
 
+Apertura app y registro de retención (integración AI `f95a3be`): BACK añade
+`supports_vita=true` al GET interno cuando el JWT contiene `aud=app`. Esa señal
+no se enlaza a query, body ni cabeceras del cliente y nunca se añade desde ERP.
+Se envía con el GET normal y con `sync_voice=true` si la voz está autorizada.
+Si se retiró el consentimiento de voz o falla el sync, el fallback normal sigue
+enviando `supports_vita=true`: una conversación que solo se abre también queda
+registrada para la retención mensual de AI. La señal no concede permiso de
+procesamiento de voz ni añade un consentimiento de lectura. DELETE mantiene su
+bypass específico de retirada.
+
+El cliente incorpora sobrecargas explícitas de seis argumentos (incluido token
+y `supportsVita`), conservando las firmas anteriores y sus parámetros opcionales.
+Las llamadas anteriores omiten la nueva señal; el JSON público y la paginación
+no cambian. Pruebas de esta ampliación: 91 correctas, 0 fallos, 0 omitidas con
+el filtro `FullyQualifiedName~ThreadHistory|FullyQualifiedName~ThreadsVoiceSync|FullyQualifiedName~ThreadsControllerAntiIdor|FullyQualifiedName~AiServiceClientTests`.
+Incluyen JWT firmado app/ERP, suplantación por query/body, voz revocada, señal
+independiente de sync y regresión del borrado sin consentimiento. Transporte AI
+simulado; root verifica el registro durable y barrido real al integrar AI.
+
 Pruebas locales:
 
 ```powershell

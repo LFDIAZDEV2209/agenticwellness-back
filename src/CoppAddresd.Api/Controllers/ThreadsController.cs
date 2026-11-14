@@ -95,16 +95,22 @@ public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsContro
         if (string.IsNullOrWhiteSpace(ownerId))
             return Unauthorized(new { message = "Usuario no identificado." });
 
+        // La apertura app registra retención incluso sin permiso de voz. No se enlaza a query/body.
+        var supportsVita = User.HasClaim("aud", "app");
+        Task<ThreadStateResult> ReadStateAsync() => supportsVita
+            ? aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct, supportsVita: true)
+            : aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct);
+
         try
         {
-            if (syncVoice && User.HasClaim("aud", "app") && Guid.TryParse(ownerId, out var syncUser)
+            if (syncVoice && supportsVita && Guid.TryParse(ownerId, out var syncUser)
                 && patientAccess is not null)
             {
                 try
                 {
                     await patientAccess.RequireChatAndVoiceAsync(syncUser, ct);
                     // Propiedad en AI: ownerId del JWT + namespace de hilo y vínculos durables propios.
-                    return Ok(await aiService.GetThreadStateWithVoiceSyncAsync(threadId, ownerId, limit, before, ct));
+                    return Ok(await aiService.GetThreadStateWithVoiceSyncAsync(threadId, ownerId, limit, before, ct, supportsVita: true));
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                 catch (AiConsentException) { /* Sin autorización de voz se conserva la lectura normal de chat. */ }
@@ -112,11 +118,11 @@ public class ThreadsController(IAiServiceClient aiService, ILogger<ThreadsContro
                 catch (Exception ex)
                 {
                     logger.LogWarning("Sync de voz no disponible ({ErrorType}); se conserva lectura de chat", ex.GetType().Name);
-                    var existing = await aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct);
+                    var existing = await ReadStateAsync();
                     return Ok(existing with { VoiceSyncStatus = "unavailable" });
                 }
             }
-            var state = await aiService.GetThreadStateAsync(threadId, ownerId, limit, before, ct);
+            var state = await ReadStateAsync();
             return Ok(state);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
