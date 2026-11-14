@@ -168,3 +168,13 @@ reversa inocua. No cambia inscripciones/semanas ni hace llamadas externas.
 La simulación es de solo lectura. La reversa comprueba la postimagen completa
 antes de restaurar; repetir archivo o reversa no ejecuta UPDATE. Instrucciones
 y evidencia local en `scripts/README-archive-default-83w.md`.
+
+### Edición del plan semanal (2.8)
+
+Read Committed dentro de la estrategia Npgsql; bloquea inscripción y semana con
+FOR UPDATE en ese orden, igual que la completación, para serializar contra el
+inicio de la semana. Valida fecha local/estado/historial y referencias antes de
+una única escritura del snapshot. Objetivo <100 ms; sin HTTP ni almacenamiento.
+Fallo o cancelación revierte la edición completa. No escribe completaciones,
+rollups XP ni asignaciones antiguas. El handler exige permiso y alcance antes
+de abrir la transacción; se vuelven a leer estado y fechas bajo bloqueo.

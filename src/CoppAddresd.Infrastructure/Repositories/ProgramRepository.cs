@@ -2946,7 +2946,7 @@ public sealed partial class ProgramRepository(
             try
             {
                 var enrollment = await dbContext
-                    .ProgramEnrollments.AsNoTracking()
+                    .ProgramEnrollments.FromSqlInterpolated($"SELECT * FROM app.program_enrollments WHERE id = {enrollmentId} FOR UPDATE").AsNoTracking()
                     .Include(e => e.Template)
                     .FirstOrDefaultAsync(e => e.Id == enrollmentId, ct);
                 if (enrollment is null)
@@ -2962,7 +2962,7 @@ public sealed partial class ProgramRepository(
                     );
                 }
 
-                var week = await dbContext.ProgramWeeks.FirstOrDefaultAsync(
+                var week = await dbContext.ProgramWeeks.FromSqlInterpolated($"SELECT * FROM app.program_weeks WHERE enrollment_id = {enrollmentId} AND week_number = {weekNumber} FOR UPDATE").FirstOrDefaultAsync(
                     w => w.EnrollmentId == enrollmentId && w.WeekNumber == weekNumber,
                     ct
                 );
@@ -2974,8 +2974,21 @@ public sealed partial class ProgramRepository(
                 }
 
                 var now = DateTime.UtcNow;
-                week.TasksSnapshot = WeekSnapshotJson.Serialize(ParseSnapshot(BuildSnapshot(tasks, "individual", actorId))
-                    .Select(row => row with { Rest = row.TaskCode == "ejercicio" && edits?.RestDays.Contains(row.Weekday) == true }).ToList());
+                var today = PatientLocalToday(enrollment.Timezone);
+                if (TemplateImpactCalculator.Started(week, today)
+                    || await dbContext.TaskCompletions.AnyAsync(c => c.ProgramWeekId == week.Id, ct))
+                    throw new BusinessRuleViolationException("PROGRAM_WEEK_STARTED: no se puede editar una semana iniciada.");
+                var last = enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(enrollment.Template!) - 1);
+                var allowed = Enumerable.Range(0, Math.Max(0, Math.Min(7, last.DayNumber - week.WeekStartDateLocal.DayNumber + 1)))
+                    .Select(offset => (short)(week.WeekStartDateLocal.AddDays(offset).DayOfWeek == DayOfWeek.Sunday ? 7 : (int)week.WeekStartDateLocal.AddDays(offset).DayOfWeek)).ToHashSet();
+                if (tasks.Any(t => !allowed.Contains(t.Weekday)) || tasks.GroupBy(t => (t.Weekday, t.TaskCode)).Any(g => g.Count() > 1))
+                    throw new UnprocessableEntityException("PROGRAM_DAY_INVALID: día fuera del programa o celda duplicada.");
+                var routineIds = tasks.Where(t => t.RoutineId.HasValue).Select(t => t.RoutineId!.Value).Distinct().ToArray();
+                if (await dbContext.ExerciseRoutines.CountAsync(r => routineIds.Contains(r.Id) && r.Status == NutritionPlanStatus.Active, ct) != routineIds.Length)
+                    throw new UnprocessableEntityException("ROUTINE_NOT_ACTIVE: rutina inexistente o no activa.");
+                var defaults = ParseSnapshot(await BuildSnapshotFromTemplateAsync(enrollment.TemplateId, weekNumber, ct));
+                week.TasksSnapshot = WeekSnapshotJson.Serialize(ProgramWeekTaskEditor.Apply(defaults,
+                    ParseSnapshot(week.TasksSnapshot), tasks, edits, actorId, now));
                 week.UpdatedAt = now;
                 await dbContext.SaveChangesAsync(ct);
                 await transaction.CommitAsync(ct);

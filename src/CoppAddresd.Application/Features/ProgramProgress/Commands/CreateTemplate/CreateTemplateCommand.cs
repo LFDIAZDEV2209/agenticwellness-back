@@ -95,6 +95,10 @@ public sealed class WeeklyDayTemplateRequestValidator : AbstractValidator<Weekly
     {
         RuleFor(x => x.Rest).Must(rest => !rest || allowRest)
             .WithMessage("El descanso se edita en la semana del paciente, no en el catálogo.");
+        RuleFor(x => x.Reset).Must(reset => !reset || allowRest)
+            .WithMessage("Restablecer solo se admite en la semana del paciente.");
+        RuleFor(x => x).Must(x => !x.Reset || (!x.Rest && x.RoutineId is null && x.MediaId is null && x.NutritionPlanId is null))
+            .WithMessage("Restablecer no admite descanso ni referencias de contenido.");
         RuleFor(x => x).Must(x => !x.Rest || (x.TaskCode == TaskCode.ejercicio && x.RoutineId is null))
             .WithMessage("El descanso requiere taskCode ejercicio y no admite routineId.");
         RuleFor(x => x.Weekday)

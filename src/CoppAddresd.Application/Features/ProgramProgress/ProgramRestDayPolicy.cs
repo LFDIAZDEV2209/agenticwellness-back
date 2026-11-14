@@ -15,4 +15,5 @@ public static class ProgramRestDayPolicy
 }
 
 /// <summary>Opciones de edición del snapshot que no pertenecen al catálogo de plantillas.</summary>
-public sealed record EnrollmentWeekTaskEdits(IReadOnlySet<short> RestDays);
+public sealed record EnrollmentWeekTaskEdits(IReadOnlySet<short> RestDays,
+    IReadOnlySet<(short Weekday, CoppAddresd.Domain.Enums.ProgramProgress.TaskCode TaskCode)>? ResetCells = null);

@@ -1,5 +1,21 @@
 # Rutinas por día — Fase 2
 
+## Edición semanal — 2.8
+
+El PUT existente `/api/v1/program/enrollments/{id}/week/{weekNumber}/tasks`
+acepta una lista parcial por `(weekday,taskCode)`: `routineId` asigna la rutina;
+`rest:true` indica descanso; `reset:true` sin referencias restablece esa celda
+a la plantilla semanal vigente (antes que la genérica). Las dos primeras son
+`individual`; restablecer devuelve `program` (§5). Guarda actor y fecha.
+No elimina días ni clases omitidos; un campo clínico null conserva el vínculo.
+
+Solo edita semanas Locked futuras, sin activación, completación ni historial.
+Semana iniciada o pasada → 409 `PROGRAM_WEEK_STARTED`, sin cambiar historial,
+XP ni snapshot. Respeta zona del paciente y los 83 días. Inscripción ajena → 404
+con Program.Edit y paciente asignado, también dentro del handler; Admin exceptúa
+asignación, nunca permiso. Rutina debe existir y estar activa. Los campos nuevos
+son opcionales; el cuerpo del editor anterior sigue siendo válido.
+
 ## Interruptor de descanso — 2.7
 
 `Program:RestDays:Enabled` (entorno `Program__RestDays__Enabled`) queda apagado
