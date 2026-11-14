@@ -584,12 +584,18 @@ internal sealed class FakeProgramRepository : IProgramRepository
         string tableName,
         Guid recordId,
         Guid? actorId = null,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        System.Text.Json.JsonElement? before = null,
+        System.Text.Json.JsonElement? after = null,
+        System.Text.Json.JsonElement? metadata = null
     )
     {
         AuditRows.Add((action, schemaName, tableName, recordId, actorId));
         return Task.CompletedTask;
     }
+
+    public Task<WeekPlanChangesDto> GetWeekPlanChangesAsync(Guid enrollmentId, int weekNumber, int page, int pageSize, CancellationToken ct)
+        => Task.FromResult(new WeekPlanChangesDto([], 0, page, pageSize, 0));
 
     // ------------------------------------------------------------ Motor de puntajes (SPEC §13)
 

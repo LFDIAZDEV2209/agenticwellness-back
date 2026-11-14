@@ -54,3 +54,12 @@ ambas activaciones. Captura/replay/historial/medios y migración nullable con
 10001 completaciones en verde. SQL Up/Down revisado; no se aplicó la migración
 a la BD compartida ni se desplegaron servicios. Columna nueva requiere migración
 antes de ejecutar el backend nuevo. No hay backfill de historias anteriores.
+
+## 2.12 — bitácora
+
+Build final `bin/Validation212Final/` verde; unitarios completos **2495 aprobados,
+105 omitidos**. PostgreSQL **12/12**: nueva bitácora (tres operaciones, actor,
+preimagen/postimagen, alcance ajeno/Admin, paginación y fallo de auditoría con
+rollback), edición semanal y contenido, tres límites de fecha y cuatro casos
+de activación de Fase 1. Acción Update compatible con lectores anteriores y
+evento identificado en metadata; no añade migraciones.

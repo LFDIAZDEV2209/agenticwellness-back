@@ -1,5 +1,23 @@
 # Rutinas por día — Fase 2
 
+## Bitácora del plan — 2.12
+
+Cada PUT de tareas semanales confirmado añade un evento `ProgramWeekTasksChanged`
+a `audit.activity_logs` con actor del servidor, fecha, antes/después y operaciones
+asignar/descanso/restablecer. Reutiliza la tabla y el escritor semántico existentes.
+Conserva la acción `Update` conocida por lectores anteriores; identifica el evento
+en metadata, sin añadir valores de enum incompatibles durante el despliegue.
+La fila y el snapshot se confirman juntos; si falla la auditoría se revierte la
+edición y se descarta del tracking la semana fallida, para no reutilizarla después.
+
+`GET /api/v1/program/enrollments/{id}/week/{weekNumber}/changes?page=1&pageSize=20`
+requiere `Program.Profile360View` y alcance de la inscripción, también en el handler.
+Devuelve `items/total/page/pageSize/totalPages`, máximo 100, orden fecha/ID descendente.
+Cada entrada contiene `actorId`, `occurredAt`, `before`, `after` y `metadata`.
+Antes/después envuelven `tasks_snapshot`; metadata declara inscripción, semana y
+celdas/operaciones. Ajeno → 404 antes de leer/contar; Admin exceptúa asignación,
+nunca permiso. El log administrativo global conserva su DTO sin detalle clínico.
+
 ## Detalle de la sesión completada — 2.11
 
 `task_completions.detail_snapshot` es jsonb nullable, sin DEFAULT ni relleno masivo.

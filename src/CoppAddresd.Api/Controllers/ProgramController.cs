@@ -833,6 +833,14 @@ public sealed class ProgramController(
 
     // ===================== CLÍNICO/ERP: plantillas =====================
 
+    /// <summary>Bitácora de una semana, con alcance clínico de la inscripción.</summary>
+    [HttpGet("enrollments/{id:guid}/week/{weekNumber:int}/changes")]
+    [RequireContextPermission(PermissionCodes.ProgramProfile360View)]
+    [PatientScope(PatientResource.Enrollment, "id", "Program.Profile360View")]
+    public async Task<ActionResult<CoppAddresd.Application.Features.ProgramProgress.DTOs.ActivityLog.WeekPlanChangesDto>> GetWeekPlanChanges(
+        Guid id, int weekNumber, CancellationToken ct, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        => Ok(await mediator.Send(new CoppAddresd.Application.Features.ProgramProgress.Queries.Erp.GetWeekPlanChangesQuery(id, weekNumber, page, pageSize), ct));
+
     /// <summary>Listado paginado de plantillas (SPEC §7.6, ERP).</summary>
     [HttpGet("templates")]
     [RequireContextPermission(PermissionCodes.ProgramProfile360View)]

@@ -29,3 +29,8 @@ public sealed record PaginatedActivityLogResult(
     [property: JsonPropertyName("page")] int Page,
     [property: JsonPropertyName("pageSize")] int PageSize,
     [property: JsonPropertyName("totalPages")] int TotalPages);
+
+/// <summary>Detalle clínico de una edición; solo se publica bajo el alcance de su inscripción.</summary>
+public sealed record WeekPlanChangeDto(Guid Id, DateTimeOffset OccurredAt, Guid? ActorId,
+    System.Text.Json.JsonElement? Before, System.Text.Json.JsonElement? After, System.Text.Json.JsonElement? Metadata);
+public sealed record WeekPlanChangesDto(IReadOnlyList<WeekPlanChangeDto> Items, int Total, int Page, int PageSize, int TotalPages);

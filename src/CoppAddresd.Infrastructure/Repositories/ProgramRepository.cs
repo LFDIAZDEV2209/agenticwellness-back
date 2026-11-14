@@ -3018,10 +3018,17 @@ public sealed partial class ProgramRepository(
                 if (await dbContext.ExerciseRoutines.CountAsync(r => routineIds.Contains(r.Id) && r.Status == NutritionPlanStatus.Active, ct) != routineIds.Length)
                     throw new UnprocessableEntityException("ROUTINE_NOT_ACTIVE: rutina inexistente o no activa.");
                 var defaults = ParseSnapshot(await BuildSnapshotFromTemplateAsync(enrollment.TemplateId, weekNumber, ct));
+                var before = JsonSerializer.SerializeToElement(new { tasks_snapshot = week.TasksSnapshot });
                 week.TasksSnapshot = WeekSnapshotJson.Serialize(ProgramWeekTaskEditor.Apply(defaults,
                     ParseSnapshot(week.TasksSnapshot), tasks, edits, actorId, now));
                 week.UpdatedAt = now;
                 await dbContext.SaveChangesAsync(ct);
+                await WriteAuditRowAsync(nameof(AuditAction.Update), "app", "program_weeks", week.Id, actorId, ct,
+                    before, JsonSerializer.SerializeToElement(new { tasks_snapshot = week.TasksSnapshot }),
+                    JsonSerializer.SerializeToElement(new { @event = "ProgramWeekTasksChanged", enrollment_id = enrollmentId, week_number = weekNumber,
+                        operations = tasks.Select(t => new { weekday = t.Weekday, task_code = t.TaskCode.ToString(),
+                            operation = edits?.ResetCells?.Contains((t.Weekday, t.TaskCode)) == true ? "restablecer"
+                                : t.TaskCode == TaskCode.ejercicio && edits?.RestDays.Contains(t.Weekday) == true ? "descanso" : "asignar" }) }));
                 await transaction.CommitAsync(ct);
 
                 var detail = await GetEnrollmentWeekDetailAsync(
@@ -3034,6 +3041,9 @@ public sealed partial class ProgramRepository(
             }
             catch
             {
+                // La auditoría puede fallar después del Save: no reutilizar el estado que se revirtió.
+                foreach (var entry in dbContext.ChangeTracker.Entries<ProgramWeek>().Where(e => e.Entity.EnrollmentId == enrollmentId && e.Entity.WeekNumber == weekNumber).ToArray())
+                    entry.State = EntityState.Detached;
                 await transaction.RollbackAsync(ct);
                 throw;
             }
@@ -3390,7 +3400,10 @@ public sealed partial class ProgramRepository(
         string tableName,
         Guid recordId,
         Guid? actorId = null,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        JsonElement? before = null,
+        JsonElement? after = null,
+        JsonElement? metadata = null
     )
     {
         // El trigger de auditoría cubre el DML de las tablas del módulo; esta
@@ -3399,20 +3412,37 @@ public sealed partial class ProgramRepository(
         // app_user tiene INSERT sobre audit.activity_logs (migración inicial).
         // actor_type: USER cuando hay actor, SYSTEM en transiciones automáticas.
         var actorType = actorId.HasValue ? "USER" : "SYSTEM";
+        var oldJson = before?.GetRawText(); var newJson = after?.GetRawText(); var metadataJson = metadata?.GetRawText();
         await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""
             INSERT INTO audit.activity_logs
                 (occurred_at, action, schema_name, table_name, record_id,
-                 actor_type, user_id)
+                 actor_type, user_id, old_data, new_data, metadata)
             VALUES
                 (now(), {action}, {schemaName}, {tableName}, {recordId.ToString()},
-                 {actorType}, {actorId})
+                 {actorType}, {actorId}, {oldJson}::jsonb, {newJson}::jsonb, {metadataJson}::jsonb)
             """,
             ct
         );
     }
 
     // ---------------------------------------------------------------- Helpers
+
+    public async Task<WeekPlanChangesDto> GetWeekPlanChangesAsync(Guid enrollmentId, int weekNumber, int page, int pageSize, CancellationToken ct)
+    {
+        var weekId = await dbContext.ProgramWeeks.AsNoTracking().Where(w => w.EnrollmentId == enrollmentId && w.WeekNumber == weekNumber)
+            .Select(w => w.Id).SingleOrDefaultAsync(ct);
+        if (weekId == Guid.Empty) throw new NotFoundException("Semana no encontrada.");
+        var recordId = weekId.ToString();
+        var query = dbContext.ActivityLogs.AsNoTracking().Where(a => a.SchemaName == "app" && a.TableName == "program_weeks"
+            && a.RecordId == recordId && a.Action == AuditAction.Update && a.Metadata.HasValue
+            && a.Metadata.Value.GetProperty("event").GetString() == "ProgramWeekTasksChanged");
+        var total = await query.CountAsync(ct);
+        var offset = ((long)page - 1) * pageSize;
+        var items = offset >= total ? [] : await query.OrderByDescending(a => a.OccurredAt).ThenByDescending(a => a.Id)
+            .Skip((int)offset).Take(pageSize).Select(a => new WeekPlanChangeDto(a.Id, a.OccurredAt, a.UserId, a.OldData, a.NewData, a.Metadata)).ToArrayAsync(ct);
+        return new(items, total, page, pageSize, (int)Math.Ceiling((double)total / pageSize));
+    }
 
     private async Task<CompleteTaskResult> BuildReplayResultAsync(
         Guid enrollmentId,

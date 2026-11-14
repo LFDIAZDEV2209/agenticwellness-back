@@ -189,3 +189,9 @@ una única escritura del snapshot. Objetivo <100 ms; sin HTTP ni almacenamiento.
 Fallo o cancelación revierte la edición completa. No escribe completaciones,
 rollups XP ni asignaciones antiguas. El handler exige permiso y alcance antes
 de abrir la transacción; se vuelven a leer estado y fechas bajo bloqueo.
+
+La edición semanal 2.12 añade el evento semántico de bitácora en esta misma
+transacción, después de Save y antes de Commit. Un fallo del INSERT de auditoría
+revierte el snapshot; se desacopla la semana fallida del tracking. La prueba de
+fallo inyectado verifica rollback y que una edición posterior no resucite cambios
+fallidos. No hay tabla nueva ni llamadas externas dentro de la transacción.

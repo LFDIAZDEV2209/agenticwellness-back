@@ -308,8 +308,13 @@ public interface IProgramRepository
         string tableName,
         Guid recordId,
         Guid? actorId = null,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        System.Text.Json.JsonElement? before = null,
+        System.Text.Json.JsonElement? after = null,
+        System.Text.Json.JsonElement? metadata = null
     );
+
+    Task<WeekPlanChangesDto> GetWeekPlanChangesAsync(Guid enrollmentId, int weekNumber, int page, int pageSize, CancellationToken ct);
 
     // --- Motor de puntajes (SPEC §13, T-37) ---
 
