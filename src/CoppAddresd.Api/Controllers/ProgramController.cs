@@ -764,6 +764,13 @@ public sealed class ProgramController(
             )
         );
 
+    /// <summary>Personaliza podcasts por pacientes y rango de semanas; omite pacientes ajenos y semanas iniciadas.</summary>
+    [HttpPost("content/bulk-assign-patients")]
+    [RequireContextPermission("Program.Edit")]
+    public async Task<ActionResult<BulkAssignPatientPodcastsResult>> BulkAssignPatientPodcasts(
+        [FromBody] BulkAssignPatientPodcastsCommand command, CancellationToken ct) =>
+        Ok(await mediator.Send(command, ct));
+
     /// <summary>
     /// Detalle de una semana específica de una inscripción (tareas programadas,
     /// completaciones, puntos y contenido activo). Requiere <c>Program.View</c>

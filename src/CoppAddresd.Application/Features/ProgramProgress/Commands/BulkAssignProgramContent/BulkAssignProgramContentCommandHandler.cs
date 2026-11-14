@@ -264,37 +264,8 @@ public sealed class BulkAssignProgramContentCommandHandler(
                 continue;
             }
 
-            var rows = week.Rows.Select(r => r).ToList();
-            var modified = false;
-            for (var i = 0; i < rows.Count; i++)
-            {
-                var row = rows[i];
-                if (!weekdays.Contains(row.Weekday))
-                {
-                    continue;
-                }
-
-                if (
-                    !string.Equals(
-                        row.TaskCode,
-                        PodcastTaskCode,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                )
-                {
-                    continue; // Solo las tareas podcast llevan lección.
-                }
-
-                if (row.MediaId == media.Id)
-                {
-                    continue; // Ya asignado: no reescribe ni cuenta como update.
-                }
-
-                rows[i] = row with { MediaId = media.Id };
-                modified = true;
-            }
-
-            if (!modified)
+            var rows = PodcastSnapshotAssignment.ReplaceMedia(week.Rows, weekdays, media.Id);
+            if (rows.SequenceEqual(week.Rows))
             {
                 continue;
             }
@@ -368,4 +339,13 @@ public sealed class BulkAssignProgramContentCommandHandler(
             Message: message
         );
     }
+}
+
+/// <summary>Sustitución común a BulkAssignProgramContent y a la asignación por pacientes.</summary>
+public static class PodcastSnapshotAssignment
+{
+    public static IReadOnlyList<WeekSnapshotTaskRow> ReplaceMedia(IReadOnlyList<WeekSnapshotTaskRow> rows,
+        IReadOnlyCollection<short> weekdays, Guid mediaId) => rows.Select(row =>
+            weekdays.Contains(row.Weekday) && string.Equals(row.TaskCode, "podcast", StringComparison.OrdinalIgnoreCase)
+                && row.MediaId != mediaId ? row with { MediaId = mediaId } : row).ToArray();
 }

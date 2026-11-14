@@ -147,3 +147,14 @@ la sustitución. Los blobs se eliminan solo después del commit y cuando no qued
 ninguna referencia. Repetir archivo/despublicación conserva el resultado; ninguna
 llamada externa mantiene abierta la transacción. Detalle en
 `docs/modules/program-progress/MEDIA-RETIREMENT.md`.
+
+### Asignación de podcasts a varios pacientes (1.15)
+
+`BulkPatientPodcastStore` autoriza antes de abrir la transacción; dentro de ella
+filtra pacientes, lee programa/medio/semanas y persiste el plan en una escritura
+EF por lote. Serializable protege frente a activación o personalización concurrente.
+La estrategia Npgsql reevalúa desde datos nuevos; limpia el tracking por intento.
+Conflictos persistentes dan 409. Validación y cancelación revierten todo el lote;
+repetir una selección idéntica no modifica los snapshots. No hay HTTP ni storage
+dentro de la transacción. El detalle del contrato y conteos vive en
+`docs/modules/program-progress/BULK-PATIENT-PODCASTS.md`.
