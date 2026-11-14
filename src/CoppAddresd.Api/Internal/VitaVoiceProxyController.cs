@@ -25,7 +25,7 @@ public sealed class VitaVoiceProxyController(IHttpClientFactory clients, IConfig
             || !SafeOpaque(context[names[0]].ToString(), 4096, allowDot: true)
             || !SafeOpaque(context[names[1]].ToString(), 200, allowDot: false)
             || !int.TryParse(context[names[2]].ToString(), System.Globalization.NumberStyles.None,
-                System.Globalization.CultureInfo.InvariantCulture, out var turn) || turn is < 1 or > 1_000_000)
+                System.Globalization.CultureInfo.InvariantCulture, out var turn) || turn is < 0 or > 1_000_000)
         {
             Response.StatusCode = 422;
             await Response.WriteAsJsonAsync(new { code = "VITA_VOICE_CONTEXT_INVALID" }, ct);

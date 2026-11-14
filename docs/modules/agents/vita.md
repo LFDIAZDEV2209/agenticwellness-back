@@ -253,9 +253,13 @@ El proxy Custom LLM acepta exclusivamente la clave dedicada configurada en
 `Vita:VoiceServiceKey` (mínimo 32 caracteres), independiente de JWT/clave interna.
 Reenvía exactamente `X-Vita-Session` (1–4096 caracteres opacos),
 `X-Vita-Conversation` (1–200 alfanuméricos/guion/underscore) y
-`X-Vita-Turn` (entero 1–1000000), todos de valor único. Otras cabeceras del
+`X-Vita-Turn` (entero 0–1000000), todos de valor único. Otras cabeceras del
 cliente no cruzan. El cuerpo JSON conserva su significado y AI valida sesión,
-conversación, ordinal y contenido permitido. SSE se transmite con flush por
+conversación y contenido permitido. `X-Vita-Turn` transporta `system__agent_turns`
+del proveedor, que puede empezar en 0: es metadata del contador del agente, no
+un ordinal de entradas del usuario ni una identidad. Se reenvía sin incrementar
+ni reinterpretar; negativos, inválidos, overflow y cabeceras ausentes siguen
+rechazados. SSE se transmite con flush por
 chunk, límite total 90 segundos y cancelación, sin reintentos de generación.
 Errores upstream se reducen a códigos públicos sin sus detalles.
 

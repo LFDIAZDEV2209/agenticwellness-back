@@ -174,6 +174,26 @@ public sealed class VitaVoiceProxyHttpTests
     }
 
     [Theory]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("1000000")]
+    public async Task ContadorDelProveedor_IncluyeCeroYSeReenviaSinCambiar(string value)
+    {
+        var upstream = new Upstream((request, _) =>
+        {
+            Assert.Equal(value, request.Headers.GetValues("X-Vita-Turn").Single());
+            Assert.Equal("Bearer " + Key, request.Headers.Authorization!.ToString());
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                { Content = new StringContent(Event, Encoding.UTF8, "text/event-stream") });
+        });
+        await using var host = Host(upstream); using var client = host.CreateClient();
+        using var request = Request(); request.Headers.Remove("X-Vita-Turn"); request.Headers.Add("X-Vita-Turn", value);
+        using var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(Event, await response.Content.ReadAsStringAsync()); Assert.Equal(1, upstream.Calls);
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("patient-jwt")]
     [InlineData("internal-master-key")]
@@ -181,20 +201,30 @@ public sealed class VitaVoiceProxyHttpTests
     {
         var upstream = new Upstream((_, _) => throw new InvalidOperationException("No debe invocarse"));
         await using var host = Host(upstream); using var client = host.CreateClient();
-        using var response = await client.SendAsync(Request(key));
+        using var request = Request(key); request.Headers.Remove("X-Vita-Turn"); request.Headers.Add("X-Vita-Turn", "0");
+        using var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode); Assert.Equal(0, upstream.Calls);
     }
 
     [Theory]
     [InlineData("X-Vita-Session", "bad token")]
     [InlineData("X-Vita-Conversation", "../other")]
-    [InlineData("X-Vita-Turn", "0")]
+    [InlineData("X-Vita-Session", null)]
+    [InlineData("X-Vita-Conversation", null)]
+    [InlineData("X-Vita-Turn", null)]
+    [InlineData("X-Vita-Turn", "-1")]
     [InlineData("X-Vita-Turn", "1000001")]
-    public async Task CabeceraInvalidaOAusente_RechazaAntesDeAI(string header, string value)
+    [InlineData("X-Vita-Turn", "2147483648")]
+    [InlineData("X-Vita-Turn", "invalid")]
+    [InlineData("X-Vita-Turn", "1.5")]
+    [InlineData("X-Vita-Turn", "")]
+    [InlineData("X-Vita-Turn", "+1")]
+    public async Task CabeceraInvalidaOAusente_RechazaAntesDeAI(string header, string? value)
     {
         var upstream = new Upstream((_, _) => throw new InvalidOperationException("No debe invocarse"));
         await using var host = Host(upstream); using var client = host.CreateClient();
-        using var request = Request(); request.Headers.Remove(header); request.Headers.Add(header, value);
+        using var request = Request(); request.Headers.Remove(header);
+        if (value is not null) request.Headers.Add(header, value);
         using var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode); Assert.Equal(0, upstream.Calls);
     }
