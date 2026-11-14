@@ -83,6 +83,25 @@ y disponibilidad `empty`; no equivale a cero ni acredita mejoría clínica.
 
 ## Catálogo ERP
 
+El selector de asignación reutiliza `GET /api/v1/patients?page=1&pageSize=10&search=...`:
+`data[].id` es `patient_profiles.Id`; el nuevo `data[].userId` es UUID nullable de
+`PatientProfile.UserId` (`auth.users.Id`). El resto del envelope
+`data/total/page/pageSize/totalPages` y sus campos existentes conserva su contrato.
+Solo cambia `PatientListItemDto` (parámetro opcional final `Guid? UserId = null`),
+no el DTO de detalle. Se conservan `Patients.View/ViewOwn` y filtros de clínica/
+profesional existentes; no hay búsquedas adicionales por correo ni consultas por fila.
+Si `userId=null`, ERP debe bloquear asignación y explicar que no hay cuenta vinculada.
+
+`POST /api/v1/agents/instances` exige ahora la política real `Agents.Update`
+(código ya seedeado en Auth, registrado también en el policy provider de la API).
+`Agents.View` no autoriza la escritura. Body:
+`{ "userId":"<cuenta vinculada>", "agentTypeId":"<tipo>", "metadata":"{}" }`.
+`status` y `metadata` siguen siendo opcionales; la creación existente queda Activo.
+IDs vacíos → 400; sin autenticación → 401; sin Agents.Update → 403; éxito → 201 con
+`id/userId/agentTypeId/agentTypeName/status/metadata/createdAt/updatedAt`.
+Se conservan reglas de tipo activo, duplicado user+tipo y FK a Auth; no existe permiso
+`Agents.Assign`. No sustituir el userId ausente por patientId, correo o nombre.
+
 Una consulta por conjuntos filtra instancia asignada activa, tipo activo y
 versión activa coincidente. Proyecta `id/runtimeKey` GUID, `slug`, nombre,
 descripción/especialidad, `versionId/versionNumber` y `routing` con

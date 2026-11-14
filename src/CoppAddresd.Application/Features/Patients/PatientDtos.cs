@@ -197,7 +197,7 @@ public record PatientDto(
         );
 }
 
-/// <summary>Fila del listado de pacientes (sin agregado completo).</summary>
+/// <summary>Fila del listado de pacientes; UserId es la cuenta vinculada nullable, distinta del Id del perfil.</summary>
 public record PatientListItemDto(
     Guid Id,
     string? MedicalRecordNumber,
@@ -219,7 +219,8 @@ public record PatientListItemDto(
     string? PrimaryDiagnosisDescription,
     string Status,
     DateTime CreatedAt,
-    IReadOnlyList<string> ProfessionalNames
+    IReadOnlyList<string> ProfessionalNames,
+    Guid? UserId = null
 )
 {
     public static PatientListItemDto FromEntity(PatientProfile entity) =>
@@ -266,7 +267,8 @@ public record PatientListItemDto(
             entity
                 .Assignments.Where(a => a.Status == "Active")
                 .Select(a => professionalNames.GetValueOrDefault(a.ProfessionalId, "Profesional"))
-                .ToList()
+                .ToList(),
+            entity.UserId
         );
     }
 }

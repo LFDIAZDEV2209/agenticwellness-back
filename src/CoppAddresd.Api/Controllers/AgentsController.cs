@@ -1,4 +1,6 @@
 using CoppAddresd.Application.Features.Agents;
+using CoppAddresd.Api.Authorization;
+using CoppAddresd.Api.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -235,6 +237,7 @@ public class AgentsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost("instances")]
+    [RequirePermission(PermissionCodes.AgentsUpdate)]
     public async Task<ActionResult<AgentInstanceDto>> AssignInstance(
         [FromBody] AgentInstanceRequest request,
         CancellationToken ct)
