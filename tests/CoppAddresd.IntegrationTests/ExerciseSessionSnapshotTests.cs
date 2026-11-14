@@ -55,16 +55,16 @@ public sealed partial class NutritionPlanWorkflowTests
         await using var db = Context(); var seed = await EffectiveSeedAsync(db);
         var repo = EffectiveRepository(db); await repo.CompleteTaskAsync(new(seed.Enrollment, seed.Start, TaskCode.podcast, null, null, null, null, null), default);
         var completion = await db.TaskCompletions.AsNoTracking().SingleAsync(); var migrator = db.GetService<IMigrator>();
-        await migrator.MigrateAsync("20261114122311_AddExerciseRoutineContraindications");
+        await migrator.MigrateAsync("20261113205636_AllowThirtyDayLegacyNutritionCompletions");
         await db.Database.ExecuteSqlInterpolatedAsync($"INSERT INTO app.task_completions (id,enrollment_id,program_week_id,daily_checkin_id,local_date,weekday,task_code,points_awarded,completed_at,source_ref_type) SELECT gen_random_uuid(),{completion.EnrollmentId},{completion.ProgramWeekId},{completion.DailyCheckinId},{completion.LocalDate} - n,1,'podcast',0,now(),'volume' FROM generate_series(1,10000) n");
         await migrator.MigrateAsync(); Assert.Equal(10001, await db.TaskCompletions.CountAsync());
         Assert.False(await db.TaskCompletions.AnyAsync(c => c.DetailSnapshot != null));
         var detail = CompletedExerciseDetail.Capture(null, DateTimeOffset.UtcNow);
         await db.TaskCompletions.Where(c => c.Id == completion.Id).ExecuteUpdateAsync(s => s.SetProperty(c => c.DetailSnapshot, detail));
-        await Assert.ThrowsAsync<PostgresException>(() => migrator.MigrateAsync("20261114122311_AddExerciseRoutineContraindications"));
+        await Assert.ThrowsAsync<PostgresException>(() => migrator.MigrateAsync("20261113205636_AllowThirtyDayLegacyNutritionCompletions"));
         Assert.True((await db.TaskCompletions.AsNoTracking().SingleAsync(c => c.Id == completion.Id)).DetailSnapshot.HasValue);
         await db.TaskCompletions.ExecuteUpdateAsync(s => s.SetProperty(c => c.DetailSnapshot, (System.Text.Json.JsonElement?)null));
-        await migrator.MigrateAsync("20261114122311_AddExerciseRoutineContraindications"); await migrator.MigrateAsync();
+        await migrator.MigrateAsync("20261113205636_AllowThirtyDayLegacyNutritionCompletions"); await migrator.MigrateAsync();
         Assert.Equal(10001, await db.TaskCompletions.CountAsync());
     }
 }

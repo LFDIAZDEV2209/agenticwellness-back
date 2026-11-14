@@ -2592,7 +2592,8 @@ public sealed partial class ProgramRepository(
             nextMilestone,
             calendar,
             streakChests,
-            dayBonusBase
+            dayBonusBase,
+            contentResolution?.Rest == true || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true) ? true : null
         );
     }
 
