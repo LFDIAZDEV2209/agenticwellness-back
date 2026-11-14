@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$AiWorktree = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../../vita-ai')),
     [switch]$ProvisioningOnly
 )
