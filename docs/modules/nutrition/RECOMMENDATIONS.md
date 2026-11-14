@@ -33,6 +33,13 @@ misma fecha (UUID como desempate estable). No se ordena por número ni se exige
 vigencia hoy. El plan n+1 puede mostrar así «Cierre del ciclo n». No cambia el
 almacenamiento de 3.9 ni los contratos de 3.1–3.4.
 
+R7-14: `professionalName` contiene solo el nombre, tanto en ES como EN. Si una
+cabecera histórica conserva «Daniela Ruiz · Nutricionista», la lectura devuelve
+«Daniela Ruiz»; la app presenta/traduce el rol por separado. No se modifica el
+valor histórico almacenado ni el mensaje; nombres compuestos con guion se
+conservan. Las nuevas publicaciones ya toman nombre y apellido del empleado.
+Gates y comandos de la ronda: [verificación conjunta R7-03/R7-14](CYCLES.md).
+
 `patientMessage` es texto, no un objeto bilingüe. Se selecciona el texto es/en
 aprobado y almacenado: `X-App-Language: en` o `?language=en` habilitan inglés
 mediante el resolver existente de la app; español por defecto. No se llama a IA

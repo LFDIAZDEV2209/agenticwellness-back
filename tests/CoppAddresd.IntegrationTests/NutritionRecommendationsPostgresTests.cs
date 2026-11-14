@@ -37,7 +37,7 @@ public sealed partial class NutritionPlanWorkflowTests
         NutritionCycleReview Review(Guid cycle, DateTime? published, string es, string en) => new()
         {
             CycleId = cycle, Revision = 1, ReviewerId = Guid.NewGuid(), ReviewedAt = new(2026, 12, 1, 15, 0, 0, DateTimeKind.Utc), PublishedAt = published,
-            ProfessionalName = "Nutricionista de prueba", ProfessionalNotes = "SECRET_NOTES", AiDraftJson = "{\"draft\":\"RAW_AI\"}",
+            ProfessionalName = "Daniela Ruiz · Nutricionista", ProfessionalNotes = "SECRET_NOTES", AiDraftJson = "{\"draft\":\"RAW_AI\"}",
             SummaryJson = "{\"internal\":\"PRIVATE_SUMMARY\"}", PatientMessageJson = JsonSerializer.Serialize(new { es, en })
         };
         var first = Review(one.CycleId, new(2026, 12, 6, 15, 0, 0, DateTimeKind.Utc), "Cierre uno ES", "Closure one EN");
@@ -65,6 +65,7 @@ public sealed partial class NutritionPlanWorkflowTests
         var audits = await db.ActivityLogs.CountAsync();
         var result = await handler.Handle(new(patient.UserId!.Value), default);
         Assert.Equal(1, result.Current!.CycleNumber); Assert.Equal("Cierre uno ES", result.Current.PatientMessage); // Ciclo terminado y número menor.
+        Assert.Equal("Daniela Ruiz", result.Current.ProfessionalName); Assert.All(result.Previous, r => Assert.Equal("Daniela Ruiz", r.ProfessionalName));
         Assert.Equal(2, Assert.Single(result.Previous).CycleNumber); Assert.Equal("Imagen aprobada", Assert.Single(result.Current.Attachments).Caption);
         Assert.Equal(3, recorder.Queries.Count);
         var sql = string.Join('\n', recorder.Queries);
@@ -80,7 +81,9 @@ public sealed partial class NutritionPlanWorkflowTests
         var attachmentId = first.Attachments.Single(a => a.VisibleToPatient && a.Kind == "image").Id;
         Assert.True(signatures.ValidateNutritionAttachment(attachmentId, query["sig"], query["exp"], clock.GetUtcNow()));
         Assert.False(signatures.ValidateNutritionAttachment(attachmentId, query["sig"], query["exp"], clock.GetUtcNow().AddMinutes(6)));
-        Assert.Equal("Closure one EN", (await handler.Handle(new(patient.UserId.Value, "en"), default)).Current!.PatientMessage);
+        var english = (await handler.Handle(new(patient.UserId.Value, "en"), default)).Current!;
+        Assert.Equal("Closure one EN", english.PatientMessage); Assert.Equal("Daniela Ruiz", english.ProfessionalName);
+        Assert.Equal("Daniela Ruiz · Nutricionista", (await db.Set<NutritionCycleReview>().AsNoTracking().SingleAsync(r => r.Id == first.Id)).ProfessionalName);
         actor.IsAdmin.Returns(true);
         await Assert.ThrowsAsync<ForbiddenException>(() => handler.Handle(new(other.UserId!.Value), default));
         actor.UserId.Returns(other.UserId); Assert.Equal("FOREIGN_MESSAGE", (await handler.Handle(new(other.UserId!.Value), default)).Current!.PatientMessage);

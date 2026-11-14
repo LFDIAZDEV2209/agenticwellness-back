@@ -35,7 +35,9 @@ public sealed class MyNutritionRecommendationsHandler(IPatientScopeGuard scope, 
             ct.ThrowIfCancellationRequested();
             var message = JsonSerializer.Deserialize<CyclePatientMessage>(review.PatientMessageJson, CycleReviewHandler.Json);
             var text = request.Language == "en" ? message?.En ?? message?.Es : message?.Es ?? message?.En;
-            rows.Add(new(review.CycleNumber, review.StartDate, review.EndDate, review.PublishedAt, review.ProfessionalName, text ?? "",
+            // Cabeceras históricas podían incluir «nombre · rol»; el rol lo presenta y traduce la app.
+            var professionalName = review.ProfessionalName.Split('·', 2)[0].Trim();
+            rows.Add(new(review.CycleNumber, review.StartDate, review.EndDate, review.PublishedAt, professionalName, text ?? "",
                 attachments[review.ReviewId].Select(a => new RecommendationAttachmentDto(urls.Sign(a.AttachmentId, expiry), a.Caption ?? "")).ToArray()));
         }
         return new(rows.FirstOrDefault(), rows.Skip(1).ToArray());
