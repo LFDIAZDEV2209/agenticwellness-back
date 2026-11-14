@@ -72,6 +72,7 @@ if (!args.Contains("--migrate"))
 
     builder.Services.AddSingleton(new StorageSignatureService(storageSignatureKey));
     builder.Services.AddScoped<CoppAddresd.Application.Features.Nutrition.Queries.INutritionPhotoUrlSigner, NutritionPhotoUrlSigner>();
+    builder.Services.AddScoped<CoppAddresd.Application.Features.Nutrition.Commands.INutritionAttachmentUrlSigner, NutritionAttachmentUrlSigner>();
 }
 
 // El flag se resuelve por entorno y admite override/reload desde configuración.

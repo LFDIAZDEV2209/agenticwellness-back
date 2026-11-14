@@ -12,7 +12,7 @@ public interface IPatientScopeActor
 }
 
 public enum PatientResource { Enrollment, Week, Prescription, Cycle, Intake, FoodAnalysis,
-    NutritionPlan, RoutineAssignment, NutritionAssignment, Adaptation, Weakness, Intervention, ClinicalReview, Document }
+    NutritionPlan, RoutineAssignment, NutritionAssignment, Adaptation, Weakness, Intervention, ClinicalReview, Document, NutritionAttachment }
 
 public sealed record PatientScopeFilter(bool IsAdmin, Guid? ProfessionalId);
 

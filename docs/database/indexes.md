@@ -302,3 +302,15 @@ ni se duplica el prefijo patient_id de la PK.
 
 Tabla nueva sin backfill; no se añade un índice redundante de cycle_id ni
 una copia de los datos nutricionales. Página limitada a 100 ejemplos por petición.
+
+## Cierre del ciclo nutricional (3.9)
+
+| Índice | Tabla | Columnas | Tipo | Motivo/consulta | Impacto/costo |
+|---|---|---|---|---|---|
+| uq_nutrition_cycle_reviews_cycle | app.nutrition_cycle_reviews | cycle_id | B-tree único | una revisión por ciclo, unión para lectura; cubre FK | una entrada por cierre |
+| IX_nutrition_cycle_reviews_next_prescription_id | app.nutrition_cycle_reviews | next_prescription_id | B-tree | FK a la publicación atómica siguiente | una entrada por revisión |
+| ix_nutrition_cycle_attachments_review | app.nutrition_cycle_attachments | review_id | B-tree | adjuntos del cierre y FK | una entrada por archivo |
+| uq_nutrition_cycle_attachment_key | app.nutrition_cycle_attachments | storage_key | B-tree único | original privado sin reutilización de claves | una entrada por archivo |
+
+PK UUID de revisión/adjunto cubren la búsqueda de descarga. Tablas nuevas
+vacías, sin índices concurrentes ni bloqueo de datos antiguos.

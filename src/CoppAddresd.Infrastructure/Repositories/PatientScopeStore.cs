@@ -26,6 +26,9 @@ public sealed class PatientScopeStore(AppDbContext db) : IPatientScopeStore
             PatientResource.Week => db.ProgramWeeks.Where(x => x.Id == id).Select(x => (Guid?)x.Enrollment!.PatientId),
             PatientResource.Prescription => db.NutritionPrescriptions.Where(x => x.Id == id).Select(x => (Guid?)x.PatientId),
             PatientResource.Cycle => db.NutritionCycles.Where(x => x.Id == id).Select(x => (Guid?)x.PatientId),
+            PatientResource.NutritionAttachment => from a in db.Set<CoppAddresd.Domain.Entities.NutritionCycleAttachment>()
+                join r in db.Set<CoppAddresd.Domain.Entities.NutritionCycleReview>() on a.ReviewId equals r.Id
+                join c in db.NutritionCycles on r.CycleId equals c.Id where a.Id == id select (Guid?)c.PatientId,
             PatientResource.Intake => db.NutritionIntakeLogs.Where(x => x.Id == id).Select(x => (Guid?)x.PatientId),
             PatientResource.FoodAnalysis => from a in db.FoodAnalyses where a.AnalysisId == id
                 join p in db.PatientProfiles on a.UserId equals p.UserId select (Guid?)p.Id,

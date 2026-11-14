@@ -109,6 +109,13 @@ public sealed class NutritionCaseStore(AppDbContext db) : INutritionCaseStore
         CancellationToken ct
     )
     {
+        // El cierre de ciclo ya posee el lock de este paciente y la transacción externa.
+        // No limpiar tracking ni abrir/confirmar otra transacción: plan y revisión son atómicos.
+        if (db.Database.CurrentTransaction is not null)
+        {
+            await db.Database.ExecuteSqlInterpolatedAsync($"SELECT id FROM app.patient_profiles WHERE id = {patientId} FOR UPDATE", ct);
+            return await operation(ct);
+        }
         return await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(

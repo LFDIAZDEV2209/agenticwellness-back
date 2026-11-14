@@ -21,7 +21,7 @@ public sealed class PatientScopeRouteTests
     {
         foreach (var type in new[] { typeof(ProgramController), typeof(WellnessController), typeof(ProgramControlsController),
             typeof(NutritionController), typeof(NutritionReadController), typeof(NutritionPlanReviewController), typeof(NutritionCyclesController),
-            typeof(NutritionHighlightsController) })
+            typeof(NutritionHighlightsController), typeof(NutritionCycleReviewsController) })
             foreach (var method in type.GetMethods())
                 foreach (var attribute in method.GetCustomAttributes<PatientScopeAttribute>())
                     foreach (var scenario in new[] { "asignado", "ajeno", "Admin", "sin_permiso" })
@@ -79,6 +79,7 @@ public sealed class PatientScopeRouteTests
         public Guid EnrollmentId => PatientId;
         public Guid PlanId => PatientId;
         public Guid SourcePlanId => PatientId;
+        public Guid NextPrescriptionId => PatientId;
         public Guid NutritionPlanId => PatientId;
         public string TargetType => "Enrollment";
     }

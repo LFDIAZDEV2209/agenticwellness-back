@@ -4562,6 +4562,63 @@ namespace CoppAddresd.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("caption");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<long>("Length")
+                        .HasColumnType("bigint")
+                        .HasColumnName("length");
+
+                    b.Property<Guid>("ReviewId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_id");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("storage_key");
+
+                    b.Property<bool>("VisibleToPatient")
+                        .HasColumnType("boolean")
+                        .HasColumnName("visible_to_patient");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewId")
+                        .HasDatabaseName("ix_nutrition_cycle_attachments_review");
+
+                    b.HasIndex("StorageKey")
+                        .IsUnique()
+                        .HasDatabaseName("uq_nutrition_cycle_attachment_key");
+
+                    b.ToTable("nutrition_cycle_attachments", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_nutrition_cycle_attachment_kind", "kind IN ('image','document')");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleHighlight", b =>
                 {
                     b.Property<Guid>("CycleId")
@@ -4591,6 +4648,81 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasDatabaseName("ix_cycle_highlights_intake");
 
                     b.ToTable("nutrition_cycle_highlights", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AiDraftConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("ai_draft_confirmed");
+
+                    b.Property<string>("AiDraftJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("ai_draft_json");
+
+                    b.Property<bool>("CriticalAlertsConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("critical_alerts_confirmed");
+
+                    b.Property<Guid>("CycleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cycle_id");
+
+                    b.Property<Guid?>("NextPrescriptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("next_prescription_id");
+
+                    b.Property<string>("PatientMessageJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("patient_message");
+
+                    b.Property<string>("ProfessionalName")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)")
+                        .HasColumnName("professional_name");
+
+                    b.Property<string>("ProfessionalNotes")
+                        .HasColumnType("text")
+                        .HasColumnName("professional_notes");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<DateTime>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<Guid>("ReviewerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewer_id");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("revision");
+
+                    b.Property<string>("SummaryJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("summary_json");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CycleId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_nutrition_cycle_reviews_cycle");
+
+                    b.HasIndex("NextPrescriptionId");
+
+                    b.ToTable("nutrition_cycle_reviews", "app");
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionDraftReservation", b =>
@@ -10707,6 +10839,17 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleAttachment", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.NutritionCycleReview", "Review")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Review");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleHighlight", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.NutritionCycle", null)
@@ -10720,6 +10863,20 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasForeignKey("IntakeLogId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleReview", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.NutritionCycle", null)
+                        .WithMany()
+                        .HasForeignKey("CycleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.NutritionPrescription", null)
+                        .WithMany()
+                        .HasForeignKey("NextPrescriptionId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionDraftReservation", b =>
@@ -11822,6 +11979,11 @@ namespace CoppAddresd.Infrastructure.Migrations
             modelBuilder.Entity("CoppAddresd.Domain.Entities.Medication", b =>
                 {
                     b.Navigation("PatientMedications");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycleReview", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionPlan", b =>

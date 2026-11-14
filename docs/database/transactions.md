@@ -264,3 +264,19 @@ upsert/delete, sin I/O externo. Actor del JWT, hora PostgreSQL, token propagado
 a lock, consulta, escritura y commit. Fallo/cancelación revierte la operación.
 La lista paginada usa Repeatable Read READ ONLY; lee la comida actual por join,
 sin consultas por ítem ni copia que pueda quedar obsoleta tras una corrección.
+
+## Cierre profesional de nutrición (3.9)
+
+El cierre posee transacción y lock de paciente. `NutritionCaseStore.ExecuteAsync`
+se incorpora a la transacción existente y confirma el mismo lock sin limpiar el
+tracking; no confirma ni abre otra transacción. Publicación de n+1, revisión de n,
+resumen congelado tras atribución final, estado del ciclo, aviso in_app/dedupe y
+bitácora se confirman o revierten juntos. El fallo forzado al escribir el evento
+de publicación demuestra rollback de todos ellos y reintento en el mismo contexto.
+La estrategia de la transacción externa limpia tracking entre intentos.
+
+Archivos: I/O fuera del lock, autorización revalidada después de subir, alta y
+revisión optimista juntas en DB. El fallo limpia el original con token propio de
+cinco segundos, incluso si se canceló la petición. Desadjuntar retira la referencia
+en DB y luego limpia el objeto; un fallo de limpieza nunca expone el huérfano.
+Firmas y lectura de almacenamiento no se ejecutan dentro de la transacción SQL.

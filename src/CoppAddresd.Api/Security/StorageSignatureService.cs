@@ -32,6 +32,24 @@ public sealed class StorageSignatureService
         return SignCore(storageKey, expiresAt);
     }
 
+    /// <summary>Capacidad de nutrición con clave derivada: una firma genérica de storage no sirve para este endpoint.</summary>
+    public string SignNutritionAttachment(Guid id, DateTimeOffset expiresAt)
+    {
+        var scopedKey = HMACSHA256.HashData(_key, Encoding.UTF8.GetBytes("nutrition-cycle-attachment-v1"));
+        return Convert.ToHexStringLower(HMACSHA256.HashData(scopedKey, Encoding.UTF8.GetBytes($"{id:D}|{expiresAt.ToUnixTimeSeconds()}")));
+    }
+
+    public bool ValidateNutritionAttachment(Guid id, string? signature, string? expiry, DateTimeOffset now)
+    {
+        if (string.IsNullOrWhiteSpace(signature) || !long.TryParse(expiry, out var unix)) return false;
+        try
+        {
+            var end = DateTimeOffset.FromUnixTimeSeconds(unix);
+            return end >= now && end <= now.AddMinutes(5) && FixedTimeEquals(SignNutritionAttachment(id, end), signature);
+        }
+        catch (ArgumentOutOfRangeException) { return false; }
+    }
+
     private string SignCore(string storageKey, DateTimeOffset expiresAt)
     {
         var payload = $"{storageKey}|{expiresAt.ToUnixTimeSeconds()}";
