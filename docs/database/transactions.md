@@ -207,3 +207,13 @@ READ ONLY` antes de materializar consultas. Comparte alcance, validación y
 planificador; retorna antes de adjuntar entidades o Save. La protección de BD
 impide escrituras accidentales. El modo normal mantiene Serializable. La vista
 previa no reserva datos entre solicitudes; confirmar reevalúa el estado actual.
+
+
+## Primera publicación del ciclo (3.1)
+
+El trigger de compatibilidad ensure_nutrition_cycle usa FOR UPDATE sobre el
+paciente, mismo orden que NutritionCaseStore. Crear cabecera y asignar MAX+1
+son parte de la transacción de la prescripción; fallo/cancelación revierte
+ambos y no consume un número. El índice paciente/número respalda el MAX y la
+unicidad. No hay I/O externo. No se elimina ni renumera una cabecera al
+sustituir una versión publicada. La migración limita espera de locks a 5 s.

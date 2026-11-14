@@ -47,6 +47,7 @@ public sealed class NutritionPrescriptionConfiguration : IEntityTypeConfiguratio
         b.Property(x => x.Id).HasColumnName("id");
         b.Property(x => x.PatientId).HasColumnName("patient_id");
         b.Property(x => x.CycleId).HasColumnName("cycle_id");
+        b.HasOne<NutritionCycle>().WithMany().HasForeignKey(x => x.CycleId).OnDelete(DeleteBehavior.Restrict);
         b.Property(x => x.Version).HasColumnName("version");
         b.Property(x => x.Revision).HasColumnName("revision").IsConcurrencyToken();
         b.Property(x => x.State).HasColumnName("state").HasMaxLength(30);

@@ -259,3 +259,15 @@ JSONB con conversión de lista y comparador estructural para detectar ediciones.
 Coste: mantenimiento de GIN en escrituras de etiquetas. Volumen local: 55 medios.
 Prueba PostgreSQL: 10.000 medios, etiqueta poco frecuente, ANALYZE + EXPLAIN ANALYZE
 confirman uso del índice. No se añade un B-tree por origen de baja cardinalidad.
+
+
+## Ciclos nutricionales (3.1)
+
+| índice | Tabla | Columnas | Tipo | Motivo/consulta | Impacto/costo |
+|---|---|---|---|---|---|
+| uq_nutrition_cycles_patient_number | app.nutrition_cycles | patient_id, number | B-tree único | numeración por paciente, listado y MAX al publicar bajo lock | evita huecos por carreras y duplicados; una entrada por ciclo |
+
+La PK id cubre la FK desde prescripciones. El índice existente
+`uq_nutrition_prescriptions_cycle_version` ya cubre el prefijo cycle_id; no se
+añade un índice redundante para esa FK. El índice compuesto de ciclos cubre
+también la FK patient_id.

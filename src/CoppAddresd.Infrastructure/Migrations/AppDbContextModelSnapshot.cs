@@ -4515,6 +4515,49 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("notification_dedupe_keys", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<int?>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("state");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("uq_nutrition_cycles_patient_number");
+
+                    b.ToTable("nutrition_cycles", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_nutrition_cycle_publication", "(state = 'borrador' AND number IS NULL AND start_date IS NULL AND end_date IS NULL) OR (state <> 'borrador' AND number > 0 AND number IS NOT NULL AND start_date IS NOT NULL AND end_date IS NOT NULL AND end_date >= start_date AND end_date - start_date < 30)");
+
+                            t.HasCheckConstraint("ck_nutrition_cycle_state", "state IN ('borrador','en_curso','por_revisar','revisado','interrumpido')");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionDraftReservation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -10552,6 +10595,15 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionCycle", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionDraftReservation", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
@@ -10617,6 +10669,12 @@ namespace CoppAddresd.Infrastructure.Migrations
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.NutritionPrescription", b =>
                 {
+                    b.HasOne("CoppAddresd.Domain.Entities.NutritionCycle", null)
+                        .WithMany()
+                        .HasForeignKey("CycleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", "Patient")
                         .WithMany()
                         .HasForeignKey("PatientId")
