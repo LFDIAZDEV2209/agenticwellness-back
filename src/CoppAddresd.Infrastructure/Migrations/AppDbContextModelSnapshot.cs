@@ -5686,8 +5686,8 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnName("kind");
 
                     b.Property<string>("ModelName")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("model_name");
 
                     b.Property<Guid>("PatientId")

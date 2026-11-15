@@ -28,7 +28,7 @@ y bitácora en la misma operación clínica. El estado almacenado no ejecuta cam
 | patient_id | UUID requerido, FK a `app.patient_profiles`, ON DELETE RESTRICT |
 | kind | varchar(32), `patient_summary` o `weekly_plan_suggestions` |
 | draft_json | jsonb requerido, objeto; respuesta estructurada según el contrato de cada tipo |
-| model_name | varchar(120), nullable si el proveedor no lo informa; no vacío cuando existe |
+| model_name | varchar(200), nullable si el proveedor no lo informa; no vacío cuando existe; ampliado de 120 por contrato 4.4a |
 | generated_at | timestamptz requerido, UTC; fecha de generación |
 | input_hash | varchar(64), SHA-256 hexadecimal minúsculo de los bytes UTF-8 del request exacto |
 | state | varchar(16), `draft` por defecto; también `applied` y `dismissed` |

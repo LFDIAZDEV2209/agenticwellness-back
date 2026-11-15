@@ -106,9 +106,10 @@ public sealed partial class NutritionPlanWorkflowTests
         await db.SaveChangesAsync(); db.ChangeTracker.Clear();
         var before = await db.ProgramAssignmentRecommendations.AsNoTracking().SingleAsync();
         var migrations = db.Database.GetMigrations().ToArray();
-        Assert.EndsWith("_AddPatientAiBriefs", migrations[^1]);
+        var briefMigration = Array.FindIndex(migrations, id => id.EndsWith("_AddPatientAiBriefs", StringComparison.Ordinal));
+        Assert.True(briefMigration > 0);
         var migrator = db.GetService<IMigrator>();
-        await migrator.MigrateAsync(migrations[^2]);
+        await migrator.MigrateAsync(migrations[briefMigration - 1]);
         Assert.Null(await db.Database.SqlQueryRaw<string>("SELECT to_regclass('app.patient_ai_briefs')::text AS \"Value\"").SingleAsync());
         Assert.Equal("Narrativa anterior", (await db.ProgramAssignmentRecommendations.AsNoTracking().SingleAsync()).NarrativeEs);
         await migrator.MigrateAsync();

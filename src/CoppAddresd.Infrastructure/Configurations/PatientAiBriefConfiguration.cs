@@ -23,7 +23,7 @@ public sealed class PatientAiBriefConfiguration : IEntityTypeConfiguration<Patie
         builder.Property(x => x.PatientId).HasColumnName("patient_id");
         builder.Property(x => x.Kind).HasColumnName("kind").HasMaxLength(32);
         builder.Property(x => x.DraftJson).HasColumnName("draft_json").HasColumnType("jsonb");
-        builder.Property(x => x.ModelName).HasColumnName("model_name").HasMaxLength(120);
+        builder.Property(x => x.ModelName).HasColumnName("model_name").HasMaxLength(200);
         builder.Property(x => x.GeneratedAt).HasColumnName("generated_at").HasColumnType("timestamptz");
         builder.Property(x => x.InputHash).HasColumnName("input_hash").HasMaxLength(64);
         builder.Property(x => x.State).HasColumnName("state").HasMaxLength(16).HasDefaultValue("draft");

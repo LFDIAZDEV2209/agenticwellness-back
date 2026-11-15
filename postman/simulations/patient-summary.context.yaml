@@ -1,0 +1,30 @@
+purpose:
+  stands_in_for: "POST interno patient-summary de ai-service, contrato 041a602"
+  unblocks: "Verificar cliente 4.4b sin tocar el stack compartido ni invocar un LLM"
+assumptions:
+  - id: request-contract
+    status: supported
+    claim: "El request tiene solo startDate, endDate, language y facts desidentificados."
+    reason: "La captura HTTP validó con Pydantic del commit exacto 041a602."
+    verification: "15-11-2026: request del test PostgreSQL, 3 hechos, 7 días, en."
+    source: "tests/CoppAddresd.IntegrationTests/PatientSummaryPostgresTests.cs; ai-service 041a602 app/schemas/patient_summary.py"
+    updated_at: "2026-11-15"
+  - id: caller-degradation
+    status: supported
+    claim: "En los escenarios simulados el cliente reconoce ok, insufficient y 503 como error controlado."
+    reason: "El cliente .NET real hizo tres requests y las aserciones pasaron."
+    verification: "15-11-2026: Cliente_ContratoCompleto aprobado con URL de simulación; log 200,200,503."
+    source: "tests/CoppAddresd.UnitTests/ProgramProgress/PatientSummaryTests.cs; postman/mocks/patient-summary/default.js"
+    updated_at: "2026-11-15"
+  - id: live-llm
+    status: unknown
+    claim: "La instancia compartida de AI responde con un LLM real según el contrato."
+    reason: "No se reinició ni invocó proveedor real; solo contrato y HTTP simulado."
+    verification: "Pendiente de integración del orquestador."
+    source: "ai-service 041a602 docs/patient-summary.md; docs/modules/program-progress/PATIENT-SUMMARY.md"
+    updated_at: "2026-11-15"
+fingerprints:
+  - id: back-4.4b
+    date: "2026-11-15"
+    commit: "base a4a2fb2, implementación 4.4b"
+    cli: "Postman 1.76.0"

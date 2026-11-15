@@ -1,0 +1,7 @@
+# QA local; no dependencia de los procesos compartidos 8000/5122.
+simulation: patient-summary
+routing: header
+mocks:
+  - name: patient-summary
+    routeKey: summary
+    path: postman/mocks/patient-summary
