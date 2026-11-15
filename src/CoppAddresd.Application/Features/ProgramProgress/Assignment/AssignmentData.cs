@@ -16,7 +16,15 @@ public sealed record AssignmentBiometric(Guid EvaluationId, string QuestionCode,
 
 public sealed record AssignmentCatalog(IReadOnlyList<ProgramCondition> Conditions,
     IReadOnlyList<ProgramAssignmentRule> Rules, IReadOnlyList<AssignmentContent> NutritionPlans,
-    IReadOnlyList<AssignmentContent> Routines);
+    IReadOnlyList<AssignmentContent> Routines)
+{
+    /// <summary>Filas de la plantilla real de la inscripción; null en WeekNumber significa genérica.</summary>
+    public IReadOnlyList<AssignmentPodcastSlot> TemplatePodcasts { get; init; } = [];
+    /// <summary>Únicos destinos admitidos para overrides: podcasts publicados y con archivo válido.</summary>
+    public IReadOnlyList<AssignmentContent> Podcasts { get; init; } = [];
+}
+
+public sealed record AssignmentPodcastSlot(int? WeekNumber, short Weekday, Guid? MediaId);
 
 public sealed record AssignmentContent(Guid Id, string Name, int? Difficulty = null);
 public sealed record AssignmentDecision(string ProfileSnapshot, string Proposal);

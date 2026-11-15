@@ -28,10 +28,10 @@ public sealed class BatteryCompletedEventHandler(IProgramAssignmentRepository as
                     || await assignments.FindCompletedInitialBatteryAsync(notification.PatientId, notification.BatteryAssignmentId, ct) is null)
                     return;
                 var profile = await assignments.ReadProfileAsync(notification.PatientId, notification.BatteryAssignmentId, ct);
-                var catalog = await assignments.ReadCatalogAsync(ct);
-                var decision = engine.Build(profile, catalog, settings.CurrentValue, (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime);
                 var enrollment = pending ?? await programs.CreatePendingAssignmentAsync(notification.PatientId,
                     configuration["Program:DefaultTemplate:Code"] ?? "program-coppaddresd-83-days", ct);
+                var catalog = await assignments.ReadCatalogAsync(enrollment.TemplateId, ct);
+                var decision = engine.Build(profile, catalog, settings.CurrentValue, (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime);
                 var recommendation = new ProgramAssignmentRecommendation
                 {
                     Id = Guid.NewGuid(), EnrollmentId = enrollment.Id, PatientId = notification.PatientId,

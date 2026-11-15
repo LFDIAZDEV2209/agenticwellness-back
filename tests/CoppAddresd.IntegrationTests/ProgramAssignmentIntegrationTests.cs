@@ -81,6 +81,8 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
         services.AddScoped<IWellnessRepository, WellnessRepository>();
         services.AddSingleton<AssignmentEngine>();
         services.AddSingleton<IProgramNarrativeQueue, ProgramNarrativeQueue>();
+        // El evento también activa nutrición; esta suite aísla ese flujo ajeno a la asignación.
+        services.AddSingleton(Substitute.For<INutritionDraftWorkflow>());
         services.AddSingleton(Substitute.For<ICacheService>());
         services.AddSingleton(_counter);
         services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(SubmitEvaluationCommand).Assembly));
@@ -167,7 +169,7 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
         Assert.False(snapshot["facts"]!["conditions.diabetes-t2.active"]!.GetValue<bool>());
         Assert.Equal("Plan Obesidad — Déficit calórico", JsonNode.Parse(recommendation.Proposal)!["nutritionPlan"]!["name"]!.GetValue<string>());
         Assert.Equal(1, _counter.Count);
-        // Dos replays concurrentes del mismo clientRequestId: sin resultados, eventos ni inscripciones extra.
+        // Cada replay reemite la señal clínica recuperable; la asignación sigue siendo idempotente.
         await Task.WhenAll(Enumerable.Range(0, 2).Select(async _ =>
         {
             using var scope = _services.CreateScope();
@@ -176,7 +178,7 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
         Assert.Equal(9, await verify.HealthTestEvaluations.CountAsync(e => e.PatientId == patient.Id));
         Assert.Equal(1, await verify.ProgramEnrollments.CountAsync(e => e.PatientId == patient.Id));
         Assert.Equal(1, await verify.ProgramAssignmentRecommendations.CountAsync(r => r.PatientId == patient.Id));
-        Assert.Equal(1, _counter.Count);
+        Assert.Equal(3, _counter.Count);
         // El worker puede fallar sin mutar propuesta/snapshot; probar sobre repositorio real.
         var client = Substitute.For<IProgramNarrativeClient>();
         client.GenerateAsync(Arg.Any<ProgramNarrativeRequest>(), Arg.Any<CancellationToken>())

@@ -8,7 +8,7 @@ namespace CoppAddresd.Application.Features.ProgramProgress.Assignment;
 /// <summary>Motor puro: evalúa valores medidos y reglas editables por datos; la IA no elige contenido.</summary>
 public sealed class AssignmentEngine
 {
-    public const string Version = "assignment-v1";
+    public const string Version = "assignment-v2";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public AssignmentDecision Build(AssignmentProfileData data, AssignmentCatalog catalog,
@@ -86,7 +86,9 @@ public sealed class AssignmentEngine
         }
         return new JsonObject { ["patientId"] = data.PatientId, ["batteryAssignmentId"] = data.BatteryAssignmentId,
             ["capturedAt"] = capturedAt, ["engineVersion"] = Version, ["results"] = results,
-            ["biometrics"] = biometrics, ["facts"] = facts, ["conditions"] = conditions };
+            ["biometrics"] = biometrics, ["facts"] = facts, ["conditions"] = conditions,
+            ["templatePodcastSequence"] = JsonSerializer.SerializeToNode(catalog.TemplatePodcasts
+                .OrderBy(p => p.WeekNumber ?? 0).ThenBy(p => p.Weekday), Json) };
     }
 
     /// <summary>La propuesta depende solo del snapshot, el catálogo y la política operativa explícita.</summary>
@@ -94,6 +96,9 @@ public sealed class AssignmentEngine
     {
         var facts = snapshot["facts"]!.AsObject();
         AssignmentContent? nutrition = null, routine = null;
+        var podcasts = catalog.TemplatePodcasts.OrderBy(p => p.WeekNumber ?? 0).ThenBy(p => p.Weekday).ToArray();
+        var claimedPodcasts = new HashSet<int>();
+        var podcastsChanged = false;
         var matches = new JsonArray();
         foreach (var rule in catalog.Rules.Where(r => r.IsActive)
             .OrderByDescending(r => r.Priority).ThenByDescending(r => r.Weight).ThenBy(r => r.Code, StringComparer.Ordinal))
@@ -121,24 +126,68 @@ public sealed class AssignmentEngine
                     names = ["Flexibilidad y Movilidad", "Caminata Activa"];
                 selectedRoutine = names.Select(n => Resolve(catalog.Routines, n)).FirstOrDefault(r => r is not null);
             }
+            var podcastReason = (target["podcastReason"] as JsonValue)?.TryGetValue<string>(out var reason) == true
+                ? reason.Trim() : null;
+            var podcastOverrides = ResolvePodcastOverrides(target, catalog, podcasts, podcastReason);
             // Un nombre que no existe no se reemplaza por contenido clínico inventado.
-            if (plan is null && selectedRoutine is null) continue;
+            if (plan is null && selectedRoutine is null && podcastOverrides.Count == 0) continue;
             var appliesNutrition = nutrition is null && plan is not null;
             var appliesRoutine = routine is null && selectedRoutine is not null;
+            var podcastChanges = new JsonArray();
+            foreach (var (index, slot) in podcastOverrides)
+            {
+                if (!claimedPodcasts.Add(index) || podcasts[index].MediaId == slot.MediaId) continue;
+                podcastChanges.Add(new JsonObject { ["weekNumber"] = slot.WeekNumber, ["weekday"] = slot.Weekday,
+                    ["previousMediaId"] = podcasts[index].MediaId, ["mediaId"] = slot.MediaId });
+                podcasts[index] = slot;
+                podcastsChanged = true;
+            }
             nutrition ??= plan;
             routine ??= selectedRoutine;
             matches.Add(new JsonObject { ["ruleId"] = rule.Id, ["ruleCode"] = rule.Code,
                 ["conditionCode"] = rule.ConditionCode, ["targetNutritionPlanName"] = plan?.Name,
                 ["targetRoutineName"] = selectedRoutine?.Name, ["priority"] = rule.Priority, ["weight"] = rule.Weight,
-                ["reason"] = "Criterios satisfechos por los valores del snapshot; precedencia por prioridad, peso y código.",
+                ["reason"] = podcastChanges.Count > 0 ? podcastReason
+                    : "Criterios satisfechos por los valores del snapshot; precedencia por prioridad, peso y código.",
                 ["criteria"] = criteria.DeepClone(), ["target"] = target.DeepClone(),
                 ["sourceRef"] = catalog.Conditions.FirstOrDefault(c => c.Code == rule.ConditionCode)?.SourceRef,
-                ["appliesNutrition"] = appliesNutrition, ["appliesRoutine"] = appliesRoutine });
+                ["appliesNutrition"] = appliesNutrition, ["appliesRoutine"] = appliesRoutine,
+                ["appliesPodcasts"] = podcastChanges.Count > 0, ["podcastChanges"] = podcastChanges });
         }
         return new JsonObject { ["engineVersion"] = Version, ["nutritionPlan"] = JsonSerializer.SerializeToNode(nutrition, Json),
             ["routine"] = JsonSerializer.SerializeToNode(routine, Json), ["matchedRules"] = matches,
+            ["podcastSequence"] = JsonSerializer.SerializeToNode(podcasts, Json),
+            ["useTemplatePodcastDefault"] = !podcastsChanged,
             ["useTemplateNutritionDefault"] = nutrition is null, ["useTemplateRoutineDefault"] = routine is null,
             ["movementPolicy"] = JsonSerializer.SerializeToNode(new { settings.MovementLowMaxPercentage, settings.MovementMediumMaxPercentage }, Json) };
+    }
+
+    /// <summary>Un override sin razón, destino publicado o celda de plantilla válida no altera la secuencia.</summary>
+    private static IReadOnlyList<(int Index, AssignmentPodcastSlot Slot)> ResolvePodcastOverrides(
+        JsonObject target, AssignmentCatalog catalog, AssignmentPodcastSlot[] sequence, string? reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason) || target["podcastOverrides"] is not JsonArray overrides) return [];
+        var resolved = new List<(int, AssignmentPodcastSlot)>();
+        var seen = new HashSet<int>();
+        foreach (var node in overrides)
+        {
+            if (node is not JsonObject item || !item.ContainsKey("weekNumber")
+                || item["weekday"] is not JsonValue weekdayValue || !weekdayValue.TryGetValue<int>(out var weekday)
+                || weekday is < 1 or > 7 || item["mediaTitle"] is not JsonValue titleValue
+                || !titleValue.TryGetValue<string>(out var title)) return [];
+            int? weekNumber = null;
+            if (item["weekNumber"] is not null)
+            {
+                if (item["weekNumber"] is not JsonValue weekValue || !weekValue.TryGetValue<int>(out var week) || week < 1) return [];
+                weekNumber = week;
+            }
+            var index = Array.FindIndex(sequence, p => p.WeekNumber == weekNumber && p.Weekday == weekday);
+            var media = Resolve(catalog.Podcasts, title);
+            // Validación completa antes de aplicar: nunca dejar medio override de una regla inválida.
+            if (index < 0 || media is null || !seen.Add(index)) return [];
+            resolved.Add((index, sequence[index] with { MediaId = media.Id }));
+        }
+        return resolved;
     }
 
     private static AssignmentContent? Resolve(IReadOnlyList<AssignmentContent> catalog, string? name) =>

@@ -7,6 +7,61 @@ El registro, el perfil medido, snapshot y narrativa permanecen intactos.
 `Program:Assignment:Enabled` sigue bajo control del owner en ECS; no se cambia
 ningún valor ni se añade un flag alternativo.
 
+## Secuencia de podcasts de la propuesta — 4.1
+
+`AssignmentEngine` (`assignment-v2`) recibe las filas de podcast de la plantilla
+de la inscripción real. En recuperación usa esa plantilla aunque sea distinta
+del código configurado por defecto. `podcastSequence` conserva las celdas
+`{weekNumber, weekday, mediaId}` ordenadas por semana y día; `weekNumber:null`
+identifica la fila genérica. Mantiene repeticiones, filas específicas y huecos
+(`mediaId:null`), sin elegir episodios del catálogo para rellenarlos.
+`templatePodcastSequence` en el snapshot conserva la base anterior a las reglas.
+
+Una regla activa cuyos criterios coinciden puede cambiar celdas existentes con
+este `target` (los títulos se resuelven por nombre, sin IDs fijos entre entornos):
+
+```json
+{
+  "podcastReason": "Razón clínica u operativa de la adaptación",
+  "podcastOverrides": [
+    { "weekNumber": 2, "weekday": 1, "mediaTitle": "Título publicado del episodio" }
+  ]
+}
+```
+
+La razón no puede estar vacía. Cada destino debe ser un podcast publicado con
+archivo no vacío y distinto del audio demo. Las coordenadas deben existir en
+la plantilla; una fila genérica requiere `weekNumber:null` explícito. Si una
+entrada es inválida o duplica una celda, se ignora todo el override de podcasts
+de esa regla. Las decisiones de nutrición y rutina mantienen su evaluación.
+La precedencia por prioridad, peso y código se aplica por celda; no depende del
+orden del catálogo. Ninguna regla modifica la plantilla compartida.
+
+`matchedRules` conserva ID/código, criterios, target y razón, junto con
+`appliesPodcasts` y `podcastChanges` (semana/día, `previousMediaId`, `mediaId`).
+`useTemplatePodcastDefault:true` indica que la secuencia quedó intacta.
+El resultado se persiste en el JSON de propuesta existente, en la misma
+transacción que la inscripción, sin migraciones ni endpoints nuevos. Es la
+propuesta del motor; el fallback de siete días conserva su política explícita
+de usar defaults de plantilla.
+
+Validación 4.1: build de solución con 0 errores; **2644 unitarios aprobados y
+105 omitidos** existentes; **10/10 PostgreSQL** de `ProgramAssignmentIntegrationTests`
+en clúster temporal PostgreSQL 18.6, sin omisiones. Incluye tres casos nuevos con
+repositorio/evento/persistencia reales: plantilla intacta, override trazado desde
+una inscripción pendiente de otra plantilla y exclusión de destinos no válidos.
+Los 14 casos unitarios nuevos cubren también precedencia, reglas que no aplican
+y rechazo completo de overrides inválidos. El fixture registra como doble el
+workflow independiente de nutrición y verifica la señal recuperable en cada
+replay, manteniendo una sola inscripción y recomendación. No se llamó a un LLM.
+
+```powershell
+dotnet build --no-restore -p:OutputPath=bin/Validation41/
+dotnet test tests/CoppAddresd.UnitTests --no-build -p:OutputPath=bin/Validation41/
+# COP_TEST_DB_CONNECTION debe apuntar a PostgreSQL local; el fixture crea BDs aisladas.
+dotnet test tests/CoppAddresd.IntegrationTests --no-build -p:OutputPath=bin/Validation41/ --filter 'FullyQualifiedName~ProgramAssignmentIntegrationTests'
+```
+
 ## Reconciliación y fallback
 
 ProgramAssignmentHostedService ejecuta ProgramAssignmentJob cada

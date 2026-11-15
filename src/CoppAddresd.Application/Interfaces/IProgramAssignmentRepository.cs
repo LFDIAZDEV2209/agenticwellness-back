@@ -13,7 +13,7 @@ public interface IProgramAssignmentRepository
     /// <summary>Serializa la creación por paciente y confirma todo o nada mediante estrategia de ejecución.</summary>
     Task ExecuteForPatientAsync(Guid patientId, Func<Task> action, CancellationToken ct);
     Task<AssignmentProfileData> ReadProfileAsync(Guid patientId, Guid batteryAssignmentId, CancellationToken ct);
-    Task<AssignmentCatalog> ReadCatalogAsync(CancellationToken ct);
+    Task<AssignmentCatalog> ReadCatalogAsync(Guid templateId, CancellationToken ct);
     Task AddRecommendationAsync(ProgramAssignmentRecommendation recommendation, CancellationToken ct);
     Task<ProgramAssignmentRecommendation?> GetRecommendationAsync(Guid id, CancellationToken ct);
     Task<IReadOnlyList<Guid>> ListMissingNarrativesAsync(DateTime cutoff, int limit, CancellationToken ct);

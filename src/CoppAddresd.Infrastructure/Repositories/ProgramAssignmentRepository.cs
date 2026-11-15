@@ -1,8 +1,10 @@
 using System.Globalization;
 using CoppAddresd.Application.Features.ProgramProgress.Assignment;
+using CoppAddresd.Application.Features.Media;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities.ProgramProgress;
 using CoppAddresd.Domain.Enums.HealthTests;
+using CoppAddresd.Domain.Enums;
 using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -115,13 +117,24 @@ public sealed class ProgramAssignmentRepository(AppDbContext db) : IProgramAssig
         return new(patientId, batteryAssignmentId, patient.Gender, patient.Ethnicity, results, biometrics);
     }
 
-    public async Task<AssignmentCatalog> ReadCatalogAsync(CancellationToken ct) => new(
+    public async Task<AssignmentCatalog> ReadCatalogAsync(Guid templateId, CancellationToken ct) => new(
         await db.ProgramConditions.AsNoTracking().OrderBy(c => c.Code).ToListAsync(ct),
         await db.ProgramAssignmentRules.AsNoTracking().Where(r => r.IsActive).OrderBy(r => r.Code).ToListAsync(ct),
         await db.NutritionPlans.AsNoTracking().Where(p => p.IsTemplate && p.Status == CoppAddresd.Domain.Enums.NutritionPlanStatus.Active).OrderBy(p => p.Name).ThenBy(p => p.Id)
             .Select(p => new AssignmentContent(p.Id, p.Name, null)).ToListAsync(ct),
         await db.ExerciseRoutines.AsNoTracking().Where(r => r.Status == CoppAddresd.Domain.Enums.NutritionPlanStatus.Active).OrderBy(r => r.Name).ThenBy(r => r.Id)
-            .Select(r => new AssignmentContent(r.Id, r.Name, (int?)r.Difficulty)).ToListAsync(ct));
+            .Select(r => new AssignmentContent(r.Id, r.Name, (int?)r.Difficulty)).ToListAsync(ct))
+    {
+        TemplatePodcasts = await db.WeeklyDayTemplates.AsNoTracking()
+            .Where(d => d.TemplateId == templateId && d.TaskCode == TaskCode.podcast)
+            .OrderBy(d => d.WeekNumber ?? 0).ThenBy(d => d.Weekday)
+            .Select(d => new AssignmentPodcastSlot(d.WeekNumber, d.Weekday, d.MediaId)).ToListAsync(ct),
+        Podcasts = await db.MediaItems.AsNoTracking()
+            .Where(m => m.MediaType == MediaType.Podcast && m.Status == MediaStatus.Published && m.StorageKey != null
+                && m.StorageKey.Trim() != "" && m.StorageKey.Trim().ToLower() != MediaPublishRules.DemoStorageKey)
+            .OrderBy(m => m.Title).ThenBy(m => m.Id)
+            .Select(m => new AssignmentContent(m.Id, m.Title, null)).ToListAsync(ct),
+    };
 
     public async Task AddRecommendationAsync(ProgramAssignmentRecommendation recommendation, CancellationToken ct)
     {
