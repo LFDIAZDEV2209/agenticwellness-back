@@ -1,0 +1,7 @@
+# Simulación propia, independiente del stack compartido.
+simulation: weekly-suggestions
+routing: header
+mocks:
+  - name: weekly-suggestions
+    routeKey: weekly
+    path: postman/mocks/weekly-suggestions

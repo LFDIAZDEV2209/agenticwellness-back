@@ -21,7 +21,7 @@ public sealed class PatientScopeRouteTests
     {
         foreach (var type in new[] { typeof(ProgramController), typeof(WellnessController), typeof(ProgramControlsController),
             typeof(NutritionController), typeof(NutritionReadController), typeof(NutritionPlanReviewController), typeof(NutritionCyclesController),
-            typeof(NutritionHighlightsController), typeof(NutritionCycleReviewsController), typeof(PatientSummaryController) })
+            typeof(NutritionHighlightsController), typeof(NutritionCycleReviewsController), typeof(PatientSummaryController), typeof(WeeklySuggestionsController) })
             foreach (var method in type.GetMethods())
                 foreach (var attribute in method.GetCustomAttributes<PatientScopeAttribute>())
                     foreach (var scenario in new[] { "asignado", "ajeno", "Admin", "sin_permiso" })

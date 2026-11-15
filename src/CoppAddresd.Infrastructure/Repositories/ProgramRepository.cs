@@ -3022,6 +3022,13 @@ public sealed partial class ProgramRepository(
                     );
                 }
 
+                if (edits?.Transaction is { } associated && !await associated.BeforeAsync(enrollment, week, ct))
+                {
+                    // Replay autorizado: sin volver a personalizar ni duplicar la bitácora.
+                    await transaction.CommitAsync(ct);
+                    return await GetEnrollmentWeekDetailAsync(enrollmentId, weekNumber, actorId ?? Guid.Empty, ct);
+                }
+
                 var now = (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime;
                 var today = PatientLocalToday(enrollment.Timezone, now);
                 var hasHistory = await dbContext.TaskCompletions.AnyAsync(c => c.ProgramWeekId == week.Id, ct)
@@ -3041,12 +3048,20 @@ public sealed partial class ProgramRepository(
                     ParseSnapshot(week.TasksSnapshot), tasks, edits, actorId, now));
                 week.UpdatedAt = now;
                 await dbContext.SaveChangesAsync(ct);
+                var editMetadata = JsonSerializer.SerializeToElement(new { @event = "ProgramWeekTasksChanged", enrollment_id = enrollmentId, week_number = weekNumber,
+                    operations = tasks.Select(t => new { weekday = t.Weekday, task_code = t.TaskCode.ToString(),
+                        operation = edits?.ResetCells?.Contains((t.Weekday, t.TaskCode)) == true ? "restablecer"
+                            : t.TaskCode == TaskCode.ejercicio && edits?.RestDays.Contains(t.Weekday) == true ? "descanso" : "asignar" }) });
+                if (edits?.Transaction is { } context)
+                {
+                    var metadata = System.Text.Json.Nodes.JsonNode.Parse(editMetadata.GetRawText())!;
+                    metadata["ai_application"] = System.Text.Json.Nodes.JsonNode.Parse(context.AuditMetadata.GetRawText());
+                    editMetadata = JsonSerializer.SerializeToElement(metadata);
+                }
                 await WriteAuditRowAsync(nameof(AuditAction.Update), "app", "program_weeks", week.Id, actorId, ct,
                     before, JsonSerializer.SerializeToElement(new { tasks_snapshot = week.TasksSnapshot }),
-                    JsonSerializer.SerializeToElement(new { @event = "ProgramWeekTasksChanged", enrollment_id = enrollmentId, week_number = weekNumber,
-                        operations = tasks.Select(t => new { weekday = t.Weekday, task_code = t.TaskCode.ToString(),
-                            operation = edits?.ResetCells?.Contains((t.Weekday, t.TaskCode)) == true ? "restablecer"
-                                : t.TaskCode == TaskCode.ejercicio && edits?.RestDays.Contains(t.Weekday) == true ? "descanso" : "asignar" }) }));
+                    editMetadata);
+                if (edits?.Transaction is { } completion) await completion.CompleteAsync(enrollment, week, ct);
                 await transaction.CommitAsync(ct);
 
                 var detail = await GetEnrollmentWeekDetailAsync(

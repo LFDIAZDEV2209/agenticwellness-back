@@ -1,0 +1,30 @@
+purpose:
+  stands_in_for: "POST interno weekly-plan-suggestions, ai-service 612fdfe"
+  unblocks: "Verificar cliente 4.5b sin modificar stack compartido ni invocar LLM"
+assumptions:
+  - id: request-contract
+    status: supported
+    claim: "Request exacto con facts y opciones por slot sin IDs reales."
+    reason: "Captura HTTP del fixture aislado validada por Pydantic del commit exacto."
+    verification: "15-11-2026: cinco campos, un hecho, catorce slots, siete días, es."
+    source: "tests/CoppAddresd.IntegrationTests/WeeklySuggestionsPostgresTests.cs; ai-service 612fdfe app/schemas/weekly_plan_suggestions.py"
+    updated_at: "2026-11-15"
+  - id: caller-degradation
+    status: supported
+    claim: "Cliente real distingue ok, insufficient y error controlado 503."
+    reason: "Tres requests registrados y aserciones aprobadas con URL de simulación."
+    verification: "15-11-2026: WeeklyCliente_BytesConsentimiento; HTTP 200,200,503."
+    source: "tests/CoppAddresd.UnitTests/ProgramProgress/WeeklySuggestionsTests.cs; postman/mocks/weekly-suggestions/default.js"
+    updated_at: "2026-11-15"
+  - id: live-llm
+    status: unknown
+    claim: "Stack compartido y proveedor real cumplen el contrato."
+    reason: "Solo HTTP simulado y contrato pinneado; no se invocó un LLM ni reinició servicios."
+    verification: "Integración live a cargo del orquestador."
+    source: "ai-service 612fdfe docs/weekly-plan-suggestions.md"
+    updated_at: "2026-11-15"
+fingerprints:
+  - id: back-4.5b
+    date: "2026-11-15"
+    commit: "base 3b6e09e, implementación 4.5b"
+    cli: "Postman 1.76.0"

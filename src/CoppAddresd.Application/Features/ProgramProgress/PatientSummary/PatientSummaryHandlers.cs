@@ -32,7 +32,7 @@ public sealed class GeneratePatientSummaryHandler(IPatientScopeGuard scope, ILeg
                 ? new DateTimeOffset(localStart, zone.GetAmbiguousTimeOffsets(localStart).Max()).UtcDateTime
                 : TimeZoneInfo.ConvertTimeToUtc(localStart, zone);
             var data = await store.ReadAsync(request.PatientId, start, today, utcStart, now.UtcDateTime, ct);
-            var facts = Facts(data);
+            var facts = PatientSummaryFacts.Build(data);
             if (facts.Count == 0) return new("insufficient");
             var input = new PatientSummaryInput(start, today, request.Language, facts) { SubjectPatientId = request.PatientId };
             var response = await client.GenerateAsync(input, ct);
@@ -53,8 +53,12 @@ public sealed class GeneratePatientSummaryHandler(IPatientScopeGuard scope, ILeg
         catch (Exception ex) when (ex is PatientSummaryUnavailableException or AiConsentException)
         { return new("unavailable"); }
     }
+}
 
-    private static IReadOnlyList<PatientSummaryFact> Facts(PatientSummaryData d)
+/// <summary>Hechos desidentificados reutilizados por los asistentes del Perfil 360.</summary>
+public static class PatientSummaryFacts
+{
+    public static IReadOnlyList<PatientSummaryFact> Build(PatientSummaryData d)
     {
         var facts = new List<PatientSummaryFact>(6);
         if (d.ProgramState is not null) facts.Add(new("program.current", "program",

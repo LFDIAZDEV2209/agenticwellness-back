@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IPatientScopeStore, PatientScopeStore>();
         services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.PatientSummary.IPatientSummaryStore, PatientSummaryStore>();
+        services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.WeeklySuggestions.IWeeklySuggestionsStore, WeeklySuggestionsStore>();
         services.AddScoped<IAppointmentReferenceSearchRepository, AppointmentReferenceSearchRepository>();
         services.AddScoped<INutritionPrescriptionRepository, NutritionPrescriptionRepository>();
         services.AddScoped<INutritionInboxRepository, NutritionInboxRepository>();

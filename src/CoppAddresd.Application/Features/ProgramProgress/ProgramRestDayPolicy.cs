@@ -16,4 +16,15 @@ public static class ProgramRestDayPolicy
 
 /// <summary>Opciones de edición del snapshot que no pertenecen al catálogo de plantillas.</summary>
 public sealed record EnrollmentWeekTaskEdits(IReadOnlySet<short> RestDays,
-    IReadOnlySet<(short Weekday, CoppAddresd.Domain.Enums.ProgramProgress.TaskCode TaskCode)>? ResetCells = null);
+    IReadOnlySet<(short Weekday, CoppAddresd.Domain.Enums.ProgramProgress.TaskCode TaskCode)>? ResetCells = null,
+    IEnrollmentWeekEditTransaction? Transaction = null);
+
+/// <summary>Validación y confirmación de un borrador asociado a la misma transacción del editor, sin red externa.</summary>
+public interface IEnrollmentWeekEditTransaction
+{
+    System.Text.Json.JsonElement AuditMetadata { get; }
+    Task<bool> BeforeAsync(CoppAddresd.Domain.Entities.ProgramProgress.ProgramEnrollment enrollment,
+        CoppAddresd.Domain.Entities.ProgramProgress.ProgramWeek week, CancellationToken ct);
+    Task CompleteAsync(CoppAddresd.Domain.Entities.ProgramProgress.ProgramEnrollment enrollment,
+        CoppAddresd.Domain.Entities.ProgramProgress.ProgramWeek week, CancellationToken ct);
+}

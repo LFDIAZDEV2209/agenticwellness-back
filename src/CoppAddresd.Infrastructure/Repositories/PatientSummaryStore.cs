@@ -15,29 +15,36 @@ public sealed class PatientSummaryStore(AppDbContext db) : IPatientSummaryStore
         => db.PatientProfiles.AsNoTracking().Where(p => p.Id == patientId && p.DeletedAt == null).Select(p => p.Timezone).SingleAsync(ct);
 
     public Task<PatientSummaryData> ReadAsync(Guid patientId, DateOnly from, DateOnly to, DateTime fromUtc, DateTime capturedAtUtc, CancellationToken ct)
-        => db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        => db.Database.CurrentTransaction is not null ? ReadCoreAsync(patientId, from, to, fromUtc, capturedAtUtc, ct)
+        : db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
             await using var snapshot = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
-            var program = await db.ProgramEnrollments.AsNoTracking()
-                .Where(e => e.PatientId == patientId && e.StartLocalDate <= to && e.CreatedAt <= capturedAtUtc)
-                .OrderByDescending(e => e.StartLocalDate).ThenByDescending(e => e.CreatedAt).ThenByDescending(e => e.Id)
-                .Select(e => new { e.Status, e.CurrentWeekNumber, e.StartLocalDate }).FirstOrDefaultAsync(ct);
-            var food = db.NutritionIntakeLogs.AsNoTracking().Where(l => l.PatientId == patientId && l.LocalDate >= from && l.LocalDate <= to
-                && l.CreatedAt <= capturedAtUtc && l.MealCode != MealCode.agua);
-            var foodCount = await food.CountAsync(ct);
-            var foodDays = await food.Select(l => l.LocalDate).Distinct().CountAsync(ct);
-            var tasks = db.TaskCompletions.AsNoTracking().Where(t => t.Enrollment!.PatientId == patientId
-                && t.LocalDate >= from && t.LocalDate <= to && t.CompletedAt <= capturedAtUtc);
-            var exercise = await tasks.CountAsync(t => t.TaskCode == TaskCode.ejercicio, ct);
-            var podcasts = await tasks.CountAsync(t => t.TaskCode == TaskCode.podcast, ct);
-            var tests = await db.HealthTestEvaluations.AsNoTracking().CountAsync(e => e.PatientId == patientId
-                && e.Status == HealthTestEvaluationStatus.completed && e.CompletedAt >= fromUtc && e.CompletedAt <= capturedAtUtc, ct);
-            var measurements = await db.ClinicalMeasurements.AsNoTracking().CountAsync(m => m.PatientId == patientId
-                && m.ObservedAt >= fromUtc && m.ObservedAt <= capturedAtUtc && m.RecordedAt <= capturedAtUtc, ct);
+            var result = await ReadCoreAsync(patientId, from, to, fromUtc, capturedAtUtc, ct);
             await snapshot.CommitAsync(ct);
-            return new PatientSummaryData(program?.Status.ToString(), program?.CurrentWeekNumber, program?.StartLocalDate,
-                foodCount, foodDays, exercise, podcasts, tests, measurements);
+            return result;
         });
+
+    private async Task<PatientSummaryData> ReadCoreAsync(Guid patientId, DateOnly from, DateOnly to, DateTime fromUtc, DateTime capturedAtUtc, CancellationToken ct)
+    {
+        var program = await db.ProgramEnrollments.AsNoTracking()
+            .Where(e => e.PatientId == patientId && e.StartLocalDate <= to && e.CreatedAt <= capturedAtUtc)
+            .OrderByDescending(e => e.StartLocalDate).ThenByDescending(e => e.CreatedAt).ThenByDescending(e => e.Id)
+            .Select(e => new { e.Status, e.CurrentWeekNumber, e.StartLocalDate }).FirstOrDefaultAsync(ct);
+        var food = db.NutritionIntakeLogs.AsNoTracking().Where(l => l.PatientId == patientId && l.LocalDate >= from && l.LocalDate <= to
+            && l.CreatedAt <= capturedAtUtc && l.MealCode != MealCode.agua);
+        var foodCount = await food.CountAsync(ct);
+        var foodDays = await food.Select(l => l.LocalDate).Distinct().CountAsync(ct);
+        var tasks = db.TaskCompletions.AsNoTracking().Where(t => t.Enrollment!.PatientId == patientId
+            && t.LocalDate >= from && t.LocalDate <= to && t.CompletedAt <= capturedAtUtc);
+        var exercise = await tasks.CountAsync(t => t.TaskCode == TaskCode.ejercicio, ct);
+        var podcasts = await tasks.CountAsync(t => t.TaskCode == TaskCode.podcast, ct);
+        var tests = await db.HealthTestEvaluations.AsNoTracking().CountAsync(e => e.PatientId == patientId
+            && e.Status == HealthTestEvaluationStatus.completed && e.CompletedAt >= fromUtc && e.CompletedAt <= capturedAtUtc, ct);
+        var measurements = await db.ClinicalMeasurements.AsNoTracking().CountAsync(m => m.PatientId == patientId
+            && m.ObservedAt >= fromUtc && m.ObservedAt <= capturedAtUtc && m.RecordedAt <= capturedAtUtc, ct);
+        return new PatientSummaryData(program?.Status.ToString(), program?.CurrentWeekNumber, program?.StartLocalDate,
+            foodCount, foodDays, exercise, podcasts, tests, measurements);
+    }
 
     public Task<PatientAiBrief?> LatestAsync(Guid patientId, string language, CancellationToken ct)
         => db.PatientAiBriefs.FromSqlInterpolated($"""
