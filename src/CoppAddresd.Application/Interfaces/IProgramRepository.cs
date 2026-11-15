@@ -53,6 +53,13 @@ public interface IProgramRepository
     Task<ProgramEnrollment> CreatePendingAssignmentAsync(Guid patientId, string templateCode, CancellationToken ct)
         => throw new NotSupportedException("Inscripción pendiente no implementada.");
 
+    /// <summary>Cierra por fecha local programas de 83 días vencidos, sin crear otra inscripción.</summary>
+    Task<int> CompleteExpiredProgramsAsync(CancellationToken ct) => Task.FromResult(0);
+
+    /// <summary>Último programa completado del paciente y disponibilidad de un inicio manual.</summary>
+    Task<ProgramCompletionDto?> GetCompletionAsync(Guid patientId, CancellationToken ct)
+        => Task.FromResult<ProgramCompletionDto?>(null);
+
     /// <summary>Activa semana 1 con defaults de plantilla tras siete días, en una transacción idempotente interna.</summary>
     Task<CoppAddresd.Application.Features.ProgramProgress.Assignment.AppliedAssignmentDto?> ActivateAssignmentFallbackAsync(
         CoppAddresd.Application.Features.ProgramProgress.Assignment.AssignmentFallbackInput input, CancellationToken ct)

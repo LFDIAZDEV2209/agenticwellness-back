@@ -52,6 +52,10 @@ public sealed class ProgramAssignmentRepository(AppDbContext db) : IProgramAssig
         db.ProgramEnrollments.AsNoTracking().AnyAsync(e => e.PatientId == patientId
             && (e.Status == ProgramEnrollmentStatus.Active || e.Status == ProgramEnrollmentStatus.PendingAssignment), ct);
 
+    public Task<bool> HasCompletedEnrollmentAsync(Guid patientId, CancellationToken ct) =>
+        db.ProgramEnrollments.AsNoTracking().AnyAsync(e => e.PatientId == patientId
+            && e.Status == ProgramEnrollmentStatus.Completed, ct);
+
     public async Task ExecuteForPatientAsync(Guid patientId, Func<Task> action, CancellationToken ct)
     {
         await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>

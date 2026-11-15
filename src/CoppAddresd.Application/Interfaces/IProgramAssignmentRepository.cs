@@ -10,6 +10,7 @@ public interface IProgramAssignmentRepository
     Task<ProgramEnrollment?> FindPendingWithoutRecommendationAsync(Guid patientId, CancellationToken ct)
         => Task.FromResult<ProgramEnrollment?>(null);
     Task<bool> HasCurrentEnrollmentAsync(Guid patientId, CancellationToken ct);
+    Task<bool> HasCompletedEnrollmentAsync(Guid patientId, CancellationToken ct);
     /// <summary>Serializa la creación por paciente y confirma todo o nada mediante estrategia de ejecución.</summary>
     Task ExecuteForPatientAsync(Guid patientId, Func<Task> action, CancellationToken ct);
     Task<AssignmentProfileData> ReadProfileAsync(Guid patientId, Guid batteryAssignmentId, CancellationToken ct);

@@ -24,7 +24,7 @@ public sealed class ProgramAssignmentOperationsRepository(AppDbContext db) : IPr
             .Replace("SELECT ba.id AS \"Value\"", "SELECT ba.id AS \"BatteryAssignmentId\", ba.patient_id AS \"PatientId\"")
             .Replace("ba.patient_id = @patientId AND ba.id = @batteryAssignmentId", "true") + """
             AND NOT EXISTS (SELECT 1 FROM app.program_enrollments e WHERE e.patient_id=ba.patient_id
-              AND (e.status='Active' OR (e.status='PendingAssignment' AND EXISTS
+              AND (e.status IN ('Active','Completed') OR (e.status='PendingAssignment' AND EXISTS
                 (SELECT 1 FROM app.program_assignment_recommendations r WHERE r.enrollment_id=e.id))))
             AND NOT EXISTS (SELECT 1 FROM app.program_assignment_recoveries x WHERE x.battery_assignment_id=ba.id
               AND (x.attempts>=@maxAttempts OR x.next_attempt_at>@now))

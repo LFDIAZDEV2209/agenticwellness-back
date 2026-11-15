@@ -53,7 +53,8 @@ public sealed partial class ProgramRepository
                 foreach (var week in weeks)
                 {
                     week.WeekStartDateLocal=start.AddDays((week.WeekNumber-1)*7);
-                    week.WeekEndDateLocal=week.WeekStartDateLocal.AddDays(6);
+                    week.WeekEndDateLocal=week.WeekStartDateLocal.AddDays(Math.Min(7,
+                        CoppAddresd.Application.Services.ProgramProgress.EffectiveDayContentResolver.DurationDays(template) - (week.WeekNumber-1)*7)-1);
                 }
                 first.Status=ProgramWeekStatus.Active; first.ActivatedAt=input.UtcNow;
                 first.TasksSnapshot=BuildSnapshot(days);

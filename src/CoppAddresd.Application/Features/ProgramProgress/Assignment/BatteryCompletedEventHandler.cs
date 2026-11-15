@@ -24,7 +24,8 @@ public sealed class BatteryCompletedEventHandler(IProgramAssignmentRepository as
             await assignments.ExecuteForPatientAsync(notification.PatientId, async () =>
             {
                 var pending = await assignments.FindPendingWithoutRecommendationAsync(notification.PatientId, ct);
-                if ((pending is null && await assignments.HasCurrentEnrollmentAsync(notification.PatientId, ct))
+                if ((pending is null && (await assignments.HasCurrentEnrollmentAsync(notification.PatientId, ct)
+                    || await assignments.HasCompletedEnrollmentAsync(notification.PatientId, ct)))
                     || await assignments.FindCompletedInitialBatteryAsync(notification.PatientId, notification.BatteryAssignmentId, ct) is null)
                     return;
                 var profile = await assignments.ReadProfileAsync(notification.PatientId, notification.BatteryAssignmentId, ct);

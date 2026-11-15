@@ -63,6 +63,7 @@ using CoppAddresd.Application.Features.ProgramProgress.Queries.GetProgramContent
 using CoppAddresd.Application.Features.ProgramProgress.Queries.GetScores;
 using CoppAddresd.Application.Features.ProgramProgress.Queries.GetScoresHistory;
 using CoppAddresd.Application.Features.ProgramProgress.Queries.GetSnapshot;
+using CoppAddresd.Application.Features.ProgramProgress.Queries.GetProgramCompletion;
 using CoppAddresd.Application.Features.ProgramProgress.Queries.GetTemplate;
 using CoppAddresd.Application.Features.ProgramProgress.Queries.GetXpLedger;
 using CoppAddresd.Application.Features.ProgramProgress.Queries.ListAdaptations;
@@ -112,6 +113,15 @@ public sealed class ProgramController(
 
     // Programa inicial y principal de todos los pacientes: 83 días (12 semanas).
     private const string DefaultTemplateCodeFallback = "program-coppaddresd-83-days";
+
+    /// <summary>Resumen del último programa terminado y disponibilidad de «Iniciar programa nuevo».</summary>
+    [HttpGet("me/completion")]
+    public async Task<ActionResult<ProgramCompletionResponse>> GetMyCompletion(CancellationToken ct)
+    {
+        var patientId = await actorContext.ResolvePatientProfileIdAsync(ct);
+        if (patientId is null) return NotFound(new { message = "No existe un perfil de paciente para el usuario autenticado." });
+        return Ok(await mediator.Send(new GetProgramCompletionQuery(patientId.Value), ct));
+    }
 
     // ===================== PACIENTE: snapshot =====================
 

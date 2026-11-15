@@ -30,7 +30,7 @@ namespace CoppAddresd.UnitTests.Program;
 /// endpoints me/* y nutrition/log resuelven el paciente SIEMPRE del JWT
 /// (anti-IDOR AC-11), así que la única gate válida es la autenticación.
 /// </summary>
-public sealed class ProgramSelfServicePermissionTests
+public sealed partial class ProgramSelfServicePermissionTests
 {
     // ===================== Regresión por reflexión =====================
 
@@ -128,11 +128,13 @@ public sealed class ProgramSelfServicePermissionTests
 
     private static WebApplicationFactory<CoppAddresd.Api.ApiEntryPoint> NewFactory(
         HashSet<(MealCode Code, DateOnly Date)>? loggedMeals = null,
-        NutritionIntakePayload?[]? intakeCapture = null
+        NutritionIntakePayload?[]? intakeCapture = null,
+        CoppAddresd.Application.DTOs.ProgramProgress.ProgramCompletionDto? completion = null
     )
     {
         var meals = loggedMeals ?? [];
         var repository = Substitute.For<IProgramRepository>();
+        repository.GetCompletionAsync(StubProgramActorContext.TestPatientId, Arg.Any<CancellationToken>()).Returns(completion);
         repository
             .LogNutritionAsync(
                 Arg.Any<Guid>(),

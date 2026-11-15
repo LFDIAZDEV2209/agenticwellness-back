@@ -212,7 +212,7 @@ public sealed partial class ProgramRepository(
                                     ? ProgramWeekStatus.Active
                                     : ProgramWeekStatus.Locked,
                             WeekStartDateLocal = start,
-                            WeekEndDateLocal = start.AddDays(6),
+                            WeekEndDateLocal = start.AddDays(Math.Min(7, EffectiveDayContentResolver.DurationDays(template) - (weekNumber - 1) * 7) - 1),
                             TasksSnapshot = weekNumber == 1 ? snapshot : EmptySnapshot(),
                             TemplateVersionAtStart = template.Version,
                             ActivatedAt = weekNumber == 1 ? now : null,
@@ -281,7 +281,7 @@ public sealed partial class ProgramRepository(
             {
                 Id = Guid.NewGuid(), EnrollmentId = enrollment.Id, WeekNumber = week,
                 Status = ProgramWeekStatus.Locked, WeekStartDateLocal = date,
-                WeekEndDateLocal = date.AddDays(6), TasksSnapshot = EmptySnapshot(),
+                WeekEndDateLocal = date.AddDays(Math.Min(7, EffectiveDayContentResolver.DurationDays(template) - (week - 1) * 7) - 1), TasksSnapshot = EmptySnapshot(),
                 TemplateVersionAtStart = template.Version, CreatedAt = now,
             });
         }
@@ -671,13 +671,6 @@ public sealed partial class ProgramRepository(
                 .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException($"Inscripción {input.EnrollmentId} no encontrada.");
 
-        if (enrollment.Status != ProgramEnrollmentStatus.Active)
-        {
-            throw new BusinessRuleViolationException(
-                "ENROLLMENT_INACTIVE: la inscripción no está activa."
-            );
-        }
-
         var template =
             await dbContext
                 .ProgramTemplates.AsNoTracking()
@@ -719,6 +712,12 @@ public sealed partial class ProgramRepository(
                 return conflicted with { Outcome = CompleteTaskOutcome.IdempotencyKeyReused };
             }
         }
+
+        // Un reintento de la última tarea sigue siendo replay después del cierre.
+        if (enrollment.Status != ProgramEnrollmentStatus.Active)
+            throw new BusinessRuleViolationException("ENROLLMENT_INACTIVE: la inscripción no está activa.");
+        if (input.LocalDate < enrollment.StartLocalDate || input.LocalDate >= enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(template)))
+            throw new UnprocessableEntityException("DATE_OUTSIDE_ACTIVE_WEEK: la fecha no pertenece al programa.");
 
         // 3. Semana del programa para la fecha (auto-activación por rollover).
         var weekday = ToIsoWeekday(input.LocalDate);
@@ -1841,7 +1840,7 @@ public sealed partial class ProgramRepository(
     }
 
     /// <summary>
-    /// Si los 7 días de la semana quedaron perfectos, la semana pasa a
+    /// Si los días reales de la semana quedaron perfectos, la semana pasa a
     /// Completed, el puntero avanza y la siguiente se activa (SPEC §6.7);
     /// en la última semana la inscripción se completa.
     /// </summary>
@@ -1852,19 +1851,23 @@ public sealed partial class ProgramRepository(
         CancellationToken ct
     )
     {
-        var perfectWeekdays = await dbContext
+        var programEnd = enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(template) - 1);
+        var weekEnd = week.WeekEndDateLocal < programEnd ? week.WeekEndDateLocal : programEnd;
+        var requiredDays = weekEnd.DayNumber - week.WeekStartDateLocal.DayNumber + 1;
+        var perfectDays = await dbContext
             .DailyCheckIns.AsNoTracking()
-            .Where(c => c.ProgramWeekId == week.Id && c.IsPerfectDay)
-            .Select(c => c.Weekday)
+            .Where(c => c.ProgramWeekId == week.Id && c.IsPerfectDay
+                && c.LocalDate >= week.WeekStartDateLocal && c.LocalDate <= weekEnd)
+            .Select(c => c.LocalDate)
             .Distinct()
             .CountAsync(ct);
 
-        if (perfectWeekdays < 7)
+        if (requiredDays <= 0 || perfectDays < requiredDays)
         {
             return;
         }
 
-        var now = DateTime.UtcNow;
+        var now = (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime;
         week.Status = ProgramWeekStatus.Completed;
         week.CompletedAt = now;
         week.UpdatedAt = now;

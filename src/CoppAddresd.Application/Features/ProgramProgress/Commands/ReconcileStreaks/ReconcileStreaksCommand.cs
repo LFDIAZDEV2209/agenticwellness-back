@@ -47,6 +47,9 @@ public sealed class ReconcileStreakJob(
     public async Task<StreakReconciliationSummary> RunAsync(CancellationToken ct = default)
     {
         var summary = await repository.ReconcileStreaksAsync(ct);
+        var completed = await repository.CompleteExpiredProgramsAsync(ct);
+
+        logger.LogInformation("Program.CompletionReconciliation: completed={Completed}", completed);
 
         logger.LogInformation(
             "Program.StreakReconciliation: scanned={Scanned} fixed={Fixed}",
