@@ -25,7 +25,9 @@ public sealed class LocalImageStorage : IImageStorage
     {
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
         var key = $"foodai/{analysisId:N}{extension}";
-        return await _storage.PutObjectAsync(key, content, contentType: null, ct);
+        // El proveedor puede devolver un ETag o ruta física; la referencia persistida es la clave lógica.
+        await _storage.PutObjectAsync(key, content, contentType: null, ct);
+        return key;
     }
 
     public async Task<string> SaveMaskAsync(
@@ -35,6 +37,7 @@ public sealed class LocalImageStorage : IImageStorage
         CancellationToken ct = default)
     {
         var key = $"foodai/masks/{analysisId:N}/{itemIndex}.png";
-        return await _storage.PutObjectAsync(key, pngContent, contentType: "image/png", ct);
+        await _storage.PutObjectAsync(key, pngContent, contentType: "image/png", ct);
+        return key;
     }
 }
