@@ -1,5 +1,28 @@
 # Food AI: nombres bilingües de análisis
 
+## Referencias de imagen y máscaras (soporte 3.20)
+
+`LocalImageStorage` devuelve siempre la clave lógica que acaba de guardar:
+`foodai/{analysisId:N}.{ext}` y `foodai/masks/{analysisId:N}/{itemIndex}.png`.
+El resultado de `IObjectStorageService.PutObjectAsync` puede ser un ETag S3 o una
+ruta física local y no se persiste como referencia. La escritura debe terminar
+con éxito antes de devolver la clave; se propaga la cancelación y el stream
+continúa perteneciendo al llamador.
+
+Persistir un ETag en `food_analyses.image_key` hacía que la firma protegida de
+foto rechazara la referencia y el registro del ERP devolviera `photo=null`.
+No se relaja el signer ni la validación de paciente. No cambia el contrato HTTP,
+los valores nutricionales ni la semántica del proveedor genérico de storage.
+Para corregir una referencia de QA existente: verificar el objeto real y su
+ETag, dueño y enlace exacto de la comida; actualizar solo `image_key` con
+comparación del valor previo, sin volver a analizar ni duplicar la comida.
+
+Regresión: cuatro casos fallan antes del cambio y pasan después (ETag y ruta
+física, imagen y máscara); dos casos de cancelación también pasan. Suite afectada
+de FoodAI/storage: 52/52. Sin migración ni reparación masiva.
+
+## Nombres del análisis
+
 La ingesta conserva `FoodAnalysisItem.NameEn` cuando el proveedor entrega
 `name_en`. `Name`, porciones, nutrición y feedback conservan su significado y
 valores originales. La migración `AddFoodAnalysisEnglishNames` añade únicamente
