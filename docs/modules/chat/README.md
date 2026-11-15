@@ -6,6 +6,35 @@ La fachada de capacidades Vita, el proxy de voz y los campos aditivos del
 historial se documentan en [Vita](../agents/vita.md). AI conserva la persistencia
 única del hilo; BACK preserva IDs/canal/estado/revisión y las acciones/fuentes.
 
+## CORS del chat nativo en AWS
+
+El chat incremental usa `window.CapacitorWebFetch`, el fetch original del WebView,
+para conservar el body SSE. A diferencia del HTTP nativo de Capacitor, este
+transporte exige CORS. En iOS el origen del bundle es `capacitor://localhost`;
+en Android la configuración actual usa `http://localhost`.
+
+El despliegue de API declara ambos orígenes exactos en `Cors__Origins`, junto al
+origen anterior del ALB. No se permite `*`, `null`, dominios arbitrarios ni puertos
+de desarrollo. JWT, consentimiento y propiedad siguen validándose en el backend.
+El cambio no necesita una versión nueva de la app ni modifica ElevenLabs/AI.
+
+Diagnóstico del 15-11-2026: OPTIONS devolvía 204 sin `Access-Control-Allow-Origin`
+para los dos orígenes nativos; un navegador rechazó el POST con `Failed to fetch`
+sin enviarlo. El origen antiguo sí recibía autorización y el control autenticado
+desde servidor respondió 200. Por eso una prueba HTTP sin `Origin` no acreditaba
+el funcionamiento del chat en el teléfono.
+
+Regresión pública sin credenciales ni datos de pacientes:
+
+```powershell
+postman collection run postman/collections/vita-native-cors.postman_collection.json --no-report-events
+```
+
+Comprueba preflight iOS/Android/ALB, rechazo de origen ajeno y `null`, y 401 sin
+credenciales en chat/stream/proxy de voz (8 requests, 21 aserciones). No valida
+generación de respuestas ni audio. Antes del fix fallaban ocho aserciones CORS.
+La CLI 1.76 ejecuta la colección local; `postman status` no está disponible.
+
 ## Arquitectura
 
 ```
