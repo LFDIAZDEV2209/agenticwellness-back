@@ -1,0 +1,37 @@
+purpose:
+  stands_in_for: "POST /internal/media/podcast-metadata, ai-service a977e33"
+  unblocks: "Verificar transporte y degradación 4.6b sin LLM ni cambios al stack compartido"
+assumptions:
+  - id: request-contract
+    status: supported
+    claim: "Solo title, language y context; sin IDs, storage, audio ni publicación."
+    reason: "Captura HTTP validada con Pydantic del commit exacto a977e33."
+    verification: "15-11-2026: tres campos, es y contexto de 52 caracteres."
+    source: "tests/CoppAddresd.IntegrationTests/PodcastMetadataPostgresTests.cs; ai-service a977e33 app/schemas/podcast_metadata.py"
+    updated_at: "2026-11-15"
+  - id: caller-degradation
+    status: supported
+    claim: "Cliente real admite borrador ES/EN y trata 503 como error controlado."
+    reason: "Tres requests 200,200,503 y aserciones .NET aprobadas."
+    verification: "15-11-2026: PodcastCliente_ContratoYNormalizacion con URL de simulación."
+    source: "tests/CoppAddresd.UnitTests/Media/PodcastMetadataTests.cs; postman/mocks/podcast-metadata/default.js"
+    updated_at: "2026-11-15"
+  - id: no-publication
+    status: supported
+    claim: "Sugerir no crea, edita ni publica medios ni cambia planes o briefs del paciente."
+    reason: "Comparación de estado de PostgreSQL antes/después de éxito y fallos con HTTP real."
+    verification: "15-11-2026: PodcastMetadata_HTTPReal aprobado con timeout de cuerpo y cancelación."
+    source: "tests/CoppAddresd.IntegrationTests/PodcastMetadataPostgresTests.cs"
+    updated_at: "2026-11-15"
+  - id: live-provider
+    status: unknown
+    claim: "Servicio compartido/proveedor real y UI cumplen el recorrido completo."
+    reason: "Solo contrato y HTTP sintético, sin reiniciar stack ni invocar LLM."
+    verification: "Pendiente de orquestador/ERP."
+    source: "ai-service a977e33 docs/podcast-metadata.md"
+    updated_at: "2026-11-15"
+fingerprints:
+  - id: back-4.6b
+    date: "2026-11-15"
+    commit: "base 7810eb7, implementación 4.6b"
+    cli: "Postman 1.76.0; status no implementado, sin inicialización/publicación de workspace"

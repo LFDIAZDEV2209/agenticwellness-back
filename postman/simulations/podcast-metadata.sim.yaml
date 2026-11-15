@@ -1,0 +1,7 @@
+# Proceso QA propio: no reemplaza ni modifica el stack compartido.
+simulation: podcast-metadata
+routing: header
+mocks:
+  - name: podcast-metadata
+    routeKey: podcast
+    path: postman/mocks/podcast-metadata

@@ -1,5 +1,7 @@
 # Biblioteca de medios — origen y etiquetas
 
+Ayuda editorial a pedido, sin guardar ni publicar: [contrato y evidencia 4.6b](PODCAST-METADATA.md).
+
 ## Contrato 1.8
 
 Los campos y permisos anteriores se conservan. `source_kind` es `file` (valor
