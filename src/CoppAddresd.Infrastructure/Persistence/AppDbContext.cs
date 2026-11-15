@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<NutritionPrescriptionItem> NutritionPrescriptionItems => Set<NutritionPrescriptionItem>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<PatientProfile> PatientProfiles => Set<PatientProfile>();
+    public DbSet<PatientAiBrief> PatientAiBriefs => Set<PatientAiBrief>();
     public DbSet<PatientDailyMetric> PatientDailyMetrics => Set<PatientDailyMetric>();
     public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
     public DbSet<PatientProfessionalAssignment> PatientProfessionalAssignments =>

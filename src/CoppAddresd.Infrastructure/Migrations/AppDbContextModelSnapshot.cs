@@ -5657,6 +5657,73 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("organizations", "erp");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.PatientAiBrief", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("DraftJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("draft_json");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("generated_at");
+
+                    b.Property<string>("InputHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("input_hash");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("ModelName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("model_name");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("draft")
+                        .HasColumnName("state");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId", "Kind", "GeneratedAt", "Id")
+                        .IsDescending(false, false, true, true)
+                        .HasDatabaseName("ix_patient_ai_briefs_patient_kind_generated");
+
+                    b.ToTable("patient_ai_briefs", "app", t =>
+                        {
+                            t.HasComment("Borradores IA del paciente; sin publicación ni aplicación automática de cambios clínicos.");
+
+                            t.HasCheckConstraint("ck_patient_ai_briefs_draft", "jsonb_typeof(draft_json) = 'object'");
+
+                            t.HasCheckConstraint("ck_patient_ai_briefs_input_hash", "input_hash ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("ck_patient_ai_briefs_kind", "kind IN ('patient_summary', 'weekly_plan_suggestions')");
+
+                            t.HasCheckConstraint("ck_patient_ai_briefs_model", "model_name IS NULL OR length(btrim(model_name)) > 0");
+
+                            t.HasCheckConstraint("ck_patient_ai_briefs_state", "state IN ('draft', 'applied', 'dismissed')");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.PatientAllergy", b =>
                 {
                     b.Property<Guid>("Id")
@@ -11011,6 +11078,15 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Prescription");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.PatientAiBrief", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.PatientAllergy", b =>

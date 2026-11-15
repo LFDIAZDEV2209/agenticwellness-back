@@ -314,3 +314,14 @@ una copia de los datos nutricionales. Página limitada a 100 ejemplos por petici
 
 PK UUID de revisión/adjunto cubren la búsqueda de descarga. Tablas nuevas
 vacías, sin índices concurrentes ni bloqueo de datos antiguos.
+
+## Borradores IA del paciente (4.3)
+
+| Índice | Tabla | Columnas | Tipo | Motivo/consulta | Impacto/costo |
+|---|---|---|---|---|---|
+| PK_patient_ai_briefs | app.patient_ai_briefs | id | B-tree único | identidad del borrador y consulta puntual | una entrada por generación |
+| ix_patient_ai_briefs_patient_kind_generated | app.patient_ai_briefs | patient_id, kind, generated_at DESC, id DESC | B-tree | historial y último borrador por paciente/tipo; prefijo cubre la FK | una entrada por generación; orden estable sin sort, costo de mantener historial |
+
+Tabla nueva vacía al migrar; sin índice redundante por paciente/estado/hash ni unicidad
+por hash. EXPLAIN (ANALYZE, BUFFERS) con 4.000 filas verifica acceso por el índice compuesto.
+Consulta, decisión D28 y reversa: [borradores IA](../modules/program-progress/PATIENT-AI-BRIEFS.md).
