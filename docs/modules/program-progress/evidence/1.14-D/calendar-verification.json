@@ -1,0 +1,53 @@
+{
+  "specificCells": 83,
+  "genericFallbacks": 7,
+  "physicalRows": 90,
+  "publishedRealPodcastIds": 13,
+  "noDemo": true,
+  "calendarStarts": [
+    {
+      "startIsoWeekday": 1,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 13
+    },
+    {
+      "startIsoWeekday": 2,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 6
+    },
+    {
+      "startIsoWeekday": 3,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 5
+    },
+    {
+      "startIsoWeekday": 4,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 5
+    },
+    {
+      "startIsoWeekday": 5,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 5
+    },
+    {
+      "startIsoWeekday": 6,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 5
+    },
+    {
+      "startIsoWeekday": 7,
+      "days": 83,
+      "gaps": 0,
+      "minimumRepeatDistanceDays": 5
+    }
+  ],
+  "gridRotation": 13,
+  "minimumRepeatDistanceDays": 5
+}

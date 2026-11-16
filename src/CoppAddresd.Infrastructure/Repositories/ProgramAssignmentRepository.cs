@@ -45,7 +45,7 @@ public sealed class ProgramAssignmentRepository(AppDbContext db) : IProgramAssig
             .Select(x => (Guid?)x).SingleOrDefaultAsync(ct);
 
     public Task<ProgramEnrollment?> FindPendingWithoutRecommendationAsync(Guid patientId, CancellationToken ct) =>
-        db.ProgramEnrollments.AsNoTracking().Where(e=>e.PatientId==patientId && e.Status==ProgramEnrollmentStatus.PendingAssignment
+        db.ProgramEnrollments.AsNoTracking().Where(e=>e.PatientId==patientId && (e.Status==ProgramEnrollmentStatus.PendingAssignment || e.Status==ProgramEnrollmentStatus.Active)
             && !db.ProgramAssignmentRecommendations.Any(r=>r.EnrollmentId==e.Id)).OrderBy(e=>e.CreatedAt).FirstOrDefaultAsync(ct);
 
     public Task<bool> HasCurrentEnrollmentAsync(Guid patientId, CancellationToken ct) =>

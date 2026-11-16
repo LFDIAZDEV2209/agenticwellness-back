@@ -53,7 +53,8 @@ public sealed class ProgramAssignmentOperationsRepository(AppDbContext db) : IPr
             && r.Enrollment!.Status==ProgramEnrollmentStatus.PendingAssignment, ct);
     public async Task<IReadOnlyList<AssignmentFallbackCandidate>> ListFallbacksAsync(DateTime cutoff, int limit, CancellationToken ct) =>
         await db.ProgramAssignmentRecommendations.AsNoTracking()
-            .Where(r => (r.State=="proposed" || r.State=="pending-narrative") && r.CreatedAt<=cutoff)
+            .Where(r => (r.State=="proposed" || r.State=="pending-narrative")
+                && r.Enrollment!.Status==ProgramEnrollmentStatus.PendingAssignment && r.CreatedAt<=cutoff)
             .OrderBy(r=>r.CreatedAt).ThenBy(r=>r.Id).Take(Math.Clamp(limit,1,500))
             .Select(r=>new AssignmentFallbackCandidate(r.Id,r.CreatedAt)).ToListAsync(ct);
 

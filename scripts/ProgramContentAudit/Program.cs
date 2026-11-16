@@ -31,19 +31,30 @@ try
         return 0;
     }
     var counts = new Dictionary<string, int> { ["podcast"] = 0, ["ejercicio"] = 0, ["nut"] = 0 };
+    var templates = new Dictionary<string, (int Enrollments, int Days, int Gaps)>();
+    var protectedGaps = 0;
     var now = DateTime.UtcNow;
     foreach (var enrollment in data.Enrollments)
     {
+        var key = enrollment.Template!.Code;
+        var group = templates.GetValueOrDefault(key);
+        group.Enrollments++;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(now, TimeZoneInfo.FindSystemTimeZoneById(enrollment.Timezone)));
         var last = enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(enrollment.Template!) - 1);
         foreach (var day in resolver.ResolveRange(data, enrollment, today, last, cancellation.Token))
         {
+            group.Days++;
+            if (day.HasGaps) group.Gaps++;
+            if (day.HasGaps && enrollment.PatientId == Guid.Parse("0c487f75-a462-4fda-894d-61c031441884")) protectedGaps++;
             if (day.Podcast.Missing) counts["podcast"]++;
             if (day.Routine.Missing) counts["ejercicio"]++;
             if (day.Nutrition.Missing) counts["nut"]++;
         }
+        templates[key] = group;
     }
-    Console.WriteLine(JsonSerializer.Serialize(new { consulta = "1.10b", totalDiasConHuecos = result.Total, clases = counts, escrituras = 0 }));
+    Console.WriteLine(JsonSerializer.Serialize(new { consulta = "1.10b", capturedAt = DateTimeOffset.UtcNow,
+        totalDiasConHuecos = result.Total, clases = counts, escrituras = 0, protectedGaps,
+        templates = templates.Select(t => new { code = t.Key, enrollments = t.Value.Enrollments, days = t.Value.Days, gaps = t.Value.Gaps }) }));
     await transaction.RollbackAsync(cancellation.Token);
     return 0;
 }

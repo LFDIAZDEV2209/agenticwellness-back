@@ -134,6 +134,9 @@ public sealed partial class NutritionPlanWorkflowTests : IAsyncLifetime
     public async Task RealGenerationReceivesResults_AndPublishesAutomaticallyWithDisclaimer()
     {
         await using var db = Context(); var patient = await PatientAsync(db); await BatteryAsync(db, patient.Id, true);
+        // Este flujo legacy no tiene inscripción: publicación usa UTC como fallback.
+        // La lectura debe usar la misma zona incluso entre 00:00 y 05:00 UTC.
+        patient.Timezone = "UTC"; await db.SaveChangesAsync();
         var workflow = Workflow(db); await workflow.QueueIfReadyAsync(patient.Id, CancellationToken.None);
         Assert.True(await workflow.ProcessNextAsync(CancellationToken.None));
         var plan = await db.NutritionPlans.AsNoTracking().Include(p => p.Days).SingleAsync();
@@ -143,7 +146,7 @@ public sealed partial class NutritionPlanWorkflowTests : IAsyncLifetime
         var assignment = Assert.Single(await db.NutritionPlanAssignments.ToListAsync());
         Assert.Equal(29, (assignment.EndDate!.Value-assignment.StartDate).Days);
         await ai.Received(1).GeneratePlanAsync("nutrition", Arg.Is<ClinicalContextDto>(c => c.Assessments != null && c.Assessments.Any(a => a.Code == "nutrition_habits" && a.Value == 42)), Arg.Any<IReadOnlyList<RestrictionDto>>(), Arg.Any<CancellationToken>());
-        Assert.Equal("active", (await workflow.GetStatusAsync(patient.UserId!.Value, "America/Bogota", CancellationToken.None)).Status);
+        Assert.Equal("active", (await workflow.GetStatusAsync(patient.UserId!.Value, patient.Timezone, CancellationToken.None)).Status);
         var patients = Substitute.For<IPatientRepository>(); patients.GetByUserIdAsync(patient.UserId.Value, Arg.Any<CancellationToken>()).Returns(patient);
         var query = new GetMyNutritionPlanQueryHandler(patients, new WellnessRepository(db), NullLogger<GetMyNutritionPlanQueryHandler>.Instance,
             new NutritionPrescriptionRepository(db), TimeProvider.System);

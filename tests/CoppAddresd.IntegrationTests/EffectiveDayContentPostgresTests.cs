@@ -39,7 +39,9 @@ public sealed partial class NutritionPlanWorkflowTests
             new WeeklyDayTemplate { Id = Guid.NewGuid(), Weekday = (short)d, TaskCode = TaskCode.nut, Points = 10, NutritionPlanId = plan.Id },
         }).ToList();
         db.ProgramTemplates.Add(template);
-        var enrollment = new ProgramEnrollment { Id = Guid.NewGuid(), PatientId = patient.Id, TemplateId = template.Id, StartLocalDate = start };
+        // Los consumidores de IA usan un reloj fijo: no crear esta fila en su futuro al cambiar la fecha real.
+        var enrollment = new ProgramEnrollment { Id = Guid.NewGuid(), PatientId = patient.Id, TemplateId = template.Id, StartLocalDate = start,
+            CreatedAt = start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), StartedAt = start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) };
         db.ProgramEnrollments.Add(enrollment);
         for (var number = 1; number <= 3; number++)
             db.ProgramWeeks.Add(new() { Id = Guid.NewGuid(), EnrollmentId = enrollment.Id, WeekNumber = number,

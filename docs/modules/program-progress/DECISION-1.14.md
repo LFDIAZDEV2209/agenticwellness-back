@@ -1,5 +1,11 @@
 # Memo de decisión — bloqueo de 1.14
 
+**Decisión posterior: Luis autorizó D el 15-11-2026**, limitada a la plantilla
+activa de 83 días y a garantizar A2/F2 para nuevas baterías completas. Ejecución,
+reversa y residual: [REPAIR-1.14-D.md](REPAIR-1.14-D.md). A/B/C no se implementaron.
+El memo siguiente conserva el diagnóstico y recomendación previos; la aceptación
+de una excepción para cerrar 3.21 continúa pendiente del owner.
+
 **Estado: pendiente de decisión de producto.** 15-11-2026. Ninguna opción autorizada
 ni implementada por este memo.
 

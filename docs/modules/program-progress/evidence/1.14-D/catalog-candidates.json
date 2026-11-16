@@ -1,0 +1,93 @@
+[
+  {
+    "id": "ed1e3490-1e91-41a9-ba17-611941b0dd31",
+    "episode": 14,
+    "title": "Ep. 14: Fuerza para principiantes: empieza bien",
+    "key": "media/audio/d16b585a2b3c42a48fc92a2e16014c61.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "e3eb0659-9b2b-49fa-bef9-71f3cb514424",
+    "episode": 15,
+    "title": "Ep. 15: Movilidad de cadera y hombro",
+    "key": "media/audio/647ffe09778b456abfd8af9561a35d9f.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "9efc9a56-2ef9-4d25-a3f7-6e41048d5162",
+    "episode": 16,
+    "title": "Ep. 16: Recuperación: donde ocurre el progreso",
+    "key": "media/audio/899904f9df02497ab10e53bba3abc353.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "b963bd4e-bc13-4145-9080-65dcca8fc158",
+    "episode": 17,
+    "title": "Ep. 17: NEAT: los pasos que cambian tu metabolismo",
+    "key": "media/audio/bc248414b2954be78ba47c0947b0b700.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "449a7d2b-583c-4402-abe2-9712c090e056",
+    "episode": 18,
+    "title": "Ep. 18: La anatomía de un hábito que dura",
+    "key": "media/audio/93959f4f78274b11be36b6312fe3c4b6.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+    "episode": 19,
+    "title": "Ep. 19: Rituales de mañana en 20 minutos",
+    "key": "media/audio/26c07b60eec64c5d8db7d3d928900b3e.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+    "episode": 1,
+    "title": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos",
+    "key": "media/podcasts/3775514b-2511-432c-ae45-0f58ece51497.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "3b347a25-caf8-4335-b576-0fc842841b71",
+    "episode": 2,
+    "title": "Ep. 2: Flexibilidad Metabólica y Nutrición Celular",
+    "key": "media/podcasts/96348b98-8b1e-4709-8c92-79ac02f0fedc.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+    "episode": 3,
+    "title": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro",
+    "key": "media/podcasts/c4fe1534-1398-4490-af4d-5b732f83dc7e.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "dfeb9a5f-22a3-4d72-93ec-046b07b2adee",
+    "episode": 4,
+    "title": "Ep. 4: Regulación del Cortisol y Manejo del Estrés",
+    "key": "media/podcasts/155872ba-6975-4dbd-a47a-c79eb5a79814.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "b0d8562d-04e9-4e15-b180-dafda8590e78",
+    "episode": 5,
+    "title": "Ep. 5: Calidad de Sueño y Recuperación Profunda",
+    "key": "media/podcasts/64a2edc2-e779-4467-b917-73c2ebf43f58.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+    "episode": 6,
+    "title": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial",
+    "key": "media/podcasts/d0e7c341-e8af-474c-b8a6-f3d8f49e051e.mp3",
+    "status": "Published"
+  },
+  {
+    "id": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+    "episode": 7,
+    "title": "Ep. 7: Ayuno Intermitente y Autofagia Estratégica",
+    "key": "media/podcasts/ee24fdac-fb55-45ee-a989-3f514dd61d7e.mp3",
+    "status": "Published"
+  }
+]

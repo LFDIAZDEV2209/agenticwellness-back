@@ -1,5 +1,10 @@
 # Simulación de reparación 1.14 — §5.1
 
+**Actualización: opción D autorizada y ejecutada.** El alcance inicial descrito
+abajo fue ampliado por Luis para reparar la plantilla activa conservando datos
+cerrados. [Resultado, reversa y residual global](REPAIR-1.14-D.md). Este documento
+conserva la simulación anterior; su bloqueo ya no describe el estado de D.
+
 **1.14 es la reparación reversible de huecos, con dependencias 1.9/1.10b; no es
 la carga de mp3.** Solo puede escribir ítems `program`, conservando individuales,
 datos cerrados y la fixture `0c487f75-a462-4fda-894d-61c031441884`.

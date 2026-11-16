@@ -93,7 +93,8 @@ public sealed class SubmitEvaluationCommandHandler(
     IOptionsMonitor<ProgramAssignmentSettings>? assignmentSettings = null,
     ILogger<SubmitEvaluationCommandHandler>? logger = null,
     INutritionDraftWorkflow? nutritionDraftWorkflow = null,
-    CoppAddresd.Application.WhatsApp.IWhatsAppReminderHooks? whatsappReminders = null
+    CoppAddresd.Application.WhatsApp.IWhatsAppReminderHooks? whatsappReminders = null,
+    IProgramRepository? programs = null
 ) : IRequestHandler<SubmitEvaluationCommand, HealthTestEvaluationDto>
 {
     public async Task<HealthTestEvaluationDto> Handle(
@@ -324,6 +325,13 @@ public sealed class SubmitEvaluationCommandHandler(
                 // Si la asignación pertenece a una batería, se marca completed si
                 // todas sus asignaciones hijas están completadas.
                 await UpdateBatteryAssignmentStatusAsync(assignment, ct);
+
+                // A2/F2: el último test y el contenido por defecto se confirman juntos.
+                // El evento posterior solo enriquece la propuesta/narrativa y puede degradar.
+                if (programs is not null && assignmentRepository is not null
+                    && assignment.BatteryAssignmentId is Guid initialBattery
+                    && await assignmentRepository.FindCompletedInitialBatteryAsync(assignment.PatientId, initialBattery, ct) is not null)
+                    await programs.EnsureDefaultEnrollmentAsync(assignment.PatientId, ct);
 
                 // Pre-agregación CQRS en background (0ms overhead)
                 if (metricsQueue != null)

@@ -1,0 +1,14 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  CoppAddresd.Domain -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Domain\bin\Validation114D\CoppAddresd.Domain.dll
+  CoppAddresd.Auth -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\Services\CoppAddresd.Auth\bin\Validation114D\CoppAddresd.Auth.dll
+  CoppAddresd.Application -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Application\bin\Validation114D\CoppAddresd.Application.dll
+  CoppAddresd.WhatsApp -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.WhatsApp\bin\Validation114D\CoppAddresd.WhatsApp.dll
+  CoppAddresd.Infrastructure -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Infrastructure\bin\Validation114D\CoppAddresd.Infrastructure.dll
+  CoppAddresd.Api -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Api\bin\Validation114D\CoppAddresd.Api.dll
+  CoppAddresd.IntegrationTests -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll
+Test run for C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: C:\Users\Luis\Documents\CoppAddresd\Repos\openspec\changes\organizar-experiencia-bienestar\revision-1.14-d\tests\assignment.trx
+
+Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 1 m - CoppAddresd.IntegrationTests.dll (net10.0)

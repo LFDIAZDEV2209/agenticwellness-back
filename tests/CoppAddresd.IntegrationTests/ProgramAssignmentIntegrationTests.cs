@@ -58,12 +58,14 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
             CREATE TABLE auth."Users" ("Id" uuid PRIMARY KEY, "SecurityStamp" text NULL);
             """);
         await db.Database.MigrateAsync();
-        db.ProgramTemplates.Add(new ProgramTemplate { Id = Guid.NewGuid(), Code = "program-coppaddresd-83-days",
-            Name = "Programa de prueba", TotalWeeks = 12, Status = TemplateStatus.Active });
-        db.NutritionPlans.Add(new NutritionPlan { Id = Guid.NewGuid(), Name = "Plan Obesidad — Déficit calórico", DurationDays = 7,
-            IsTemplate = true, Status = NutritionPlanStatus.Active });
-        db.ExerciseRoutines.Add(new ExerciseRoutine { Id = Guid.NewGuid(), Name = "Caminata Activa",
-            Difficulty = (RoutineDifficulty)1, Status = NutritionPlanStatus.Active });
+        var template = new ProgramTemplate { Id = Guid.NewGuid(), Code = "program-coppaddresd-83-days",
+            Name = "Programa de prueba", TotalWeeks = 12, Status = TemplateStatus.Active };
+        var plan = new NutritionPlan { Id = Guid.NewGuid(), Name = "Plan Obesidad — Déficit calórico", DurationDays = 7,
+            IsTemplate = true, Status = NutritionPlanStatus.Active };
+        var routine = new ExerciseRoutine { Id = Guid.NewGuid(), Name = "Caminata Activa",
+            Difficulty = (RoutineDifficulty)1, Status = NutritionPlanStatus.Active };
+        db.ProgramTemplates.Add(template); db.NutritionPlans.Add(plan);
+        db.ExerciseRoutines.Add(routine);
         await db.SaveChangesAsync();
         var services = new ServiceCollection();
         services.AddLogging();
@@ -111,8 +113,9 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
     }
 
     [AssignmentPostgresFact]
-    public async Task NueveTests_EventoPostCommit_InscripcionPendienteYPropuestaAtomicas_Idempotentes()
+    public async Task NueveTests_DefaultActivoMaterializado_PropuestaOpcional_Idempotentes()
     {
+        await SeedCompleteDefaultsAsync();
         await using var setup = NewDb();
         var patient = new PatientProfile { Id = Guid.NewGuid(), FirstName = "Prueba", LastName = "Asignación",
             Gender = "Femenino", Timezone = "America/New_York", DocumentNumber = Guid.NewGuid().ToString("N") };
@@ -154,15 +157,21 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
         using (var scope = _services.CreateScope()) await scope.ServiceProvider.GetRequiredService<IMediator>().Send(requests[8]);
         await using var verify = NewDb();
         var enrollment = await verify.ProgramEnrollments.SingleAsync(e => e.PatientId == patient.Id);
-        Assert.Equal(ProgramEnrollmentStatus.PendingAssignment, enrollment.Status);
-        Assert.Equal(0, enrollment.CurrentWeekNumber);
+        Assert.Equal(ProgramEnrollmentStatus.Active, enrollment.Status);
+        Assert.Equal(1, enrollment.CurrentWeekNumber);
         Assert.Equal("America/New_York", enrollment.Timezone);
         Assert.True(await verify.StreakStates.AnyAsync(s => s.EnrollmentId == enrollment.Id));
         var weeks = await verify.ProgramWeeks.Where(w => w.EnrollmentId == enrollment.Id).ToListAsync();
         Assert.Equal(12, weeks.Count);
-        Assert.All(weeks, w => { Assert.Equal(ProgramWeekStatus.Locked, w.Status); Assert.Null(w.ActivatedAt); });
+        Assert.NotEmpty(weeks.Single(w => w.WeekNumber == 1).TasksSnapshot.EnumerateArray());
+        Assert.All(weeks.Where(w => w.WeekNumber > 1), w => Assert.Empty(w.TasksSnapshot.EnumerateArray()));
+        Assert.Equal(ProgramWeekStatus.Active, weeks.Single(w => w.WeekNumber == 1).Status);
+        Assert.All(weeks.Where(w => w.WeekNumber > 1), w => { Assert.Equal(ProgramWeekStatus.Locked, w.Status); Assert.Null(w.ActivatedAt); });
+        await AssertDefaultsAsync(verify, enrollment);
         var recommendation = await verify.ProgramAssignmentRecommendations.SingleAsync(r => r.EnrollmentId == enrollment.Id);
         Assert.Equal("proposed", recommendation.State);
+        Assert.DoesNotContain(await new ProgramAssignmentOperationsRepository(verify)
+            .ListFallbacksAsync(_lifecycleClock.Current.UtcDateTime.AddDays(8), 100, default), r => r.RecommendationId == recommendation.Id);
         var snapshot = JsonNode.Parse(recommendation.ProfileSnapshot)!;
         Assert.NotEmpty(snapshot["results"]!.AsArray());
         Assert.True(snapshot["facts"]!["conditions.obesidad.active"]!.GetValue<bool>());
@@ -196,6 +205,7 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
     [AssignmentPostgresFact]
     public async Task FalloTrasCrearEnrollment_NoRevierteSubmit_RecuperacionConcurrenteNoDuplica()
     {
+        await SeedCompleteDefaultsAsync();
         await using var setup = NewDb();
         var patient = new PatientProfile { Id = Guid.NewGuid(), FirstName = "Prueba", LastName = "Rollback",
             DocumentNumber = Guid.NewGuid().ToString("N") };
@@ -228,7 +238,9 @@ public sealed partial class ProgramAssignmentIntegrationTests : IAsyncLifetime
         }
         await using var check = NewDb();
         Assert.Equal(9, await check.HealthTestEvaluations.CountAsync(e => e.PatientId == patient.Id && e.Status == HealthTestEvaluationStatus.completed));
-        Assert.False(await check.ProgramEnrollments.AnyAsync(e => e.PatientId == patient.Id));
+        var defaults = await check.ProgramEnrollments.SingleAsync(e => e.PatientId == patient.Id);
+        Assert.Equal(ProgramEnrollmentStatus.Active, defaults.Status);
+        await AssertDefaultsAsync(check, defaults);
         Assert.False(await check.ProgramAssignmentRecommendations.AnyAsync(r => r.PatientId == patient.Id));
         _failure.Enabled = false;
         await Task.WhenAll(Enumerable.Range(0, 2).Select(async _ =>

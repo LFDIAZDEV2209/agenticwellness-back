@@ -35,7 +35,8 @@ public sealed partial class NutritionPlanWorkflowTests
             { template = new HabitTemplate { Id = Guid.NewGuid(), Code = code, Name = code }; db.HabitTemplates.Add(template); templates.Add(code, template); }
             var habit = new HabitCheck { Id = Guid.NewGuid(), PatientId = patient, LocalDate = day, HabitTemplateId = template.Id };
             db.HabitChecks.Add(habit);
-            db.NutritionIntakeLogs.Add(new() { Id = Guid.NewGuid(), PatientId = patient, LocalDate = day, MealCode = meal, HabitCheckId = habit.Id });
+            db.NutritionIntakeLogs.Add(new() { Id = Guid.NewGuid(), PatientId = patient, LocalDate = day, MealCode = meal, HabitCheckId = habit.Id,
+                CreatedAt = day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) });
         }
         await db.SaveChangesAsync();
     }

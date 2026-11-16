@@ -53,6 +53,10 @@ public interface IProgramRepository
     Task<ProgramEnrollment> CreatePendingAssignmentAsync(Guid patientId, string templateCode, CancellationToken ct)
         => throw new NotSupportedException("Inscripción pendiente no implementada.");
 
+    /// <summary>Garantiza el arranque A2/F2 dentro del submit clínico; no depende de IA ni del gate de propuestas.</summary>
+    Task EnsureDefaultEnrollmentAsync(Guid patientId, CancellationToken ct)
+        => throw new NotSupportedException("Arranque por defecto no implementado.");
+
     /// <summary>Cierra por fecha local programas de 83 días vencidos, sin crear otra inscripción.</summary>
     Task<int> CompleteExpiredProgramsAsync(CancellationToken ct) => Task.FromResult(0);
 

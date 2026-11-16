@@ -1,0 +1,204 @@
+{
+  "files": [
+    {
+      "path": "apply-final.json",
+      "bytes": 5410,
+      "sha256": "02943d8a5b2f812df77d50d7c83da8eb1da273db6b87c7aeb2770433a0ef71e5"
+    },
+    {
+      "path": "apply-first.json",
+      "bytes": 5410,
+      "sha256": "02943d8a5b2f812df77d50d7c83da8eb1da273db6b87c7aeb2770433a0ef71e5"
+    },
+    {
+      "path": "assignment-tests.log",
+      "bytes": 1718,
+      "sha256": "cf3ff595bf4edce324a634a26dcd4bc4221baca7c053f8c481e6ee79edceb432"
+    },
+    {
+      "path": "audio-full-decode.json",
+      "bytes": 2983,
+      "sha256": "5495f0810ca9b74ca0c947a81b5a4dead04868e48aa934b8afd6d0dd26030221"
+    },
+    {
+      "path": "audit-after-first.json",
+      "bytes": 112,
+      "sha256": "f18ffca4240567e8dfbc03fd8e90ef2dac8cf0c9b94c7f508e6afdb6057bc635"
+    },
+    {
+      "path": "audit-build.log",
+      "bytes": 76,
+      "sha256": "bd8ecf1c39a8276c3e00a45af348b9214fe6c547d57c7370a67e3a9cef9d527a"
+    },
+    {
+      "path": "audit-final.json",
+      "bytes": 337,
+      "sha256": "f2b480bc955258f712db167115edf12d71eeb1e07c38ca9b7db0cbb956099285"
+    },
+    {
+      "path": "audit-reversed.json",
+      "bytes": 112,
+      "sha256": "b2c1a64f6fbec4b65b2eb70e4d620633bc4cd6896183e7de68028196410ceca6"
+    },
+    {
+      "path": "build-final.log",
+      "bytes": 5625,
+      "sha256": "95e7f4b40201b101d40aaa50f51945fb901919526453c355f6fc89676cba4ab2"
+    },
+    {
+      "path": "build-initial.log",
+      "bytes": 15571,
+      "sha256": "239f05d8e0f413fb54a601ff19d016e85b4dcd4c16226cbd1c447a15b8c3213e"
+    },
+    {
+      "path": "build.log",
+      "bytes": 8589,
+      "sha256": "cba4f71ab6736324639def03dcc075319f54c77c94da5f4159a508f157b904f4"
+    },
+    {
+      "path": "calendar-verification.json",
+      "bytes": 998,
+      "sha256": "b018aa37b3ab095372127392fb5fbd146728a73232b98d3235c3d7d8b5c05ec2"
+    },
+    {
+      "path": "catalog-candidates.json",
+      "bytes": 3069,
+      "sha256": "b687adac00153a0634e82a64937d12422fc1beeb725fa802f44569e8dd07abd0"
+    },
+    {
+      "path": "operation-metadata.json",
+      "bytes": 1538,
+      "sha256": "af559a8f0386381c30f65ac52b777c2f03baa636e24e64dc1468651d8a7fe476"
+    },
+    {
+      "path": "postgres-before-fixture-clock-fix.log",
+      "bytes": 19982,
+      "sha256": "a169ab6cfdafeb4fbd560dcc1daabeb7a36aed892a0184a6f2d25063aa32fd41"
+    },
+    {
+      "path": "postgres-result.json",
+      "bytes": 203,
+      "sha256": "6b833cc56edd444e91ace174c9969af319b8046b5adad003fd6c236eddd2cf0f"
+    },
+    {
+      "path": "postgres-summary-retry-result.json",
+      "bytes": 175,
+      "sha256": "3ba70235c524cf9d3e2f541294b06be95ac684e202aa61c1fb11653cd9b0a43d"
+    },
+    {
+      "path": "postgres-summary-retry.log",
+      "bytes": 5987,
+      "sha256": "f9139c214f850e697089fa90c70cf855b9a06c83c666e9ea11410e4cf25b79b3"
+    },
+    {
+      "path": "postgres-tests.log",
+      "bytes": 32354,
+      "sha256": "c41a1a90530aa5fbb88ed16c0bfaca41b13205f5e398f9a89e66181d532dcc66"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4395,
+      "sha256": "b112ffd547d237d4ccc92a32581acfc57a842f12bfb47a6bab1842914726be40"
+    },
+    {
+      "path": "reverse.json",
+      "bytes": 5412,
+      "sha256": "5d3479b55acb1fa533f708b8a2d82aa6bfc49681459453981a164377014f2d9f"
+    },
+    {
+      "path": "runtime-unchanged.json",
+      "bytes": 960,
+      "sha256": "c04fa4faff3caec2bf10444296d4eb44dd79c7a6ab7c3f955c4eb58c2cb9c21f"
+    },
+    {
+      "path": "simulation-all-weeks-aborted/observation.json",
+      "bytes": 236,
+      "sha256": "98023dde47b0e0d14bfc08624128b2b176181453ae778bbb0ef7f6f99be59266"
+    },
+    {
+      "path": "simulation-all-weeks-aborted/simulation.json",
+      "bytes": 5412,
+      "sha256": "42591118f12e11c9308121cbd6417afdde050ef7c90601eccdca72b666e428ac"
+    },
+    {
+      "path": "simulation-all-weeks-aborted/template-backup.json",
+      "bytes": 50431,
+      "sha256": "07d0a79d697f7f0914ca5ac9c4b2e255015c803af6ce05e618c087ab5a9e2ad8"
+    },
+    {
+      "path": "simulation.json",
+      "bytes": 5412,
+      "sha256": "706ea977eacd1f8f2e609f5c122a74908b3f10569bfe12e93bd99e2feabc4704"
+    },
+    {
+      "path": "template-backup.json",
+      "bytes": 50434,
+      "sha256": "1a62eb8b81d52255591ea299c025118ba7fb9d327e2bbf6a6140f88f08d096ab"
+    },
+    {
+      "path": "tested-source.json",
+      "bytes": 3019,
+      "sha256": "7b730a5da41f714f7c093e0c4d0299110dc56ff84772edfee44d360dc4f7ce3d"
+    },
+    {
+      "path": "tests/assignment.trx",
+      "bytes": 22088,
+      "sha256": "73853d98728be61c6d1c4b2c23e729db6b358c095252fb3aa735a6e20383b4c0"
+    },
+    {
+      "path": "tests/postgres-before-fixture-clock-fix.trx",
+      "bytes": 369313,
+      "sha256": "379b87f83f10310d36b826fbf378cdcad2eb26350342a1b4ed9cf81c3ef11b20"
+    },
+    {
+      "path": "tests/postgres-summary-retry.trx",
+      "bytes": 3236,
+      "sha256": "04e48475fc3b4e3f5e0b115b9150efb4249d71ffb9bbfdf9d744dca0391ed323"
+    },
+    {
+      "path": "tests/postgres.trx",
+      "bytes": 252166,
+      "sha256": "baee66cec669d06a1d0f1bb4afadeb6e736e12ac0bb2bd7bde98761a814bd93d"
+    },
+    {
+      "path": "tests/unit-final.trx",
+      "bytes": 4875003,
+      "sha256": "b634afa26d01400a8d0a912db164ed9ba9422b6eaa523a5ae4eeaaafa4623a7f"
+    },
+    {
+      "path": "tests/unit.trx",
+      "bytes": 4902551,
+      "sha256": "f9ff5ae72aeed6a244016a033b92d2db87530d26eeadd1e5b2a28d154d540a30"
+    },
+    {
+      "path": "tests-summary.json",
+      "bytes": 1404,
+      "sha256": "cfae08b4d341e66469f4a509c432e6c027cdd9278c581ca5936d87f2fc30f77d"
+    },
+    {
+      "path": "unit-final.log",
+      "bytes": 30993,
+      "sha256": "76b260a54ed010596fc46e5148d2e6805c7a12533c38555258ebeaa15539ff92"
+    },
+    {
+      "path": "unit-tests.log",
+      "bytes": 32356,
+      "sha256": "697c6e2939ebf12a49ecd9af90765f04757af9ccc0c9b6d09af605611af46119"
+    },
+    {
+      "path": "verify-final.json",
+      "bytes": 5410,
+      "sha256": "6dabedf30e7d8c74658e3fce66f2132af27041d488f6a0e65fe253cf781f7f8b"
+    },
+    {
+      "path": "verify-first.json",
+      "bytes": 5410,
+      "sha256": "6dabedf30e7d8c74658e3fce66f2132af27041d488f6a0e65fe253cf781f7f8b"
+    },
+    {
+      "path": "verify-readonly-final.json",
+      "bytes": 5410,
+      "sha256": "6dabedf30e7d8c74658e3fce66f2132af27041d488f6a0e65fe253cf781f7f8b"
+    }
+  ]
+}

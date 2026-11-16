@@ -79,6 +79,10 @@ public sealed partial class NutritionPlanWorkflowTests
         await AddCycleIntakesAsync(db, foreign.Id, new(2026, 11, 14), MealCode.des, MealCode.alm, MealCode.cen);
         await CompletionRepository(db, new(2026, 11, 14, 18, 0, 0, DateTimeKind.Utc)).CompleteTaskAsync(
             new CompleteTaskInput(seed.EnrollmentId, seed.Start.AddDays(82), TaskCode.podcast, null, null, null, null, null), default);
+        // CompleteTask conserva el timestamp real del servidor. Este resumen usa
+        // captura fija: ubicar su evidencia sintética dentro del intervalo de prueba.
+        await db.TaskCompletions.Where(t => t.EnrollmentId == seed.EnrollmentId)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.CompletedAt, new DateTime(2026, 11, 14, 18, 0, 0, DateTimeKind.Utc)));
         var actor = SummaryActor(pro.Id); var consent = Substitute.For<ILegalConsentService>();
         await using var mock = await SummaryMock.Start(); using var http = new HttpClient();
         mock.Reply = _ => { Assert.Null(db.Database.CurrentTransaction); return Task.FromResult(SummaryMock.Ready(new string('m', 200))); };

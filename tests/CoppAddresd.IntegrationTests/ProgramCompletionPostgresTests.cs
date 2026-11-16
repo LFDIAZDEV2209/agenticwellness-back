@@ -25,7 +25,8 @@ public sealed partial class NutritionPlanWorkflowTests
             TemplateId = template.Id, Weekday = (short)d, TaskCode = TaskCode.podcast, Points = 10, SortOrder = 1 }).ToArray();
         db.WeeklyDayTemplates.AddRange(rows);
         var enrollment = new ProgramEnrollment { Id = Guid.NewGuid(), PatientId = patient.Id, TemplateId = template.Id,
-            StartLocalDate = start, Timezone = "America/Bogota", CurrentWeekNumber = 12 };
+            StartLocalDate = start, Timezone = "America/Bogota", CurrentWeekNumber = 12,
+            CreatedAt = start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), StartedAt = start.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc) };
         db.ProgramEnrollments.Add(enrollment);
         db.StreakStates.Add(new() { EnrollmentId = enrollment.Id });
         for (var week = 1; week <= 12; week++)

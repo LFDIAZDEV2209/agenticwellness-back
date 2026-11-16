@@ -1,0 +1,161 @@
+Test run for C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.32]     CoppAddresd.IntegrationTests.ProgramNarrativeHttpIntegrationTests.ClienteReal_ContratoBilingueY503DeProveedor [SKIP]
+  Skipped CoppAddresd.IntegrationTests.ProgramNarrativeHttpIntegrationTests.ClienteReal_ContratoBilingueY503DeProveedor [1 ms]
+[xUnit.net 00:01:33.10]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_FallosIAInsuficienciaCancelacionYConsentimiento_NoPersistenNiAplican [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_FallosIAInsuficienciaCancelacionYConsentimiento_NoPersistenNiAplican [507 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "unavailable"
+Actual:   "insufficient"
+           ↑ (pos 0)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_FallosIAInsuficienciaCancelacionYConsentimiento_NoPersistenNiAplican() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 237
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_FallosIAInsuficienciaCancelacionYConsentimiento_NoPersistenNiAplican() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 246
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_FallosIAInsuficienciaCancelacionYConsentimiento_NoPersistenNiAplican() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 246
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:41.16]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_IAFallida_InsuficienteTimeoutYCancelacion_NoPersistenNiBorranBorradorPrevio [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_IAFallida_InsuficienteTimeoutYCancelacion_NoPersistenNiBorranBorradorPrevio [99 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "ok"
+Actual:   "insufficient"
+           ↑ (pos 0)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_IAFallida_InsuficienteTimeoutYCancelacion_NoPersistenNiBorranBorradorPrevio() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 121
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_IAFallida_InsuficienteTimeoutYCancelacion_NoPersistenNiBorranBorradorPrevio() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 133
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_IAFallida_InsuficienteTimeoutYCancelacion_NoPersistenNiBorranBorradorPrevio() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 133
+--- End of stack trace from previous location ---
+[xUnit.net 00:01:55.11]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion [116 ms]
+  Error Message:
+   Assert.ThrowsAny() Failure: Exception type was not compatible
+Expected: typeof(System.OperationCanceledException)
+Actual:   typeof(System.NullReferenceException)
+---- System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 115
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 117
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 120
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 120
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.<>c__DisplayClass200_1.<WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion>b__1() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 115
+[xUnit.net 00:01:58.54]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica [170 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(CoppAddresd.Domain.Exceptions.UnprocessableEntityException)
+Actual:   typeof(System.NullReferenceException)
+---- System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 289
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 300
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 300
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.<>c__DisplayClass207_0.<WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica>b__4() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 289
+[xUnit.net 00:04:19.27]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir [100 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(CoppAddresd.Domain.Exceptions.BusinessRuleViolationException)
+Actual:   typeof(System.NullReferenceException)
+---- System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 190
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 199
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 199
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.<>c__DisplayClass203_0.<WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir>b__5() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 190
+[xUnit.net 00:04:58.23]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_GenerarListarNoAplica_HashHTTP_ConfirmacionIndividualBitacoraYAplicacionParcial [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_GenerarListarNoAplica_HashHTTP_ConfirmacionIndividualBitacoraYAplicacionParcial [104 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "ok"
+Actual:   "insufficient"
+           ↑ (pos 0)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_GenerarListarNoAplica_HashHTTP_ConfirmacionIndividualBitacoraYAplicacionParcial() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 130
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_GenerarListarNoAplica_HashHTTP_ConfirmacionIndividualBitacoraYAplicacionParcial() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 161
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_GenerarListarNoAplica_HashHTTP_ConfirmacionIndividualBitacoraYAplicacionParcial() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 161
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:08.45]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora [80 ms]
+  Error Message:
+   System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.<>c__DisplayClass202_0.<<WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora>g__Apply|0>d.MoveNext() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 174
+--- End of stack trace from previous location ---
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.<>c__DisplayClass202_0.<<WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora>g__Apply|0>d.MoveNext() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 174
+--- End of stack trace from previous location ---
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 176
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 178
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 178
+--- End of stack trace from previous location ---
+[xUnit.net 00:06:30.74]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_RevalidaAlcanceDespuesDeIA_YNoAplicaSemanaAjenaOIniciada [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_RevalidaAlcanceDespuesDeIA_YNoAplicaSemanaAjenaOIniciada [97 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(CoppAddresd.Domain.Exceptions.NotFoundException)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_RevalidaAlcanceDespuesDeIA_YNoAplicaSemanaAjenaOIniciada() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 259
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_RevalidaAlcanceDespuesDeIA_YNoAplicaSemanaAjenaOIniciada() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 268
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_RevalidaAlcanceDespuesDeIA_YNoAplicaSemanaAjenaOIniciada() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 268
+--- End of stack trace from previous location ---
+[xUnit.net 00:07:31.63]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_RevocacionDeAlcanceOConsentimientoDuranteRed_RechazaEscritura_SinDatosNoLlamaIA [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_RevocacionDeAlcanceOConsentimientoDuranteRed_RechazaEscritura_SinDatosNoLlamaIA [53 ms]
+  Error Message:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(CoppAddresd.Domain.Exceptions.NotFoundException)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_RevocacionDeAlcanceOConsentimientoDuranteRed_RechazaEscritura_SinDatosNoLlamaIA() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 148
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_RevocacionDeAlcanceOConsentimientoDuranteRed_RechazaEscritura_SinDatosNoLlamaIA() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 157
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_RevocacionDeAlcanceOConsentimientoDuranteRed_RechazaEscritura_SinDatosNoLlamaIA() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 157
+--- End of stack trace from previous location ---
+[xUnit.net 00:07:35.17]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento [90 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(Npgsql.PostgresException)
+Actual:   typeof(System.NullReferenceException)
+---- System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 214
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 220
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 220
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.<>c__DisplayClass204_0.<WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento>b__0() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\WeeklySuggestionsPostgresTests.cs:line 214
+[xUnit.net 00:08:40.68]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RealGenerationReceivesResults_AndPublishesAutomaticallyWithDisclaimer [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RealGenerationReceivesResults_AndPublishesAutomaticallyWithDisclaimer [115 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "active"
+Actual:   "expired"
+           ↑ (pos 0)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RealGenerationReceivesResults_AndPublishesAutomaticallyWithDisclaimer() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\NutritionPlanWorkflowTests.cs:line 146
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RealGenerationReceivesResults_AndPublishesAutomaticallyWithDisclaimer() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\NutritionPlanWorkflowTests.cs:line 152
+--- End of stack trace from previous location ---
+[xUnit.net 00:09:10.82]     CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_HttpReal_HechosPropiosDesidentificados_HashMetadataHistorialYLecturaPorIdioma [FAIL]
+  Failed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_HttpReal_HechosPropiosDesidentificados_HashMetadataHistorialYLecturaPorIdioma [132 ms]
+  Error Message:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "ok"
+Actual:   "insufficient"
+           ↑ (pos 0)
+  Stack Trace:
+     at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_HttpReal_HechosPropiosDesidentificados_HashMetadataHistorialYLecturaPorIdioma() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 87
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_HttpReal_HechosPropiosDesidentificados_HashMetadataHistorialYLecturaPorIdioma() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 112
+   at CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_HttpReal_HechosPropiosDesidentificados_HashMetadataHistorialYLecturaPorIdioma() in C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\PatientSummaryPostgresTests.cs:line 112
+--- End of stack trace from previous location ---
+Results File: C:\Users\Luis\Documents\CoppAddresd\Repos\openspec\changes\organizar-experiencia-bienestar\revision-1.14-d\tests\postgres.trx
+
+Failed!  - Failed:    12, Passed:   199, Skipped:     1, Total:   212, Duration: 9 m 25 s - CoppAddresd.IntegrationTests.dll (net10.0)

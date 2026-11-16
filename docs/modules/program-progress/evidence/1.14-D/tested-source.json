@@ -1,0 +1,68 @@
+{
+  "baseCommit": "6a3470a3e0794fc403580175de9a3df4782d240c",
+  "validatedWorkingTreePatch": true,
+  "normalization": "UTF-8 LF for source digest",
+  "files": [
+    {
+      "path": "src/CoppAddresd.Application/Features/HealthTests/Execution/ExecutionCommands.cs",
+      "sha256": "3a3e84631077e66dc61fccfcd5264a54eda09efb5773974dcd72144cc39043d7"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Interfaces/IProgramRepository.cs",
+      "sha256": "eff35387147bc7bd86512fa8cbafe56acc34d47036cad48e283a0c56d8d2fa46"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Interfaces/IProgramAssignmentRepository.cs",
+      "sha256": "9dfed0b1f3a829bb471b3add653227d746e0639af2a5334933bba4ef88deda51"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/HealthTestRepository.cs",
+      "sha256": "da8b77388ca5162b32f4c8a8b682d21c524961f7e70118005bff51c25e5f1742"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/ProgramRepository.DefaultEnrollment.cs",
+      "sha256": "63b5dd5deb821adeecc1ba457b1325a3fc181d416e1e5fe1dfb43c2bf672a90c"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/ProgramAssignmentRepository.cs",
+      "sha256": "1f987dc15ed8925aa4e4aefef14459b8fc4bf29bff0ad47f0950719ee0a0d68f"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/ProgramAssignmentOperationsRepository.cs",
+      "sha256": "202d98ec079cbfcc0bf3da7690843d0ccd730e825a4c454d738e2246972924d7"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/DefaultProgramEnrollmentTests.cs",
+      "sha256": "4365c7bf797cf2b42c8166f24b2797fe4c9246f3499951c6fdb223ffb9714faa"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/ProgramAssignmentIntegrationTests.cs",
+      "sha256": "2e7b6d95ccd815bcfd1f5da164db424d5349aa2879868e538bcbfc59d0d4699e"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/EffectiveDayContentPostgresTests.cs",
+      "sha256": "b8fb879925968da054167e96f9caba640b1e636a312f52e83e79e31fbe22c860"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/ProgramCompletionPostgresTests.cs",
+      "sha256": "7f7d1aa625b6321143b9a05097c1ff0744856466cef21a58ecd9b59c0bf4db2e"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/NutritionCycleAdherencePostgresTests.cs",
+      "sha256": "82b24c02b5a8e8ea1cb6b6e46bc61ff84561e8d7904de031dd48bf8eb78e35a8"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/NutritionPlanWorkflowTests.cs",
+      "sha256": "e05e0e80018c2456706af1dcd5fd1793c00ceb54dd171de203c13695eea4db3f"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/PatientSummaryPostgresTests.cs",
+      "sha256": "17fa48f8a0500011db1eca0c5477110cbf871f0c8b84d34e705bc9b11349f858"
+    }
+  ],
+  "postSuiteOnlyChange": {
+    "path": "tests/CoppAddresd.IntegrationTests/PatientSummaryPostgresTests.cs",
+    "change": "Fecha sint\u00e9tica de TaskCompletion en el \u00fanico caso de resumen reintentado",
+    "retry": "tests/postgres-summary-retry.trx"
+  }
+}

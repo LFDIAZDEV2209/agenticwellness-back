@@ -1,0 +1,8 @@
+{
+  "source": "Observaci\u00f3n del transcript de ejecuci\u00f3n",
+  "applyAbortedBeforeMutation": true,
+  "changedGuard": "allWeeks",
+  "protectedChanged": [],
+  "databaseRowsWritten": 0,
+  "replacedWithNewSimulationAndBackup": true
+}

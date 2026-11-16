@@ -1,0 +1,28 @@
+{
+    "observedAt":  "2026-11-15T20:12:29.0998047-05:00",
+    "listeners":  [
+                      {
+                          "LocalPort":  5123,
+                          "OwningProcess":  20808
+                      },
+                      {
+                          "LocalPort":  5122,
+                          "OwningProcess":  40556
+                      },
+                      {
+                          "LocalPort":  5080,
+                          "OwningProcess":  35056
+                      },
+                      {
+                          "LocalPort":  8010,
+                          "OwningProcess":  61492
+                      },
+                      {
+                          "LocalPort":  8000,
+                          "OwningProcess":  43476
+                      }
+                  ],
+    "apiPid":  40556,
+    "apiProductVersion":  "1.0.0+e0a9c29dfbf551eaa3d51a97173fe72b55a0781b",
+    "sharedServicesRestarted":  false
+}

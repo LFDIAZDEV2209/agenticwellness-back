@@ -7,6 +7,7 @@ namespace CoppAddresd.Application.Interfaces;
 public interface IProgramAssignmentRepository
 {
     Task<Guid?> FindCompletedInitialBatteryAsync(Guid patientId, Guid batteryAssignmentId, CancellationToken ct);
+    /// <summary>Inscripción activa por defecto o pendiente heredada, todavía sin propuesta opcional.</summary>
     Task<ProgramEnrollment?> FindPendingWithoutRecommendationAsync(Guid patientId, CancellationToken ct)
         => Task.FromResult<ProgramEnrollment?>(null);
     Task<bool> HasCurrentEnrollmentAsync(Guid patientId, CancellationToken ct);

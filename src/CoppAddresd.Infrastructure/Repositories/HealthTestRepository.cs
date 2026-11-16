@@ -1830,10 +1830,18 @@ public sealed class HealthTestRepository(AppDbContext dbContext) : IHealthTestRe
         await dbContext.SaveChangesAsync(ct);
     }
 
-    public Task<HealthTestAssignment?> GetAssignmentForSubmitAsync(Guid id, CancellationToken ct) =>
-        dbContext.HealthTestAssignments.FromSqlInterpolated(
-            $"SELECT * FROM app.health_test_assignments WHERE id = {id} FOR UPDATE")
-            .FirstOrDefaultAsync(ct);
+    public async Task<HealthTestAssignment?> GetAssignmentForSubmitAsync(Guid id, CancellationToken ct)
+    {
+        var patientId = await dbContext.HealthTestAssignments.AsNoTracking().Where(a => a.Id == id)
+            .Select(a => (Guid?)a.PatientId).SingleOrDefaultAsync(ct);
+        if (!patientId.HasValue) return null;
+        // Orden común con inscripción/edición: paciente primero. Dos últimos tests
+        // concurrentes deben observarse antes de decidir si la batería terminó.
+        _ = await dbContext.PatientProfiles.FromSqlInterpolated(
+            $"SELECT * FROM app.patient_profiles WHERE id = {patientId.Value} FOR UPDATE").SingleAsync(ct);
+        return await dbContext.HealthTestAssignments.FromSqlInterpolated(
+            $"SELECT * FROM app.health_test_assignments WHERE id = {id} FOR UPDATE").FirstOrDefaultAsync(ct);
+    }
 
     // --- Transacción multi-paso (submit) ---
 

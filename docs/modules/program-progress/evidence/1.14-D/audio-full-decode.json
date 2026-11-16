@@ -1,0 +1,98 @@
+{
+  "readOnlyStorage": true,
+  "files": [
+    {
+      "id": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "episode": 1,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "episode": 2,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "episode": 3,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "dfeb9a5f-22a3-4d72-93ec-046b07b2adee",
+      "episode": 4,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "b0d8562d-04e9-4e15-b180-dafda8590e78",
+      "episode": 5,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "episode": 6,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "episode": 7,
+      "bytes": 6246189,
+      "sha256": "4954e036a2f72bb9b3df16820260c5437f12f127cb945b1891baa2422de12328",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "ed1e3490-1e91-41a9-ba17-611941b0dd31",
+      "episode": 14,
+      "bytes": 4280902,
+      "sha256": "f50d822cb8d6cb3da8bc9d6cfccc020786fb0c25e2c222a75d11ca06091050e7",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "e3eb0659-9b2b-49fa-bef9-71f3cb514424",
+      "episode": 15,
+      "bytes": 7356125,
+      "sha256": "3ffae7ccd5ea6f612f75efdf9a8318ccce79a5e4f355b26e233631330a57660f",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "9efc9a56-2ef9-4d25-a3f7-6e41048d5162",
+      "episode": 16,
+      "bytes": 3458238,
+      "sha256": "7e160d5dc09f99b24a2f48c50aa1b2f78701fccdc3b7f5412368f4283df19375",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "b963bd4e-bc13-4145-9080-65dcca8fc158",
+      "episode": 17,
+      "bytes": 4830022,
+      "sha256": "30232da0b9521ed35e009162bfe7c63d06c9c8e4ca81ea5137ab63a9dc66cd98",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "episode": 18,
+      "bytes": 4780080,
+      "sha256": "13dff735e4cc2cc0a36c29f3492d92799f8f14f1d9ddae28a8bcf2544cc1470c",
+      "fullDecodeExitCode": 0
+    },
+    {
+      "id": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "episode": 19,
+      "bytes": 4709354,
+      "sha256": "46330d05ad0c21d78c5767957fdd8212cee52ec549c3285a370de99311f8b4c6",
+      "fullDecodeExitCode": 0
+    }
+  ],
+  "valid": 13,
+  "uploads": 0
+}
