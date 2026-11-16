@@ -1,0 +1,29 @@
+{
+  "type": "static review only, not SQL parser validation or execution",
+  "files": [
+    {
+      "file": "scripts/qa/program-assignment/default-83w-deployed-3.21-apply.sql",
+      "sha256": "8d5668905949b16efbedb5d8607e29f8b7fb9ccbd2faa0c2522c42ff633e73e4",
+      "updateStatements": 6,
+      "onlyMediaIdSet": true,
+      "serializable": true,
+      "utcSerialization": true,
+      "fullImageCompareAndTimeouts": true,
+      "executed": false
+    },
+    {
+      "file": "scripts/qa/program-assignment/default-83w-deployed-3.21-reverse.sql",
+      "sha256": "167461372205f45323a3011caca874cf778f0aa7e0e972981ba2c6d0552a49d6",
+      "updateStatements": 6,
+      "onlyMediaIdSet": true,
+      "serializable": true,
+      "utcSerialization": true,
+      "fullImageCompareAndTimeouts": true,
+      "executed": false
+    }
+  ],
+  "backupBeforeFirstUpdate": true,
+  "backupOverwritePrevention": "operator precondition: new empty client directory, backup.csv absent",
+  "reverseRuntimeTested": false,
+  "s3ObjectsRecheckedByThisLane": false
+}

@@ -1,0 +1,137 @@
+{
+  "isolation": "repeatable read",
+  "templates": [
+    {
+      "header": {
+        "id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+        "code": "default-83w",
+        "status": "Archived",
+        "total_weeks": 83,
+        "version": 3
+      },
+      "activeEnrollments": 116,
+      "podcastRowsSha256": "7867de7f2668344c3b593e395c468fb62f0e6d103bf480428a5abc18ba4405c0",
+      "genericPodcasts": 7,
+      "specificPodcasts": 0,
+      "demoPodcasts": 0,
+      "genericReferences": [
+        {
+          "weekday": 1,
+          "mediaId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+          "title": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos",
+          "storageKey": "media/podcasts/3775514b-2511-432c-ae45-0f58ece51497.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 2,
+          "mediaId": "3b347a25-caf8-4335-b576-0fc842841b71",
+          "title": "Ep. 2: Flexibilidad Metabólica y Nutrición Celular",
+          "storageKey": "media/podcasts/96348b98-8b1e-4709-8c92-79ac02f0fedc.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 3,
+          "mediaId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+          "title": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro",
+          "storageKey": "media/podcasts/c4fe1534-1398-4490-af4d-5b732f83dc7e.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 4,
+          "mediaId": "dfeb9a5f-22a3-4d72-93ec-046b07b2adee",
+          "title": "Ep. 4: Regulación del Cortisol y Manejo del Estrés",
+          "storageKey": "media/podcasts/155872ba-6975-4dbd-a47a-c79eb5a79814.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 5,
+          "mediaId": "b0d8562d-04e9-4e15-b180-dafda8590e78",
+          "title": "Ep. 5: Calidad de Sueño y Recuperación Profunda",
+          "storageKey": "media/podcasts/64a2edc2-e779-4467-b917-73c2ebf43f58.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 6,
+          "mediaId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+          "title": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial",
+          "storageKey": "media/podcasts/d0e7c341-e8af-474c-b8a6-f3d8f49e051e.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 7,
+          "mediaId": "ed1e3490-1e91-41a9-ba17-611941b0dd31",
+          "title": "Ep. 14: Fuerza para principiantes: empieza bien",
+          "storageKey": "media/audio/d16b585a2b3c42a48fc92a2e16014c61.mp3",
+          "status": "Published"
+        }
+      ]
+    },
+    {
+      "header": {
+        "id": "75cef1a7-dd75-40cb-8d34-470b8eed4ddf",
+        "code": "program-coppaddresd-83-days",
+        "status": "Active",
+        "total_weeks": 12,
+        "version": 3
+      },
+      "activeEnrollments": 59,
+      "podcastRowsSha256": "8af365001e7386eb7cbe860f36211e22475da67809c793085a21fa63958ac92a",
+      "genericPodcasts": 7,
+      "specificPodcasts": 83,
+      "demoPodcasts": 0,
+      "genericReferences": [
+        {
+          "weekday": 1,
+          "mediaId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+          "title": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos",
+          "storageKey": "media/podcasts/3775514b-2511-432c-ae45-0f58ece51497.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 2,
+          "mediaId": "3b347a25-caf8-4335-b576-0fc842841b71",
+          "title": "Ep. 2: Flexibilidad Metabólica y Nutrición Celular",
+          "storageKey": "media/podcasts/96348b98-8b1e-4709-8c92-79ac02f0fedc.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 3,
+          "mediaId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+          "title": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro",
+          "storageKey": "media/podcasts/c4fe1534-1398-4490-af4d-5b732f83dc7e.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 4,
+          "mediaId": "dfeb9a5f-22a3-4d72-93ec-046b07b2adee",
+          "title": "Ep. 4: Regulación del Cortisol y Manejo del Estrés",
+          "storageKey": "media/podcasts/155872ba-6975-4dbd-a47a-c79eb5a79814.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 5,
+          "mediaId": "b0d8562d-04e9-4e15-b180-dafda8590e78",
+          "title": "Ep. 5: Calidad de Sueño y Recuperación Profunda",
+          "storageKey": "media/podcasts/64a2edc2-e779-4467-b917-73c2ebf43f58.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 6,
+          "mediaId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+          "title": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial",
+          "storageKey": "media/podcasts/d0e7c341-e8af-474c-b8a6-f3d8f49e051e.mp3",
+          "status": "Published"
+        },
+        {
+          "weekday": 7,
+          "mediaId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+          "title": "Ep. 7: Ayuno Intermitente y Autofagia Estratégica",
+          "storageKey": "media/podcasts/ee24fdac-fb55-45ee-a989-3f514dd61d7e.mp3",
+          "status": "Published"
+        }
+      ]
+    }
+  ],
+  "capturedAt": "2026-11-16T13:48:25.541541+00:00",
+  "transactionReadOnly": "on"
+}

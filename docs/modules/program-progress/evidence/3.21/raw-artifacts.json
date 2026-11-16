@@ -1,0 +1,14 @@
+{
+  "rawArtifacts": [
+    {
+      "path": ".ai/operations/organizar-experiencia-bienestar/3.21-20261116/unit.trx",
+      "bytes": 5188664,
+      "sha256": "9ec2d8081a41c0d4ffdba3d101fa6801fb6010b0140b88e0b8fb4a0deadcb23e"
+    },
+    {
+      "path": ".ai/operations/organizar-experiencia-bienestar/3.21-20261116/postgres.trx",
+      "bytes": 350326,
+      "sha256": "936290b0de51ea0c34969be61a0df6e06051cbec3221fbc569423a95e35b7a1a"
+    }
+  ]
+}

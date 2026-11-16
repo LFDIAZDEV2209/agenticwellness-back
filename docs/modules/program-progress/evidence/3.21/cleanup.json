@@ -1,0 +1,36 @@
+{
+    "ownPreviewServersStarted":  [
+
+                                 ],
+    "dockerLeftRunning":  true,
+    "capturedAt":  "2026-11-16T14:00:52.0415971Z",
+    "ownTestProcessesRemaining":  [
+
+                                  ],
+    "ownLongRunningTestProcessesClosed":  "initial PostgreSQL attempt interrupted; final suite completed normally",
+    "sharedListenersPreserved":  true,
+    "servicesStarted":  [
+                            "Docker Desktop, explicitly authorized; PostgreSQL/Valkey auto-started by their existing policies"
+                        ],
+    "sharedServicesStopped":  [
+
+                              ],
+    "sharedListenersAfter":  [
+                                 {
+                                     "LocalPort":  3000,
+                                     "OwningProcess":  52120
+                                 },
+                                 {
+                                     "LocalPort":  5080,
+                                     "OwningProcess":  52312
+                                 },
+                                 {
+                                     "LocalPort":  5122,
+                                     "OwningProcess":  47560
+                                 },
+                                 {
+                                     "LocalPort":  5123,
+                                     "OwningProcess":  23884
+                                 }
+                             ]
+}

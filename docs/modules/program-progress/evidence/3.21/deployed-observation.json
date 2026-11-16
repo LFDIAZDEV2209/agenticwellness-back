@@ -1,0 +1,98 @@
+{
+  "status": "confirmed-readonly-rds-ecs-dbops-user-provided",
+  "environment": "deployed RDS dev according to handoff",
+  "knownState": {
+    "activeTemplate": {
+      "code": "program-coppaddresd-83-days",
+      "genericPodcasts": 7,
+      "specificPodcasts": 0,
+      "version": 4,
+      "totalWeeks": 12,
+      "allSevenGenericValid": true,
+      "storagePrefix": "media/audio",
+      "demoPodcasts": 0
+    },
+    "legacyTemplate": {
+      "code": "default-83w",
+      "activeEnrollments": 116,
+      "demoPodcastCells": 6,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "status": "Archived",
+      "version": 3,
+      "totalWeeks": 83,
+      "oldMediaIdsByWeekday": {
+        "1": "e7c3979b-5dbe-4b9c-a77d-7b8014b0a355",
+        "2": "66d8b715-bfae-4545-bbd9-ecc4715060c6",
+        "3": "be217da4-6b1f-4c4c-9b00-67bf940fcaf1",
+        "4": "7a23f517-b71f-44cf-9cea-a1e2a8bcd44d",
+        "5": "ab682ed6-f6c6-49cf-a064-c5eec53ce3fb",
+        "6": "ec47f53d-fe77-42c1-b772-2418e39e5cf0",
+        "7": "ed1e3490-1e91-41a9-ba17-611941b0dd31"
+      },
+      "sundayValid": true
+    },
+    "catalog": {
+      "published": 68,
+      "withRealAudio": 34
+    },
+    "demoPatients": {
+      "documents": [
+        "1000000001",
+        "55551234"
+      ],
+      "template": "program-coppaddresd-83-days",
+      "affectedByLegacyResidual": false
+    }
+  },
+  "newRdsSqlResult": "template and catalog query supplied by user; structured transcription here",
+  "currentDeployedContentGapDays": null,
+  "accessAttempts": [
+    {
+      "method": "SSH bastion with existing .pgpass helper",
+      "result": "connection timeout; SQL did not reach RDS"
+    },
+    {
+      "method": "AWS fya-root inventory",
+      "result": "session expired; no login or credentials changed"
+    },
+    {
+      "method": "AWS default EC2 inventory",
+      "result": "bastion same address, running"
+    },
+    {
+      "method": "AWS default SSM inventory",
+      "result": "ConnectionLost"
+    },
+    {
+      "method": "AWS default RDS inventory",
+      "result": "available, private endpoint"
+    },
+    {
+      "method": "AWS default ECS inventory",
+      "result": "API task execute command disabled"
+    }
+  ],
+  "rdsWrites": 0,
+  "repairSqlExecuted": false,
+  "reverseSqlExecuted": false,
+  "previousSource": {
+    "path": ".ai/sessions/rotation-2026-11-16T0830-codex-back.md",
+    "sha256": "8c4a67216dd6f373fa0e0988dfa95e929c3c02b7a4141eb49b4abb302a68ab0b",
+    "readCompletely": true
+  },
+  "source": {
+    "type": "user-provided result of actual READ-ONLY RDS query",
+    "taskDefinition": "cooppadresd-dbops:4",
+    "date": "2026-11-16",
+    "executedByThisLane": false,
+    "originalSqlLogOrJsonAvailableToThisLane": false,
+    "originalOutputSha256": null
+  }
+}

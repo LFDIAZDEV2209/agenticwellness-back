@@ -1,0 +1,66 @@
+{
+  "sourceCommit": "9a59f3392021b46ec1e6f5f68c74886b58f18117",
+  "initialState": {
+    "listeners": [
+      3000,
+      5080,
+      5122,
+      5123
+    ],
+    "postgres5432": false,
+    "valkey6379": false,
+    "dockerEngine": false
+  },
+  "initialAttempts": [
+    {
+      "operation": "local audit",
+      "result": "first CLI invocation had wrong DLL path; corrected before successful audit"
+    },
+    {
+      "operation": "local audit after path correction",
+      "result": "connection failure, PostgreSQL absent; no writes"
+    },
+    {
+      "operation": "PostgreSQL suite before Docker recovery",
+      "result": "interrupted, no valid gate result"
+    }
+  ],
+  "authorization": "User explicitly authorized starting Docker Desktop and existing PostgreSQL/Valkey only; no API/Auth/Gateway/front restart",
+  "dockerStartedAt": "2026-11-16T13:44:56Z",
+  "dockerDesktopStartedHidden": true,
+  "existingContainersObservedAfterStart": {
+    "coppAddresd": "healthy",
+    "coppAddresd-valkey": "healthy",
+    "exo-track-db": "auto-started by existing policy; no explicit start/stop issued"
+  },
+  "sharedAppPidsBefore": {
+    "api5122": 47560,
+    "auth5123": 23884,
+    "gateway5080": 52312,
+    "front3000": 52120
+  },
+  "sharedAppRestarted": false,
+  "sharedDatabaseDataWrites": 0,
+  "deployedDatabaseWrites": 0,
+  "migrationAppliedToSharedDatabase": false,
+  "repairSqlExecuted": false,
+  "push": false,
+  "tasksModified": false,
+  "specsArchivedOrSynced": false,
+  "postmanStatus": {
+    "exitCode": 1,
+    "result": "error: unknown command status",
+    "postmanSetupChanged": false
+  },
+  "codegraph": {
+    "attempt": "explore at indexed workspace root",
+    "result": "timed out; cancelled; fallback to specific files"
+  },
+  "sharedAppPidsAfter": {
+    "3000": 52120,
+    "5080": 52312,
+    "5122": 47560,
+    "5123": 23884
+  },
+  "completedAt": "2026-11-16T14:00:52.0415971Z"
+}

@@ -1,51 +1,52 @@
 # Borrador de cierre 3.21 — pendiente de aprobación del owner
 
-**Actualización posterior:** la [reparación de `default-83w`](REPAIR-1.14-LEGACY.md)
-dejó 1.10b global en **0**, con reversa probada. La excepción de 50.322 huecos
-propuesta más abajo es histórica y ya no es necesaria para ese corte. Este
-documento no sustituye la aprobación del cierre por el owner ni acredita C1/UI.
+La [verificación actual](VERIFICACION-3.21.md), sobre `9a59f339`, confirma
+**1.10b local global = 0**, podcast/ejercicio/nutrición **0/0/0**, sin exclusiones:
+175 inscripciones activas, 59.778 días evaluados. Incluye 116 inscripciones de
+`default-83w` archivada y la fixture protegida `0c487f75`, con cero huecos efectivos.
+La continuidad nutricional se acredita en **590 días / 3 inscripciones**, todos
+con el menú final 30 propio y **0 inválidos**.
 
-**No constituye cierre ni declaración de cero.** Luis autorizó la reparación D
-de la plantilla activa; no ha aprobado una excepción al criterio global de 3.21.
+Este resultado sustituye la propuesta histórica de aceptar **50.322 días con
+hueco local** como excepción. Esa excepción ya no es necesaria para este corte.
+Los antecedentes y la reversa real local permanecen en
+[REPAIR-1.14-LEGACY](REPAIR-1.14-LEGACY.md); sus denominadores/fechas no se mezclan
+con la nueva captura.
 
-Se propone aceptar el cierre técnico de las verificaciones F3 con la excepción
-explícita de 1.14 que se describe abajo. La aceptación administrativa requiere
-la decisión expresa del owner y su responsable/plazo de seguimiento.
+## Evidencia de fase
 
-## Evidencia disponible
+- 3.20 real: recorrido clínico y cierre revisión 7, preservando 33 R7;
+  `revision-3.20-real/README.md` (ERP a7d66fe, APP cc093ac, API 1a14083).
+  Es evidencia histórica de ese recorrido.
+- F3 `eb181a8`: build 0 errores/15 avisos, 2630 unitarios/105 omitidos,
+  PostgreSQL 119/119; `revision-3.21-back/README.md`. No se atribuyen al SHA actual.
+- F4 `e0a9c29`: 2801 unitarios/105 omitidos, PostgreSQL 157/157 y smoke
+  27 peticiones/96 aserciones; evidencia histórica `revision-4.12-back`.
+- [Release-preflight](RELEASE-PREFLIGHT.md): integración/migraciones conjuntas;
+  **15 fallos PostgreSQL legados** reproducidos también antes del merge.
+  Esta tarea no los corrige ni declara todo el repositorio verde.
+- [3.21 actual](VERIFICACION-3.21.md) y [gates/evidencia](evidence/3.21/README.md):
+  consulta real, continuidad, build y suites ejecutadas en esta sesión.
+- 4.11: [API/BD y degradación](evidence/4.11/validation-9d62b7e-readonly/README.md).
+  Los casos UI pendientes por rediseño siguen fuera de la acreditación backend.
 
-- 3.20 real: recorrido clínico completo y cierre revisión 7, con preservación de
-  33 R7. Evidencia compartida `revision-3.20-real/README.md`; referencias de esa
-  captura: ERP a7d66fe, APP cc093ac y API 1a14083. No se mezcla con pruebas F4.
-- 3.21 F3: sobre eb181a8, build 0 errores/15 avisos, 2630 unitarios y 105 omitidos,
-  PostgreSQL 119/119; evidencia `revision-3.21-back/README.md`. Es la captura
-  previa a la integración final del fix de imagen, no una repetición sobre F4.
-- F4 e0a9c29 integra ese fix: build aprobado, 2801 unitarios/105 omitidos,
-  PostgreSQL 157/157 y smoke final 27 peticiones/96 aserciones, incluido metadata
-  autorizado. Evidencia histórica `revision-4.12-back`.
-- 4.11 back contra e2e front 9d62b7e: [API/DB y degradación](evidence/4.11/validation-9d62b7e-readonly/README.md),
-  con límites explícitos. Los tres casos UI siguen omitidos por rediseño.
-- 1.14 opción D: [operación reversible y A2/F2](REPAIR-1.14-D.md).
+## Límites que requieren decisión
 
-## Excepción propuesta de 1.14
+1. **Paridad desplegada pendiente.** La consulta real READ-ONLY a RDS vía ECS
+   `cooppadresd-dbops:4` del 16-11, aportada por Luis, confirma seis demo en
+   `default-83w` Archived v3 y 116 inscripciones Active; activa v4 con siete
+   genéricas válidas y ninguna específica. Los dos demos están en la activa y no
+   les afecta este residual. Esta fuente sustituye al handoff.
+   [Residual y SQL reversible preparado](RESIDUAL-DESPLEGADO-3.21.md), **sin ejecutar**.
+   No se afirma cero ni número actual de días con hueco en RDS.
+2. **C1 editorial:** el antecedente local era 13 audios reales/37 episodios y base
+   original de 42. RDS informa 68 Published/34 con audio real: inventario distinto,
+   que no acredita por sí solo C1 ni permite trasladar los 24 MP3 pendientes locales.
+3. **UI 4.11 y aceptación de fase:** no las sustituye la verificación backend.
 
-1.10b global, sin excluir `0c487f75`, deja **50.322 días con hueco**, todos podcast,
-en 116 inscripciones de la plantilla archivada `default-83w` (83 semanas).
-La plantilla activa de 83 días queda con **0 huecos** en 186 inscripciones y la
-fixture protegida con 0 efectivos; sus filas/cierres no se tocaron.
-La reparación acotada elimina 697 días con hueco en el corte de reversa/verificación.
+El orquestador decide ejecutar la reparación desplegada tras obtener lectura,
+respaldo y aprobación concreta. El owner conserva la aprobación administrativa,
+responsables y plazos de los límites abiertos. **Sigue siendo un borrador;
+no declara la fase cerrada ni acepta excepciones por cuenta del owner.**
 
-El catálogo de 13 audios reales verificados cubre las 83 celdas y siete respaldos
-genéricos; se mantiene la desviación temporal C1 frente a la base de 42 publicada
-solicitada. Faltan 24 MP3 del catálogo actual de 37 y no se afirma que su llegada
-por sí sola satisfaga el número original 42.
-
-Aceptar este borrador implica aceptar temporalmente el residual de la plantilla
-archivada y asignar su tratamiento editorial/migración a un alcance posterior.
-No autoriza cambios en datos cerrados, migraciones de inscripciones, exclusiones
-de la consulta ni alteración de §5.1. A2/F2 está corregido/probado en fuente y BD
-aislada; el runtime compartido sigue e0a9c29 hasta un despliegue autorizado.
-
-**Decisión pendiente:** aceptar/rechazar la excepción, designar responsable y
-fecha de revisión. Hasta entonces, 3.21 conserva estado pendiente de aprobación;
-no se actualiza tasks.md ni se publica nada.
+Sin push, sin `tasks.md`, sin archivo/sincronización de specs ni escrituras en RDS.

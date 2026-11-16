@@ -1,0 +1,5 @@
+Test run for C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.UnitTests\bin\Verification321\CoppAddresd.UnitTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\docs\modules\program-progress\evidence\3.21\unit.trx
+
+Passed!  - Failed:     0, Passed:  2997, Skipped:   105, Total:  3102, Duration: 35 s - CoppAddresd.UnitTests.dll (net10.0)

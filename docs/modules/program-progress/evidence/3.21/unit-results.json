@@ -1,0 +1,211 @@
+{
+  "sourceCommit": "9a59f3392021b46ec1e6f5f68c74886b58f18117",
+  "counters": {
+    "total": "3102",
+    "executed": "2997",
+    "passed": "2997",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-11-16T08:42:11.6680144-05:00",
+    "queuing": "2026-11-16T08:42:11.6680146-05:00",
+    "start": "2026-11-16T08:42:10.0442602-05:00",
+    "finish": "2026-11-16T08:42:46.8873002-05:00"
+  },
+  "selectedResults": [
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.PlantillaArchivadaDefault83w_ConservaResolucionYSusLimites",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Rutina_DescansoTerminaCadena(rest: False, snapshot: True, template: True, source: \"snapshot\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleCalendarTests.PublicacionTardia_DiciembreNueve_DejaCincoAOchoEnContinuidad",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Rutina_DescansoTerminaCadena(rest: True, snapshot: True, template: True, source: \"rest\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Publicacion_ProblemDetails422IncluyeListaEstructurada",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Rutina_DescansoTerminaCadena(rest: False, snapshot: False, template: False, source: \"legacy\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.PublicarCambio_ConservaProgramaIniciadoYSoloActualizaFuturas(status: Completed, source: \"snapshot\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Publicacion_ListaHuecoDelDia83PorClase_SinDia84(code: nut)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Podcast_PrecedenciaYPublicacion(origin: null, personal: True, specific: True, generic: True, source: \"individual\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Legado_MenuDayUsaTranscurridos_SinAsumirWeekday(menus: 7, elapsed: 10, expected: 4)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Nutricion_VersionFinalEnContinuidad_NoReviveOtraVersionSiFaltaMenu(complete: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Podcast_PrecedenciaYPublicacion(origin: \"individual\", personal: True, specific: True, generic: True, source: \"individual\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleAdherenceTests.HoyEnCurso_VacioNoEsInterrupcion_ConRegistrosCuentaParcial(meals: 0, measured: 0, elapsed: 0, interruptions: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Publicacion_ListaHuecoDelDia83PorClase_SinDia84(code: ejercicio)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.SemanaNoMaterializadaOVacia_NoEsHuecoYSinTestsRecibeGenerales(materialized: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleCalendarTests.CierreTrasDiaTreinta_UsaMedianocheDelPaciente(utc: \"2026-12-05T04:59:59Z\", expected: \"en_curso\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleCalendarTests.CierreTrasDiaTreinta_UsaMedianocheDelPaciente(utc: \"2026-12-05T05:00:00Z\", expected: \"por_revisar\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Impacto_FuturoPersonalizadoOIniciado(personal: True, started: False, receivers: 0, personalized: 1, omitted: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleCalendarTests.HoyNoviembreVeinte_NoIncluyeFuturos_BorradorNoTieneVentana",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Publicacion_DeVersionSeComparaConFechaLocal_NoConFechaUtc",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Motor_DecisionFinalNoRevivePropuesta(scenario: \"empty\", selected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Motor_DecisionFinalNoRevivePropuesta(scenario: \"malformed\", selected: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Impacto_FuturoPersonalizadoOIniciado(personal: False, started: True, receivers: 0, personalized: 0, omitted: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Cancelacion_AbortaAntesDeLaPrecarga",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Motor_DecisionFinalNoRevivePropuesta(scenario: \"applied\", selected: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Nutricion_VigenteContinuidadUltimoMenuYSucesoraPorFechaLocal",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleAdherenceTests.HoyEnCurso_VacioNoEsInterrupcion_ConRegistrosCuentaParcial(meals: 1, measured: 1, elapsed: 1, interruptions: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleAdherenceTests.SinAlcance_NoLeeCabeceraNiRegistros",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Publicacion_ListaHuecoDelDia83PorClase_SinDia84(code: podcast)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Rutina_DescansoTerminaCadena(rest: False, snapshot: False, template: True, source: \"template_generic\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleAdherenceTests.SeisSieteOcho_PromediaSoloDiasConDatos_YSeparaCobertura",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Podcast_PrecedenciaYPublicacion(origin: \"individual\", personal: False, specific: True, generic: True, source: \"template_week\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.PrescripcionInvalidaOAjena_CaeAlMotorYNuncaFiltraOtroPaciente",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Nutricion_VersionFinalEnContinuidad_NoReviveOtraVersionSiFaltaMenu(complete: True)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Podcast_PrecedenciaYPublicacion(origin: \"program\", personal: True, specific: True, generic: True, source: \"template_week\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Impacto_FuturoPersonalizadoOIniciado(personal: False, started: False, receivers: 1, personalized: 0, omitted: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.Nutrition.NutritionCycleAdherenceTests.HoyEnCurso_VacioNoEsInterrupcion_ConRegistrosCuentaParcial(meals: 3, measured: 1, elapsed: 1, interruptions: 0)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Podcast_PrecedenciaYPublicacion(origin: \"individual\", personal: False, specific: False, generic: False, source: \"missing\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.ProgramaActual_Dia83PermitidoY84Rechazado",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.PublicarCambio_ConservaProgramaIniciadoYSoloActualizaFuturas(status: Active, source: \"snapshot\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.SemanaNoMaterializadaOVacia_NoEsHuecoYSinTestsRecibeGenerales(materialized: False)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Legado_MenuDayUsaTranscurridos_SinAsumirWeekday(menus: 30, elapsed: 5, expected: 6)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.PublicarCambio_ConservaProgramaIniciadoYSoloActualizaFuturas(status: Locked, source: \"template_week\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.Podcast_PrecedenciaYPublicacion(origin: \"individual\", personal: False, specific: False, generic: True, source: \"template_generic\")",
+      "outcome": "Passed"
+    },
+    {
+      "name": "CoppAddresd.UnitTests.ProgramProgress.EffectiveDayContentResolverTests.LegadoVencidoYNingunRespaldo_ProduceHuecoPorClase",
+      "outcome": "Passed"
+    }
+  ],
+  "failures": [],
+  "skipped": 105
+}

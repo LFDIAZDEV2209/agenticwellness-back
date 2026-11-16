@@ -1,0 +1,114 @@
+{
+  "commit": "9a59f3392021b46ec1e6f5f68c74886b58f18117",
+  "capturedAt": "2026-11-16T13:54:12.9559749+00:00",
+  "database": "coppaddresd",
+  "transactionReadOnly": "on",
+  "isolation": "RepeatableRead",
+  "scope": "Program.View, actor administrativo de auditor\u00EDa; guard y store reales, sin sesi\u00F3n HTTP",
+  "appliedMigrationCount": 113,
+  "latestMigration": "20261115184418_ExpandPatientAiBriefModelName",
+  "migrations": [
+    {
+      "id": "20261114171403_AddNutritionCycles",
+      "applied": true
+    },
+    {
+      "id": "20261114174950_AddNutritionCycleInterruption",
+      "applied": true
+    },
+    {
+      "id": "20261114184553_AddNutritionIntakeRequests",
+      "applied": true
+    },
+    {
+      "id": "20261114193738_AddNutritionIntakeDayReviews",
+      "applied": true
+    },
+    {
+      "id": "20261114194459_AddNutritionCycleHighlights",
+      "applied": true
+    },
+    {
+      "id": "20261114200555_AddNutritionCycleReviews",
+      "applied": true
+    }
+  ],
+  "unrecognizedMigrations": [],
+  "pendingMigrations": [],
+  "activeEnrollments": 175,
+  "evaluatedEnrollments": 171,
+  "evaluatedDays": 59778,
+  "remainingRange": {
+    "from": "2026-11-16",
+    "to": "2028-04-16"
+  },
+  "affectedPatients": 0,
+  "affectedEnrollments": 0,
+  "totalDaysWithGaps": 0,
+  "gapsByClass": {
+    "podcast": 0,
+    "ejercicio": 0,
+    "nut": 0
+  },
+  "nutritionSources": {
+    "engine": 59113,
+    "prescription": 75,
+    "continuity": 590
+  },
+  "routineSources": {
+    "template_generic": 59630,
+    "snapshot": 148
+  },
+  "publishedPodcastCount": 20,
+  "continuity": {
+    "days": 590,
+    "enrollments": 3,
+    "finalMenuValidated": true,
+    "invalidDays": 0,
+    "menus": [
+      {
+        "menuDay": 30,
+        "days": 590
+      }
+    ]
+  },
+  "protectedEnrollments": 1,
+  "protectedGaps": 0,
+  "templates": [
+    {
+      "code": "default-83w",
+      "enrollments": 116,
+      "days": 58709,
+      "gaps": 0,
+      "podcast": 0,
+      "ejercicio": 0,
+      "nut": 0
+    },
+    {
+      "code": "program-coppaddresd-83-days",
+      "enrollments": 59,
+      "days": 1069,
+      "gaps": 0,
+      "podcast": 0,
+      "ejercicio": 0,
+      "nut": 0
+    }
+  ],
+  "writes": 0,
+  "byProgramDuration": [
+    {
+      "totalWeeks": 83,
+      "days": 58709,
+      "podcast": 0,
+      "ejercicio": 0,
+      "nut": 0
+    },
+    {
+      "totalWeeks": 12,
+      "days": 1069,
+      "podcast": 0,
+      "ejercicio": 0,
+      "nut": 0
+    }
+  ]
+}

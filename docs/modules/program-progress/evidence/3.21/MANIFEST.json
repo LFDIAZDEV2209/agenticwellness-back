@@ -1,0 +1,154 @@
+{
+  "sourceCommit": "9a59f3392021b46ec1e6f5f68c74886b58f18117",
+  "algorithm": "SHA-256 over Git blob bytes; normalized LF for tracked text per Git attributes",
+  "selfExcluded": true,
+  "evidence": [
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/build.log",
+      "bytes": 14138,
+      "sha256": "ea69b117ea64399f4e5ddee48faa4ae50e0e1f9421f8178707a8cf3f2118d147"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/cleanup.json",
+      "bytes": 1451,
+      "sha256": "0a0a0da46c7c2a3b240cc12d747ae7a109afcc95c858ec680c50a385ed57d842"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/database-audit.json",
+      "bytes": 2446,
+      "sha256": "8d1ce9c744d71f9dcb04790c3961cb5ea832f99d3ed405e14539548fca1e59e3"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/database-audit.log",
+      "bytes": 108,
+      "sha256": "300e7c68459669cef8856f15a723edae3a2645700e10ac7967a214de3048007e"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/deployed-observation.json",
+      "bytes": 2796,
+      "sha256": "d18f0747c19564e499d9a89e330b70521ad5ff08ef88210c7942c30a5fbf02a1"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/gates.json",
+      "bytes": 1976,
+      "sha256": "68027e6efc2d4ce3f0d6d4a5a583b650aed16e937177251cfbea0d8259b98217"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/local-template-state.json",
+      "bytes": 5193,
+      "sha256": "f288cf51525825f487fec5def1d16613bc4a40bca3d35f80d1153e43974c4163"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/operations.json",
+      "bytes": 1891,
+      "sha256": "ddff3f48baf3588e4e4f967f4dd2423364bfa83f65f5869c75338927890ae28c"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/postgres-results.json",
+      "bytes": 49447,
+      "sha256": "2401c86ba6a93813350a3ee42fe134f53d924b926ab3c14ac38182a3b626537f"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/postgres.log",
+      "bytes": 514,
+      "sha256": "48e640198413a4988eaa2539996c773ac5981c1a3081c5f251b99c14a5aef846"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/raw-artifacts.json",
+      "bytes": 444,
+      "sha256": "187eae4797fd12d7f0cf8364d789fc26985f1a46158875c03561ed5a8e60775c"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/reader-build.log",
+      "bytes": 76,
+      "sha256": "21ceb6ea73a1795a2f2c083a88052856e9ac991e6973dae890b16d7414ef96d6"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/README.md",
+      "bytes": 4228,
+      "sha256": "a4454ac035ea60c8fa6ca8b831d450d7e3c1b0fcd7f5a95ff64fbc75d2c449b0"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/sql-review.json",
+      "bytes": 1038,
+      "sha256": "5453a6d1642e55e880b36e0cef01c4fa3bebc9ec561855da58c109082f69419f"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/unit-results.json",
+      "bytes": 10237,
+      "sha256": "6cf64e4df6dfa2da3f837e24c8baa6e42de5b94f303315ebf164a687b887010e"
+    },
+    {
+      "path": "docs/modules/program-progress/evidence/3.21/unit.log",
+      "bytes": 484,
+      "sha256": "b19ed18c1c0a63689ccbd7291940bd32e26191d530c29b4bd8030692f1188800"
+    }
+  ],
+  "sources": [
+    {
+      "path": "scripts/ProgramPhaseVerification/Program.cs",
+      "sha256": "393b29bbd57c96d106c491735e67fcbd04acdb656020957de4c95d1c8c83e503"
+    },
+    {
+      "path": "scripts/ProgramPhaseVerification/ProgramPhaseVerification.csproj",
+      "sha256": "ac03c709edf5e1e06264a3807a78e07905c8115e69696e5d609855f6108d6380"
+    },
+    {
+      "path": "scripts/qa/program-assignment/verify-3.21.ps1",
+      "sha256": "68d56fe30a2f36a5ed37234a705b5e8deb4eb986bfd9ce845ebd199339dc30df"
+    },
+    {
+      "path": "scripts/qa/program-assignment/parity-3.21-readonly.sql",
+      "sha256": "8bb23917d458480df26eabf90d3a5fa8071b40153c9f6e354949a54cb52cfd34"
+    },
+    {
+      "path": "scripts/qa/program-assignment/default-83w-deployed-3.21-apply.sql",
+      "sha256": "8d5668905949b16efbedb5d8607e29f8b7fb9ccbd2faa0c2522c42ff633e73e4"
+    },
+    {
+      "path": "scripts/qa/program-assignment/default-83w-deployed-3.21-reverse.sql",
+      "sha256": "167461372205f45323a3011caca874cf778f0aa7e0e972981ba2c6d0552a49d6"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Services/ProgramProgress/EffectiveDayContentResolver.cs",
+      "sha256": "d52b6ea9f1e445da6e34219d9dc779458b80770bf379c5c339b26581a2407721"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Features/ProgramProgress/Queries/Erp/GetContentGapsQuery.cs",
+      "sha256": "53192b6b84f199b1c7285f5e6e6d56b213d43bd271665796a2be381228301744"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/EffectiveDayContentStore.cs",
+      "sha256": "9755640e0bf71410a2a7a3304074849ee9c7af45936f0946bb0512e39e4ea735"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Features/Nutrition/Cases/NutritionPublicationTimeline.cs",
+      "sha256": "e106336027df614255e2395e9f81276a2aa280a598fe976818a4a0d692ec45a9"
+    },
+    {
+      "path": "tests/CoppAddresd.UnitTests/ProgramProgress/EffectiveDayContentResolverTests.cs",
+      "sha256": "4f6433042e46a8a951655cd687397a774e0df4ce3faf6c8631d0f708d059eab9"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/EffectiveDayContentPostgresTests.cs",
+      "sha256": "b8fb879925968da054167e96f9caba640b1e636a312f52e83e79e31fbe22c860"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/NutritionCycleAdherencePostgresTests.cs",
+      "sha256": "82b24c02b5a8e8ea1cb6b6e46bc61ff84561e8d7904de031dd48bf8eb78e35a8"
+    },
+    {
+      "path": "docs/modules/program-progress/VERIFICACION-3.21.md",
+      "sha256": "feb14d9f11321a1d4228f55e9902026c116c7b0d6ba0c4cc183cee87c36abe38"
+    },
+    {
+      "path": "docs/modules/program-progress/RESIDUAL-DESPLEGADO-3.21.md",
+      "sha256": "6eb4da7fc7e66dfe7ffc686c0497828d81bb9b037c5f119ea086b40468273a5a"
+    },
+    {
+      "path": "docs/modules/program-progress/CIERRE-3.21-BORRADOR.md",
+      "sha256": "449da6c1d0bba934a2881bc149338e4644e8bc27cacda7e950c040864a50fbc2"
+    }
+  ],
+  "reproduce": "hashlib.sha256(subprocess.check_output([\"git\",\"show\",\"HEAD:\"+path])).hexdigest()"
+}

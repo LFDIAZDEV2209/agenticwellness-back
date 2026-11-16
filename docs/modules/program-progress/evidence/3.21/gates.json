@@ -1,0 +1,74 @@
+{
+  "sourceCommit": "9a59f3392021b46ec1e6f5f68c74886b58f18117",
+  "capturedAt": "2026-11-16T14:01:30.068365+00:00",
+  "build": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 15,
+    "log": "build.log"
+  },
+  "readerBuild": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 0,
+    "log": "reader-build.log"
+  },
+  "unit": {
+    "exitCode": 0,
+    "passed": 2997,
+    "skipped": 105,
+    "failed": 0,
+    "results": "unit-results.json"
+  },
+  "postgresMain": {
+    "exitCode": 0,
+    "passed": 222,
+    "skipped": 2,
+    "failed": 0,
+    "results": "postgres-results.json",
+    "omissions": [
+      {
+        "name": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ReleaseMerge_MigracionesNuevasYSaltosDesdeAmbasRamas_NoColisionanNiPierdenModelo",
+        "outcome": "NotExecuted",
+        "duration": "00:00:00.0010000",
+        "output": "Preflight: requiere PostgreSQL aislado e inventario Git de las dos ramas."
+      },
+      {
+        "name": "CoppAddresd.IntegrationTests.ProgramNarrativeHttpIntegrationTests.ClienteReal_ContratoBilingueY503DeProveedor",
+        "outcome": "NotExecuted",
+        "duration": "00:00:00.0010000",
+        "output": "Requiere simulación HTTP de Postman en COP_PROGRAM_NARRATIVE_SIM_URL."
+      }
+    ]
+  },
+  "canonical110b": {
+    "result": 0,
+    "classes": {
+      "podcast": 0,
+      "ejercicio": 0,
+      "nut": 0
+    },
+    "activeEnrollments": 175,
+    "evaluatedDays": 59778,
+    "writes": 0
+  },
+  "nutritionContinuity": {
+    "days": 590,
+    "enrollments": 3,
+    "finalMenuValidated": true,
+    "invalidDays": 0,
+    "menus": [
+      {
+        "menuDay": 30,
+        "days": 590
+      }
+    ]
+  },
+  "sqlApplyExecuted": false,
+  "sqlReverseExecuted": false,
+  "sqlReview": "static only; no execution",
+  "legacyPostgres15Failures": "not rerun or fixed; historical release-preflight evidence remains separate",
+  "administrativeClosure": "pending owner approval",
+  "push": false,
+  "tasksModified": false
+}
