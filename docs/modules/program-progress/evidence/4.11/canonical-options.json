@@ -1,0 +1,667 @@
+{
+  "ready": true,
+  "sourceCommit": "4c7a811f3f49574dfca18830b4d4b6c62987531b",
+  "capturedAt": "2026-11-15T22:02:28.9210661+00:00",
+  "transactionReadOnly": true,
+  "patientId": "5e3a337e-b29a-4c10-a8a8-904e55bd09e1",
+  "enrollmentId": "aa946028-0b77-4c73-a412-5c00e5936737",
+  "weekNumber": 2,
+  "editable": true,
+  "startDate": "2026-11-22",
+  "endDate": "2026-11-28",
+  "planVersion": "a1ab58f63934bdd3b3a3c4c3582b09e4320f8226672f21d1dd1f1255f1ad2b14",
+  "factRefs": [
+    {
+      "ref": "program.current",
+      "section": "program"
+    },
+    {
+      "ref": "nutrition.records",
+      "section": "nutrition"
+    }
+  ],
+  "slots": 14,
+  "routineAlternatives": 22,
+  "podcastAlternatives": 69,
+  "alternatives": [
+    {
+      "date": "2026-11-22",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "616875c0-9eb0-4f59-85d0-759d2ec7b8b6",
+      "label": "Cardio B\u00E1sico"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "7b659252-93e3-4f69-8d8a-95a9212cac65",
+      "label": "Pierna"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "854dd054-1d19-4d5b-a4db-dee1ca3271f7",
+      "label": "Espalda"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "label": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos"
+    },
+    {
+      "date": "2026-11-22",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "2cc7b85b-ed26-47e9-965e-29220bce4489",
+      "label": "Full Body"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "7b659252-93e3-4f69-8d8a-95a9212cac65",
+      "label": "Pierna"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "854dd054-1d19-4d5b-a4db-dee1ca3271f7",
+      "label": "Espalda"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "label": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos"
+    },
+    {
+      "date": "2026-11-23",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "2cc7b85b-ed26-47e9-965e-29220bce4489",
+      "label": "Full Body"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "616875c0-9eb0-4f59-85d0-759d2ec7b8b6",
+      "label": "Cardio B\u00E1sico"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "854dd054-1d19-4d5b-a4db-dee1ca3271f7",
+      "label": "Espalda"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-24",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "2cc7b85b-ed26-47e9-965e-29220bce4489",
+      "label": "Full Body"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "616875c0-9eb0-4f59-85d0-759d2ec7b8b6",
+      "label": "Cardio B\u00E1sico"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "7b659252-93e3-4f69-8d8a-95a9212cac65",
+      "label": "Pierna"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "854dd054-1d19-4d5b-a4db-dee1ca3271f7",
+      "label": "Espalda"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "label": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos"
+    },
+    {
+      "date": "2026-11-25",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "2cc7b85b-ed26-47e9-965e-29220bce4489",
+      "label": "Full Body"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "616875c0-9eb0-4f59-85d0-759d2ec7b8b6",
+      "label": "Cardio B\u00E1sico"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "7b659252-93e3-4f69-8d8a-95a9212cac65",
+      "label": "Pierna"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "label": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos"
+    },
+    {
+      "date": "2026-11-26",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "616875c0-9eb0-4f59-85d0-759d2ec7b8b6",
+      "label": "Cardio B\u00E1sico"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "7b659252-93e3-4f69-8d8a-95a9212cac65",
+      "label": "Pierna"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "854dd054-1d19-4d5b-a4db-dee1ca3271f7",
+      "label": "Espalda"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "label": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos"
+    },
+    {
+      "date": "2026-11-27",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "616875c0-9eb0-4f59-85d0-759d2ec7b8b6",
+      "label": "Cardio B\u00E1sico"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "7b659252-93e3-4f69-8d8a-95a9212cac65",
+      "label": "Pierna"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "routine",
+      "kind": "routine",
+      "resourceId": "854dd054-1d19-4d5b-a4db-dee1ca3271f7",
+      "label": "Espalda"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "1de2fa75-c6e0-40bf-a309-c5674466b180",
+      "label": "Podcast: Nutriobi\u00F3tico y microbiota"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "label": "Ep. 6: Entrenamiento de Fuerza y Longevidad Mitocondrial"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "label": "Ep. 2: Flexibilidad Metab\u00F3lica y Nutrici\u00F3n Celular"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "label": "Ep. 3: Microbiota Intestinal y el Eje Intestino-Cerebro"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "label": "Ep. 18: La anatom\u00EDa de un h\u00E1bito que dura"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "label": "Ep. 19: Rituales de ma\u00F1ana en 20 minutos"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "565b1dd9-06c8-4d67-89b6-4eb9b63c7a98",
+      "label": "Podcast: Introducci\u00F3n al programa"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "891767f2-0913-4df6-8137-282f24969e37",
+      "label": "Prueba"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "label": "Ep. 1: Fundamentos del Biohacking y Ritmos Circadianos"
+    },
+    {
+      "date": "2026-11-28",
+      "slotKind": "podcast",
+      "kind": "podcast",
+      "resourceId": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "label": "Ep. 7: Ayuno Intermitente y Autofagia Estrat\u00E9gica"
+    }
+  ],
+  "noAiCalls": true,
+  "noPlanWrites": true
+}

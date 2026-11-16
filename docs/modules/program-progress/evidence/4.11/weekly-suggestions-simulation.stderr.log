@@ -1,0 +1,2 @@
+[dataset-daemon] exited unexpectedly: code=4294967295 signal=null
+[dataset-daemon] died (code=4294967295 signal=null); auto-restarting (attempt 1)

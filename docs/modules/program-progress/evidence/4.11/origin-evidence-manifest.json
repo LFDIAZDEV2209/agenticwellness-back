@@ -1,0 +1,163 @@
+{
+  "commit": "e0a9c29dfbf551eaa3d51a97173fe72b55a0781b",
+  "capturedAt": "2026-11-15T22:14:31.323161+00:00",
+  "artifacts": [
+    {
+      "path": "canonical-options.json",
+      "bytes": 20558,
+      "sha256": "cab222053047a09d2191ca75280a4fafb7a604b3dafe76b4db593d33063162a7"
+    },
+    {
+      "path": "canonical-reader-input.json",
+      "bytes": 1510,
+      "sha256": "ac345bae5ba5cf5ea11a889c85abe6ff88598a02710d92990e6f268768e8ddfd"
+    },
+    {
+      "path": "degradation-gates.json",
+      "bytes": 277,
+      "sha256": "f3790ee0a1f9700c64faac5dd391d6866aa7c145b2e0f77e1c27baecc756fa3c"
+    },
+    {
+      "path": "fixture-check.json",
+      "bytes": 6688,
+      "sha256": "a7eb9491b330104d44a1f2100675fdac84f8cb6d7295a70ba88cb14ba37cf42a"
+    },
+    {
+      "path": "owned-process-tree.json",
+      "bytes": 3478,
+      "sha256": "03bdc2bcfaa79044b26bfbe28839c2ea1a11c1c6aa3c8a962b9dc42545cfc499"
+    },
+    {
+      "path": "owned-processes.json",
+      "bytes": 685,
+      "sha256": "9f9184c1dafabc507843b8bffe42573dcdbf0fc9c7a6adad3fe739b7f1e046c4"
+    },
+    {
+      "path": "patient-summary-simulation.ndjson",
+      "bytes": 973,
+      "sha256": "f0f0f2d45278df5538aad4fc2ed358e7f2c768c09d90273068aade902bad8652"
+    },
+    {
+      "path": "patient-summary-simulation.stderr.log",
+      "bytes": 147,
+      "sha256": "6c0bdb882d1f1390d3bdb076e9e3b8c575cffd2874374938cd4f9887648733be"
+    },
+    {
+      "path": "podcast-catalog-check.json",
+      "bytes": 1665,
+      "sha256": "f553c09a45e5d1f0cf3cd58462140bd9aabe088257022bffdd63d0e07ffbab59"
+    },
+    {
+      "path": "postgres-degradation.log",
+      "bytes": 540,
+      "sha256": "7e81907db0dbad99c9942f2d4356877b3e1b837c2daa3dc6102a7c819d410ac5"
+    },
+    {
+      "path": "postgres-degradation.trx",
+      "bytes": 6479,
+      "sha256": "7a21267aed07729ec59ffb4d23f67d3fcd761381fc53b15f2cfe3a48a6a8ac72"
+    },
+    {
+      "path": "probe-readonly.py",
+      "bytes": 4224,
+      "sha256": "6caab842594554b3f1093682efbe5e32d952ab009f07748bcd64495971cd2cdd"
+    },
+    {
+      "path": "processes-closed.json",
+      "bytes": 384,
+      "sha256": "51b663e29a06236923799e4c02321305d108be072386b8eb8bd8b687283f86fd"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4726,
+      "sha256": "13d73d4a629a1d78b6a793035346de38b7d5c70e03a6d2a14d03cd91c8e57251"
+    },
+    {
+      "path": "readonly-endpoints-before-scope-reconciliation.json",
+      "bytes": 6540,
+      "sha256": "6d8b83b397ab4fd2c54f6d0c3355af6108a0226ced2c3f6e38249b91bf5f92c3"
+    },
+    {
+      "path": "readonly-endpoints.json",
+      "bytes": 6539,
+      "sha256": "b896469be5a67debd5ed2e65ebfabb631f48c8520bf17eb93cb8aaf4bff1d86e"
+    },
+    {
+      "path": "results-summary.json",
+      "bytes": 2341,
+      "sha256": "09e5e771062cdaf0d58cadf4d47466a336cdc876445676bd2b30590ecb8ad29a"
+    },
+    {
+      "path": "run-degradation.ps1",
+      "bytes": 4962,
+      "sha256": "b5fa5ffb7f3158cba0868d7a42ddbf1fb5ea346733a9e6f76257c7e50e6608a1"
+    },
+    {
+      "path": "sentinel-diff.json",
+      "bytes": 379,
+      "sha256": "dcc2436b91f9f6f2eecee4255b589390ad6695141cbf1c91721502fcf5da6fc9"
+    },
+    {
+      "path": "sentinel-reconciliation.json",
+      "bytes": 1082,
+      "sha256": "6b3acfc932229cd7f37d73e9e98f3afaeef4d75581a076541ee185d991c72b06"
+    },
+    {
+      "path": "simulation-clients.log",
+      "bytes": 519,
+      "sha256": "f2de14809a490f56139e8e3ca9cf4f44d1b2480e7702466c1257bee864ee63f9"
+    },
+    {
+      "path": "simulation-clients.trx",
+      "bytes": 4758,
+      "sha256": "4a630b97841a8aac0bf687be01f6a6ee0fd5e15afcacbb7db194779bc73cb19a"
+    },
+    {
+      "path": "suggestion-seed/Program.cs",
+      "bytes": 6787,
+      "sha256": "12e574220a489bc950519fc5fddcf70038095899b136ca5d6820357e5ada8d4f"
+    },
+    {
+      "path": "suggestion-seed/Seed.csproj",
+      "bytes": 407,
+      "sha256": "13de400d20908fca96bfcd6ec0644e3f1a6adb89f442bfb1f201c5196fd3d805"
+    },
+    {
+      "path": "synthetic-suggestion-seed.json",
+      "bytes": 482,
+      "sha256": "122c87f9ff4ba92d726c0495712696c6cc74f9af3feb266a05d92550068ab581"
+    },
+    {
+      "path": "synthetic-suggestion-seed.log",
+      "bytes": 82,
+      "sha256": "07f16af063371dd562f0d7b85c4c0d4cc7f863f00da23fe7c5e15513a1c95e64"
+    },
+    {
+      "path": "weekly-suggestions-simulation.ndjson",
+      "bytes": 1234,
+      "sha256": "5be9ff426ea837d99d6de0e180d007e159833878577c3d9d4959cbcbe2c260df"
+    },
+    {
+      "path": "weekly-suggestions-simulation.stderr.log",
+      "bytes": 147,
+      "sha256": "6c0bdb882d1f1390d3bdb076e9e3b8c575cffd2874374938cd4f9887648733be"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.ai\\operations\\organizar-experiencia-bienestar\\4.11-back-fixture.json",
+      "bytes": 16378,
+      "sha256": "655a123ba525456cccc2e2b173eb65dd9a58ec06cafc85704e2c53f63238eda8"
+    },
+    {
+      "path": "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.ai\\operations\\organizar-experiencia-bienestar\\4.11-back-fixture-helper.py",
+      "bytes": 22391,
+      "sha256": "462150015e5591a99ccb77f6bacaf276418733011f81e5eb8a35b9587e4aeb17"
+    },
+    {
+      "path": "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.worktrees\\back-f4\\docs\\modules\\program-progress\\QA-4.11.md",
+      "bytes": 10744,
+      "sha256": "d3356f936d1b753c84d94ede24e40b0587cc406ea55d2e4c47da5be34c95a784"
+    }
+  ]
+}

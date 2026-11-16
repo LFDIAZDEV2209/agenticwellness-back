@@ -1,0 +1,72 @@
+{
+  "commit": "e0a9c29dfbf551eaa3d51a97173fe72b55a0781b",
+  "status": "Soporte backend preparado; UI 4.11 y bloqueo audio 1.14 pendientes",
+  "patientsCreated": [
+    "8ce7fbef-8533-4100-8dd3-39f193ee4617",
+    "5e3a337e-b29a-4c10-a8a8-904e55bd09e1"
+  ],
+  "testsCompleted": 9,
+  "nutritionPlanPublishedDays": 30,
+  "programState": "PendingAssignment",
+  "programAutoActivated": false,
+  "routineProposed": "Caminata Activa",
+  "podcastCells": 7,
+  "knownDemoPodcastReferences": 5,
+  "unappliedSuggestions": 5,
+  "suggestionProvider": "Postman HTTP simulado, handler/guard/store/EF reales",
+  "applyRequests": 0,
+  "weekHashMatchesBaseline": true,
+  "applicationAuditCount": 0,
+  "liveAiAttemptsWithZeroSuggestions": 2,
+  "gates": {
+    "simulation-clients": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "finish": "2026-11-15T17:00:56.1894988-05:00"
+    },
+    "postgres-degradation": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "finish": "2026-11-15T17:01:20.7588939-05:00"
+    }
+  },
+  "liveReads": {
+    "requests": 9,
+    "assertionsPassed": 19,
+    "assertionsFailed": 0
+  },
+  "closed320AndR7Unchanged": true,
+  "parkedAppFixtureUnchanged": true,
+  "originalPublishedPlanRowsPreserved": 7,
+  "originalPublishedReviewRowsPreserved": 4,
+  "concurrentAdditionalUnrelatedPublishedPlans": 1,
+  "sentinelObservationPreserved": true,
+  "sharedServicesRestarted": false,
+  "migrationsAppliedToSharedDb": 0,
+  "push": false,
+  "tasksMdChanged": false,
+  "productCodeChanged": false,
+  "moduleDocumentationAdded": true,
+  "qaCredentialSecretsPersistedInEvidence": false,
+  "closedOwnProcesses": [
+    888,
+    57440,
+    26684,
+    35216,
+    58208,
+    18972,
+    21436,
+    28296
+  ],
+  "ownPersistentServersLeft": 0,
+  "sharedStackLeft": "Auth5123/PID20808, Gateway5080/PID35056, API5122/PID40556, AI8000/PID43476, FoodAI8010/PID61492",
+  "limitations": [
+    "UI/pantallas y e2e integral 4.11 pendientes por rediseño",
+    "PendingAssignment no es Active",
+    "5/7 referencias de podcast de la propuesta usan demo; 1.14 vigente",
+    "Borrador con 5 sugerencias es sintético etiquetado; dos intentos LLM live dieron cero",
+    "Pruebas de degradación aíslan proveedor y BD, no apagan ni redirigen stack compartido"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-11-15T22:11:12.501577+00:00",
+  "diff": {
+    "publishedPlans": {
+      "before": {
+        "count": 7,
+        "sha256": "38f4b9042436af34ff8f23f63c7781b3ca051cb9579dae2a3a083981c3c9499f"
+      },
+      "after": {
+        "count": 8,
+        "sha256": "1aefee21b6d0fba958253e31adc1e3b38b2f0d2f7d8f0528e843e9927acc45f8"
+      }
+    }
+  }
+}

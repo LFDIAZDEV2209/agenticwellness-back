@@ -1,0 +1,14 @@
+{
+    "pids":  [
+                 888,
+                 57440,
+                 26684,
+                 35216,
+                 58208,
+                 18972,
+                 21436,
+                 28296
+             ],
+    "method":  "PID/ruta/linea de comandos y árbol de descendencia verificados; sin selección por puerto ni nombre",
+    "stackRestarted":  false
+}

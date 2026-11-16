@@ -1,0 +1,5 @@
+Test run for C:\Users\Luis\Documents\CoppAddresd\Repos\.tmp\back-f4-412-e0a9c29\tests\CoppAddresd.IntegrationTests\bin\Validation412\CoppAddresd.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: C:\Users\Luis\Documents\CoppAddresd\Repos\openspec\changes\organizar-experiencia-bienestar\revision-4.11-back\postgres-degradation.trx
+
+Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 22 s - CoppAddresd.IntegrationTests.dll (net10.0)

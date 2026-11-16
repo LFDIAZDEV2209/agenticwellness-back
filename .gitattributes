@@ -1,2 +1,7 @@
 # Conserva el SQL nutricional identico al generador, incluso con autocrlf en Windows.
 src/CoppAddresd.Infrastructure/Migrations/Seed/AddNutritionFoodCatalog.sql text eol=lf
+
+# Evidencia QA: los hashes corresponden a UTF-8/LF también en Windows.
+docs/modules/program-progress/QA-4.11.md text eol=lf
+docs/modules/program-progress/evidence/4.11/** text eol=lf
+scripts/qa/program-assignment/prepare-back-4.11.py text eol=lf

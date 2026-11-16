@@ -1,0 +1,239 @@
+{
+  "commit": "e0a9c29dfbf551eaa3d51a97173fe72b55a0781b",
+  "capturedAt": "2026-11-15T22:12:16.694740+00:00",
+  "target": "http://127.0.0.1:5122",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/v1/health-tests/me/assignments?scope=initial",
+      "status": 200,
+      "expected": 200,
+      "bytes": 5073,
+      "bodySha256": "326c25f6bcf39030c9b85cc26c0fbb01fe307ab64f7dcea36611826e39faeeec",
+      "cacheControl": null,
+      "itemCount": 9
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me/nutrition-plan",
+      "status": 200,
+      "expected": 200,
+      "bytes": 337611,
+      "bodySha256": "5eeb8feb7cfe088241ea0859724001990d10f5c7a16304248c98c5b4ebe70f3a",
+      "cacheControl": null,
+      "keys": [
+        "allergens",
+        "currentDay",
+        "dailyCalorieTarget",
+        "dailyCarbsTarget",
+        "dailyFatTarget",
+        "dailyFiberTarget",
+        "dailyProteinTarget",
+        "dailyWaterMl",
+        "days",
+        "disclaimer",
+        "durationDays",
+        "endDate",
+        "id",
+        "mealTiming",
+        "name",
+        "revision",
+        "startDate",
+        "status",
+        "targetCondition"
+      ],
+      "dayCount": 30,
+      "publishedPlanPresent": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/me/snapshot",
+      "status": 404,
+      "expected": 404,
+      "bytes": 87,
+      "bodySha256": "1ce0870548b462bd51d09f9e62f5302ce2025fb09494ca97f07618b303a99b6b",
+      "cacheControl": null,
+      "keys": [
+        "message"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/me/completion",
+      "status": 200,
+      "expected": 200,
+      "bytes": 19,
+      "bodySha256": "83f08e8906b912b727d8f70a42960fe7802b0c1b8d48fbf980e1815768d479aa",
+      "cacheControl": null,
+      "keys": [
+        "completion"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/me/snapshot",
+      "status": 200,
+      "expected": 200,
+      "bytes": 14555,
+      "bodySha256": "fbadc74e1050464daba882f683fb66207d1a8a7abe6ca1bd73e80c5b7eda49a6",
+      "cacheControl": null,
+      "keys": [
+        "calendar",
+        "dailyBonusAmount",
+        "enrollmentId",
+        "nextMilestoneDays",
+        "streak",
+        "streakChests",
+        "template",
+        "todayBonusAvailable",
+        "todayLocalDate",
+        "todayPoints",
+        "todayPointsMax",
+        "todayTasks",
+        "upcoming",
+        "xp"
+      ],
+      "taskCount": 6
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/erp/patients/5e3a337e-b29a-4c10-a8a8-904e55bd09e1/ai-summary?language=es",
+      "status": 200,
+      "expected": 200,
+      "bytes": 33,
+      "bodySha256": "10df8fe666a2cc9390fc791a1cb7c99357b0eb2973c5dd1dbc506a3621d1e06e",
+      "cacheControl": "no-store,no-cache",
+      "keys": [
+        "status",
+        "summary"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/erp/patients/5e3a337e-b29a-4c10-a8a8-904e55bd09e1/ai-summary?language=en",
+      "status": 200,
+      "expected": 200,
+      "bytes": 33,
+      "bodySha256": "10df8fe666a2cc9390fc791a1cb7c99357b0eb2973c5dd1dbc506a3621d1e06e",
+      "cacheControl": "no-store,no-cache",
+      "keys": [
+        "status",
+        "summary"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/erp/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/weeks/2/ai-suggestions",
+      "status": 200,
+      "expected": 200,
+      "bytes": 2015,
+      "bodySha256": "568e6d0608552afd0855f22e394239fb80d33a9e65f5401f3e409d22af9e2c35",
+      "cacheControl": "no-store,no-cache",
+      "keys": [
+        "draft",
+        "status"
+      ],
+      "suggestionsCount": 5,
+      "model": "postman-weekly-synthetic"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/week/2",
+      "status": 200,
+      "expected": 200,
+      "bytes": 11981,
+      "bodySha256": "b76de238d865751a58dfa98f2b4a6ad189e5abd9f07b9812c5b84124434a9a4c",
+      "cacheControl": null,
+      "keys": [
+        "days",
+        "exerciseRoutine",
+        "nutritionPlan",
+        "weekEndDateLocal",
+        "weekNumber",
+        "weekStartDateLocal"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "name": "HTTP 200 /api/v1/health-tests/me/assignments?scope=initial",
+      "passed": true
+    },
+    {
+      "name": "9/9 bateria inicial real",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/me/nutrition-plan",
+      "passed": true
+    },
+    {
+      "name": "plan nutricional con 30 dias",
+      "passed": true
+    },
+    {
+      "name": "HTTP 404 /api/v1/program/me/snapshot",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/me/completion",
+      "passed": true
+    },
+    {
+      "name": "sin inventar programa terminado",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/me/snapshot",
+      "passed": true
+    },
+    {
+      "name": "compañero activo con tareas",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/erp/patients/5e3a337e-b29a-4c10-a8a8-904e55bd09e1/ai-summary?language=es",
+      "passed": true
+    },
+    {
+      "name": "GET resumen sin generar es",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/erp/patients/5e3a337e-b29a-4c10-a8a8-904e55bd09e1/ai-summary?language=en",
+      "passed": true
+    },
+    {
+      "name": "GET resumen sin generar en",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/erp/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/weeks/2/ai-suggestions",
+      "passed": true
+    },
+    {
+      "name": "borrador sintetico real consultable",
+      "passed": true
+    },
+    {
+      "name": "ninguna sugerencia aplicada",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/week/2",
+      "passed": true
+    },
+    {
+      "name": "semana y auditoria sin mutacion",
+      "passed": true
+    },
+    {
+      "name": "sentinelas protegidos iguales",
+      "passed": true
+    }
+  ],
+  "passed": 19,
+  "failed": 0,
+  "businessWritesPerformed": 0,
+  "scope": "Lecturas sanas del runtime compartido; degradación del proveedor se valida aparte en PostgreSQL aislado, sin apagar AI8000."
+}

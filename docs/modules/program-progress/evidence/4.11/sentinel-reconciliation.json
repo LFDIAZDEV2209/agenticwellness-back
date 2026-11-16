@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-11-15T22:12:10.955573+00:00",
+  "globalPublishedPlansBefore": 7,
+  "globalPublishedPlansObserved": 8,
+  "newUnrelatedPublishedPlanId": "c1d31226-d729-46bc-95e1-27c2ac46e9d1",
+  "originalPublishedPlanIds": [
+    "03e89e4a-61a4-4486-8d9b-f932a156f3ca",
+    "132e81a7-c290-49df-a482-3724716f4311",
+    "1db63c97-d290-4a79-95e9-9be1c2ed0a29",
+    "30d9e627-f154-4179-88ad-0525158f9eca",
+    "4d084fa0-e4a3-464c-be82-abd59aea68a2",
+    "61bb9874-d51b-4214-90f7-3427b12e8c89",
+    "91a41a69-02ba-49d6-8145-49d68ab3ca96"
+  ],
+  "originalRowsSha256": "38f4b9042436af34ff8f23f63c7781b3ca051cb9579dae2a3a083981c3c9499f",
+  "originalRowsMatchInitialBaselineExactly": true,
+  "publishedReviewsMatchInitialBaselineExactly": true,
+  "method": "Entre 8 filas actuales, excluir una sola fila nueva recupera exactamente el SHA-256 inicial de las 7 filas originales. Se fija ese conjunto original de IDs sin alterar el hash baseline.",
+  "attribution": "Cambio observado fuera de los dos pacientes propios; no se atribuye actor sin evidencia adicional."
+}

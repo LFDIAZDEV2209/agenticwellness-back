@@ -1,0 +1,46 @@
+{
+  "patientId": "5e3a337e-b29a-4c10-a8a8-904e55bd09e1",
+  "enrollmentId": "aa946028-0b77-4c73-a412-5c00e5936737",
+  "weekNumber": 2,
+  "accounts": {
+    "generator": {
+      "login": "qa47-20261115-5e2d6a97-generator@qa.coppaddresd.test",
+      "application": "erp",
+      "credentialTarget": "CoppAddresd/QA/4.7/20261115-5e2d6a97/generator",
+      "userId": "01a1e0c2-3b80-7997-b2a8-7eb8897e5bc6",
+      "professionalId": "c92a65c8-79a2-4d26-a481-0889fa790612",
+      "permissions": [
+        "Program.Edit",
+        "Media.Create",
+        "Program.Profile360View",
+        "Program.AiManage",
+        "Program.AiView",
+        "Documents.Upload",
+        "Patients.Update",
+        "ClinicalRecords.Update",
+        "ClinicalRecords.View",
+        "Patients.Create",
+        "Documents.View",
+        "ClinicalRecords.Create",
+        "Documents.Update",
+        "Telemedicine.AppointmentsCancel",
+        "Telemedicine.RequestsView",
+        "Telemedicine.RequestsConfirm",
+        "Telemedicine.AppointmentsReschedule",
+        "Telemedicine.AppointmentsView",
+        "Telemedicine.AppointmentsSchedule",
+        "Telemedicine.AgendaView",
+        "Telemedicine.AlertsView",
+        "Patients.ViewOwn",
+        "Prescriptions.View",
+        "Prescriptions.Create",
+        "HealthTests.ViewOwn",
+        "HealthTests.Review",
+        "HealthTests.Assign",
+        "LegalDocuments.View",
+        "Sos.Alerts.Manage",
+        "Media.View"
+      ]
+    }
+  }
+}
