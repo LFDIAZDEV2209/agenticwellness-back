@@ -5,6 +5,7 @@ Resumen a pedido para Perfil 360: [contrato y evidencia 4.4b](./PATIENT-SUMMARY.
 Sugerencias semanales con confirmación humana individual: [contrato y evidencia 4.5b](./WEEKLY-SUGGESTIONS.md).
 Arranque automático completo A2/F2 y reparación de la plantilla activa de 83 días:
 [contrato, reversa y residual de 1.14-D](./REPAIR-1.14-D.md).
+[Reparación del residual archivado y cero global 1.14](./REPAIR-1.14-LEGACY.md).
 
 Documento de contexto para el módulo de **Progreso del Programa** del paciente: el recorrido gamificado de 83 semanas que acompaña a los pacientes de obesidad, diabetes y riesgo cardiovascular de la aseguradora. Aquí encontrarás **qué hace, por qué lo hace y qué reglas lo rigen** desde la perspectiva del producto y del negocio. Los detalles técnicos (modelo de datos, endpoints, migraciones, tareas) viven en [`PLAN.md`](./PLAN.md), [`SPEC.md`](./SPEC.md) y [`TASKS.md`](./TASKS.md).
 

@@ -1,0 +1,17 @@
+{
+  "baseCommit": "7b446ee",
+  "files": [
+    {
+      "path": "scripts/ProgramContentAudit/Program.cs",
+      "sha256": "098ae2cb487f4e2db1601a1581dd19d55665b413b049622d5421d021322b2f13"
+    },
+    {
+      "path": "scripts/ProgramContentAudit/ProgramLegacyRepairSimulation.cs",
+      "sha256": "9af80dac773525e01ea4111678d0de2bef87f7277a65bef5ffac293eb6e95d5c"
+    },
+    {
+      "path": "scripts/qa/program-assignment/repair-legacy-template-1.14.py",
+      "sha256": "dd683a189cfaa479909888f903867fd8ffab84f684e32883f3d399c0e457c2aa"
+    }
+  ]
+}

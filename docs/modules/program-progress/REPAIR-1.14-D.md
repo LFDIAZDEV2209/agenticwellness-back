@@ -1,5 +1,9 @@
 # 1.14 — opción D autorizada, plantilla reparada y arranque A2/F2
 
+**Ampliación posterior:** Luis autorizó reparar las referencias de `default-83w`.
+El residual de 50.322 descrito en este corte ya quedó en cero global, con reversa
+probada y datos cerrados intactos: [resultado vigente](REPAIR-1.14-LEGACY.md).
+
 Luis autorizó el 15-11-2026 reparar la plantilla activa porque el proyecto aún
 no está en operación. Se leyeron PLAN-1.14-AUDIOS, ANSWERS-OWNER A2/F2/C1 y
 ARQUITECTURA §5.1. No se alteró la precedencia de futuras Locked.

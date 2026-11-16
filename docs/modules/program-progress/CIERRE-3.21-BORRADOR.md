@@ -1,5 +1,10 @@
 # Borrador de cierre 3.21 — pendiente de aprobación del owner
 
+**Actualización posterior:** la [reparación de `default-83w`](REPAIR-1.14-LEGACY.md)
+dejó 1.10b global en **0**, con reversa probada. La excepción de 50.322 huecos
+propuesta más abajo es histórica y ya no es necesaria para ese corte. Este
+documento no sustituye la aprobación del cierre por el owner ni acredita C1/UI.
+
 **No constituye cierre ni declaración de cero.** Luis autorizó la reparación D
 de la plantilla activa; no ha aprobado una excepción al criterio global de 3.21.
 

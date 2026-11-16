@@ -14,3 +14,6 @@ docs/modules/program-progress/CIERRE-3.21-BORRADOR.md text eol=lf
 docs/modules/program-progress/evidence/1.14-D/** text eol=lf
 scripts/qa/program-assignment/repair-template-1.14.py text eol=lf
 scripts/qa/program-assignment/verify-audio-1.14.py text eol=lf
+scripts/qa/program-assignment/repair-legacy-template-1.14.py text eol=lf
+docs/modules/program-progress/REPAIR-1.14-LEGACY.md text eol=lf
+docs/modules/program-progress/evidence/1.14-legacy/** text eol=lf

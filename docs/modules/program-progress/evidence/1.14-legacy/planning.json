@@ -1,0 +1,163 @@
+{
+  "mode": "plan",
+  "capturedAt": "2026-11-16T02:50:04.683878+00:00",
+  "templateId": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+  "templateStatus": "Archived",
+  "weeks": 83,
+  "referenceUpdates": 0,
+  "alreadyAtTarget": false,
+  "enrollmentsUpdated": 0,
+  "weeksUpdated": 0,
+  "closedDataUnchanged": true,
+  "individualsUnchanged": true,
+  "allGuardsUnchanged": true,
+  "protectedBefore": {
+    "closed320AndR7": {
+      "foodIntakes": {
+        "count": 1,
+        "sha256": "b647edf7b889f306096e82b2b48d8faf4b6673b9d5f2b87e4a37f73f94884c37"
+      },
+      "foodAnalyses": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "cycles": {
+        "count": 3,
+        "sha256": "8b5d439d2cc3feb3c6ba5c08d07fd3c50c295a89988028c1a47dd1e2e60e2d13"
+      },
+      "cycleReviews": {
+        "count": 2,
+        "sha256": "cfb8d21574f1a95351a3c7ca1f60eda8eb5830a80c6803168d942c87a541885b"
+      },
+      "cycleAttachments": {
+        "count": 3,
+        "sha256": "86815dfcd04158c31d4c74bf0cfd9576d346270f981fb77055281f742cb1936a"
+      },
+      "cycleHighlights": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dayReviews": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "prescriptions": {
+        "count": 3,
+        "sha256": "67edbdf3490c46f74f8ab253ac52d67fb468f509cc5ce36257fdf5fbf2ad92dc"
+      },
+      "enrollment": {
+        "count": 1,
+        "sha256": "7018d2386b72d8c5e98df6c070f8a47e6e808b88ea9cc1ac661d251355cad040"
+      },
+      "programWeeks": {
+        "count": 12,
+        "sha256": "b69067da6b15fe7334a076b977035e4e2b066935ed7acdca313e493bbc3f7553"
+      },
+      "taskCompletions": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "r7Intakes": {
+        "count": 33,
+        "sha256": "420e1c9e2db2cdaa6c170ab2f4f6fd3d9e3ae5af0909a9969d2acfec81046362"
+      },
+      "closed320": {
+        "revision": 7,
+        "publishedAt": "2026-11-15T18:37:50.801194+00:00",
+        "nextPrescriptionId": "91a41a69-02ba-49d6-8145-49d68ab3ca96"
+      }
+    },
+    "parkedAppFixtureFileSha256": "1dcaec0ac08e1540d6b254aeb3332b097af178253279ef001b237db0857b1046",
+    "publishedPlans": {
+      "count": 7,
+      "sha256": "38f4b9042436af34ff8f23f63c7781b3ca051cb9579dae2a3a083981c3c9499f"
+    },
+    "publishedReviews": {
+      "count": 4,
+      "sha256": "d7ad6246126ce730db2cbab50d8e5eaed9f695b3d98b56eea201e508188e564a"
+    },
+    "parkedEnrollments": {
+      "count": 1,
+      "sha256": "08830ae6b444aa6281416ae5d3eab0ec6c6b41439b7d95034b2e64cc949354ca"
+    },
+    "parkedEvaluations": {
+      "count": 8,
+      "sha256": "1fa67bfa0331f960c284675425fd956acc4e7bc13a4d059fb5953828daea8788"
+    }
+  },
+  "protectedAfter": {
+    "closed320AndR7": {
+      "foodIntakes": {
+        "count": 1,
+        "sha256": "b647edf7b889f306096e82b2b48d8faf4b6673b9d5f2b87e4a37f73f94884c37"
+      },
+      "foodAnalyses": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "cycles": {
+        "count": 3,
+        "sha256": "8b5d439d2cc3feb3c6ba5c08d07fd3c50c295a89988028c1a47dd1e2e60e2d13"
+      },
+      "cycleReviews": {
+        "count": 2,
+        "sha256": "cfb8d21574f1a95351a3c7ca1f60eda8eb5830a80c6803168d942c87a541885b"
+      },
+      "cycleAttachments": {
+        "count": 3,
+        "sha256": "86815dfcd04158c31d4c74bf0cfd9576d346270f981fb77055281f742cb1936a"
+      },
+      "cycleHighlights": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dayReviews": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "prescriptions": {
+        "count": 3,
+        "sha256": "67edbdf3490c46f74f8ab253ac52d67fb468f509cc5ce36257fdf5fbf2ad92dc"
+      },
+      "enrollment": {
+        "count": 1,
+        "sha256": "7018d2386b72d8c5e98df6c070f8a47e6e808b88ea9cc1ac661d251355cad040"
+      },
+      "programWeeks": {
+        "count": 12,
+        "sha256": "b69067da6b15fe7334a076b977035e4e2b066935ed7acdca313e493bbc3f7553"
+      },
+      "taskCompletions": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "r7Intakes": {
+        "count": 33,
+        "sha256": "420e1c9e2db2cdaa6c170ab2f4f6fd3d9e3ae5af0909a9969d2acfec81046362"
+      },
+      "closed320": {
+        "revision": 7,
+        "publishedAt": "2026-11-15T18:37:50.801194+00:00",
+        "nextPrescriptionId": "91a41a69-02ba-49d6-8145-49d68ab3ca96"
+      }
+    },
+    "parkedAppFixtureFileSha256": "1dcaec0ac08e1540d6b254aeb3332b097af178253279ef001b237db0857b1046",
+    "publishedPlans": {
+      "count": 7,
+      "sha256": "38f4b9042436af34ff8f23f63c7781b3ca051cb9579dae2a3a083981c3c9499f"
+    },
+    "publishedReviews": {
+      "count": 4,
+      "sha256": "d7ad6246126ce730db2cbab50d8e5eaed9f695b3d98b56eea201e508188e564a"
+    },
+    "parkedEnrollments": {
+      "count": 1,
+      "sha256": "08830ae6b444aa6281416ae5d3eab0ec6c6b41439b7d95034b2e64cc949354ca"
+    },
+    "parkedEvaluations": {
+      "count": 8,
+      "sha256": "1fa67bfa0331f960c284675425fd956acc4e7bc13a4d059fb5953828daea8788"
+    }
+  },
+  "fileSha256": "ae74068abfb1b47914a3336e40fbc3d4e07cc9d7a8226555f226f323af0b5703"
+}

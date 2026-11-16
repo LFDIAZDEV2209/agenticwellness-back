@@ -1,0 +1,430 @@
+{
+  "operation": "1.14-legacy-refs",
+  "stage": "proposal",
+  "capturedAt": "2026-11-16T02:50:04.580378+00:00",
+  "templateId": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+  "templateHeader": {
+    "id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+    "code": "default-83w",
+    "name": "Programa 83 semanas",
+    "status": "Archived",
+    "version": 3,
+    "created_at": "2026-08-27T19:14:56.767208+00:00",
+    "created_by": null,
+    "updated_at": "2026-09-30T21:34:57.107221+00:00",
+    "updated_by": null,
+    "description": "Plantilla integral por defecto del programa de 83 semanas (auto-sembrada).",
+    "total_weeks": 83,
+    "published_at": null,
+    "streak_min_tasks": 1,
+    "essential_task_codes": [
+      "nut",
+      "ejercicio",
+      "nutraceutico"
+    ]
+  },
+  "beforeRows": [
+    {
+      "id": "a81fea1b-0f27-41c4-aaea-c542eded7e6a",
+      "points": 80,
+      "weekday": 1,
+      "media_id": "e7c3979b-5dbe-4b9c-a77d-7b8014b0a355",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768212+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "316680d6-b336-4829-8630-47ebabe13333",
+      "points": 80,
+      "weekday": 2,
+      "media_id": "66d8b715-bfae-4545-bbd9-ecc4715060c6",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768741+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "66141034-2e5a-4495-b6b8-cce40bc4dabc",
+      "points": 80,
+      "weekday": 3,
+      "media_id": "be217da4-6b1f-4c4c-9b00-67bf940fcaf1",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768777+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "4a27a190-d67d-4ecc-9d68-5e741cf531d1",
+      "points": 80,
+      "weekday": 4,
+      "media_id": "7a23f517-b71f-44cf-9cea-a1e2a8bcd44d",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768779+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "898012bb-ca75-462b-98a1-821a3a61f154",
+      "points": 80,
+      "weekday": 5,
+      "media_id": "ab682ed6-f6c6-49cf-a064-c5eec53ce3fb",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768780+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "31a5c9bc-1213-4701-9be3-0bcfbad3e13a",
+      "points": 80,
+      "weekday": 6,
+      "media_id": "ec47f53d-fe77-42c1-b772-2418e39e5cf0",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768781+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "f1b46962-10bf-4ade-a834-92df3a1a8ab6",
+      "points": 80,
+      "weekday": 7,
+      "media_id": "ed1e3490-1e91-41a9-ba17-611941b0dd31",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768782+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    }
+  ],
+  "afterRows": [
+    {
+      "id": "a81fea1b-0f27-41c4-aaea-c542eded7e6a",
+      "points": 80,
+      "weekday": 1,
+      "media_id": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768212+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "316680d6-b336-4829-8630-47ebabe13333",
+      "points": 80,
+      "weekday": 2,
+      "media_id": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768741+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "66141034-2e5a-4495-b6b8-cce40bc4dabc",
+      "points": 80,
+      "weekday": 3,
+      "media_id": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768777+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "4a27a190-d67d-4ecc-9d68-5e741cf531d1",
+      "points": 80,
+      "weekday": 4,
+      "media_id": "dfeb9a5f-22a3-4d72-93ec-046b07b2adee",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768779+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "898012bb-ca75-462b-98a1-821a3a61f154",
+      "points": 80,
+      "weekday": 5,
+      "media_id": "b0d8562d-04e9-4e15-b180-dafda8590e78",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768780+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "31a5c9bc-1213-4701-9be3-0bcfbad3e13a",
+      "points": 80,
+      "weekday": 6,
+      "media_id": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768781+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    },
+    {
+      "id": "f1b46962-10bf-4ade-a834-92df3a1a8ab6",
+      "points": 80,
+      "weekday": 7,
+      "media_id": "ed1e3490-1e91-41a9-ba17-611941b0dd31",
+      "task_code": "podcast",
+      "created_at": "2026-08-27T19:14:56.768782+00:00",
+      "created_by": null,
+      "routine_id": null,
+      "sort_order": 1,
+      "template_id": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+      "week_number": null,
+      "nutrition_plan_id": null
+    }
+  ],
+  "catalog": [
+    {
+      "id": "8a63f672-b6f5-4898-84ef-ad1c109e62c5",
+      "episode": 1,
+      "key": "media/podcasts/3775514b-2511-432c-ae45-0f58ece51497.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "3b347a25-caf8-4335-b576-0fc842841b71",
+      "episode": 2,
+      "key": "media/podcasts/96348b98-8b1e-4709-8c92-79ac02f0fedc.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "3f75688b-c982-45d8-9c49-c77d816b4d1f",
+      "episode": 3,
+      "key": "media/podcasts/c4fe1534-1398-4490-af4d-5b732f83dc7e.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "dfeb9a5f-22a3-4d72-93ec-046b07b2adee",
+      "episode": 4,
+      "key": "media/podcasts/155872ba-6975-4dbd-a47a-c79eb5a79814.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "b0d8562d-04e9-4e15-b180-dafda8590e78",
+      "episode": 5,
+      "key": "media/podcasts/64a2edc2-e779-4467-b917-73c2ebf43f58.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "3593c356-252f-42f5-abbc-e4c8ae2ddb0f",
+      "episode": 6,
+      "key": "media/podcasts/d0e7c341-e8af-474c-b8a6-f3d8f49e051e.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "8a934b6c-d998-4b17-98db-7e0f498ed15e",
+      "episode": 7,
+      "key": "media/podcasts/ee24fdac-fb55-45ee-a989-3f514dd61d7e.mp3",
+      "bytes": 6246189,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "d92359343eff9914c3a19236e51768a0739a6dfbfbd7bd01390f5700588a4401"
+    },
+    {
+      "id": "ed1e3490-1e91-41a9-ba17-611941b0dd31",
+      "episode": 14,
+      "key": "media/audio/d16b585a2b3c42a48fc92a2e16014c61.mp3",
+      "bytes": 4280902,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "599cd20d6ffee31fcb21a6d7a83715f400b203cde926b214028cd32e16c9267d"
+    },
+    {
+      "id": "e3eb0659-9b2b-49fa-bef9-71f3cb514424",
+      "episode": 15,
+      "key": "media/audio/647ffe09778b456abfd8af9561a35d9f.mp3",
+      "bytes": 7356125,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "045b4b51c1614d5618dd4ebfa190c5983a93bb879997498a6a323ea5de541111"
+    },
+    {
+      "id": "9efc9a56-2ef9-4d25-a3f7-6e41048d5162",
+      "episode": 16,
+      "key": "media/audio/899904f9df02497ab10e53bba3abc353.mp3",
+      "bytes": 3458238,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "51c38bd2dce9d2b8e4f9829995893eb59f30607740bfe7ada79edc5ba20b02e2"
+    },
+    {
+      "id": "b963bd4e-bc13-4145-9080-65dcca8fc158",
+      "episode": 17,
+      "key": "media/audio/bc248414b2954be78ba47c0947b0b700.mp3",
+      "bytes": 4830022,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "ca4afd5d6657cca970c55cd224139976b4d17e2a1613eb2e539390bfc66831e7"
+    },
+    {
+      "id": "449a7d2b-583c-4402-abe2-9712c090e056",
+      "episode": 18,
+      "key": "media/audio/93959f4f78274b11be36b6312fe3c4b6.mp3",
+      "bytes": 4780080,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "4543a71e70cd783d77411e09903a3de923ad06a8b0c1c2be8353548b98010a4c"
+    },
+    {
+      "id": "4d3b278b-9cb2-4cd5-9a51-88656792e0c1",
+      "episode": 19,
+      "key": "media/audio/26c07b60eec64c5d8db7d3d928900b3e.mp3",
+      "bytes": 4709354,
+      "contentType": "audio/mpeg",
+      "signatureValid": true,
+      "prefixSha256": "7f498b5ebb877118c543e12580ce839db59c185d0fce3ba30ee422434d29a1d9"
+    }
+  ],
+  "guards": {
+    "templateHeaders": "2d1e9fadab5ee908b76829230edbb01a13e5b32b099985c5ed3b08c1dedd1450",
+    "otherTemplateDays": "8e590c75d9ccc5e1112fba025d86eb07ced2b1cb75dc23f48427e3cb0735f584",
+    "otherTasks": "2753027edf7f1fcd2c993cce405fb1c1c06c4264b6639f2daf899263d0b6e10c",
+    "enrollments": "4f7ec2a247bcd6a20dc30f996ec6527899c0797ffc856c226319d906db53a27d",
+    "weeksAndIndividuals": "e494c0e0b306bf4d1eac9eab65ba8668947bc1d8ea9f369086ced069b5cae35e",
+    "closedWeeks": "19375d09df713b53fade98d6131d00bb4b6656765866813d79e0cb4a90d7d2d1",
+    "task_completions": 0,
+    "daily_checkins": 0
+  },
+  "protected": {
+    "closed320AndR7": {
+      "foodIntakes": {
+        "count": 1,
+        "sha256": "b647edf7b889f306096e82b2b48d8faf4b6673b9d5f2b87e4a37f73f94884c37"
+      },
+      "foodAnalyses": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "cycles": {
+        "count": 3,
+        "sha256": "8b5d439d2cc3feb3c6ba5c08d07fd3c50c295a89988028c1a47dd1e2e60e2d13"
+      },
+      "cycleReviews": {
+        "count": 2,
+        "sha256": "cfb8d21574f1a95351a3c7ca1f60eda8eb5830a80c6803168d942c87a541885b"
+      },
+      "cycleAttachments": {
+        "count": 3,
+        "sha256": "86815dfcd04158c31d4c74bf0cfd9576d346270f981fb77055281f742cb1936a"
+      },
+      "cycleHighlights": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dayReviews": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "prescriptions": {
+        "count": 3,
+        "sha256": "67edbdf3490c46f74f8ab253ac52d67fb468f509cc5ce36257fdf5fbf2ad92dc"
+      },
+      "enrollment": {
+        "count": 1,
+        "sha256": "7018d2386b72d8c5e98df6c070f8a47e6e808b88ea9cc1ac661d251355cad040"
+      },
+      "programWeeks": {
+        "count": 12,
+        "sha256": "b69067da6b15fe7334a076b977035e4e2b066935ed7acdca313e493bbc3f7553"
+      },
+      "taskCompletions": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "r7Intakes": {
+        "count": 33,
+        "sha256": "420e1c9e2db2cdaa6c170ab2f4f6fd3d9e3ae5af0909a9969d2acfec81046362"
+      },
+      "closed320": {
+        "revision": 7,
+        "publishedAt": "2026-11-15T18:37:50.801194+00:00",
+        "nextPrescriptionId": "91a41a69-02ba-49d6-8145-49d68ab3ca96"
+      }
+    },
+    "parkedAppFixtureFileSha256": "1dcaec0ac08e1540d6b254aeb3332b097af178253279ef001b237db0857b1046",
+    "publishedPlans": {
+      "count": 7,
+      "sha256": "38f4b9042436af34ff8f23f63c7781b3ca051cb9579dae2a3a083981c3c9499f"
+    },
+    "publishedReviews": {
+      "count": 4,
+      "sha256": "d7ad6246126ce730db2cbab50d8e5eaed9f695b3d98b56eea201e508188e564a"
+    },
+    "parkedEnrollments": {
+      "count": 1,
+      "sha256": "08830ae6b444aa6281416ae5d3eab0ec6c6b41439b7d95034b2e64cc949354ca"
+    },
+    "parkedEvaluations": {
+      "count": 8,
+      "sha256": "1fa67bfa0331f960c284675425fd956acc4e7bc13a4d059fb5953828daea8788"
+    }
+  },
+  "source": "active template generic podcast refs; preserve valid legacy Sunday"
+}

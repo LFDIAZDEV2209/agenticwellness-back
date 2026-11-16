@@ -1,0 +1,24 @@
+{
+  "operation": "1.14-legacy-refs",
+  "authorizedBy": "Luis",
+  "target": "local database",
+  "templateCode": "default-83w",
+  "templateId": "89ca1806-fb44-4e06-87e5-b8904312ef18",
+  "state": "applied-reversed-reapplied-verified",
+  "referenceUpdates": 6,
+  "inscriptionsUpdated": 0,
+  "weeksUpdated": 0,
+  "affectedActiveEnrollments": 116,
+  "globalGaps": 0,
+  "gapsByClass": {
+    "podcast": 0,
+    "ejercicio": 0,
+    "nut": 0
+  },
+  "backup": "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\openspec\\changes\\organizar-experiencia-bienestar\\revision-1.14-legacy-back\\template-backup.json",
+  "backupSha256": "63cf8c9c7f425da1354696e408871cbe90ca738791bfca18ad87e8e337b93829",
+  "evidence": "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\openspec\\changes\\organizar-experiencia-bienestar\\revision-1.14-legacy-back",
+  "closedDataUnchanged": true,
+  "individualsUnchanged": true,
+  "secretsIncluded": false
+}
