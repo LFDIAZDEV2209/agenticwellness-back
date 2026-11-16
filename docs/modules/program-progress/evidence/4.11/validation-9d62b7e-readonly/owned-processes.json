@@ -1,0 +1,16 @@
+[
+    {
+        "Pid":  45960,
+        "Name":  "patient-summary",
+        "Port":  4552,
+        "Simulation":  "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\postman\\simulations\\patient-summary.sim.yaml",
+        "Executable":  "C:\\Users\\Luis\\AppData\\Local\\Microsoft\\WindowsApps\\postman.exe"
+    },
+    {
+        "Pid":  56268,
+        "Name":  "weekly-suggestions",
+        "Port":  4553,
+        "Simulation":  "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\postman\\simulations\\weekly-suggestions.sim.yaml",
+        "Executable":  "C:\\Users\\Luis\\AppData\\Local\\Microsoft\\WindowsApps\\postman.exe"
+    }
+]

@@ -1,0 +1,3 @@
+{"event":"listening","ts":"2026-11-16T00:27:07.122Z","simulation":"weekly-suggestions","routing":"header","port":4553,"url":"http://localhost:4553","origin":null,"mocks":[{"name":"weekly-suggestions","routeKey":"weekly","address":"http://localhost:4553","header":{"x-mock-slug":"weekly"}}]}
+{"event":"request","ts":"2026-11-16T00:27:46.945Z","routeKey":"weekly","method":"POST","path":"/internal/program/weekly-plan-suggestions","statusCode":503,"duration":3,"responseName":null,"responseSize":39,"scenarios":[],"error":null}
+{"event":"request","ts":"2026-11-16T00:30:15.400Z","routeKey":"weekly","method":"POST","path":"/internal/program/weekly-plan-suggestions","statusCode":503,"duration":1,"responseName":null,"responseSize":39,"scenarios":[],"error":null}

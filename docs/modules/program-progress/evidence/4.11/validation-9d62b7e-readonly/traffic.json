@@ -1,0 +1,44 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/program/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/week/2",
+    "http": 200,
+    "bodySha256": "b76de238d865751a58dfa98f2b4a6ad189e5abd9f07b9812c5b84124434a9a4c"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/program/erp/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/weeks/2/ai-suggestions?language=es",
+    "http": 200,
+    "bodySha256": "568e6d0608552afd0855f22e394239fb80d33a9e65f5401f3e409d22af9e2c35"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/program/erp/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/weeks/2/ai-suggestions?language=es",
+    "http": 200,
+    "bodySha256": "568e6d0608552afd0855f22e394239fb80d33a9e65f5401f3e409d22af9e2c35"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/program/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/week/2",
+    "http": 200,
+    "bodySha256": "b76de238d865751a58dfa98f2b4a6ad189e5abd9f07b9812c5b84124434a9a4c"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/me/nutrition-plan",
+    "http": 200,
+    "bodySha256": "5eeb8feb7cfe088241ea0859724001990d10f5c7a16304248c98c5b4ebe70f3a"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/program/me/snapshot",
+    "http": 200,
+    "bodySha256": "5306d38f831bd4ebc991553b350722792f6133c9e9e4e58c5eed201326afc9b9"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/program/erp/enrollments/aa946028-0b77-4c73-a412-5c00e5936737/weeks/2/ai-suggestions",
+    "http": 200,
+    "bodySha256": "568e6d0608552afd0855f22e394239fb80d33a9e65f5401f3e409d22af9e2c35"
+  }
+]

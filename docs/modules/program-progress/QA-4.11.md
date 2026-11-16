@@ -1,5 +1,13 @@
 # Soporte backend del recorrido 4.11
 
+**Revisión posterior del e2e front 9d62b7e:**
+[resultado y evidencia](evidence/4.11/validation-9d62b7e-readonly/README.md).
+Dos casos API/DB aprobados, tres UI omitidos; la comprobación post-tests se hizo
+por GET, excluyendo el POST replay por la restricción de no cambiar datos.
+La corrección A2/F2 de [1.14-D](REPAIR-1.14-D.md) reemplaza en fuente el arranque
+pendiente descrito aquí. Esta fixture y los resultados de e0a9c29 se conservan
+históricos; no se declara 4.11 UI cerrado ni se afirma que 5122 cargó el fix.
+
 Preparación del 15-11-2026, **e0a9c29**, sin cambios de producto. El recorrido UI
 4.11 sigue pospuesto por el rediseño; esta preparación no acredita su cierre.
 No consumir ni resetear la fixture APP anterior `4.11-app-fixture.json`.

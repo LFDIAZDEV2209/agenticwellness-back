@@ -1,0 +1,3 @@
+{"event":"listening","ts":"2026-11-16T00:27:07.122Z","simulation":"patient-summary","routing":"header","port":4552,"url":"http://localhost:4552","origin":null,"mocks":[{"name":"patient-summary","routeKey":"summary","address":"http://localhost:4552","header":{"x-mock-slug":"summary"}}]}
+{"event":"request","ts":"2026-11-16T00:27:46.123Z","routeKey":"summary","method":"POST","path":"/internal/program/patient-summary","statusCode":503,"duration":3,"responseName":null,"responseSize":40,"scenarios":[],"error":null}
+{"event":"request","ts":"2026-11-16T00:30:14.503Z","routeKey":"summary","method":"POST","path":"/internal/program/patient-summary","statusCode":503,"duration":0,"responseName":null,"responseSize":40,"scenarios":[],"error":null}

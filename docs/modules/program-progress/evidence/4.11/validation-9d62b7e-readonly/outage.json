@@ -1,0 +1,12 @@
+{
+  "source": "Handlers/clientes/guard/stores EF F4 reales; HTTP Postman503; conexi\u00F3n DB READ ONLY; sin controllers/host/jobs",
+  "summary": "unavailable",
+  "weekly": "unavailable",
+  "summaryHttpStatuses": [
+    503
+  ],
+  "weeklyHttpStatuses": [
+    503
+  ],
+  "noApplyCalled": true
+}

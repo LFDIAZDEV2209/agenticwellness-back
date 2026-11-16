@@ -1,0 +1,18 @@
+{
+  "source": "Handlers/clientes/guard/stores EF F4 reales; HTTP Postman503; conexión DB READ ONLY; sin controllers/host/jobs",
+  "summary": "unavailable",
+  "weekly": "unavailable",
+  "summaryHttpStatuses": [
+    503
+  ],
+  "weeklyHttpStatuses": [
+    503
+  ],
+  "noApplyCalled": true,
+  "databaseUnchanged": true,
+  "passed": true,
+  "healthyProductReadsAfterFailure": true,
+  "sharedAiStopped": false,
+  "controllersWithInjectedFailureVerified": false,
+  "uiVerified": false
+}

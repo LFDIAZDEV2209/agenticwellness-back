@@ -1,0 +1,91 @@
+{
+  "capturedAt": "2026-11-16T00:28:43.052447+00:00",
+  "frontTestCommit": "9d62b7e",
+  "mode": "Readonly counterpart; primer test original excluido por su POST submit replay",
+  "checks": [
+    {
+      "name": "HTTP 200 /api/v1/health-tests/me/assignments?scope=initial",
+      "passed": true
+    },
+    {
+      "name": "9 asignaciones required/completed propias",
+      "passed": true
+    },
+    {
+      "name": "9 evaluaciones",
+      "passed": true
+    },
+    {
+      "name": "1 inscripcion PendingAssignment semana0",
+      "passed": true
+    },
+    {
+      "name": "1 propuesta de nutricion rutina y7podcasts",
+      "passed": true
+    },
+    {
+      "name": "12 semanas Locked",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/me/nutrition-plan",
+      "passed": true
+    },
+    {
+      "name": "plan publicado30dias",
+      "passed": true
+    },
+    {
+      "name": "HTTP 404 /api/v1/program/me/snapshot",
+      "passed": true
+    },
+    {
+      "name": "HTTP 200 /api/v1/program/me/completion",
+      "passed": true
+    },
+    {
+      "name": "completion null",
+      "passed": true
+    },
+    {
+      "name": "estado propio sin cambios",
+      "passed": true
+    },
+    {
+      "name": "sentinelas historicos sin cambios",
+      "passed": true
+    }
+  ],
+  "traffic": [
+    {
+      "method": "GET",
+      "path": "/api/v1/health-tests/me/assignments?scope=initial",
+      "status": 200,
+      "bodySha256": "326c25f6bcf39030c9b85cc26c0fbb01fe307ab64f7dcea36611826e39faeeec"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/me/nutrition-plan",
+      "status": 200,
+      "bodySha256": "5eeb8feb7cfe088241ea0859724001990d10f5c7a16304248c98c5b4ebe70f3a"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/me/snapshot",
+      "status": 404,
+      "bodySha256": "1ce0870548b462bd51d09f9e62f5302ce2025fb09494ca97f07618b303a99b6b"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/program/me/completion",
+      "status": 200,
+      "bodySha256": "83f08e8906b912b727d8f70a42960fe7802b0c1b8d48fbf980e1815768d479aa"
+    }
+  ],
+  "passed": 13,
+  "failed": 0,
+  "productMutatingRequests": 0,
+  "postSubmitReplayExecuted": false,
+  "newTransition8To9": false,
+  "scope": "Cuenta Auth real; login crea sesion. Sin solicitudes mutantes a API de producto ni SQL de escritura."
+}

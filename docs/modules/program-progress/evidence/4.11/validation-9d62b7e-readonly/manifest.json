@@ -1,0 +1,169 @@
+{
+  "files": [
+    {
+      "path": "after.json",
+      "bytes": 8334,
+      "sha256": "d5f4865d063753680626d4a42e88bff30bd47297d9b28f48776a44605d7ea04e"
+    },
+    {
+      "path": "before.json",
+      "bytes": 8334,
+      "sha256": "d5f4865d063753680626d4a42e88bff30bd47297d9b28f48776a44605d7ea04e"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 364,
+      "sha256": "092196c556a9a05c34956d7d6e426e1cdb8a67e6531f102716a06e591d41df16"
+    },
+    {
+      "path": "first-run-wrapper-warning/after.json",
+      "bytes": 8334,
+      "sha256": "d5f4865d063753680626d4a42e88bff30bd47297d9b28f48776a44605d7ea04e"
+    },
+    {
+      "path": "first-run-wrapper-warning/before.json",
+      "bytes": 8334,
+      "sha256": "d5f4865d063753680626d4a42e88bff30bd47297d9b28f48776a44605d7ea04e"
+    },
+    {
+      "path": "first-run-wrapper-warning/outage-input.json",
+      "bytes": 921,
+      "sha256": "8650513ae55e0653bd1bf2685670b5c25edad123a074e5a90893c2bf55fe591c"
+    },
+    {
+      "path": "first-run-wrapper-warning/outage-runner.log",
+      "bytes": 65,
+      "sha256": "976ab652ab46ae958f8e3c8325ad0fcb8fe978b1d978a79d06fec322e1dca1b0"
+    },
+    {
+      "path": "first-run-wrapper-warning/outage-verified.json",
+      "bytes": 481,
+      "sha256": "98688c2d4bf68f3d7cd28d3f625c92b0da9988b61b7fadf218e36883358b41db"
+    },
+    {
+      "path": "first-run-wrapper-warning/outage.json",
+      "bytes": 292,
+      "sha256": "defa5db6b28b46a35a5f1dbd036317d34e9f1148891cb94688908bc4a55f1151"
+    },
+    {
+      "path": "first-run-wrapper-warning/playwright.json",
+      "bytes": 10777,
+      "sha256": "e6c5f7c3810376249ef73b206e1e97e7d13fe0fa59e8762cd6ceb3bb34d9d144"
+    },
+    {
+      "path": "first-run-wrapper-warning/playwright.log",
+      "bytes": 33,
+      "sha256": "eb510e40bd39bbc603f292255c0c7b6fc6d03dbf7a3da8ebda780e99b980e594"
+    },
+    {
+      "path": "first-run-wrapper-warning/traffic.json",
+      "bytes": 1530,
+      "sha256": "e6a0cc236f8bd7650b8cfe06e477b4362fee2e6cc661e5abfbbe34f8d9871839"
+    },
+    {
+      "path": "first-run-wrapper-warning/unapplied.json",
+      "bytes": 280,
+      "sha256": "72caa1301d58334f84e32ace718ad16b370a71c29be62e68b251893bf99a48a1"
+    },
+    {
+      "path": "first-run-wrapper-warning/wrapper-observation.json",
+      "bytes": 383,
+      "sha256": "e46df7099dc06120adf51dbe3d56b93a3dc7040389ae3e508fdd9ac919ee975c"
+    },
+    {
+      "path": "front-files.json",
+      "bytes": 1513,
+      "sha256": "3377678234c24b71617f80564a860f3a67f0e9bb76fba05571791cb75d9f35f1"
+    },
+    {
+      "path": "initial-standins-closed.json",
+      "bytes": 362,
+      "sha256": "7e9487fc1569e7ca0a8ad29b59e47cd0cc705115e937b1fb48a7072da32d0aa2"
+    },
+    {
+      "path": "outage-input.json",
+      "bytes": 921,
+      "sha256": "8650513ae55e0653bd1bf2685670b5c25edad123a074e5a90893c2bf55fe591c"
+    },
+    {
+      "path": "outage-runner.log",
+      "bytes": 65,
+      "sha256": "976ab652ab46ae958f8e3c8325ad0fcb8fe978b1d978a79d06fec322e1dca1b0"
+    },
+    {
+      "path": "outage-verified.json",
+      "bytes": 481,
+      "sha256": "98688c2d4bf68f3d7cd28d3f625c92b0da9988b61b7fadf218e36883358b41db"
+    },
+    {
+      "path": "outage.json",
+      "bytes": 292,
+      "sha256": "defa5db6b28b46a35a5f1dbd036317d34e9f1148891cb94688908bc4a55f1151"
+    },
+    {
+      "path": "owned-processes.json",
+      "bytes": 682,
+      "sha256": "44b74265811dc75cffc99065d695eaa0ac1d68d750029f894afb9fb6a1da37fe"
+    },
+    {
+      "path": "patient-summary.ndjson",
+      "bytes": 743,
+      "sha256": "bb1d6d898a83b58890dedddda5302c5dfff51c7412a773a892a2b0fdf820edd5"
+    },
+    {
+      "path": "patient-summary.stderr.log",
+      "bytes": 147,
+      "sha256": "6c0bdb882d1f1390d3bdb076e9e3b8c575cffd2874374938cd4f9887648733be"
+    },
+    {
+      "path": "playwright.json",
+      "bytes": 10767,
+      "sha256": "59cfbca2f540a6cee396b77fc333ad71f9af05877c24f4e5feaa9702d09e0b34"
+    },
+    {
+      "path": "playwright.log",
+      "bytes": 1490,
+      "sha256": "ad164afb035d68bc41f705ec5c3814e768a4ee5365acf3757fddaf87de5cda3b"
+    },
+    {
+      "path": "post-tests-readonly.json",
+      "bytes": 2326,
+      "sha256": "a7d20c080274eae3dcafb535e28fe87a0e9ae9fc907231bd5619c9fa8970085c"
+    },
+    {
+      "path": "processes-closed.json",
+      "bytes": 355,
+      "sha256": "280ab2d0198701e8821f84099af44e67109615edfa0fa7138600c262ed779295"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2353,
+      "sha256": "f3f73938cb54e070a918a5757fcd08900748cedc345c2c34c82085fb2780dcb2"
+    },
+    {
+      "path": "traffic.json",
+      "bytes": 1530,
+      "sha256": "9c420f87ed2d7bb03c6bd46defb2b6b2b4cb2a085ad411da40284b1cc94c0d8a"
+    },
+    {
+      "path": "unapplied.json",
+      "bytes": 280,
+      "sha256": "72caa1301d58334f84e32ace718ad16b370a71c29be62e68b251893bf99a48a1"
+    },
+    {
+      "path": "validate-post-tests-readonly.py",
+      "bytes": 3776,
+      "sha256": "524c2c4268737ea070dd42fcc13944ec833a431c6778c8e462818346556f3923"
+    },
+    {
+      "path": "weekly-suggestions.ndjson",
+      "bytes": 761,
+      "sha256": "c15bd4fc5f92d75aad4ce46162c6a0a7a821ccf906f953556ca584b179c74ab6"
+    },
+    {
+      "path": "weekly-suggestions.stderr.log",
+      "bytes": 147,
+      "sha256": "6c0bdb882d1f1390d3bdb076e9e3b8c575cffd2874374938cd4f9887648733be"
+    }
+  ]
+}

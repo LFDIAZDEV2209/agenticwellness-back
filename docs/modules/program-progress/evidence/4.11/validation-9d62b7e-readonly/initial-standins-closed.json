@@ -1,0 +1,14 @@
+{
+    "pids":  [
+                 18416,
+                 60000,
+                 35532,
+                 25828,
+                 61136,
+                 57692,
+                 28052,
+                 54784
+             ],
+    "reason":  "Relanzamiento propio para capturar logs; ninguna petición de prueba ejecutada aún",
+    "sharedStackRestarted":  false
+}

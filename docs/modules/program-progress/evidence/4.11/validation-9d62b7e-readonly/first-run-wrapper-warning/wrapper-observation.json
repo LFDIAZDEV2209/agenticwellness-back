@@ -1,0 +1,8 @@
+{
+    "testReportUnexpected":  0,
+    "testReportSkipped":  3,
+    "testReportExpected":  2,
+    "cause":  "PowerShell ErrorActionPreference Stop convirtió warning NO_COLOR/FORCE_COLOR de Node en NativeCommandError",
+    "wrapperExitCode":  1,
+    "reasonForRepeat":  "Capturar exit code real de la suite con manejo correcto de stderr; sin repetir submit ni escrituras de negocio"
+}

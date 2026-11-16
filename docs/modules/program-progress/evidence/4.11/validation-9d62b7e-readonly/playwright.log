@@ -1,0 +1,19 @@
+
+Running 5 tests using 1 worker
+
+corepack.cmd : (node:39676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:1423
++ ... =on'; try { & corepack yarn exec playwright test --config playwright. ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:39676) Wa... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\program-phase4-api-db.spec.ts:140:7 › 4.11 · API/BD real; UI pendiente de rediseño › consultar una sugerencia draft no cambia semana, contenido, XP ni auditoría (1.1s)
+  ok 2 e2e\program-phase4-api-db.spec.ts:168:7 › 4.11 · API/BD real; UI pendiente de rediseño › HTTP IA503: handlers F4 unavailable, DB intacta y API de producto navegable (9.0s)
+  -  3 e2e\program-phase4-api-db.spec.ts:189:8 › 4.11 · API/BD real; UI pendiente de rediseño › UI APP: finalizar batería y mostrar pendiente clínico/plan sin inventar misiones activas
+  -  4 e2e\program-phase4-api-db.spec.ts:193:8 › 4.11 · API/BD real; UI pendiente de rediseño › UI ERP: consultar/cancelar sugerencia conserva plan sin POST apply
+  -  5 e2e\program-phase4-api-db.spec.ts:196:8 › 4.11 · API/BD real; UI pendiente de rediseño › UI: omitir IA unavailable y conservar APP/Perfil360/editor manual navegables
+
+  3 skipped
+  2 passed (13.1s)

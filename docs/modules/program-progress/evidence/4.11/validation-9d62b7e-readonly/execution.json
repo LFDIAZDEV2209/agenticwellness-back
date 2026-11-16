@@ -1,0 +1,11 @@
+{
+    "frontCommit":  "9d62b7ebc49a9a353ed56b3c9343714e2111aee4",
+    "databaseSnapshotsDefaultReadOnly":  true,
+    "filter":  "--grep-invert replay",
+    "productWritesAuthorized":  false,
+    "productRuntime":  "e0a9c29",
+    "firstRunWarningPreserved":  true,
+    "excludedMutation":  "POST submit replay",
+    "exitCode":  0,
+    "uiCasesRemainFixme":  true
+}
