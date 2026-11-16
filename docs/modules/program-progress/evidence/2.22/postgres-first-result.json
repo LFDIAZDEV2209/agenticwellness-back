@@ -1,0 +1,5 @@
+{
+  "exitCode": 1,
+  "filter": "FullyQualifiedName~RoutineUsage_|FullyQualifiedName~SesionEjercicio_",
+  "isolatedPostgres": true
+}

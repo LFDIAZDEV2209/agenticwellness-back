@@ -1,0 +1,27 @@
+{
+  "owner": "codex-back",
+  "task": "2.22-back",
+  "method": "GET",
+  "path": "/api/v1/program/routines/{id}/usage",
+  "permission": "Wellness.View",
+  "scope": "assigned patients; Admin all visible; permission always required",
+  "response": {
+    "routineId": "UUID",
+    "patientCount": "integer",
+    "enrollmentCount": "integer",
+    "activeWeekCount": "integer"
+  },
+  "readOnly": true,
+  "usesCanonicalResolver": true,
+  "countsActiveWeeksOnly": true,
+  "liveApi5122": "e0a9c29; new endpoint not loaded",
+  "sourceContract": ".worktrees/back-f4/docs/modules/program-progress/ROUTINE-USAGE-2.22.md",
+  "tests": "passed",
+  "secretsIncluded": false,
+  "unitPassed": 2803,
+  "unitSkipped": 105,
+  "postgresPassed": 6,
+  "existing211Regressions": 2,
+  "httpRequests": 6,
+  "liveRuntimeUpdated": false
+}

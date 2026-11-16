@@ -1,0 +1,104 @@
+{
+  "files": [
+    {
+      "path": "active-weeks-explain.json",
+      "bytes": 9622,
+      "sha256": "dc5bb8ceb5c6eeaaf37b2f89efb34998ddda0ff5e3bab920eb688bbbf93d9717"
+    },
+    {
+      "path": "build-initial.log",
+      "bytes": 15299,
+      "sha256": "c21db903dba76954a3fee6f0013703ef0e502f696c8059b6f9037254342f0cac"
+    },
+    {
+      "path": "build.log",
+      "bytes": 76,
+      "sha256": "6112810a035a5be58ae6736088f76593cc6672349842de1d810206330e7f59e5"
+    },
+    {
+      "path": "contract-metadata.json",
+      "bytes": 807,
+      "sha256": "476ec113dfdf12640b78e0f58b47a163dce82062785987665a690d86e2435240"
+    },
+    {
+      "path": "postgres-first-result.json",
+      "bytes": 132,
+      "sha256": "b31f9a558ee17c3da792531dad95fdcc5ec5642c9c52c86a2c7368df57ac8920"
+    },
+    {
+      "path": "postgres-first.log",
+      "bytes": 15704,
+      "sha256": "00486c1ae8f586fc6f470da41538e9b35e2efc9762afe1b36d053953f62b6ec0"
+    },
+    {
+      "path": "postgres-first.trx",
+      "bytes": 20008,
+      "sha256": "f7a236aa1bf71873edfde26cbd442a62277164932245419516d38ee3539b1bfb"
+    },
+    {
+      "path": "postgres-result.json",
+      "bytes": 132,
+      "sha256": "0e1b67453d324edeb5e04d38fc0470a91e145d2161ddb6c01ec42ed74006881d"
+    },
+    {
+      "path": "postgres.log",
+      "bytes": 7109,
+      "sha256": "3a77b95c85eb263722c16c92ac6469958dcc87ad0147e855bddfb97ab28557a0"
+    },
+    {
+      "path": "postgres.trx",
+      "bytes": 10858,
+      "sha256": "278eba30315babc8f34575d8c054c1eef2fcbcb1dd6afcdfacb781b186182b08"
+    },
+    {
+      "path": "postman-status.json",
+      "bytes": 173,
+      "sha256": "9cf0c91575fef15912792deb8d7b7f799b11da6738a2c217e24653367a751a4a"
+    },
+    {
+      "path": "query-plan-summary.json",
+      "bytes": 340,
+      "sha256": "9010971ecbb77878f20d5552f48d383b81217b4818690503028eacc7b3d5dd59"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2768,
+      "sha256": "1761d5ff8850966aa66eb4ee55a189df714e6b416bccdd6e9b21bfed2562e1a8"
+    },
+    {
+      "path": "source.json",
+      "bytes": 1144,
+      "sha256": "6c1ee8e788b15a0afb76a2928dc916a48c0dfe32ad60841e32531ad46fc450e8"
+    },
+    {
+      "path": "tests-summary.json",
+      "bytes": 1186,
+      "sha256": "9403662b307c95f5fce6cac98048e4d265d0ee0a95de8cb5c9f348e5b7117376"
+    },
+    {
+      "path": "unit-focused.log",
+      "bytes": 498,
+      "sha256": "d351576222691ccaeaa5d35ac288d7326214a338d11e06d512a7a79e7581866c"
+    },
+    {
+      "path": "unit-focused.trx",
+      "bytes": 4491,
+      "sha256": "1d0f4d065e2f81babf9859e78025ad5f74b5892592b58d98abd6d3cb55d3c744"
+    },
+    {
+      "path": "unit.log",
+      "bytes": 29804,
+      "sha256": "c6ac30c84fac67eb6d0554c2280e347ec1904a6f891c396e2671ea6ae69fe0a9"
+    },
+    {
+      "path": "unit.trx",
+      "bytes": 4891035,
+      "sha256": "eb88f45658b1a924ba5de2842dba7486b34ed596d92702cfc625e8389c937cca"
+    },
+    {
+      "path": "volume.json",
+      "bytes": 125,
+      "sha256": "145710b85a4285637e88e87cfd097c919864eb3525e3c773df3597f226f76790"
+    }
+  ]
+}

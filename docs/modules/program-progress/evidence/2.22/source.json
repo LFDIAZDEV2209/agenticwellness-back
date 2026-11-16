@@ -1,0 +1,29 @@
+{
+  "baseCommit": "d64a4a6",
+  "files": [
+    {
+      "path": "src/CoppAddresd.Api/Controllers/RoutineUsageController.cs",
+      "sha256": "61f80c3c0ca598ddfed987764907497b3c8f132dc91b2175ef811e46cc1bb92f"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Features/ProgramProgress/Queries/GetRoutineUsage/GetRoutineUsageQuery.cs",
+      "sha256": "48b248a10492c0fa5f0aa1597f51c4b9374c73208eba4a3962b08aa2e6bd9b95"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/ProgramRoutineUsageStore.cs",
+      "sha256": "73e831569abd4078f38eb0a8adc2768b090c4b64d0e6d9f372aa383c4999e070"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/DependencyInjection.cs",
+      "sha256": "9512ab235ff5b9f80fe4efc773daed1176685f1e95386111a45ea03a0c56a372"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/RoutineUsagePostgresTests.cs",
+      "sha256": "8311700a1439ec66561d5734dad3609e7e2d5252270f5501a1be548dc135024b"
+    },
+    {
+      "path": "tests/CoppAddresd.UnitTests/ProgramProgress/RoutineUsageQueryTests.cs",
+      "sha256": "80a710b62d54ce50b063d4bc52e8102f6faf6eba8d1d5ed41851b5b00257c3f2"
+    }
+  ]
+}

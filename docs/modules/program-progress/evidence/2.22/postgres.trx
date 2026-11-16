@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="8cd49c1d-9ad2-4168-874b-3a6cbccfb8a9" name="Luis@LUISDIAZ 2026-11-15 22:16:26" runUser="LUISDIAZ\Luis" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-15T22:16:26.2964579-05:00" queuing="2026-11-15T22:16:26.2964583-05:00" start="2026-11-15T22:16:08.1464814-05:00" finish="2026-11-15T22:16:56.0329604-05:00" />
+  <TestSettings name="default" id="80ae6f32-3802-4eab-8858-a627914005ce">
+    <Deployment runDeploymentRoot="Luis_LUISDIAZ_2026-11-15_22_16_26" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="57fb6737-cd39-455f-99b3-fa75db62ceda" testId="d879633e-a92c-bcb0-2e80-629ea0ea223f" testName="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_MigracionNullableVolumen_ReversaProtegida" computerName="LUISDIAZ" duration="00:00:03.2020595" startTime="2026-11-15T22:16:32.7648952-05:00" endTime="2026-11-15T22:16:40.6845540-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="57fb6737-cd39-455f-99b3-fa75db62ceda" />
+    <UnitTestResult executionId="c29573ad-8def-4b0f-ab15-15a2f120164c" testId="a1cfdd5b-f114-4cd3-bf81-55f5f5b3bef8" testName="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_HTTP401403404_ContratoYAlcanceConPostgresReadOnly" computerName="LUISDIAZ" duration="00:00:02.7412702" startTime="2026-11-15T22:16:08.8765374-05:00" endTime="2026-11-15T22:16:26.2640282-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c29573ad-8def-4b0f-ab15-15a2f120164c" />
+    <UnitTestResult executionId="7eb57511-f9fa-47c0-985f-e2419b9da641" testId="0f16bd8d-ccf4-b333-9cf3-8dd88ab565c6" testName="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_CapturaAlCompletar_EditarlaNoCambiaHistorialNiReplay" computerName="LUISDIAZ" duration="00:00:01.7487329" startTime="2026-11-15T22:16:26.2827168-05:00" endTime="2026-11-15T22:16:32.7623055-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7eb57511-f9fa-47c0-985f-e2419b9da641" />
+    <UnitTestResult executionId="a6e772a3-901f-483e-9598-c13be9d144b1" testId="f9f8b72f-9351-0a3b-87f4-0ddeb0423668" testName="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_ResolverCanonico_SnapshotPlantillaDescansoYLegado_ConteosReadOnly" computerName="LUISDIAZ" duration="00:00:00.2329256" startTime="2026-11-15T22:16:51.0022110-05:00" endTime="2026-11-15T22:16:55.9122504-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a6e772a3-901f-483e-9598-c13be9d144b1" />
+    <UnitTestResult executionId="9fbd1a0c-962a-4757-ba7e-84b1cc69e3b3" testId="905a6e77-c74d-2f5d-37ec-b6130598c184" testName="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_AlcanceReal_DistintosSinInflarDias_ExcluyeInactivosYCerrados" computerName="LUISDIAZ" duration="00:00:00.1872849" startTime="2026-11-15T22:16:40.6854163-05:00" endTime="2026-11-15T22:16:45.1557470-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9fbd1a0c-962a-4757-ba7e-84b1cc69e3b3" />
+    <UnitTestResult executionId="79a82ee9-5ceb-4c19-acdd-5e50d1ac9a04" testId="1b3ae7df-ecde-903e-9e4e-872b1da9d720" testName="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_MilSemanas_ConsultasAcotadasYSinTracking" computerName="LUISDIAZ" duration="00:00:01.3703222" startTime="2026-11-15T22:16:45.1562137-05:00" endTime="2026-11-15T22:16:51.0016720-05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79a82ee9-5ceb-4c19-acdd-5e50d1ac9a04" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_ResolverCanonico_SnapshotPlantillaDescansoYLegado_ConteosReadOnly" storage="c:\users\luis\documents\coppaddresd\repos\.worktrees\back-f4\tests\coppaddresd.integrationtests\bin\validation114d\coppaddresd.integrationtests.dll" id="f9f8b72f-9351-0a3b-87f4-0ddeb0423668">
+      <Execution id="a6e772a3-901f-483e-9598-c13be9d144b1" />
+      <TestMethod codeBase="C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests" name="RoutineUsage_ResolverCanonico_SnapshotPlantillaDescansoYLegado_ConteosReadOnly" />
+    </UnitTest>
+    <UnitTest name="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_CapturaAlCompletar_EditarlaNoCambiaHistorialNiReplay" storage="c:\users\luis\documents\coppaddresd\repos\.worktrees\back-f4\tests\coppaddresd.integrationtests\bin\validation114d\coppaddresd.integrationtests.dll" id="0f16bd8d-ccf4-b333-9cf3-8dd88ab565c6">
+      <Execution id="7eb57511-f9fa-47c0-985f-e2419b9da641" />
+      <TestMethod codeBase="C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests" name="SesionEjercicio_CapturaAlCompletar_EditarlaNoCambiaHistorialNiReplay" />
+    </UnitTest>
+    <UnitTest name="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_HTTP401403404_ContratoYAlcanceConPostgresReadOnly" storage="c:\users\luis\documents\coppaddresd\repos\.worktrees\back-f4\tests\coppaddresd.integrationtests\bin\validation114d\coppaddresd.integrationtests.dll" id="a1cfdd5b-f114-4cd3-bf81-55f5f5b3bef8">
+      <Execution id="c29573ad-8def-4b0f-ab15-15a2f120164c" />
+      <TestMethod codeBase="C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests" name="RoutineUsage_HTTP401403404_ContratoYAlcanceConPostgresReadOnly" />
+    </UnitTest>
+    <UnitTest name="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_AlcanceReal_DistintosSinInflarDias_ExcluyeInactivosYCerrados" storage="c:\users\luis\documents\coppaddresd\repos\.worktrees\back-f4\tests\coppaddresd.integrationtests\bin\validation114d\coppaddresd.integrationtests.dll" id="905a6e77-c74d-2f5d-37ec-b6130598c184">
+      <Execution id="9fbd1a0c-962a-4757-ba7e-84b1cc69e3b3" />
+      <TestMethod codeBase="C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests" name="RoutineUsage_AlcanceReal_DistintosSinInflarDias_ExcluyeInactivosYCerrados" />
+    </UnitTest>
+    <UnitTest name="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_MilSemanas_ConsultasAcotadasYSinTracking" storage="c:\users\luis\documents\coppaddresd\repos\.worktrees\back-f4\tests\coppaddresd.integrationtests\bin\validation114d\coppaddresd.integrationtests.dll" id="1b3ae7df-ecde-903e-9e4e-872b1da9d720">
+      <Execution id="79a82ee9-5ceb-4c19-acdd-5e50d1ac9a04" />
+      <TestMethod codeBase="C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests" name="RoutineUsage_MilSemanas_ConsultasAcotadasYSinTracking" />
+    </UnitTest>
+    <UnitTest name="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_MigracionNullableVolumen_ReversaProtegida" storage="c:\users\luis\documents\coppaddresd\repos\.worktrees\back-f4\tests\coppaddresd.integrationtests\bin\validation114d\coppaddresd.integrationtests.dll" id="d879633e-a92c-bcb0-2e80-629ea0ea223f">
+      <Execution id="57fb6737-cd39-455f-99b3-fa75db62ceda" />
+      <TestMethod codeBase="C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests" name="SesionEjercicio_MigracionNullableVolumen_ReversaProtegida" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d879633e-a92c-bcb0-2e80-629ea0ea223f" executionId="57fb6737-cd39-455f-99b3-fa75db62ceda" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a1cfdd5b-f114-4cd3-bf81-55f5f5b3bef8" executionId="c29573ad-8def-4b0f-ab15-15a2f120164c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0f16bd8d-ccf4-b333-9cf3-8dd88ab565c6" executionId="7eb57511-f9fa-47c0-985f-e2419b9da641" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f9f8b72f-9351-0a3b-87f4-0ddeb0423668" executionId="a6e772a3-901f-483e-9598-c13be9d144b1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="905a6e77-c74d-2f5d-37ec-b6130598c184" executionId="9fbd1a0c-962a-4757-ba7e-84b1cc69e3b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b3ae7df-ecde-903e-9e4e-872b1da9d720" executionId="79a82ee9-5ceb-4c19-acdd-5e50d1ac9a04" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)&#xD;
+[xUnit.net 00:00:00.16]   Discovering: CoppAddresd.IntegrationTests&#xD;
+[xUnit.net 00:00:00.22]   Discovered:  CoppAddresd.IntegrationTests&#xD;
+[xUnit.net 00:00:00.25]   Starting:    CoppAddresd.IntegrationTests&#xD;
+[xUnit.net 00:00:47.32]   Finished:    CoppAddresd.IntegrationTests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

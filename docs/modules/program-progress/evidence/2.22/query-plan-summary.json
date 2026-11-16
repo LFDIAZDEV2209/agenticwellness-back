@@ -1,0 +1,17 @@
+{
+  "executionMs": 140.643,
+  "planningMs": 0.403,
+  "actualRows": 1000.0,
+  "indexes": [
+    "PK_program_templates",
+    "ix_patient_profiles_status",
+    "ix_program_weeks_status",
+    "uq_program_enrollments_patient_active"
+  ],
+  "nodeTypes": [
+    "Bitmap Heap Scan",
+    "Bitmap Index Scan",
+    "Index Scan",
+    "Nested Loop"
+  ]
+}

@@ -1,0 +1,37 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  CoppAddresd.Domain -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Domain\bin\Validation114D\CoppAddresd.Domain.dll
+  CoppAddresd.Auth -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\Services\CoppAddresd.Auth\bin\Validation114D\CoppAddresd.Auth.dll
+  CoppAddresd.Application -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Application\bin\Validation114D\CoppAddresd.Application.dll
+  CoppAddresd.WhatsApp -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.WhatsApp\bin\Validation114D\CoppAddresd.WhatsApp.dll
+  CoppAddresd.Infrastructure -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Infrastructure\bin\Validation114D\CoppAddresd.Infrastructure.dll
+  CoppAddresd.Api -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\src\CoppAddresd.Api\bin\Validation114D\CoppAddresd.Api.dll
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\HealthTestsIntegrationTests.cs(158,52): warning CS8625: Cannot convert null literal to non-nullable reference type. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\HealthTestsIntegrationTests.cs(159,52): warning CS8625: Cannot convert null literal to non-nullable reference type. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\HealthTestsIntegrationTests.cs(310,52): warning CS8625: Cannot convert null literal to non-nullable reference type. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\SosIntegrationTests.cs(57,36): warning EF1002: Method 'ExecuteSqlRawAsync' inserts interpolated strings directly into the SQL, without any protection against SQL injection. Consider using 'ExecuteSqlAsync' instead, which protects against SQL injection, or make sure that the value is sanitized and suppress the warning. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\ActivityLogE2ETests.cs(84,27): warning EF1002: Method 'ExecuteSqlRawAsync' inserts interpolated strings directly into the SQL, without any protection against SQL injection. Consider using 'ExecuteSqlAsync' instead, which protects against SQL injection, or make sure that the value is sanitized and suppress the warning. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\ActivityLogE2ETests.cs(139,27): warning EF1002: Method 'ExecuteSqlRawAsync' inserts interpolated strings directly into the SQL, without any protection against SQL injection. Consider using 'ExecuteSqlAsync' instead, which protects against SQL injection, or make sure that the value is sanitized and suppress the warning. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\AuditTriggerTests.cs(189,27): warning EF1002: Method 'ExecuteSqlRawAsync' inserts interpolated strings directly into the SQL, without any protection against SQL injection. Consider using 'ExecuteSqlAsync' instead, which protects against SQL injection, or make sure that the value is sanitized and suppress the warning. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\ActivityLogE2ETests.cs(177,27): warning EF1002: Method 'ExecuteSqlRawAsync' inserts interpolated strings directly into the SQL, without any protection against SQL injection. Consider using 'ExecuteSqlAsync' instead, which protects against SQL injection, or make sure that the value is sanitized and suppress the warning. [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\SosIntegrationTests.cs(363,9): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\CoppAddresd.IntegrationTests.csproj]
+  CoppAddresd.IntegrationTests -> C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll
+Test run for C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.IntegrationTests\bin\Validation114D\CoppAddresd.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.16]   Discovering: CoppAddresd.IntegrationTests
+[xUnit.net 00:00:00.22]   Discovered:  CoppAddresd.IntegrationTests
+[xUnit.net 00:00:00.25]   Starting:    CoppAddresd.IntegrationTests
+  Passed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_HTTP401403404_ContratoYAlcanceConPostgresReadOnly [2 s]
+  Passed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_CapturaAlCompletar_EditarlaNoCambiaHistorialNiReplay [1 s]
+  Passed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_MigracionNullableVolumen_ReversaProtegida [3 s]
+  Passed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_AlcanceReal_DistintosSinInflarDias_ExcluyeInactivosYCerrados [187 ms]
+  Passed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_MilSemanas_ConsultasAcotadasYSinTracking [1 s]
+[xUnit.net 00:00:47.32]   Finished:    CoppAddresd.IntegrationTests
+  Passed CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_ResolverCanonico_SnapshotPlantillaDescansoYLegado_ConteosReadOnly [232 ms]
+Results File: C:\Users\Luis\Documents\CoppAddresd\Repos\openspec\changes\organizar-experiencia-bienestar\revision-2.22-back\postgres.trx
+
+Test Run Successful.
+Total tests: 6
+     Passed: 6
+ Total time: 47.8698 Seconds

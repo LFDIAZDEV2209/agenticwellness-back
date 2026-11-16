@@ -59,6 +59,9 @@ nunca permiso. El log administrativo global conserva su DTO sin detalle clínico
 
 ## Detalle de la sesión completada — 2.11
 
+[Conteo de uso 2.22 para el editor](ROUTINE-USAGE-2.22.md): GET read-only por
+rutina, `Wellness.View` y alcance de pacientes; conserva el contrato de 2.11.
+
 `task_completions.detail_snapshot` es jsonb nullable, sin DEFAULT ni relleno masivo.
 El servidor lo captura solo al completar `ejercicio`, dentro de la transacción
 de completación/XP; ningún campo del cliente puede aportar ese detalle. Un replay

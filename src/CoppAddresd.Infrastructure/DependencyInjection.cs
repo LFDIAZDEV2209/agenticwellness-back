@@ -98,6 +98,7 @@ public static class DependencyInjection
         services.AddScoped<IWellnessRepository, WellnessRepository>();
         services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
         services.AddScoped<IEffectiveDayContentStore, EffectiveDayContentStore>();
+        services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.Queries.GetRoutineUsage.IProgramRoutineUsageStore, ProgramRoutineUsageStore>();
         services.AddScoped<IEffectiveDayContentResolver, EffectiveDayContentResolver>();
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.Commands.BulkAssignProgramContent.IBulkPatientPodcastStore, BulkPatientPodcastStore>();
