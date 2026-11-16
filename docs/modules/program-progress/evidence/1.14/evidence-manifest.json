@@ -1,0 +1,79 @@
+{
+  "productBaseCommit": "e0a9c29dfbf551eaa3d51a97173fe72b55a0781b",
+  "artifacts": [
+    {
+      "path": "audit-after.json",
+      "bytes": 150,
+      "sha256": "0e318086599945d7a0c2060c94facf6b02902c69216f205f36b4b586360dc37c"
+    },
+    {
+      "path": "audit-after.log",
+      "bytes": 112,
+      "sha256": "59323163a3f8b73536360a028dbd9974d2984487b29fbe607f2aa8f53bdea0cd"
+    },
+    {
+      "path": "build.log",
+      "bytes": 14138,
+      "sha256": "4df0babde9e42e23f34011f465efb86fdd3bd081602719048a2ad64181604b3e"
+    },
+    {
+      "path": "gates.json",
+      "bytes": 165,
+      "sha256": "5ffa2d9f74324c8f1d0b92c7399934d1c5ba1766ceb5898edfd595f3a971c533"
+    },
+    {
+      "path": "protected-after.json",
+      "bytes": 2651,
+      "sha256": "27bbed18953022b8f85e9c74133d5ad01873c62f02514fdc37731fcd6dc97f6c"
+    },
+    {
+      "path": "protected-before.json",
+      "bytes": 2742,
+      "sha256": "e391de4987aae7ffb1d824562aa2e08d7809a77b2ee92aa3c40baefb9e3824b4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2267,
+      "sha256": "5b445c8d3d117461b3d6ee05f42c790218a4def508c7ae590eea6af17dffe82c"
+    },
+    {
+      "path": "resolver-regression.log",
+      "bytes": 510,
+      "sha256": "3b9454aabe38f7e0205d1ea516071f7ff438d92e66292df04aac419d09276769"
+    },
+    {
+      "path": "resolver-regression.trx",
+      "bytes": 59109,
+      "sha256": "f6b8abd6d137484e8c5a3a1612e9d39c404795bdc8e3018710ed915fef2d0b6f"
+    },
+    {
+      "path": "results-summary.json",
+      "bytes": 1323,
+      "sha256": "92002ae68b86d4ddd3af49c4f9117e1e30de8dadfa851ce7844e9865066d34c4"
+    },
+    {
+      "path": "simulation.json",
+      "bytes": 1334,
+      "sha256": "28c9151ccaff8f98f15166d73053a6cd5b55cc3aff3300ed9afc5638323a7711"
+    },
+    {
+      "path": "simulation.log",
+      "bytes": 1197,
+      "sha256": "55bc37368e1b7f4906c0c08c38f7fd978487230ae03ef673002d41547d6a31f1"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "scripts/ProgramContentAudit/Program.cs",
+      "sha256": "67fd587d16c26f4a6cc58c9bc13b4f0e52cfa809d14ac46062510ece72ea3f9b"
+    },
+    {
+      "path": "scripts/ProgramContentAudit/ProgramRepairSimulation.cs",
+      "sha256": "98882c30482fee2aef9cccb2d1aec75699e12333bbfe9f9e31208711245171fa"
+    },
+    {
+      "path": "docs/modules/program-progress/REPAIR-1.14.md",
+      "sha256": "b94d061c51e0d3f8556c240abd89a3038850f10b7fdc892cb6ee3e6fb3687b25"
+    }
+  ]
+}

@@ -5,3 +5,6 @@ src/CoppAddresd.Infrastructure/Migrations/Seed/AddNutritionFoodCatalog.sql text 
 docs/modules/program-progress/QA-4.11.md text eol=lf
 docs/modules/program-progress/evidence/4.11/** text eol=lf
 scripts/qa/program-assignment/prepare-back-4.11.py text eol=lf
+docs/modules/program-progress/REPAIR-1.14.md text eol=lf
+docs/modules/program-progress/evidence/1.14/** text eol=lf
+scripts/ProgramContentAudit/*.cs text eol=lf

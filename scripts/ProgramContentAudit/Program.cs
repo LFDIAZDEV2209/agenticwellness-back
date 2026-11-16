@@ -22,6 +22,14 @@ try
     var store = new EffectiveDayContentStore(db, guard); var resolver = new EffectiveDayContentResolver(store);
     var result = await new GetContentGapsQueryHandler(store, resolver, TimeProvider.System).Handle(new(1, 1), cancellation.Token);
     var data = await store.LoadScopedActiveAsync(null, "Program.View", cancellation.Token);
+    if (args is ["--simulate-repair", var reportPath])
+    {
+        var report = await ProgramRepairSimulation.RunAsync(db, data, resolver, result.Total, cancellation.Token);
+        await File.WriteAllTextAsync(reportPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }), cancellation.Token);
+        await transaction.RollbackAsync(cancellation.Token);
+        Console.WriteLine(JsonSerializer.Serialize(report));
+        return 0;
+    }
     var counts = new Dictionary<string, int> { ["podcast"] = 0, ["ejercicio"] = 0, ["nut"] = 0 };
     var now = DateTime.UtcNow;
     foreach (var enrollment in data.Enrollments)
