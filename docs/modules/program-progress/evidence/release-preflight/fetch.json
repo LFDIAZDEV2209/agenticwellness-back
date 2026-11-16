@@ -1,0 +1,9 @@
+{
+  "remote": "origin",
+  "command": "git fetch origin",
+  "exitCode": 0,
+  "fetchedDev": "f1091a4bb6faa39818f99336011ad676fce9d999",
+  "currentRemoteDev": "f1091a4bb6faa39818f99336011ad676fce9d999",
+  "devReflog": "f1091a4b refs/remotes/origin/dev@{2026-11-15T14:22:57-05:00}: update by push",
+  "note": "Metadata de fetch; no se capturo un log separado."
+}

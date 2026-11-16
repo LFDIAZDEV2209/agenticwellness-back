@@ -1,0 +1,2095 @@
+{
+  "rawTrx": "tele-unit.trx",
+  "rawSha256": "f37ea46d35ad6240bd9174f9a72721a7fe533438759d9005657e046c6cf9e7d4",
+  "counters": {
+    "total": "413",
+    "executed": "413",
+    "passed": "413",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-11-15T23:01:07.5179614-05:00",
+    "queuing": "2026-11-15T23:01:07.5179617-05:00",
+    "start": "2026-11-15T23:01:05.8609130-05:00",
+    "finish": "2026-11-15T23:01:10.0268829-05:00"
+  },
+  "results": [
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Appointments.AdminView\", audience: \"app\", global: False, expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000262"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Appointments.AdminView\", audience: \"app\", global: True, expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000158"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Appointments.AdminView\", audience: \"erp\", global: False, expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0498158"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Appointments.AdminView\", audience: \"erp\", global: True, expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007385"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Appointments.AdminView\", audience: null, global: True, expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000094"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Appointments.View\", audience: \"app\", global: True, expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000433"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Telemedicine.AdminView\", audience: \"app\", global: True, expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000090"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AdminAudienceTests.Handle_AdminExigeErpSinBloquearPermisosCompartidos(permission: \"Telemedicine.AdminView\", audience: \"erp\", global: True, expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000106"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.AppointmentCancelled_IncluyeRazon",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003285"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.AppointmentCancelled_SinRazon_TerminaEnPunto",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017575"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.AppointmentRescheduled_EsWarningYAsociaCita",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004824"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.AppointmentRescheduled_ExplicitaUtcIndependienteDelOffset",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003831"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.NewAppointment_AsociaCita",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004676"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.NewRequest_ConstruyeAlertaInfo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0140088"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.ParticipantLeft_EsWarning",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005024"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.PatientWaiting_InfoParaElProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008332"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.ProfessionalJoined_UsaTipoPatientJoined",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007126"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.RequestApproved_ConstruyeAlertaInfo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0077556"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.RequestRejected_EsWarningEIncluyeMotivo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007061"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.RequestRejected_SinDestinatario_DevuelveNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008502"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.SessionEnded_EsInfo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005740"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AlertMaterializerTests.SinDestinatario_DevuelveNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005522"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentMapperTests.BuildDtosAsync_DedupReferencia_CadaEntidadSeConsultaUnaVez",
+      "outcome": "Passed",
+      "duration": "00:00:00.0033461"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentMapperTests.BuildDtosAsync_EnriqueceNombres",
+      "outcome": "Passed",
+      "duration": "00:00:00.0027452"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentMapperTests.BuildDtosAsync_ReferenciaAusente_NombreNullSinRomper",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015023"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentMapperTests.BuildDtosAsync_SinSede_LocationNameNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021386"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_BackendNoAcepta_NoRegistraYReintenta",
+      "outcome": "Passed",
+      "duration": "00:00:00.0027972"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_CitaNoConfirmada_NoEnvia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020910"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_NotificacionesDeshabilitadas_NoEnvia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018096"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_PacienteSinUsuarioDeAuth_OmiteAlPacienteYNotificaAlProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014040"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_PrimerRecordatorioFueraDeSuVentanaConfigurada_NoEnvia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0445325"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_PrimerRecordatorio_EnviaPushUnaVezYDeduplica",
+      "outcome": "Passed",
+      "duration": "00:00:00.0078841"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_SegundoRecordatorioDeshabilitado_EnviaSoloElPrimero",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014475"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_SegundoRecordatorio_EnviaPushYSmsAlPacienteYPushAlProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0611277"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AppointmentReminderSweeperTests.Sweep_SinVentanaSms_EnviaSoloPush",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022294"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Handle_ModoEspecialidadRango_ConsultasConstantes",
+      "outcome": "Passed",
+      "duration": "00:00:00.0753573"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Handle_ModoEspecialidadRango_UneSlotsYBatcheaCitas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0091509"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Handle_ModoEspecialidadSinCandidatos_DaysCompletosVacios",
+      "outcome": "Passed",
+      "duration": "00:00:00.0152646"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Handle_Rango7Dias_DiasCompletosYSoloPrimerDiaConCupo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0268545"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Validate_EspecialidadSinOrganizacion_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005312"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Validate_FechasDefault_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031939"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Validate_OrdenInvertido_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006970"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Validate_Rango14Dias_Valido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009157"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilityRangeSlotsTests.Validate_RangoMayorA14Dias_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0836194"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_AnticipacionMinima_ExcluyeSlotsEnVentana",
+      "outcome": "Passed",
+      "duration": "00:00:00.0068389"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_CitaConOffsetLocal_SolapaEnUtc",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012995"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_ModoEspecialidadInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015522"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_ModoEspecialidadSinCandidatos_RetornaVacia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0071998"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_ModoEspecialidadSlotTotalmenteOcupado_ExcluyeSlot",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017206"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_ModoEspecialidad_UneSlotsYCuentaProfesionales",
+      "outcome": "Passed",
+      "duration": "00:00:00.0095371"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_ProfesionalInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014744"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_ProfesionalSinHorario_RetornaVacia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011437"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Handle_RanuraSolapada_ExcluyeOcupadoYConservaLibre",
+      "outcome": "Passed",
+      "duration": "00:00:00.0141899"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Validate_EspecialidadSinOrganizacion_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0047232"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Validate_FechaDefault_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005160"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Validate_ModoProfesionalSinOrganizacion_Valido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005371"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailabilitySlotsTests.Validate_SinProfesionalNiEspecialidad_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004461"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_AnticipacionMinima_ExcluyeDiaCompleto",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011645"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_CandidatoConHorarioLibre_DevuelvePrimeraRanuraYDias",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022959"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_CandidatoSinHorario_NoAparece",
+      "outcome": "Passed",
+      "duration": "00:00:00.0291463"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_CitasCanceladasNoBloquean",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015789"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_DiaSinRanurasLibres_NoCuentaEseDia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018714"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_EspecialidadInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010702"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_RanuraParcialOcupada_DevuelveSiguienteLibre",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019611"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Handle_SinCandidatos_RetornaVacia",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015770"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Validate_RangoInvertido_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0443954"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Validate_SinEspecialidad_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005224"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Validate_SinOrganizacion_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0030961"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Validate_VentanaMayorAlTope_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005599"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.AvailableProfessionalsTests.Validate_VentanaTope_Valido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004813"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.BackfillMetricsHandlerTests.Handle_RangoExplicito_PasaAlServicio",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020343"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.BackfillMetricsHandlerTests.Handle_SinRango_UsaHistoriaCompletaHastaHoy",
+      "outcome": "Passed",
+      "duration": "00:00:00.0162256"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Chat_EmiteRolDerivadoDelJwt(expectedRole: \"Patient\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001741"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Chat_EmiteRolDerivadoDelJwt(expectedRole: \"Professional\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004906"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Chat_EmiteRolDerivadoDelJwt(expectedRole: \"Supervisor\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0171858"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.End_ConSesionActiva_EmiteSessionEndedConDuracionYCambioDeEstado",
+      "outcome": "Passed",
+      "duration": "00:00:00.0069306"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.End_SinSesionActiva_NoEmiteEventos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014455"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.IsReopen_SoloCompletedAInProgress",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003483"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Join_SalaExistente_NoEmiteRoomOpened",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018958"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Join_SinSala_EmiteRoomOpenedConFechaDeAgenda",
+      "outcome": "Passed",
+      "duration": "00:00:00.0129952"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.MapCounters_Chat_UsaElRolComoDimension",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005459"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.MapCounters_EventoViejo_NoProduceContadores",
+      "outcome": "Passed",
+      "duration": "00:00:00.0357181"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.MapCounters_RoomOpened_EsRoomsOpenedGeneral",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006494"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.MapCounters_SessionEndedConDuracion_SumaSesionYDuracion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0035773"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.MapCounters_SessionEndedSinDuracion_SoloSumaSesion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0132368"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.MapCounters_SessionStarted_EsSessionsStartedGeneral",
+      "outcome": "Passed",
+      "duration": "00:00:00.0060941"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Reopen_EmiteCambioDeEstadoCompletedAInProgressSinRoomOpened",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024148"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Start_SalaExistente_SoloEmiteSessionStarted",
+      "outcome": "Passed",
+      "duration": "00:00:00.0136495"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CallMetricsEmitterTests.Start_SinSala_EmiteRoomOpenedYSessionStarted",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023034"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_BorradorDeEncuentro_SeCancela",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019734"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_CanceladoPorPaciente_NotificaAlProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0025750"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_CanceladoPorProfesional_NotificaAlPacienteConLaRazon",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012646"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023802"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_EncuentroCompletado_SePreserva",
+      "outcome": "Passed",
+      "duration": "00:00:00.0107380"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_EstadoNoCancelable_LanzaViolacion(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021203"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_EstadoNoCancelable_LanzaViolacion(status: Completed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005837"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_EstadoNoCancelable_LanzaViolacion(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000792"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CancelAppointmentHandlerTests.Handle_Valido_CancelaConHistorialYAlerta",
+      "outcome": "Passed",
+      "duration": "00:00:00.0191541"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_CitaConfirmada_EsPermitida",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011851"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_EstadosNoDisponibles_LanzaViolacion(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017418"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_EstadosNoDisponibles_LanzaViolacion(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004972"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_EstadosNoDisponibles_LanzaViolacion(status: Requested)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000423"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_OrdenaYRespetaCursorAfterYLimite",
+      "outcome": "Passed",
+      "duration": "00:00:00.0088513"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_Supervisor_EsPermitido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0066729"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.List_UsuarioAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019614"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_CitaCompletada_EsPermitida",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018642"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_CitaConfirmada_EsPermitida",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010281"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013048"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_EstadosNoDisponibles_LanzaViolacion(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006654"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_EstadosNoDisponibles_LanzaViolacion(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013220"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_EstadosNoDisponibles_LanzaViolacion(status: Requested)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000573"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_Paciente_DerivaRolPatient",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009069"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_Profesional_DerivaEmisorYRolDelJwt",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021718"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_Supervisor_DerivaRolSupervisor",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012106"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatHandlerTests.Send_UsuarioAjeno_LanzaForbiddenYSinPersistir",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015290"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ChatMessageQueryTranslationTests.ListAfter_ConCursorTraduceKeysetSinFallar",
+      "outcome": "Passed",
+      "duration": "00:00:02.5234462"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_ConSolapamiento_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020093"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_SolicitudCancelada_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0388816"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_SolicitudConCitaActivaColgada_LanzaYaConfirmada",
+      "outcome": "Passed",
+      "duration": "00:00:00.0084090"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_SolicitudConCitaTerminalColgada_LanzaYaConfirmada",
+      "outcome": "Passed",
+      "duration": "00:00:00.0066791"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_SolicitudConvertidaConCitaColgada_LanzaYaConfirmada",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017960"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_SolicitudConvertida_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017263"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_SolicitudInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016876"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ConfirmRequestHandlerTests.Handle_Valido_CreaCitaConvertedYAlerta",
+      "outcome": "Passed",
+      "duration": "00:00:00.0088267"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_ConProfesional_EnviaPushDeNuevaSolicitud",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014918"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_ConProfesional_ValidaEspecialidadYEmiteAlerta",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018663"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_FechaPreferidaMuyCercana_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0034489"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_FechaPreferidaMuyLejana_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016022"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_PacienteInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024679"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_ProfesionalNoAtiendeEspecialidad_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026877"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_ProfesionalSinEspecialidades_SaltaValidacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016588"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_Urgente_PersistePrioridadYEscalaAlertaYPush",
+      "outcome": "Passed",
+      "duration": "00:00:00.0099164"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.CreateRequestHandlerTests.Handle_Valido_CreaSolicitudPending",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015506"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EarlyStartedRoomTests.Handle_PacienteAntesDelHorario_SoloSesionActivaIniciadaPermiteEntrar(status: Confirmed, sessionStatus: Active, allowed: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008572"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EarlyStartedRoomTests.Handle_PacienteAntesDelHorario_SoloSesionActivaIniciadaPermiteEntrar(status: InProgress, sessionStatus: Active, allowed: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0837885"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EarlyStartedRoomTests.Handle_PacienteAntesDelHorario_SoloSesionActivaIniciadaPermiteEntrar(status: InProgress, sessionStatus: Ended, allowed: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0456272"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014655"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_EncuentroDraft_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0073034"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_NombreLargo_SeTruncaAlMaximoDeColumna",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014327"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_Paciente_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024780"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_ProfesionalConEncuentroCompletado_CreaAutorYNombre",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019256"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_SinEncuentro_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014488"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_SinNombreEnElClaim_AutorNameNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0051766"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_Supervisor_EsPermitido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010083"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Add_UsuarioAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014957"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.List_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015640"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.List_OrdenaPorCreatedAtEId",
+      "outcome": "Passed",
+      "duration": "00:00:00.0228212"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.List_Paciente_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022948"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.List_SinEncuentro_DevuelveVacio",
+      "outcome": "Passed",
+      "duration": "00:00:00.0097316"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Validator_BodyVacioOExcedido_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0061164"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterAddendumHandlerTests.Validator_Valido_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004734"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.Deserialize_CamposDesconocidos_Tolerante",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004582"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.Deserialize_JsonValido_Reconstruye",
+      "outcome": "Passed",
+      "duration": "00:00:00.0616129"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureCanDocument_EstadosInvalidos_Lanza(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0198174"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureCanDocument_EstadosInvalidos_Lanza(status: Confirmed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000180"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureCanDocument_EstadosInvalidos_Lanza(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000363"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureCanDocument_EstadosInvalidos_Lanza(status: Requested)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007628"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureCanDocument_EstadosValidos_NoLanza(status: Completed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005078"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureCanDocument_EstadosValidos_NoLanza(status: InProgress)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009830"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureEditable_Completed_Lanza",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010797"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureEditable_NoCompleted_NoLanza(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002957"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.EnsureEditable_NoCompleted_NoLanza(status: Draft)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004413"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.HasContent_ConCampoClinico_EsVerdadero",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015768"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.HasContent_ConNota_EsVerdadero",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004178"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.HasContent_NotaEnBlanco_YDatosVacios_EsFalso",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001787"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.HasContent_Vacio_EsFalso",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005950"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.Serialize_DatosCompletos_CamelCaseYMinimal",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015398"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EncounterSupportTests.Serialize_Null_DevuelveNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005506"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EndSessionHandlerTests.Handle_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017517"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EndSessionHandlerTests.Handle_ConSesionActiva_CompletaCita",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017811"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EndSessionHandlerTests.Handle_FalloDelProveedor_NoBloqueaFinalizacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019081"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EndSessionHandlerTests.Handle_PacienteNoPuedeFinalizar_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0076909"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.EndSessionHandlerTests.Handle_SinSesionActiva_Idempotente",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017280"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_BloqueCalls_ExponeAgregadosYPromedioEnLectura",
+      "outcome": "Passed",
+      "duration": "00:00:00.0073607"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_BloqueCalls_SinSesionesTerminadas_PromedioNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013905"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_PacientesSinEstado_NoAparecenEnStates",
+      "outcome": "Passed",
+      "duration": "00:00:00.0028194"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_Profesional_SoloVeSusDatosSinActividadGlobal",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015948"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_ProximasCitas_ResuelveNombresYSoloFuturasActivas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0065982"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_RepetidoUsaCacheParaAgregadosPeroProximasCitasSiempreEnVivo",
+      "outcome": "Passed",
+      "duration": "00:00:00.1064294"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_SeriesPorHora_SiempreCubreLas24Horas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0050736"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_VistaGlobal_AgrupaCitasPorEstadoDelPaciente",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031327"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_VistaGlobal_CalculaKPIsYSeriesCompletas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0047984"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.GetDashboardAnalyticsQueryHandlerTests.Handle_VistaGlobal_IncluyeActividadPorProfesionalConNombreResuelto",
+      "outcome": "Passed",
+      "duration": "00:00:00.0041582"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.HttpAuditActorContextTests.ConUsuarioAutenticado_ResuelveClaims",
+      "outcome": "Passed",
+      "duration": "00:00:00.0030668"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.HttpAuditActorContextTests.NameIdentifierInvalido_UserIdNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0064588"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.HttpAuditActorContextTests.SinHttpContext_ActorSystem",
+      "outcome": "Passed",
+      "duration": "00:00:00.0027075"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.HttpAuditActorContextTests.SinUsuarioAutenticado_ActorSystem",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011307"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014296"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_CitaNoIniciable_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020214"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_PacienteFueraDeVentana_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0028932"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_ProfesionalFueraDeVentana_GeneraToken",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012319"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_ProfesionalValido_CreaSalaYGeneraToken",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017023"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_ProveedorFallaAlElevar_ContinuaYQuedaCapacidadLocal",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023930"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_SalaExistenteCapacidadIgual_NoActualizaProveedor",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009183"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_SalaExistenteCapacidadMayor_NoBajaLaCapacidad",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012696"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_SalaExistenteCapacidadMenor_ElevaEnProveedorYPersiste",
+      "outcome": "Passed",
+      "duration": "00:00:00.0051451"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_SalaYaExiste_NoCreaDuplicado",
+      "outcome": "Passed",
+      "duration": "00:00:00.0027391"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_SettingsFueraDeRango_LanzaViolacionSinCrearSala",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020669"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.JoinSessionHandlerTests.Handle_UsuarioAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019397"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.MyQueriesTests.HandleListRequests_AplicaFiltroDeEstado",
+      "outcome": "Passed",
+      "duration": "00:00:00.0030923"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.MyQueriesTests.HandleListRequests_SoloDevuelveSolicitudesDelProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0149180"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.MyQueriesTests.HandleList_AplicaFiltrosDeEstadoYRango",
+      "outcome": "Passed",
+      "duration": "00:00:00.0079593"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.MyQueriesTests.HandleList_SoloDevuelveCitasDelProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024997"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.MyQueriesTests.HandleSummary_AcotaKPIsAlProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0165587"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientRescheduleHandlerTests.Handle_CitaEnVentanaDeAnticipacion_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0407542"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientRescheduleHandlerTests.Handle_ErpSinPaciente_ConservaRequestedByDelBody",
+      "outcome": "Passed",
+      "duration": "00:00:00.0159483"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientRescheduleHandlerTests.Handle_PacienteAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0039270"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientRescheduleHandlerTests.Handle_PacienteDueno_ReprogramaYFuerzaRequestedByPatient",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017935"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientRescheduleHandlerTests.Handle_PacienteSinPerfil_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020896"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Cancel_PacienteCitaAjena_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017562"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Cancel_PacienteCitaEnCurso_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020933"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Cancel_PacienteDeLaCita_CancelaConHistorial",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015871"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Cancel_PacienteSinPerfilResoluble_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0091091"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Create_PacienteAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026732"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Create_PacientePropio_CreaSolicitudPending",
+      "outcome": "Passed",
+      "duration": "00:00:00.0285754"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Create_SinPerfilPaciente_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031587"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Mine_ErpConPatientId_ConservaComportamiento",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017787"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Mine_PacienteConPatientIdAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0029214"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.Mine_PacienteSinParam_DevuelveSoloLasSuyas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0102201"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.MyAppointments_CitaReabierta_CorrigeVentanaDesdeReopenedAt",
+      "outcome": "Passed",
+      "duration": "00:00:00.0029586"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.MyAppointments_PacienteFiltraPorEstado",
+      "outcome": "Passed",
+      "duration": "00:00:00.0480581"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.MyAppointments_Paciente_IncluyeVentanaDesdeSettings",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020671"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.MyAppointments_Paciente_ListaSoloSusCitas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020199"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.MyAppointments_SalaPersistida_PrefiereSuVentana",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020408"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PatientScopeTests.MyAppointments_SinPerfilPaciente_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013783"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Get_CitaEnCurso_SigueDisponibleEnLectura",
+      "outcome": "Passed",
+      "duration": "00:00:00.0191467"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Get_PacienteProfesionalYSupervisor_LeenElRegistro",
+      "outcome": "Passed",
+      "duration": "00:00:00.0037685"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Get_PacienteSinRegistro_DevuelveNull",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016310"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Get_UsuarioAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018975"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_AutoguardadoConcurrente_ActualizaLaExistente",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013911"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023402"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_EstadoNoEditable_LanzaViolacion(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020037"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_EstadoNoEditable_LanzaViolacion(status: Completed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006420"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_EstadoNoEditable_LanzaViolacion(status: InProgress)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000342"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_EstadoNoEditable_LanzaViolacion(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000735"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_EstadoNoEditable_LanzaViolacion(status: Requested)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000372"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_PacienteActualiza_NoDuplicaYSetUpdatedAt",
+      "outcome": "Passed",
+      "duration": "00:00:00.0028246"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_Paciente_CreaIdentidadDerivadaYTrimeaCampos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0029503"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_Profesional_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0025116"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_Supervisor_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018914"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Upsert_UsuarioAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014993"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Validator_MotivoVacioOExcedido_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0027423"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Validator_TextosOpcionalesExcedidos_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009344"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.PreVisitIntakeHandlerTests.Validator_Valido_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0103248"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.Cancellation_StopsBeforeAnyMutation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0033221"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.CompletedProviderRoom_ClosesEarlySession_UsesActualEnd_AndIsIdempotent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0076413"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.MissingProviderRoom_IsNotProofOfCompletion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010827"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.PreviouslyProcessedWebhook_DoesNotEmitDuplicateMetrics",
+      "outcome": "Passed",
+      "duration": "00:00:00.0930453"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.UnconfirmedProviderCompletion_DoesNotEndEvenVeryOldSession(status: \"failed\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000540"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.UnconfirmedProviderCompletion_DoesNotEndEvenVeryOldSession(status: \"in-progress\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0509545"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ProviderRoomReconcilerTests.UnconfirmedProviderCompletion_DoesNotEndEvenVeryOldSession(status: \"unknown\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003391"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReferenceDataGuardTests.RequireLocation_Inexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031160"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReferenceDataGuardTests.RequireLocation_Null_DevuelveNullSinConsultar",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013822"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReferenceDataGuardTests.RequirePatient_Inexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013524"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReferenceDataGuardTests.RequireProfessional_Existente_Devuelve",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012241"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReferenceDataGuardTests.RequireProfessional_Inexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013315"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReferenceDataGuardTests.RequireSpecialty_Inexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011134"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenGraceExposureTests.GetAppointment_ExponeLaGraciaEfectivaDelSettings",
+      "outcome": "Passed",
+      "duration": "00:00:00.0076030"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenGraceExposureTests.GetMyAppointments_ExponeLaGraciaEnItemsSinSala",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016907"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenGraceExposureTests.GetMyAppointments_ExponeLaGraciaTambienConSalaPersistida",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015917"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_CitaNoCompletada_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0389817"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_FueraDeLaGracia_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014609"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaConfigurada120_DentroDelLimite_Reabre",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015190"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaConfigurada15_DentroDelLimite_Reabre",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017188"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaConfigurada15_Fuera_LanzaConValorEfectivoSinEfectos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020313"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaEnLosLimitesDelRango_Reabre(grace: 1440)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023159"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaEnLosLimitesDelRango_Reabre(grace: 5)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005928"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaFueraDeRango_LanzaViolacionSinEfectos(grace: 0)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0036830"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaFueraDeRango_LanzaViolacionSinEfectos(grace: 1441)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004772"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_GraciaFueraDeRango_LanzaViolacionSinEfectos(grace: 4)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000577"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_PacienteSinPermiso_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0099962"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_ProfesionalDentroDeLaGracia_ReabreConSalaNueva",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021583"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_SalaPreviaConCapacidadVieja_ActualizaCapacidadAlSettings",
+      "outcome": "Passed",
+      "duration": "00:00:00.0047409"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_SalaPreviaEnded_SeReiniciaConSalaFresca",
+      "outcome": "Passed",
+      "duration": "00:00:00.0553406"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_SettingsFueraDeRango_LanzaViolacionSinCrearSala",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017827"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_SinFilaDeSettings_UsaDefault60",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019257"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReopenSessionCommandTests.Handle_SupervisorDentroDeLaGracia_Reabre",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015345"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RescheduleAppointmentHandlerTests.Handle_CitaInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015476"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RescheduleAppointmentHandlerTests.Handle_CitaNoConfirmada_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0038309"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RescheduleAppointmentHandlerTests.Handle_LimiteDeReprogramaciones_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0029949"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RescheduleAppointmentHandlerTests.Handle_NuevoHorarioConSolapamiento_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018424"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RescheduleAppointmentHandlerTests.Handle_SinCambio_NoConsumeLimiteNiGeneraAlerta",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022962"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RescheduleAppointmentHandlerTests.Handle_Valido_ActualizaHorarioIncrementaYRegistraHistorial",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023415"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Approve_Admin_AlertaRequestApprovedAlProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0090433"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Approve_ProfesionalAsignado_PasaAApprovedSinCita",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013046"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Approve_SolicitudConvertida_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014770"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Approve_UsuarioSinAlcance_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021793"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Reject_AdminSinPermisoNiAsignacion_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031252"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Reject_DesdeApproved_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024719"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Reject_ProfesionalAsignado_PersisteMotivoYEstado",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012744"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ReviewRequestHandlerTests.Reject_SolicitudConvertida_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015529"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.RoomParticipantIdentityTests.Handle_IdentidadesAuth_DistinguePacienteProfesionalYSupervisor",
+      "outcome": "Passed",
+      "duration": "00:00:00.0119361"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ScheduleAppointmentHandlerTests.Handle_ConSolapamiento_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0093623"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ScheduleAppointmentHandlerTests.Handle_PacienteInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0366113"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ScheduleAppointmentHandlerTests.Handle_ProfesionalInexistente_LanzaNotFound",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019515"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ScheduleAppointmentHandlerTests.Handle_Valido_CreaCitaConfirmedYAlerta",
+      "outcome": "Passed",
+      "duration": "00:00:00.0147581"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_ConOffsetDelCliente_NormalizaAUtc",
+      "outcome": "Passed",
+      "duration": "00:00:00.0064560"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionDefault_CuandoNoSeSolicita",
+      "outcome": "Passed",
+      "duration": "00:00:00.0055145"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionInvalida_CaeAlDefault(requested: -5)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002774"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionInvalida_CaeAlDefault(requested: 0)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000033"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionInvalida_CaeAlDefault(requested: 1000)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002876"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionInvalida_CaeAlDefault(requested: 241)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000090"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionSolicitadaValida_SeUsa(requested: 240)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000090"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionSolicitadaValida_SeUsa(requested: 30)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003460"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_DuracionSolicitadaValida_SeUsa(requested: 60)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002779"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_MasAllaDeVentanaMaxima_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014788"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SchedulingRulesTests.ResolveSlot_PocaAnticipacion_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0240333"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.Security.TelemedicineScopedAuthorizationClientTests.AuthorizeAsync_LaClaveLlevaVersion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0257955"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.Security.TelemedicineScopedAuthorizationClientTests.AuthorizeAsync_MismoStamp_SegundaLlamadaEsHitSinHttp",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021555"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.Security.TelemedicineScopedAuthorizationClientTests.AuthorizeAsync_StampRotado_EsMiss",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016617"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureCanStartOrJoin_EstadosInvalidos_Lanza(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004029"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureCanStartOrJoin_EstadosInvalidos_Lanza(status: Completed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005740"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureCanStartOrJoin_EstadosInvalidos_Lanza(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000186"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureCanStartOrJoin_EstadosInvalidos_Lanza(status: Requested)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000106"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureCanStartOrJoin_EstadosValidos_NoLanza(status: Confirmed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001799"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureCanStartOrJoin_EstadosValidos_NoLanza(status: InProgress)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002820"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureChatAllowed_EstadosInvalidos_Lanza(status: Cancelled)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000201"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureChatAllowed_EstadosInvalidos_Lanza(status: NoShow)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007664"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureChatAllowed_EstadosInvalidos_Lanza(status: Requested)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004562"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureChatAllowed_EstadosValidos_NoLanza(status: Completed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001945"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureChatAllowed_EstadosValidos_NoLanza(status: Confirmed)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000081"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureChatAllowed_EstadosValidos_NoLanza(status: InProgress)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002876"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_EnRango_NoLanza(value: 10)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001568"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_EnRango_NoLanza(value: 2)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003996"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_EnRango_NoLanza(value: 3)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000090"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_FueraDeRango_Lanza(value: 0)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000183"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_FueraDeRango_Lanza(value: 1)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003204"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_FueraDeRango_Lanza(value: 11)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000266"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidMaxParticipants_FueraDeRango_Lanza(value: 50)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008009"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidReopenGraceMinutes_EnRango_NoLanza(value: 1440)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001990"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidReopenGraceMinutes_EnRango_NoLanza(value: 5)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000089"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidReopenGraceMinutes_EnRango_NoLanza(value: 60)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004433"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidReopenGraceMinutes_FueraDeRango_Lanza(value: 0)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007054"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidReopenGraceMinutes_FueraDeRango_Lanza(value: 1441)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003600"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureValidReopenGraceMinutes_FueraDeRango_Lanza(value: 4)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000280"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureWithinWindow_AntesDeAbrir_Lanza",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017297"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureWithinWindow_DentroDeVentana_NoLanza",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004578"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.EnsureWithinWindow_DespuesDeCerrar_Lanza",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010601"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.NewRoom_AsignaVentanaYLimites",
+      "outcome": "Passed",
+      "duration": "00:00:00.0069100"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.NewRoom_SettingsPorDefecto_AsignaCapacidad3",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004147"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.ProviderRoomName_EsDeterminista",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006131"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.RequireParticipant_PacienteDeLaCita_DevuelvePatient",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011586"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.RequireParticipant_ProfesionalDeLaCita_DevuelveProfessional",
+      "outcome": "Passed",
+      "duration": "00:00:00.0387398"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.RequireParticipant_Supervisor_DevuelveSupervisorSinConsultarIdentidad",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019652"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.RequireParticipant_UsuarioAjeno_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0067422"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.RequireSessionOwner_Paciente_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023967"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.RequireSessionOwner_ProfesionalDeLaCita_NoLanza",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017177"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.Settings_DefaultMaxParticipants_Es3",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002549"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.Settings_DefaultReopenGraceMinutes_Es60",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003168"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.SessionSupportTests.Window_AbreYcierraSegunSettings",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004791"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_CitaConfirmadaConSesionPrevia_NoCierra",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019929"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_CitaConfirmadaDentroDeLaGracia_NoCierra",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013621"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_CitaConfirmadaSinSesion_CierraComoNoShow",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015380"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_ConIngresoDelPaciente_CierraComoCompleted",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018112"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_ConfirmadaSinSesion_EmiteConfirmadaANoShow",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011402"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_DentroDeLaGracia_NoCierra",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014897"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_DentroDeLaGracia_NoEmiteMetricas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0404956"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_InProgressConIngreso_EmiteCompletedYSessionEnded",
+      "outcome": "Passed",
+      "duration": "00:00:00.0094641"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_InProgressSinIngreso_EmiteNoShowYSessionEndedUnaVez",
+      "outcome": "Passed",
+      "duration": "00:00:00.0158777"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_NoShowConNotificacionesDeshabilitadas_NoNotifica",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031549"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_NoShow_NotificaAlPacientePushYSms",
+      "outcome": "Passed",
+      "duration": "00:00:00.0225865"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_SalaInexistente_NoCompletaProveedor",
+      "outcome": "Passed",
+      "duration": "00:00:00.0071849"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StaleSessionSweeperTests.Sweep_SinIngresoDelPaciente_CierraComoNoShow",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018988"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_CitaNoIniciable_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016214"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_DobleInicio_LanzaViolacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022550"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_FueraDeVentana_IniciaSesionIgualmente",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015561"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_PacienteNoPuedeIniciar_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021419"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_SalaExistenteCapacidadMenor_ElevaEnProveedorYPersiste",
+      "outcome": "Passed",
+      "duration": "00:00:00.0146186"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_SalaExistenteCapacidadSuficiente_NoActualizaProveedor",
+      "outcome": "Passed",
+      "duration": "00:00:00.0045706"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_SettingsFueraDeRango_LanzaViolacionSinCrearSala",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017013"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_SupervisorPuedeIniciar",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013471"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.StartSessionHandlerTests.Handle_Valido_IniciaSesionYVuelveInProgress",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014214"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.TelemedicineNotifierTests.SendAsync_Aceptado_EnviaElContratoExacto",
+      "outcome": "Passed",
+      "duration": "00:00:00.0037425"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.TelemedicineNotifierTests.SendAsync_BackendRechaza_DevuelveFalse",
+      "outcome": "Passed",
+      "duration": "00:00:00.0035830"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.TelemedicineNotifierTests.SendAsync_RedCaida_DevuelveFalseSinLanzar",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012711"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.TelemedicineNotifierTests.SendAsync_Timeout_DevuelveFalseSinLanzar",
+      "outcome": "Passed",
+      "duration": "00:00:00.1106898"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.Backfill_RangoFuturo_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003889"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.Backfill_RangoInvertido_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004992"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.Backfill_RangoValido_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0040353"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.Backfill_SinRango_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004849"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.CancelAppointment_SinRazon_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0055416"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.CreateRequest_MotivoVacio_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011302"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.CreateRequest_Valido_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0063400"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.EndSession_RazonLarga_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0044833"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.GetRoomChatMessages_LimiteFueraDeRango_Invalido(limit: 0)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0790541"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.GetRoomChatMessages_LimiteFueraDeRango_Invalido(limit: 101)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008021"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.GetRoomChatMessages_LimiteValido_EsValido(limit: 1)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008281"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.GetRoomChatMessages_LimiteValido_EsValido(limit: 100)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003969"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.GetRoomChatMessages_LimiteValido_EsValido(limit: 50)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000659"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.JoinSession_SinUsuario_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0053968"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.RescheduleAppointment_RazonLarga_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0074019"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.RescheduleAppointment_SinNuevoInicio_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0030624"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.ReviewRequest_ApproveSinMotivo_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0116874"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.ReviewRequest_RejectSinMotivo_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0149730"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.ScheduleAppointment_SinIdsObligatorios_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0404568"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.SendRoomChatMessage_BodyDemasiadoLargo_Invalido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009526"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.SendRoomChatMessage_BodyEnElLimite_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004069"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.SendRoomChatMessage_BodyVacio_Invalido(body: \"   \")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0100135"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.SendRoomChatMessage_BodyVacio_Invalido(body: \"\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0095982"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.ValidatorsTests.StartSession_Valido_EsValido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0025454"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_EventoDesconocido_RegistraSinEfectoDeDominio",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010870"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_EventoDuplicado_DevuelveDuplicateSinDobleMutacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016147"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_FirmaInvalida_DevuelveInvalidSignature",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014040"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_ParticipantConnected_Paciente_MaterializaPatientWaiting",
+      "outcome": "Passed",
+      "duration": "00:00:00.0050013"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_ParticipantConnected_Profesional_MaterializaPatientJoined",
+      "outcome": "Passed",
+      "duration": "00:00:00.0108960"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_ParticipantDisconnected_Paciente_MaterializaParticipantLeft",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013802"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_RoomEndedDuplicado_NoEmiteDosVeces",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017520"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_RoomEndedSinSesionIniciada_NoEmiteMetricas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017549"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_RoomEnded_CompletaCitaEnProgreso",
+      "outcome": "Passed",
+      "duration": "00:00:00.0741161"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_RoomEnded_EmiteCambioDeEstadoYSessionEndedTrasElCommit",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012290"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_RoomEnded_SinSesionIniciada_NoCompletaCita",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018849"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_SalaDesconocida_RegistraSinMutaciones",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016075"
+    },
+    {
+      "testName": "CoppAddresd.Telemedicine.UnitTests.WebhookHandlerTests.Handle_SinEventTypeOSid_DevuelveUnknownEvent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026226"
+    }
+  ]
+}

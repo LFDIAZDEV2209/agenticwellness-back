@@ -1,0 +1,34 @@
+Auto-merging docs/database/indexes.md
+CONFLICT (content): Merge conflict in docs/database/indexes.md
+Auto-merging docs/modules/program-progress/DAILY-ROUTINES.md
+CONFLICT (add/add): Merge conflict in docs/modules/program-progress/DAILY-ROUTINES.md
+Auto-merging docs/modules/program-progress/EFFECTIVE-CONTENT.md
+CONFLICT (add/add): Merge conflict in docs/modules/program-progress/EFFECTIVE-CONTENT.md
+Auto-merging docs/modules/program-progress/FASE1-VALIDACION.md
+CONFLICT (content): Merge conflict in docs/modules/program-progress/FASE1-VALIDACION.md
+Auto-merging src/CoppAddresd.Api/Extensions/ApplicationServiceExtensions.cs
+Auto-merging src/CoppAddresd.Application/DTOs/ProgramProgress/ProgramProgressDtos.cs
+CONFLICT (content): Merge conflict in src/CoppAddresd.Application/DTOs/ProgramProgress/ProgramProgressDtos.cs
+Auto-merging src/CoppAddresd.Application/Features/Nutrition/Queries/GetMyNutritionPlan/GetMyNutritionPlanQuery.cs
+CONFLICT (content): Merge conflict in src/CoppAddresd.Application/Features/Nutrition/Queries/GetMyNutritionPlan/GetMyNutritionPlanQuery.cs
+Auto-merging src/CoppAddresd.Application/Services/ProgramProgress/EffectiveDayContentResolver.cs
+CONFLICT (add/add): Merge conflict in src/CoppAddresd.Application/Services/ProgramProgress/EffectiveDayContentResolver.cs
+Auto-merging src/CoppAddresd.Infrastructure/DependencyInjection.cs
+CONFLICT (content): Merge conflict in src/CoppAddresd.Infrastructure/DependencyInjection.cs
+Auto-merging src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs
+CONFLICT (add/add): Merge conflict in src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs
+Auto-merging src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs
+CONFLICT (add/add): Merge conflict in src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs
+Auto-merging src/CoppAddresd.Infrastructure/Migrations/AppDbContextModelSnapshot.cs
+Auto-merging src/CoppAddresd.Infrastructure/Persistence/AppDbContext.cs
+Auto-merging src/CoppAddresd.Infrastructure/Repositories/EffectiveDayContentStore.cs
+CONFLICT (add/add): Merge conflict in src/CoppAddresd.Infrastructure/Repositories/EffectiveDayContentStore.cs
+Auto-merging src/CoppAddresd.Infrastructure/Repositories/ProgramRepository.cs
+CONFLICT (content): Merge conflict in src/CoppAddresd.Infrastructure/Repositories/ProgramRepository.cs
+Auto-merging tests/CoppAddresd.IntegrationTests/EffectiveDayContentPostgresTests.cs
+CONFLICT (add/add): Merge conflict in tests/CoppAddresd.IntegrationTests/EffectiveDayContentPostgresTests.cs
+Auto-merging tests/CoppAddresd.IntegrationTests/ExerciseSessionSnapshotTests.cs
+CONFLICT (add/add): Merge conflict in tests/CoppAddresd.IntegrationTests/ExerciseSessionSnapshotTests.cs
+Auto-merging tests/CoppAddresd.UnitTests/ProgramProgress/EffectiveDayContentResolverTests.cs
+CONFLICT (add/add): Merge conflict in tests/CoppAddresd.UnitTests/ProgramProgress/EffectiveDayContentResolverTests.cs
+Automatic merge failed; fix conflicts and then commit the result.

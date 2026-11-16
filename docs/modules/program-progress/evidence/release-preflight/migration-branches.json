@@ -1,0 +1,2064 @@
+{
+  "before": [
+    {
+      "id": "20261113205636_AllowThirtyDayLegacyNutritionCompletions",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs",
+      "operationsSha256": "910cefd28edb100e3705001ba800d277da833137678d90a25c6ecc7b81e57ff2"
+    },
+    {
+      "id": "20260810195245_InitialAuditSchema",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260810195245_InitialAuditSchema.Designer.cs",
+      "operationsSha256": "f70419cc80c184f0e69a4da695e5dfe8fde9ab973ad34176ca2f983d54cbf681"
+    },
+    {
+      "id": "20260813190530_AddMediaItemTable",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813190530_AddMediaItemTable.Designer.cs",
+      "operationsSha256": "c36e359fe0517f8dd585131f7093a94e66337fc9ba6c5804f1cc3e3ef29654b6"
+    },
+    {
+      "id": "20260813200542_AddAppAndErpSchemas",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813200542_AddAppAndErpSchemas.Designer.cs",
+      "operationsSha256": "a1fe5e5b28ef0380a7058e534cba44954b5547b2e04eee15d38cc7e641a07f43"
+    },
+    {
+      "id": "20260813212021_MoveMediaItemsToAppSchema",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813212021_MoveMediaItemsToAppSchema.Designer.cs",
+      "operationsSha256": "2a3666f790e3fe339f451c6bb2742e526ef819e2b38bad60c3e3663943635e7a"
+    },
+    {
+      "id": "20260813222001_AddPatientsModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813222001_AddPatientsModule.Designer.cs",
+      "operationsSha256": "760a7a01501f8d653695a99d378ad0a4b6349a044045692de8bb67bef86c1659"
+    },
+    {
+      "id": "20260814132357_NormalizeClinicalCatalogs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260814132357_NormalizeClinicalCatalogs.Designer.cs",
+      "operationsSha256": "b03d656cac8308d457d9f04cadca3637fa74339a58277e8fac37c3d478692400"
+    },
+    {
+      "id": "20260814134213_AddMediaItemContentFields",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260814134213_AddMediaItemContentFields.Designer.cs",
+      "operationsSha256": "0c1fa840b0349fe9e8421a29f7271c8e216a6a9e357b58344874e15a27315844"
+    },
+    {
+      "id": "20260814143846_AddAgentsModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260814143846_AddAgentsModule.Designer.cs",
+      "operationsSha256": "1448f1bb974c800784adfc0bd90db933069359ebb7b821ff348831b376276e04"
+    },
+    {
+      "id": "20260818200243_AddPatientCatalogs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260818200243_AddPatientCatalogs.Designer.cs",
+      "operationsSha256": "b020532eed9f9638e23c8007142807a2b563f9d24d8fc52c25861f7ade8168d2"
+    },
+    {
+      "id": "20260819211756_AddProfessionalOrganizationSchema",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260819211756_AddProfessionalOrganizationSchema.Designer.cs",
+      "operationsSha256": "43ce3cc21676849fc4a2beb38b3302083e11ef3fc4085d8aea7c35b718c99e06"
+    },
+    {
+      "id": "20260820131031_AddPatientScoping",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820131031_AddPatientScoping.Designer.cs",
+      "operationsSha256": "1748b1b178946b9d8dc407fa740ed918f2b80646c4d41d5a0ad533e329a113f6"
+    },
+    {
+      "id": "20260820140637_AddPatientDocuments",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820140637_AddPatientDocuments.Designer.cs",
+      "operationsSha256": "a59e5d089dfc0c1c93b0e9efcce97def82d066b48ef05151018466e34254c3e1"
+    },
+    {
+      "id": "20260820141943_AddAgentSlug",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820141943_AddAgentSlug.Designer.cs",
+      "operationsSha256": "9287bb216f2910c2c57427e57941c60d0faade8c32356d99e2c9e089425815f6"
+    },
+    {
+      "id": "20260820165816_AddWellnessModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820165816_AddWellnessModule.Designer.cs",
+      "operationsSha256": "5b0afb93662d7069cad3e33b2412f58e66618b21604d56a5bc077a912d9eccbf"
+    },
+    {
+      "id": "20260820183230_MoveInventoryAndStoreToErp",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820183230_MoveInventoryAndStoreToErp.Designer.cs",
+      "operationsSha256": "d1bc937664cfa45a0488712fabf62b86f235718908c41999906d6fe9a2365bf5"
+    },
+    {
+      "id": "20260820194556_AddLegalDocuments",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820194556_AddLegalDocuments.Designer.cs",
+      "operationsSha256": "cd102595421bbea0919237d36047c3874c318691f4064763c319613775bb4105"
+    },
+    {
+      "id": "20260820210010_AddLegalDocumentsAudit",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820210010_AddLegalDocumentsAudit.Designer.cs",
+      "operationsSha256": "e4a90924538ed9aff803e550fdbb11b478b50af444e469bef3d02d354dd9a0aa"
+    },
+    {
+      "id": "20260820220314_AddNutritionPlanAssignment",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820220314_AddNutritionPlanAssignment.Designer.cs",
+      "operationsSha256": "ede0e14fac17e6fed361ec05639d82b9b75032bff79aee0ab659bd8bbf2c5bbb"
+    },
+    {
+      "id": "20260821164608_AddPatientProfessionalAssignments",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260821164608_AddPatientProfessionalAssignments.Designer.cs",
+      "operationsSha256": "7efa22a3fc76a7c1f33390c533decd6c4f10e7d396d76628ec0d066e9282f3a1"
+    },
+    {
+      "id": "20260821193046_AddClinicalMeasurements",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260821193046_AddClinicalMeasurements.Designer.cs",
+      "operationsSha256": "93090dc1cc53f32ef4ebd8de40752172fcc47967e0744541214b3fbdba9284d6"
+    },
+    {
+      "id": "20260824165717_AddWellnessDetailedFields",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260824165717_AddWellnessDetailedFields.Designer.cs",
+      "operationsSha256": "b1ce28f055e32cc48c85dff915073031fd3f05af3bf1d77a142a6c30b028ea99"
+    },
+    {
+      "id": "20260824205511_AddPlanSafetyRules",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260824205511_AddPlanSafetyRules.Designer.cs",
+      "operationsSha256": "5d6c4780f223582d0ad478ac30df10ef458519734a5936ddc6461c38caa0cbca"
+    },
+    {
+      "id": "20260825195939_AddDailyWaterMlToNutritionPlanDays",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260825195939_AddDailyWaterMlToNutritionPlanDays.Designer.cs",
+      "operationsSha256": "213b751a2ca4481b86a5a32d39b67dbbb53504fe21ed9dda5def338c6265c9da"
+    },
+    {
+      "id": "20260826034345_AddDeviceTokens",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826034345_AddDeviceTokens.Designer.cs",
+      "operationsSha256": "7f36cd6d7c326c06d9f7f72fc8226869673100b89fbc1ca6ef49798810cfe86b"
+    },
+    {
+      "id": "20260826185651_AddProgramProgressCore",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826185651_AddProgramProgressCore.Designer.cs",
+      "operationsSha256": "cfe0761bb1aead4c9224e127d9506c5287208192d651dcf75cd87d29f2f934a9"
+    },
+    {
+      "id": "20260826191824_AddProgramProgressSafety",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826191824_AddProgramProgressSafety.Designer.cs",
+      "operationsSha256": "7ac7b832ea2f67223c33606ee5a3ee197440f08a952fd7f8b4106824ad18d9f9"
+    },
+    {
+      "id": "20260826193329_FixEmotionalFkRestrict",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826193329_FixEmotionalFkRestrict.Designer.cs",
+      "operationsSha256": "303e3bfc6c1fcf544c8915e3449ba8a14ef3636d8428533702fa701e6bbb3049"
+    },
+    {
+      "id": "20260826210008_AddAuditActionWidening",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826210008_AddAuditActionWidening.Designer.cs",
+      "operationsSha256": "c168014f37e6052c372a0beb38bdf7a684d1efb40af103b860a090f48daa727e"
+    },
+    {
+      "id": "20260826210010_AddCatalogIsActive",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826210010_AddCatalogIsActive.Designer.cs",
+      "operationsSha256": "8c81224fd0613eb20ffd9602474c6fa78cee87c76933b7e62d74e892f3c8edb7"
+    },
+    {
+      "id": "20260826210137_AddProgramProgressAuditCoverage",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826210137_AddProgramProgressAuditCoverage.Designer.cs",
+      "operationsSha256": "5f7c0dcac6208948aaa67884db5f03f8d156b3be63d0bf96ece42c33cb3c9dfc"
+    },
+    {
+      "id": "20260826222848_AddProgramProgressScores",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826222848_AddProgramProgressScores.Designer.cs",
+      "operationsSha256": "c9adb06ad0ca54d3a408ce7495cbb4b1f2471c8676108fe25dce3a036b4a1cfc"
+    },
+    {
+      "id": "20260827041239_AddXpRulesCatalog",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827041239_AddXpRulesCatalog.Designer.cs",
+      "operationsSha256": "421353ca3e7828c5635071a7ac471c3971a15c5172d99e4fd8dc5d9e9f903190"
+    },
+    {
+      "id": "20260827043130_AddProgramProgressClinicalXp",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827043130_AddProgramProgressClinicalXp.Designer.cs",
+      "operationsSha256": "0130d8adf540e558c05fdb489eebc190eaef4fbb283b2af091e43745c01c525f"
+    },
+    {
+      "id": "20260827044741_AddProgramProgressMultiplier",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827044741_AddProgramProgressMultiplier.Designer.cs",
+      "operationsSha256": "d43b45f2395c3475ec45905887c2ae7f8bc817abb4736cbef3f7c41a23528458"
+    },
+    {
+      "id": "20260827045823_AddProgramProgressStreakConfig",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827045823_AddProgramProgressStreakConfig.Designer.cs",
+      "operationsSha256": "a7b6a63abf1b61ad532f38a7309d8bf82386bbad1b6493e6b2214d766f57aa97"
+    },
+    {
+      "id": "20260827051903_AddProgramProgressNutritionXp",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827051903_AddProgramProgressNutritionXp.Designer.cs",
+      "operationsSha256": "8b3b54c41d846229bda4991c85545e2ca8abdbfa6c883bbd3a9061bc22b1e3e1"
+    },
+    {
+      "id": "20260827144105_AddServerCatalogSeeds",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827144105_AddServerCatalogSeeds.Designer.cs",
+      "operationsSha256": "fdfb5bf7d0c3041ed2bf07a41847bf88f479dc62d777bf228ac1fd49f647fb89"
+    },
+    {
+      "id": "20260827170155_AddProgramProgressNbStreak",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827170155_AddProgramProgressNbStreak.Designer.cs",
+      "operationsSha256": "c36eb1bbc81d08408a0ac0bb3f9c61e36b74c986c7325e74d85d1bc511772745"
+    },
+    {
+      "id": "20260827173437_AddProgramProgressNotifications",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827173437_AddProgramProgressNotifications.Designer.cs",
+      "operationsSha256": "ba1bd28820bdcb648a1edc14dfcaf4e00dc80ee5db573928d47cb42066001326"
+    },
+    {
+      "id": "20260827175812_AddProgramProgressWeaknesses",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827175812_AddProgramProgressWeaknesses.Designer.cs",
+      "operationsSha256": "888ad83179e1797fd377adec214344d4de912af971b9bf0271c277c602e42a79"
+    },
+    {
+      "id": "20260827185349_AddHealthTestsModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827185349_AddHealthTestsModule.Designer.cs",
+      "operationsSha256": "21761fbec07bce7628e17daed38adfebfa853000729493e76a8444a055e61846"
+    },
+    {
+      "id": "20260827190417_AddProgramProgressInterventions",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827190417_AddProgramProgressInterventions.Designer.cs",
+      "operationsSha256": "18e94504b94326c103a58c5ef7abaa56dbd6b28df2a286b77a71d7c068a10f78"
+    },
+    {
+      "id": "20260827192550_AddHealthTestsCatalogSeed",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827192550_AddHealthTestsCatalogSeed.Designer.cs",
+      "operationsSha256": "e38778b63c0fd45cb6a0a32d645d783c748cd5dc4e51f746290095fdd4116e02"
+    },
+    {
+      "id": "20260827231435_AddHealthTestResultsSeverityIndex",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827231435_AddHealthTestResultsSeverityIndex.Designer.cs",
+      "operationsSha256": "77d42f6e7fba9cfbd1acadfd965632d1195fd4ea70f461cef3666ca5b54aff7e"
+    },
+    {
+      "id": "20260828000040_AddFoodAiNutrition",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828000040_AddFoodAiNutrition.Designer.cs",
+      "operationsSha256": "110e6ee1bf7b593d5f491d4749f5dc4e283a551450a32729ccabbf393ba804be"
+    },
+    {
+      "id": "20260828010612_AddFoodAiAnalysis",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828010612_AddFoodAiAnalysis.Designer.cs",
+      "operationsSha256": "1d22de83cd0fb63b21ec7817525d72b98a87ffcd3112a87481c1c2cc11e4fa10"
+    },
+    {
+      "id": "20260828164951_AddFoodAiNutritionMapping",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828164951_AddFoodAiNutritionMapping.Designer.cs",
+      "operationsSha256": "33db33e8bf10799c552996bb714fd6800082b67962abdd77e853091a96a2cc8e"
+    },
+    {
+      "id": "20260828214945_AddWeeklyDayTemplateContentLinks",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828214945_AddWeeklyDayTemplateContentLinks.Designer.cs",
+      "operationsSha256": "6f5bf8686c36ef80c60193273cb78f7ae7c1775a22059fc17a38e3543e16392d"
+    },
+    {
+      "id": "20260901193540_RetargetVitalSignsBatchFk",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901193540_RetargetVitalSignsBatchFk.Designer.cs",
+      "operationsSha256": "5fd41829878360919faeb2d6a49739861b8989ee5be4f787add897ca875ceb86"
+    },
+    {
+      "id": "20260901193612_AddVitalSignsCatalogSeeds",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901193612_AddVitalSignsCatalogSeeds.Designer.cs",
+      "operationsSha256": "aa862082ff52321a0ab46b43f534f0b053cce5b797e0cc2c4cbb9bb25185faf0"
+    },
+    {
+      "id": "20260901214236_AddHealthTestQuestionMetadata",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901214236_AddHealthTestQuestionMetadata.Designer.cs",
+      "operationsSha256": "393b1f67441ef1c26ceb0e22975a01295ee39a7c7aabf263cd48cb3ea14545e0"
+    },
+    {
+      "id": "20260901214717_ReplaceInitialBatterySeed",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901214717_ReplaceInitialBatterySeed.Designer.cs",
+      "operationsSha256": "453c92491d72fa5e03c3b154b5da39c4daa63d0dddb1d7e9af51503c301173bd"
+    },
+    {
+      "id": "20260901214922_UpdateInitialBatteryInstrumentNames",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901214922_UpdateInitialBatteryInstrumentNames.Designer.cs",
+      "operationsSha256": "774f3951875d6d26920e0f670ea1484f7ca5d90fa1d8e2b4e934d76c3b56ffa0"
+    },
+    {
+      "id": "20260902210640_AddNutritionIntakeLogs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260902210640_AddNutritionIntakeLogs.Designer.cs",
+      "operationsSha256": "8dc4fd22c81e413796a40f7eb5ac9c4e05a571ec0fae0d876f27e13c77d00ec3"
+    },
+    {
+      "id": "20260904150512_AddProgramDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904150512_AddProgramDailyMetrics.Designer.cs",
+      "operationsSha256": "89d0d8701b241c3778d22a5c53518cfc25e3c7951897df09bc00ede709f25725"
+    },
+    {
+      "id": "20260904150540_RenameNutribioticoToNutraceutico",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904150540_RenameNutribioticoToNutraceutico.Designer.cs",
+      "operationsSha256": "57b0923c05d75f94f26368e0d516ab79ae19554deeb58ccbab40b887ff2bbc07"
+    },
+    {
+      "id": "20260904160710_AddPatientDailyMetricsAndMediaFields",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904160710_AddPatientDailyMetricsAndMediaFields.Designer.cs",
+      "operationsSha256": "6c79310306393baf3df1d5d0186204748531753f399206eb12cd8c87db4a6aea"
+    },
+    {
+      "id": "20260904165015_AddInventoryDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904165015_AddInventoryDailyMetrics.Designer.cs",
+      "operationsSha256": "f3f39349154620b37adae2d45677a2a31a1a549f09c4a061b88963fc1be00456"
+    },
+    {
+      "id": "20260904191315_AddHealthTestDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904191315_AddHealthTestDailyMetrics.Designer.cs",
+      "operationsSha256": "acf3fa7bd31b619faab84b29de0961b6faa5eb524467a6f930fcf840a44f0691"
+    },
+    {
+      "id": "20260907134525_AddLeaguePreferences",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260907134525_AddLeaguePreferences.Designer.cs",
+      "operationsSha256": "a18839eab757f2459530b4d81b9ea0245ea2ae8b4bf75b3232f95f262f98b6b3"
+    },
+    {
+      "id": "20260907213836_AddProfessionalSchedules",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260907213836_AddProfessionalSchedules.Designer.cs",
+      "operationsSha256": "06c58e0756147e5adfbc9267112de8f604e87ec74798c780590955fcdbe2b586"
+    },
+    {
+      "id": "20260908143013_AddProgramMilestoneSends",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260908143013_AddProgramMilestoneSends.Designer.cs",
+      "operationsSha256": "6bde437f479a7a23a964d9f6db1499cd039011a45cc7541032543a907c06f4af"
+    },
+    {
+      "id": "20260908162833_AddBiometriaDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260908162833_AddBiometriaDailyMetrics.Designer.cs",
+      "operationsSha256": "0e9f89c16e0b31cf7999514266d5783f74a708302aef6eaa5193d5f31d0543ab"
+    },
+    {
+      "id": "20260909212458_AddLabExamBatchColumns",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260909212458_AddLabExamBatchColumns.Designer.cs",
+      "operationsSha256": "1a941269549f061fd083aac347a1b5f40c0d189ab147fe28b9edda397aba24d9"
+    },
+    {
+      "id": "20260910222211_RenameProgramMilestoneSendsToProgramControls",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260910222211_RenameProgramMilestoneSendsToProgramControls.Designer.cs",
+      "operationsSha256": "b59ab2d4940f8da30bdd46c255f1092ced59921f4468960f6d20ff1e80e3fe62"
+    },
+    {
+      "id": "20260913184538_AddEmployeeErpAccessVersion",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260913184538_AddEmployeeErpAccessVersion.Designer.cs",
+      "operationsSha256": "292eaeabbea7c049909e2a8561100670d80047bcdca3e84e04d5b92bfa183d50"
+    },
+    {
+      "id": "20260915201229_AddHealthTestGeoRollups",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260915201229_AddHealthTestGeoRollups.Designer.cs",
+      "operationsSha256": "523369f4d15dcf0ec1256b70d2ecfe89159dda5597809356ae643066ed54cc3f"
+    },
+    {
+      "id": "20260916160628_AddHealthTestAlertNotifications",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260916160628_AddHealthTestAlertNotifications.Designer.cs",
+      "operationsSha256": "7439f165a03d9be393e6a976c3ba4c463582d3d0add97a49978f11de99350d04"
+    },
+    {
+      "id": "20260916205732_ConvertNotificationPlaceholdersToBrackets",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260916205732_ConvertNotificationPlaceholdersToBrackets.Designer.cs",
+      "operationsSha256": "e5bd2a7cf93b2f31350913b3bb68184b27919ed9cce75fe75c5f81fe8c3cf715"
+    },
+    {
+      "id": "20260917145335_AddBilingualNotificationTemplates",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260917145335_AddBilingualNotificationTemplates.Designer.cs",
+      "operationsSha256": "ee444e6d6920d4e0ce7234e2a98e6c5655ef2666ae04e93e877b1933e13d16d9"
+    },
+    {
+      "id": "20260917164021_RenameAntaresBrandInAppData",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260917164021_RenameAntaresBrandInAppData.Designer.cs",
+      "operationsSha256": "4d85764fdc71b6b8f16451c68d551f86e1ea4ca152b1ef82b4ea6f06be310832"
+    },
+    {
+      "id": "20260918210255_AddNotificationDedupeKeys",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260918210255_AddNotificationDedupeKeys.Designer.cs",
+      "operationsSha256": "cb59bd8a4f3bd0e85e7f142ade1fb0cae26d73193e689baff52346003df83f98"
+    },
+    {
+      "id": "20260922205538_WidenEmergencyContact",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260922205538_WidenEmergencyContact.Designer.cs",
+      "operationsSha256": "bfe4e40f876241a9116c931e16c3a60b99e07fb02499c58e2e0b5d812d528fa4"
+    },
+    {
+      "id": "20260929214518_AddSosAlerts",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260929214518_AddSosAlerts.Designer.cs",
+      "operationsSha256": "e4cf4c11859aecfb58c23060750e9eaf9c5d403db5256516762f3201b9bd6f8f"
+    },
+    {
+      "id": "20260930015320_WidenIntakeLogCaloriesToNumeric",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260930015320_WidenIntakeLogCaloriesToNumeric.Designer.cs",
+      "operationsSha256": "b555d785925a06c1a1e06a4b9b61dd4291dcd8383e010d3e1b984d3cab4f0b0a"
+    },
+    {
+      "id": "20261001172314_AddSosVoiceChannel",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261001172314_AddSosVoiceChannel.Designer.cs",
+      "operationsSha256": "a9d7988406f00fa4fb7d7b6e708712465bebfd85d80ebf27931ef8bac0add56a"
+    },
+    {
+      "id": "20261002150719_AddSosVitals",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261002150719_AddSosVitals.Designer.cs",
+      "operationsSha256": "d5e53467cfc201ed5d45c681654c08dd397a2e5cf7ba3b1497be65e51718bb25"
+    },
+    {
+      "id": "20261002164456_AddSosDeliveryStatus",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261002164456_AddSosDeliveryStatus.Designer.cs",
+      "operationsSha256": "6d4799db2f399178cbcdba9d1792e506c2bce60e86277c2bc892f39ec0673a6a"
+    },
+    {
+      "id": "20261005162630_AddPatientDocumentNumberUniqueIndex",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261005162630_AddPatientDocumentNumberUniqueIndex.Designer.cs",
+      "operationsSha256": "14fc2268225b8288f1113969ddae876850be2751575392dd8f2416f3fdeb7efd"
+    },
+    {
+      "id": "20261005195251_AddSosEmailChannel",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261005195251_AddSosEmailChannel.Designer.cs",
+      "operationsSha256": "d712623a695de5de6e3f195203006c23074413d5cd9dcddb76ba54b0e1789850"
+    },
+    {
+      "id": "20261006150423_AddSosEmailChannelStatus",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261006150423_AddSosEmailChannelStatus.Designer.cs",
+      "operationsSha256": "e8deba5a8c1fcd5dc3c14252b06e5cc997fbc4d9ccb442104c71c78fd7769331"
+    },
+    {
+      "id": "20261006220959_AddEmployeeSoftDelete",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261006220959_AddEmployeeSoftDelete.Designer.cs",
+      "operationsSha256": "fd4bc736b2a1009cd89aa56f418abe07bca88e63c9a52e435a99f0b25b0bddeb"
+    },
+    {
+      "id": "20261103214607_AddNutritionReviewWorkflowAndEmergencyContacts",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261103214607_AddNutritionReviewWorkflowAndEmergencyContacts.Designer.cs",
+      "operationsSha256": "44007b7b1e87e340f44761baadd508b757b19e5b1740ec186fbbc32303f383a4"
+    },
+    {
+      "id": "20261104152556_AddProgramAssignmentCatalog",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104152556_AddProgramAssignmentCatalog.Designer.cs",
+      "operationsSha256": "7eada3d842221dcbf7c19fccc885d9db2cd883928b94f1ada2075e8f73dacc0e"
+    },
+    {
+      "id": "20261104152746_AddSosRecipientSnapshots",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104152746_AddSosRecipientSnapshots.Designer.cs",
+      "operationsSha256": "f9aaf94bf5e60c8086d06a550a8d84ed1542dcb3d4ccf272eaf8765c6e8e4dea"
+    },
+    {
+      "id": "20261104154406_AddProgramAssignmentPatientContext",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104154406_AddProgramAssignmentPatientContext.Designer.cs",
+      "operationsSha256": "7d33619a11d929b73b2b9a37775974e9f73e4251fe851dab2fdbdccd708353ab"
+    },
+    {
+      "id": "20261104154415_AddAssessmentProfileInsights",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104154415_AddAssessmentProfileInsights.Designer.cs",
+      "operationsSha256": "b52ab61bda310d9fce6f8657c9a7f01c9723c2bca254122bb19c80994f788e24"
+    },
+    {
+      "id": "20261104161744_AddProgramAssignmentRecoveryAndNotices",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104161744_AddProgramAssignmentRecoveryAndNotices.Designer.cs",
+      "operationsSha256": "639b00879ea113c40f14fa572d74524c2022c23b422b14a59c5c99ff1363da21"
+    },
+    {
+      "id": "20261105145334_AddNutritionPrescriptions",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105145334_AddNutritionPrescriptions.Designer.cs",
+      "operationsSha256": "aabacbf261efd4236b27fe28a03a3ff7446243d0e3d81ca82d9ee72c38340240"
+    },
+    {
+      "id": "20261105153934_AddNutritionCaseAudit",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105153934_AddNutritionCaseAudit.Designer.cs",
+      "operationsSha256": "3fc1b7c54fd53366ffb7c4d9f0acdc6d4e15f11e9af23454a0c4898950892728"
+    },
+    {
+      "id": "20261105210600_AddStructuredEmotionalAssessment",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105210600_AddStructuredEmotionalAssessment.Designer.cs",
+      "operationsSha256": "db2d0d2c201de62ba30d183173e1bd021e6b9c6ebdecccac7dcf517988ba9826"
+    },
+    {
+      "id": "20261105220445_AddNutritionDraftReservations",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105220445_AddNutritionDraftReservations.Designer.cs",
+      "operationsSha256": "3ac76a06ad7bbb5d9ca625b6ddc1b83a37020e4c9dd828af8a4a4ac5c637ff20"
+    },
+    {
+      "id": "20261106135712_AddFoodAnalysisEnglishNames",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106135712_AddFoodAnalysisEnglishNames.Designer.cs",
+      "operationsSha256": "e9a2a8ab7ed4624c8158cf291917b2b44df9898c9ec35f9c0c244f9ccaa50b6a"
+    },
+    {
+      "id": "20261106142633_AddDeviceTokenLanguage",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106142633_AddDeviceTokenLanguage.Designer.cs",
+      "operationsSha256": "caaea1001162ebcd27df7efbc763b36d56f7bb1850cdb390a8d359f45f3e9116"
+    },
+    {
+      "id": "20261106142836_AddNutritionInstructionTranslationProvenance",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106142836_AddNutritionInstructionTranslationProvenance.Designer.cs",
+      "operationsSha256": "2a8302070393c37ce1533d11330ef39850620755c07edc278a7b09b7dd0ed5c6"
+    },
+    {
+      "id": "20261106203006_AddSosLocationDescription",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106203006_AddSosLocationDescription.Designer.cs",
+      "operationsSha256": "5b457cb30bb81619c30b8e1dd39439e1c9b98fe9e7d1b0e665dea75af89b4e23"
+    },
+    {
+      "id": "20261109192959_AddSosLocationShortLink",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261109192959_AddSosLocationShortLink.Designer.cs",
+      "operationsSha256": "fd0c93904e4c2b69d680005f3aa4c483fdfc010eb9868f96a92da36d9d3bd968"
+    },
+    {
+      "id": "20261110174324_AddLegalConsentReceipts",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261110174324_AddLegalConsentReceipts.Designer.cs",
+      "operationsSha256": "97c3d3d0635c07bf5fca70464b38d36cda4a288416b36685c2aaae37983c425f"
+    },
+    {
+      "id": "20261112155905_AddSosVitalsSnapshot",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261112155905_AddSosVitalsSnapshot.Designer.cs",
+      "operationsSha256": "f09acc61a8507d2a5a2d524cc1558100023deeb9261f42c9a06445c2d66a36e2"
+    },
+    {
+      "id": "20261113185456_AddWeeklyTemplateWeekNumber",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261113185456_AddWeeklyTemplateWeekNumber.Designer.cs",
+      "operationsSha256": "03767fe83b88df7e480231bc3e84013799ccb5e4826d73f49e4dfbf8a57baa72"
+    },
+    {
+      "id": "20261113192158_AddMediaSourceAndTags",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261113192158_AddMediaSourceAndTags.Designer.cs",
+      "operationsSha256": "33740d2a3d5c3b09d8722675d7c2af664f3c60effa9b0d39fa2aa42ad9e335fe"
+    },
+    {
+      "id": "20261114122311_AddExerciseRoutineContraindications",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114122311_AddExerciseRoutineContraindications.Designer.cs",
+      "operationsSha256": "0f74875e8500f633d55fca55d7d097b53707e2ec2867387f00b06b8393cb2282"
+    },
+    {
+      "id": "20261114141434_AddExerciseSessionDetailSnapshot",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs",
+      "operationsSha256": "8f06cbbfb9a0ac137d93594485aa5c37902774cff5e4a4e8415b0279bae98b40"
+    },
+    {
+      "id": "20261114171403_AddNutritionCycles",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114171403_AddNutritionCycles.Designer.cs",
+      "operationsSha256": "00865f086a001e61f37c52171236e74ac6d3d2842de7d1551ac2bf702cdfc583"
+    },
+    {
+      "id": "20261114174950_AddNutritionCycleInterruption",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114174950_AddNutritionCycleInterruption.Designer.cs",
+      "operationsSha256": "cc575da2eeaa8a2b87eb20f283003fbda197f24840dee03c334455b1640391ec"
+    },
+    {
+      "id": "20261114184553_AddNutritionIntakeRequests",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114184553_AddNutritionIntakeRequests.Designer.cs",
+      "operationsSha256": "528066c7ac221b3ca84a8e9ce3714d4293fbfc037adf89a70805cb3706fdf33e"
+    },
+    {
+      "id": "20261114193738_AddNutritionIntakeDayReviews",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114193738_AddNutritionIntakeDayReviews.Designer.cs",
+      "operationsSha256": "7dc218e7da9b6810700f94893144663012ede58657a481cf165dee36884b0bf3"
+    },
+    {
+      "id": "20261114194459_AddNutritionCycleHighlights",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114194459_AddNutritionCycleHighlights.Designer.cs",
+      "operationsSha256": "a6b8db6ebd46fdd4b2f324c9689c6170d005e1e79c18f71d5151b52e9bbdc08f"
+    },
+    {
+      "id": "20261114200555_AddNutritionCycleReviews",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114200555_AddNutritionCycleReviews.Designer.cs",
+      "operationsSha256": "88a8f9d720adc5902f2772abf70518890f508752f2b148ea48a8d223a5669126"
+    },
+    {
+      "id": "20261115174139_AddPatientAiBriefs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261115174139_AddPatientAiBriefs.Designer.cs",
+      "operationsSha256": "89c53fe44078c79db404c5e28fc0ae232bc15a2fd8fec44cf9140e93de146707"
+    },
+    {
+      "id": "20261115184418_ExpandPatientAiBriefModelName",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261115184418_ExpandPatientAiBriefModelName.Designer.cs",
+      "operationsSha256": "b58c0b2cf290f5c42181890e60434935cdd41ff268f3aa1e769eaf7d85ce184b"
+    },
+    {
+      "id": "20261112163426_InitialWhatsApp",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112163426_InitialWhatsApp.Designer.cs",
+      "operationsSha256": "fa1a8d899034279e4618f83932635f564e201cd4901ed2bd9185bb567eaee240"
+    },
+    {
+      "id": "20261112164437_PatientLinksAndConversations",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112164437_PatientLinksAndConversations.Designer.cs",
+      "operationsSha256": "51eb1a6f9d04cf179b5e64e0b4450a8dc0614865f8d99447cc52042cd73654f4"
+    },
+    {
+      "id": "20261112165457_AccompanimentReminders",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112165457_AccompanimentReminders.Designer.cs",
+      "operationsSha256": "4d24bba082e713cd81d66245f1e3f3d310f08c288fed4d84c6beaeb020d78176"
+    },
+    {
+      "id": "20261112170205_ProgramAccompanimentReasons",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112170205_ProgramAccompanimentReasons.Designer.cs",
+      "operationsSha256": "dd25e18ab1e08c4093464d57dfb27c5160cd393a25f26d59974ce25bf8ed0daa"
+    },
+    {
+      "id": "20261112183130_WhatsAppOtpBinding",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112183130_WhatsAppOtpBinding.Designer.cs",
+      "operationsSha256": "ae81490c337ead7f55493ce1064c1c849d1924bc64041988d042257474089b11"
+    },
+    {
+      "id": "20260810221731_InitialCreate",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260810221731_InitialCreate.Designer.cs",
+      "operationsSha256": "f85b08843bbace9e711f54829e05aaf1015118717bb08932714d6ba6be1bb4f5"
+    },
+    {
+      "id": "20260810221740_AddRefreshTokens",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260810221740_AddRefreshTokens.Designer.cs",
+      "operationsSha256": "dbcd3a506c897dcada683313ed7f0a2a8f4d7e2de37bd7373377c75d8a0d1cdd"
+    },
+    {
+      "id": "20260813200500_AddApplicationsAndUserApplications",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260813200500_AddApplicationsAndUserApplications.Designer.cs",
+      "operationsSha256": "479f1cf56e12bba58613bb9e9dc7efb494f894b7510d7049cf7504b4432ce7a9"
+    },
+    {
+      "id": "20260819201840_AddOtpCodes",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260819201840_AddOtpCodes.Designer.cs",
+      "operationsSha256": "cf84d8adb4ff0339b6744b29a882b670800eb632b624ab34f88d65aee50d87de"
+    },
+    {
+      "id": "20260819214445_AddScopedAssignments",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260819214445_AddScopedAssignments.Designer.cs",
+      "operationsSha256": "96188cce77aac4c32c2d77c4300f583203a6ed77f4e5bb4d8cc2bbbe2c1cc720"
+    },
+    {
+      "id": "20260819221901_AddInvitations",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260819221901_AddInvitations.Designer.cs",
+      "operationsSha256": "5a6c748c6d3b09e836d1114baf66ea25a27e75a66e636347bc8a60189ed36161"
+    },
+    {
+      "id": "20260825185203_AddUserPreferences",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260825185203_AddUserPreferences.Designer.cs",
+      "operationsSha256": "fa7d4bd8a133090b8c5066408ee61fcb7186799c5298146364ae68606889f7c3"
+    },
+    {
+      "id": "20260825211249_AddAppointmentsPermissionCodes",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260825211249_AddAppointmentsPermissionCodes.Designer.cs",
+      "operationsSha256": "4d94ea4c047c1fd8747501c9b08508a3a57ee81ee55cba639f086b521bb36e93"
+    },
+    {
+      "id": "20260826203637_AddRoleIsSystem",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260826203637_AddRoleIsSystem.Designer.cs",
+      "operationsSha256": "78006fe4229aedcfe715c295782adbbdea724e9ec579f7b0b08689b1dc7423f4"
+    },
+    {
+      "id": "20260826203649_AddScopedAssignmentsCompositeIndex",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260826203649_AddScopedAssignmentsCompositeIndex.Designer.cs",
+      "operationsSha256": "66c46c8d9adc29a72f49886782f6f67ec1a10bd2402e8643dbd4c8c2ab338566"
+    },
+    {
+      "id": "20260829000824_AddUserPreferenceAccentColor",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260829000824_AddUserPreferenceAccentColor.Designer.cs",
+      "operationsSha256": "9a179174d8cd2c720094873f10ecd5eee1e261154276e7ae6200e2a5f0326543"
+    },
+    {
+      "id": "20260913184501_AddErpApplicationSuspension",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260913184501_AddErpApplicationSuspension.Designer.cs",
+      "operationsSha256": "5b1b607d280de44ff840e87b4f03a63353f38a616e7151ad514834135d76a1c0"
+    },
+    {
+      "id": "20260914152543_AddAvatarConfigurationPreference",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260914152543_AddAvatarConfigurationPreference.Designer.cs",
+      "operationsSha256": "58b9966022c02bfec13f0c60d0b73ffb7e1290602de23c78f650453646324935"
+    },
+    {
+      "id": "20261005155715_AddAccountDeletion",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20261005155715_AddAccountDeletion.Designer.cs",
+      "operationsSha256": "3f8859df493eac33b836a8b467ed3c53d2451f5f20d6f20964e50e553e1c8c8c"
+    },
+    {
+      "id": "20261005190901_AddAccountDeletionHandoffs",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20261005190901_AddAccountDeletionHandoffs.Designer.cs",
+      "operationsSha256": "1aa7fdcd70f3e5a093551374de72b04a85c5039decc6c154093fca3d1902f53b"
+    },
+    {
+      "id": "20261005200454_AddAccountDeletionSessions",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20261005200454_AddAccountDeletionSessions.Designer.cs",
+      "operationsSha256": "823ae30ba5c8b1cafe12e02c43d9c00700f7146c0ca41746308f36a9cf7a9b63"
+    },
+    {
+      "id": "20260821131348_InitialCommunitySchema",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821131348_InitialCommunitySchema.Designer.cs",
+      "operationsSha256": "20bd6c658d24d65859ac4aed2c7e3fbbdc8f06c8d8f96e6c167deef3421b571e"
+    },
+    {
+      "id": "20260821173824_ChangeProfileStatusToActiveBanned",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821173824_ChangeProfileStatusToActiveBanned.Designer.cs",
+      "operationsSha256": "819772fb7047c7382abb0ae9b6e9246c67a16cedf519d39c805b60eab666a5d2"
+    },
+    {
+      "id": "20260821200946_AddFollowsAndMessages",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821200946_AddFollowsAndMessages.Designer.cs",
+      "operationsSha256": "b774f14ffcb705e29a53a13e0ae1dd5e0460679c2377947d9c437d7e2730daff"
+    },
+    {
+      "id": "20260821204542_AddUnaccentSearch",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821204542_AddUnaccentSearch.Designer.cs",
+      "operationsSha256": "c4c94e485394123130515e23d9a57ca6757da86fa6daacf8197820bcac53710b"
+    },
+    {
+      "id": "20260824171713_AddChatGroups",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260824171713_AddChatGroups.Designer.cs",
+      "operationsSha256": "cb28416f56774bd05a62fecf1f5129efa49a48e36994f7ca384311e1b2396f4c"
+    },
+    {
+      "id": "20260825193854_AddPostImageKeyToPosts",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260825193854_AddPostImageKeyToPosts.Designer.cs",
+      "operationsSha256": "9305d7612efd24d6d066493b29d6ee571f929dd67ea67ae9a416cb320b4b18f9"
+    },
+    {
+      "id": "20260825220512_AddProfileCoverKey",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260825220512_AddProfileCoverKey.Designer.cs",
+      "operationsSha256": "13ccf4638652eb352e2c8e70e5135d5cd7d550a97c6bec8c5eeadaa9ab275791"
+    },
+    {
+      "id": "20260827003917_CommunityErpSchema",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827003917_CommunityErpSchema.Designer.cs",
+      "operationsSha256": "00eb3d58e1027c09dbf3ea0ef9e8f335755662068343d02911a63fd4b604598d"
+    },
+    {
+      "id": "20260827100000_AddPostReports",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827100000_AddPostReports.cs",
+      "operationsSha256": "334ed4e75b304b16c77b40b81893a8fb641f8e71ce5c3533df02d11cf7423cb8"
+    },
+    {
+      "id": "20260827161646_AddSystemProfileSupport",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827161646_AddSystemProfileSupport.Designer.cs",
+      "operationsSha256": "36b8c2e3766bc2fd14519d0f164677a0c737bf1b843a6f8b4beaed39d5b93b28"
+    },
+    {
+      "id": "20260827161959_AddMessageTriggeredBy",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827161959_AddMessageTriggeredBy.Designer.cs",
+      "operationsSha256": "1b033ef408c0798da5f9d4e028c5a6225d3a3b3e8f64a2f99f8523f11699a4d1"
+    },
+    {
+      "id": "20260827171604_AddRecognitionsAndNetworks",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827171604_AddRecognitionsAndNetworks.Designer.cs",
+      "operationsSha256": "f51104e485066db898d8ed708c4ea3d81e46179b793b1d05903a33397e53157f"
+    },
+    {
+      "id": "20260827220039_AddCommunityPolls",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827220039_AddCommunityPolls.Designer.cs",
+      "operationsSha256": "63e532f4f6789b6e2c71f9fde3729ac62f8c89ff00015b0d82c661776b2a2d90"
+    },
+    {
+      "id": "20260831162947_AddPinnedOrder",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260831162947_AddPinnedOrder.Designer.cs",
+      "operationsSha256": "505ef8769c88a40abd76beafda88df312656aeca210c45cdf70f29b51165522a"
+    },
+    {
+      "id": "20260831172746_AddCommentReports",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260831172746_AddCommentReports.Designer.cs",
+      "operationsSha256": "dbd5e9e7a46e8fc2ef29813bfd2561b072459dcb971dac68c4b48b0636f488c0"
+    },
+    {
+      "id": "20260831191026_AddReposts",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260831191026_AddReposts.Designer.cs",
+      "operationsSha256": "14bfc3616297f6f1e5125a31024a99bce1db461d56b486d5f4eae7802bbc2fdb"
+    },
+    {
+      "id": "20260903203155_AddClubs",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260903203155_AddClubs.Designer.cs",
+      "operationsSha256": "285c2aced51c2737084bcc2b6e7b16d9aab4ce251c132bad00d47c038e1a66fe"
+    },
+    {
+      "id": "20260904164020_AddCommunityDailyMetrics",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260904164020_AddCommunityDailyMetrics.Designer.cs",
+      "operationsSha256": "f983f89959ae1c3351d36a9f6ad71377df31e0567273a00e2c6fd3c7aafd26a3"
+    },
+    {
+      "id": "20260904191503_AddLiveSessionSpeakers",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260904191503_AddLiveSessionSpeakers.Designer.cs",
+      "operationsSha256": "790c7fe8fd64cd6a52bc5afa855067e521ef133515f1cb56c3a3822661b4bff4"
+    },
+    {
+      "id": "20260917164102_RenameAntaresBrandInCommunityData",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260917164102_RenameAntaresBrandInCommunityData.Designer.cs",
+      "operationsSha256": "12f95eda7f327d568f9add95a7e8032cbefdc0486611f0cb418ad4fe89f3c8e8"
+    },
+    {
+      "id": "20261110180222_AddCommunityProfileBlocks",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20261110180222_AddCommunityProfileBlocks.Designer.cs",
+      "operationsSha256": "f9897788584af1673607b131335889466a51e2f920f81c428648e169efb0250c"
+    },
+    {
+      "id": "20260820185512_AddTelemedicineSchema",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260820185512_AddTelemedicineSchema.Designer.cs",
+      "operationsSha256": "558ee268b6c9e427c75fa0d2d2eed8939d730f9bcbc966a61ebef6c9a3f56504"
+    },
+    {
+      "id": "20260820195554_AddAppointmentOverlapExclusion",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260820195554_AddAppointmentOverlapExclusion.Designer.cs",
+      "operationsSha256": "9131ff610d6f7997d3d2fe050e32df13e639beee788dc85203cde490926ab7c6"
+    },
+    {
+      "id": "20260820204816_AddWebhookEventsTable",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260820204816_AddWebhookEventsTable.Designer.cs",
+      "operationsSha256": "4f921c863932c4bf7d1bee71a52d1274e2776f121880858d976dec7bd2a07c13"
+    },
+    {
+      "id": "20260821135142_AttachClinicalEncounterAudit",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260821135142_AttachClinicalEncounterAudit.Designer.cs",
+      "operationsSha256": "93e3ba3fd0985d5bcb5dea92e08bd78e97f0dbc02e22413b89b45010a54388aa"
+    },
+    {
+      "id": "20260821185842_AddCanonicalEncounterLink",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260821185842_AddCanonicalEncounterLink.Designer.cs",
+      "operationsSha256": "e886cb43f5ea11db7a08eb85a3ce643cca2d4c0610593ba413737f561278c670"
+    },
+    {
+      "id": "20260825213158_RenameTelemedicineAppointmentsToAppointments",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260825213158_RenameTelemedicineAppointmentsToAppointments.Designer.cs",
+      "operationsSha256": "9a06a3e05fdc4d7c9c27bfaa4c3487cd530b0adc1b2188cb3e29537f7c596487"
+    },
+    {
+      "id": "20260826154035_AddRequestRejectionReason",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260826154035_AddRequestRejectionReason.Designer.cs",
+      "operationsSha256": "5015d60a32d70cedc8e11ca1a2ae86b8ad5ee784103a5de499c8212604716849"
+    },
+    {
+      "id": "20260907134758_AddTelemedicineDailyMetrics",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260907134758_AddTelemedicineDailyMetrics.Designer.cs",
+      "operationsSha256": "3eed2978d29dbaab2110d1c3cd3994c961be5b2ebe62f5940546830a6734d69a"
+    },
+    {
+      "id": "20260918153337_AddVirtualRoomPatientJoinedAt",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918153337_AddVirtualRoomPatientJoinedAt.Designer.cs",
+      "operationsSha256": "c335a6e634e28a0be4be579655e7d816924581f03a5a575ee40cf55f9a44272b"
+    },
+    {
+      "id": "20260918200744_AddAppointmentReopenTracking",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918200744_AddAppointmentReopenTracking.Designer.cs",
+      "operationsSha256": "de138303505b4763132833f9ea05d68c119ee9581cc96651ec81cd6d2cd5e28a"
+    },
+    {
+      "id": "20260918205617_AddTelemedicineNotifications",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918205617_AddTelemedicineNotifications.Designer.cs",
+      "operationsSha256": "d0d6b3f2715ed553ba847c6ce76dda3836fa6153f49f7f40d46a9f7374d4bd12"
+    },
+    {
+      "id": "20260918214156_AddRoomChatAndCapacity",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918214156_AddRoomChatAndCapacity.Designer.cs",
+      "operationsSha256": "d9778991d1738c463325955ee688ffa03f8fe85a810358b66815bdb1b8581eed"
+    },
+    {
+      "id": "20260919192848_AddPreVisitIntakeAndAddenda",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260919192848_AddPreVisitIntakeAndAddenda.Designer.cs",
+      "operationsSha256": "ab512c269a91fd7d7acdfc1f40c19fa00df064cd75e99f3854122467edde232c"
+    },
+    {
+      "id": "20260919192918_AttachAppointmentLifecycleAudit",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260919192918_AttachAppointmentLifecycleAudit.Designer.cs",
+      "operationsSha256": "557c164291a2433b1218e9def2541f128e34805ab8a77af3e261e3483eae0ed3"
+    },
+    {
+      "id": "20260919195120_AddReopenGraceMinutes",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260919195120_AddReopenGraceMinutes.Designer.cs",
+      "operationsSha256": "606f6f1c396fd809ce435bb22999c5c74481c59e1864b7d1570a1da124268e55"
+    },
+    {
+      "id": "20261001221715_AddRequestPriority",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20261001221715_AddRequestPriority.Designer.cs",
+      "operationsSha256": "4caf413bc29cdec5fde8682a0bf831322c570137fdbf8ab88e063f934cc02925"
+    }
+  ],
+  "dev": [
+    {
+      "id": "20261113205636_AllowThirtyDayLegacyNutritionCompletions",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs",
+      "operationsSha256": "910cefd28edb100e3705001ba800d277da833137678d90a25c6ecc7b81e57ff2"
+    },
+    {
+      "id": "20260810195245_InitialAuditSchema",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260810195245_InitialAuditSchema.Designer.cs",
+      "operationsSha256": "f70419cc80c184f0e69a4da695e5dfe8fde9ab973ad34176ca2f983d54cbf681"
+    },
+    {
+      "id": "20260813190530_AddMediaItemTable",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813190530_AddMediaItemTable.Designer.cs",
+      "operationsSha256": "c36e359fe0517f8dd585131f7093a94e66337fc9ba6c5804f1cc3e3ef29654b6"
+    },
+    {
+      "id": "20260813200542_AddAppAndErpSchemas",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813200542_AddAppAndErpSchemas.Designer.cs",
+      "operationsSha256": "a1fe5e5b28ef0380a7058e534cba44954b5547b2e04eee15d38cc7e641a07f43"
+    },
+    {
+      "id": "20260813212021_MoveMediaItemsToAppSchema",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813212021_MoveMediaItemsToAppSchema.Designer.cs",
+      "operationsSha256": "2a3666f790e3fe339f451c6bb2742e526ef819e2b38bad60c3e3663943635e7a"
+    },
+    {
+      "id": "20260813222001_AddPatientsModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260813222001_AddPatientsModule.Designer.cs",
+      "operationsSha256": "760a7a01501f8d653695a99d378ad0a4b6349a044045692de8bb67bef86c1659"
+    },
+    {
+      "id": "20260814132357_NormalizeClinicalCatalogs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260814132357_NormalizeClinicalCatalogs.Designer.cs",
+      "operationsSha256": "b03d656cac8308d457d9f04cadca3637fa74339a58277e8fac37c3d478692400"
+    },
+    {
+      "id": "20260814134213_AddMediaItemContentFields",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260814134213_AddMediaItemContentFields.Designer.cs",
+      "operationsSha256": "0c1fa840b0349fe9e8421a29f7271c8e216a6a9e357b58344874e15a27315844"
+    },
+    {
+      "id": "20260814143846_AddAgentsModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260814143846_AddAgentsModule.Designer.cs",
+      "operationsSha256": "1448f1bb974c800784adfc0bd90db933069359ebb7b821ff348831b376276e04"
+    },
+    {
+      "id": "20260818200243_AddPatientCatalogs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260818200243_AddPatientCatalogs.Designer.cs",
+      "operationsSha256": "b020532eed9f9638e23c8007142807a2b563f9d24d8fc52c25861f7ade8168d2"
+    },
+    {
+      "id": "20260819211756_AddProfessionalOrganizationSchema",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260819211756_AddProfessionalOrganizationSchema.Designer.cs",
+      "operationsSha256": "43ce3cc21676849fc4a2beb38b3302083e11ef3fc4085d8aea7c35b718c99e06"
+    },
+    {
+      "id": "20260820131031_AddPatientScoping",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820131031_AddPatientScoping.Designer.cs",
+      "operationsSha256": "1748b1b178946b9d8dc407fa740ed918f2b80646c4d41d5a0ad533e329a113f6"
+    },
+    {
+      "id": "20260820140637_AddPatientDocuments",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820140637_AddPatientDocuments.Designer.cs",
+      "operationsSha256": "a59e5d089dfc0c1c93b0e9efcce97def82d066b48ef05151018466e34254c3e1"
+    },
+    {
+      "id": "20260820141943_AddAgentSlug",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820141943_AddAgentSlug.Designer.cs",
+      "operationsSha256": "9287bb216f2910c2c57427e57941c60d0faade8c32356d99e2c9e089425815f6"
+    },
+    {
+      "id": "20260820165816_AddWellnessModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820165816_AddWellnessModule.Designer.cs",
+      "operationsSha256": "5b0afb93662d7069cad3e33b2412f58e66618b21604d56a5bc077a912d9eccbf"
+    },
+    {
+      "id": "20260820183230_MoveInventoryAndStoreToErp",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820183230_MoveInventoryAndStoreToErp.Designer.cs",
+      "operationsSha256": "d1bc937664cfa45a0488712fabf62b86f235718908c41999906d6fe9a2365bf5"
+    },
+    {
+      "id": "20260820194556_AddLegalDocuments",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820194556_AddLegalDocuments.Designer.cs",
+      "operationsSha256": "cd102595421bbea0919237d36047c3874c318691f4064763c319613775bb4105"
+    },
+    {
+      "id": "20260820210010_AddLegalDocumentsAudit",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820210010_AddLegalDocumentsAudit.Designer.cs",
+      "operationsSha256": "e4a90924538ed9aff803e550fdbb11b478b50af444e469bef3d02d354dd9a0aa"
+    },
+    {
+      "id": "20260820220314_AddNutritionPlanAssignment",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260820220314_AddNutritionPlanAssignment.Designer.cs",
+      "operationsSha256": "ede0e14fac17e6fed361ec05639d82b9b75032bff79aee0ab659bd8bbf2c5bbb"
+    },
+    {
+      "id": "20260821164608_AddPatientProfessionalAssignments",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260821164608_AddPatientProfessionalAssignments.Designer.cs",
+      "operationsSha256": "7efa22a3fc76a7c1f33390c533decd6c4f10e7d396d76628ec0d066e9282f3a1"
+    },
+    {
+      "id": "20260821193046_AddClinicalMeasurements",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260821193046_AddClinicalMeasurements.Designer.cs",
+      "operationsSha256": "93090dc1cc53f32ef4ebd8de40752172fcc47967e0744541214b3fbdba9284d6"
+    },
+    {
+      "id": "20260824165717_AddWellnessDetailedFields",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260824165717_AddWellnessDetailedFields.Designer.cs",
+      "operationsSha256": "b1ce28f055e32cc48c85dff915073031fd3f05af3bf1d77a142a6c30b028ea99"
+    },
+    {
+      "id": "20260824205511_AddPlanSafetyRules",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260824205511_AddPlanSafetyRules.Designer.cs",
+      "operationsSha256": "5d6c4780f223582d0ad478ac30df10ef458519734a5936ddc6461c38caa0cbca"
+    },
+    {
+      "id": "20260825195939_AddDailyWaterMlToNutritionPlanDays",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260825195939_AddDailyWaterMlToNutritionPlanDays.Designer.cs",
+      "operationsSha256": "213b751a2ca4481b86a5a32d39b67dbbb53504fe21ed9dda5def338c6265c9da"
+    },
+    {
+      "id": "20260826034345_AddDeviceTokens",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826034345_AddDeviceTokens.Designer.cs",
+      "operationsSha256": "7f36cd6d7c326c06d9f7f72fc8226869673100b89fbc1ca6ef49798810cfe86b"
+    },
+    {
+      "id": "20260826185651_AddProgramProgressCore",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826185651_AddProgramProgressCore.Designer.cs",
+      "operationsSha256": "cfe0761bb1aead4c9224e127d9506c5287208192d651dcf75cd87d29f2f934a9"
+    },
+    {
+      "id": "20260826191824_AddProgramProgressSafety",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826191824_AddProgramProgressSafety.Designer.cs",
+      "operationsSha256": "7ac7b832ea2f67223c33606ee5a3ee197440f08a952fd7f8b4106824ad18d9f9"
+    },
+    {
+      "id": "20260826193329_FixEmotionalFkRestrict",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826193329_FixEmotionalFkRestrict.Designer.cs",
+      "operationsSha256": "303e3bfc6c1fcf544c8915e3449ba8a14ef3636d8428533702fa701e6bbb3049"
+    },
+    {
+      "id": "20260826210008_AddAuditActionWidening",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826210008_AddAuditActionWidening.Designer.cs",
+      "operationsSha256": "c168014f37e6052c372a0beb38bdf7a684d1efb40af103b860a090f48daa727e"
+    },
+    {
+      "id": "20260826210010_AddCatalogIsActive",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826210010_AddCatalogIsActive.Designer.cs",
+      "operationsSha256": "8c81224fd0613eb20ffd9602474c6fa78cee87c76933b7e62d74e892f3c8edb7"
+    },
+    {
+      "id": "20260826210137_AddProgramProgressAuditCoverage",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826210137_AddProgramProgressAuditCoverage.Designer.cs",
+      "operationsSha256": "5f7c0dcac6208948aaa67884db5f03f8d156b3be63d0bf96ece42c33cb3c9dfc"
+    },
+    {
+      "id": "20260826222848_AddProgramProgressScores",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260826222848_AddProgramProgressScores.Designer.cs",
+      "operationsSha256": "c9adb06ad0ca54d3a408ce7495cbb4b1f2471c8676108fe25dce3a036b4a1cfc"
+    },
+    {
+      "id": "20260827041239_AddXpRulesCatalog",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827041239_AddXpRulesCatalog.Designer.cs",
+      "operationsSha256": "421353ca3e7828c5635071a7ac471c3971a15c5172d99e4fd8dc5d9e9f903190"
+    },
+    {
+      "id": "20260827043130_AddProgramProgressClinicalXp",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827043130_AddProgramProgressClinicalXp.Designer.cs",
+      "operationsSha256": "0130d8adf540e558c05fdb489eebc190eaef4fbb283b2af091e43745c01c525f"
+    },
+    {
+      "id": "20260827044741_AddProgramProgressMultiplier",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827044741_AddProgramProgressMultiplier.Designer.cs",
+      "operationsSha256": "d43b45f2395c3475ec45905887c2ae7f8bc817abb4736cbef3f7c41a23528458"
+    },
+    {
+      "id": "20260827045823_AddProgramProgressStreakConfig",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827045823_AddProgramProgressStreakConfig.Designer.cs",
+      "operationsSha256": "a7b6a63abf1b61ad532f38a7309d8bf82386bbad1b6493e6b2214d766f57aa97"
+    },
+    {
+      "id": "20260827051903_AddProgramProgressNutritionXp",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827051903_AddProgramProgressNutritionXp.Designer.cs",
+      "operationsSha256": "8b3b54c41d846229bda4991c85545e2ca8abdbfa6c883bbd3a9061bc22b1e3e1"
+    },
+    {
+      "id": "20260827144105_AddServerCatalogSeeds",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827144105_AddServerCatalogSeeds.Designer.cs",
+      "operationsSha256": "fdfb5bf7d0c3041ed2bf07a41847bf88f479dc62d777bf228ac1fd49f647fb89"
+    },
+    {
+      "id": "20260827170155_AddProgramProgressNbStreak",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827170155_AddProgramProgressNbStreak.Designer.cs",
+      "operationsSha256": "c36eb1bbc81d08408a0ac0bb3f9c61e36b74c986c7325e74d85d1bc511772745"
+    },
+    {
+      "id": "20260827173437_AddProgramProgressNotifications",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827173437_AddProgramProgressNotifications.Designer.cs",
+      "operationsSha256": "ba1bd28820bdcb648a1edc14dfcaf4e00dc80ee5db573928d47cb42066001326"
+    },
+    {
+      "id": "20260827175812_AddProgramProgressWeaknesses",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827175812_AddProgramProgressWeaknesses.Designer.cs",
+      "operationsSha256": "888ad83179e1797fd377adec214344d4de912af971b9bf0271c277c602e42a79"
+    },
+    {
+      "id": "20260827185349_AddHealthTestsModule",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827185349_AddHealthTestsModule.Designer.cs",
+      "operationsSha256": "21761fbec07bce7628e17daed38adfebfa853000729493e76a8444a055e61846"
+    },
+    {
+      "id": "20260827190417_AddProgramProgressInterventions",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827190417_AddProgramProgressInterventions.Designer.cs",
+      "operationsSha256": "18e94504b94326c103a58c5ef7abaa56dbd6b28df2a286b77a71d7c068a10f78"
+    },
+    {
+      "id": "20260827192550_AddHealthTestsCatalogSeed",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827192550_AddHealthTestsCatalogSeed.Designer.cs",
+      "operationsSha256": "e38778b63c0fd45cb6a0a32d645d783c748cd5dc4e51f746290095fdd4116e02"
+    },
+    {
+      "id": "20260827231435_AddHealthTestResultsSeverityIndex",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260827231435_AddHealthTestResultsSeverityIndex.Designer.cs",
+      "operationsSha256": "77d42f6e7fba9cfbd1acadfd965632d1195fd4ea70f461cef3666ca5b54aff7e"
+    },
+    {
+      "id": "20260828000040_AddFoodAiNutrition",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828000040_AddFoodAiNutrition.Designer.cs",
+      "operationsSha256": "110e6ee1bf7b593d5f491d4749f5dc4e283a551450a32729ccabbf393ba804be"
+    },
+    {
+      "id": "20260828010612_AddFoodAiAnalysis",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828010612_AddFoodAiAnalysis.Designer.cs",
+      "operationsSha256": "1d22de83cd0fb63b21ec7817525d72b98a87ffcd3112a87481c1c2cc11e4fa10"
+    },
+    {
+      "id": "20260828164951_AddFoodAiNutritionMapping",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828164951_AddFoodAiNutritionMapping.Designer.cs",
+      "operationsSha256": "33db33e8bf10799c552996bb714fd6800082b67962abdd77e853091a96a2cc8e"
+    },
+    {
+      "id": "20260828214945_AddWeeklyDayTemplateContentLinks",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260828214945_AddWeeklyDayTemplateContentLinks.Designer.cs",
+      "operationsSha256": "6f5bf8686c36ef80c60193273cb78f7ae7c1775a22059fc17a38e3543e16392d"
+    },
+    {
+      "id": "20260901193540_RetargetVitalSignsBatchFk",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901193540_RetargetVitalSignsBatchFk.Designer.cs",
+      "operationsSha256": "5fd41829878360919faeb2d6a49739861b8989ee5be4f787add897ca875ceb86"
+    },
+    {
+      "id": "20260901193612_AddVitalSignsCatalogSeeds",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901193612_AddVitalSignsCatalogSeeds.Designer.cs",
+      "operationsSha256": "aa862082ff52321a0ab46b43f534f0b053cce5b797e0cc2c4cbb9bb25185faf0"
+    },
+    {
+      "id": "20260901214236_AddHealthTestQuestionMetadata",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901214236_AddHealthTestQuestionMetadata.Designer.cs",
+      "operationsSha256": "393b1f67441ef1c26ceb0e22975a01295ee39a7c7aabf263cd48cb3ea14545e0"
+    },
+    {
+      "id": "20260901214717_ReplaceInitialBatterySeed",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901214717_ReplaceInitialBatterySeed.Designer.cs",
+      "operationsSha256": "453c92491d72fa5e03c3b154b5da39c4daa63d0dddb1d7e9af51503c301173bd"
+    },
+    {
+      "id": "20260901214922_UpdateInitialBatteryInstrumentNames",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260901214922_UpdateInitialBatteryInstrumentNames.Designer.cs",
+      "operationsSha256": "774f3951875d6d26920e0f670ea1484f7ca5d90fa1d8e2b4e934d76c3b56ffa0"
+    },
+    {
+      "id": "20260902210640_AddNutritionIntakeLogs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260902210640_AddNutritionIntakeLogs.Designer.cs",
+      "operationsSha256": "8dc4fd22c81e413796a40f7eb5ac9c4e05a571ec0fae0d876f27e13c77d00ec3"
+    },
+    {
+      "id": "20260904150512_AddProgramDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904150512_AddProgramDailyMetrics.Designer.cs",
+      "operationsSha256": "89d0d8701b241c3778d22a5c53518cfc25e3c7951897df09bc00ede709f25725"
+    },
+    {
+      "id": "20260904150540_RenameNutribioticoToNutraceutico",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904150540_RenameNutribioticoToNutraceutico.Designer.cs",
+      "operationsSha256": "57b0923c05d75f94f26368e0d516ab79ae19554deeb58ccbab40b887ff2bbc07"
+    },
+    {
+      "id": "20260904160710_AddPatientDailyMetricsAndMediaFields",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904160710_AddPatientDailyMetricsAndMediaFields.Designer.cs",
+      "operationsSha256": "6c79310306393baf3df1d5d0186204748531753f399206eb12cd8c87db4a6aea"
+    },
+    {
+      "id": "20260904165015_AddInventoryDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904165015_AddInventoryDailyMetrics.Designer.cs",
+      "operationsSha256": "f3f39349154620b37adae2d45677a2a31a1a549f09c4a061b88963fc1be00456"
+    },
+    {
+      "id": "20260904191315_AddHealthTestDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260904191315_AddHealthTestDailyMetrics.Designer.cs",
+      "operationsSha256": "acf3fa7bd31b619faab84b29de0961b6faa5eb524467a6f930fcf840a44f0691"
+    },
+    {
+      "id": "20260907134525_AddLeaguePreferences",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260907134525_AddLeaguePreferences.Designer.cs",
+      "operationsSha256": "a18839eab757f2459530b4d81b9ea0245ea2ae8b4bf75b3232f95f262f98b6b3"
+    },
+    {
+      "id": "20260907213836_AddProfessionalSchedules",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260907213836_AddProfessionalSchedules.Designer.cs",
+      "operationsSha256": "06c58e0756147e5adfbc9267112de8f604e87ec74798c780590955fcdbe2b586"
+    },
+    {
+      "id": "20260908143013_AddProgramMilestoneSends",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260908143013_AddProgramMilestoneSends.Designer.cs",
+      "operationsSha256": "6bde437f479a7a23a964d9f6db1499cd039011a45cc7541032543a907c06f4af"
+    },
+    {
+      "id": "20260908162833_AddBiometriaDailyMetrics",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260908162833_AddBiometriaDailyMetrics.Designer.cs",
+      "operationsSha256": "0e9f89c16e0b31cf7999514266d5783f74a708302aef6eaa5193d5f31d0543ab"
+    },
+    {
+      "id": "20260909212458_AddLabExamBatchColumns",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260909212458_AddLabExamBatchColumns.Designer.cs",
+      "operationsSha256": "1a941269549f061fd083aac347a1b5f40c0d189ab147fe28b9edda397aba24d9"
+    },
+    {
+      "id": "20260910222211_RenameProgramMilestoneSendsToProgramControls",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260910222211_RenameProgramMilestoneSendsToProgramControls.Designer.cs",
+      "operationsSha256": "b59ab2d4940f8da30bdd46c255f1092ced59921f4468960f6d20ff1e80e3fe62"
+    },
+    {
+      "id": "20260913184538_AddEmployeeErpAccessVersion",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260913184538_AddEmployeeErpAccessVersion.Designer.cs",
+      "operationsSha256": "292eaeabbea7c049909e2a8561100670d80047bcdca3e84e04d5b92bfa183d50"
+    },
+    {
+      "id": "20260915201229_AddHealthTestGeoRollups",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260915201229_AddHealthTestGeoRollups.Designer.cs",
+      "operationsSha256": "523369f4d15dcf0ec1256b70d2ecfe89159dda5597809356ae643066ed54cc3f"
+    },
+    {
+      "id": "20260916160628_AddHealthTestAlertNotifications",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260916160628_AddHealthTestAlertNotifications.Designer.cs",
+      "operationsSha256": "7439f165a03d9be393e6a976c3ba4c463582d3d0add97a49978f11de99350d04"
+    },
+    {
+      "id": "20260916205732_ConvertNotificationPlaceholdersToBrackets",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260916205732_ConvertNotificationPlaceholdersToBrackets.Designer.cs",
+      "operationsSha256": "e5bd2a7cf93b2f31350913b3bb68184b27919ed9cce75fe75c5f81fe8c3cf715"
+    },
+    {
+      "id": "20260917145335_AddBilingualNotificationTemplates",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260917145335_AddBilingualNotificationTemplates.Designer.cs",
+      "operationsSha256": "ee444e6d6920d4e0ce7234e2a98e6c5655ef2666ae04e93e877b1933e13d16d9"
+    },
+    {
+      "id": "20260917164021_RenameAntaresBrandInAppData",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260917164021_RenameAntaresBrandInAppData.Designer.cs",
+      "operationsSha256": "4d85764fdc71b6b8f16451c68d551f86e1ea4ca152b1ef82b4ea6f06be310832"
+    },
+    {
+      "id": "20260918210255_AddNotificationDedupeKeys",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260918210255_AddNotificationDedupeKeys.Designer.cs",
+      "operationsSha256": "cb59bd8a4f3bd0e85e7f142ade1fb0cae26d73193e689baff52346003df83f98"
+    },
+    {
+      "id": "20260922205538_WidenEmergencyContact",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260922205538_WidenEmergencyContact.Designer.cs",
+      "operationsSha256": "bfe4e40f876241a9116c931e16c3a60b99e07fb02499c58e2e0b5d812d528fa4"
+    },
+    {
+      "id": "20260929214518_AddSosAlerts",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260929214518_AddSosAlerts.Designer.cs",
+      "operationsSha256": "e4cf4c11859aecfb58c23060750e9eaf9c5d403db5256516762f3201b9bd6f8f"
+    },
+    {
+      "id": "20260930015320_WidenIntakeLogCaloriesToNumeric",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20260930015320_WidenIntakeLogCaloriesToNumeric.Designer.cs",
+      "operationsSha256": "b555d785925a06c1a1e06a4b9b61dd4291dcd8383e010d3e1b984d3cab4f0b0a"
+    },
+    {
+      "id": "20261001172314_AddSosVoiceChannel",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261001172314_AddSosVoiceChannel.Designer.cs",
+      "operationsSha256": "a9d7988406f00fa4fb7d7b6e708712465bebfd85d80ebf27931ef8bac0add56a"
+    },
+    {
+      "id": "20261002150719_AddSosVitals",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261002150719_AddSosVitals.Designer.cs",
+      "operationsSha256": "d5e53467cfc201ed5d45c681654c08dd397a2e5cf7ba3b1497be65e51718bb25"
+    },
+    {
+      "id": "20261002164456_AddSosDeliveryStatus",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261002164456_AddSosDeliveryStatus.Designer.cs",
+      "operationsSha256": "6d4799db2f399178cbcdba9d1792e506c2bce60e86277c2bc892f39ec0673a6a"
+    },
+    {
+      "id": "20261005162630_AddPatientDocumentNumberUniqueIndex",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261005162630_AddPatientDocumentNumberUniqueIndex.Designer.cs",
+      "operationsSha256": "14fc2268225b8288f1113969ddae876850be2751575392dd8f2416f3fdeb7efd"
+    },
+    {
+      "id": "20261005195251_AddSosEmailChannel",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261005195251_AddSosEmailChannel.Designer.cs",
+      "operationsSha256": "d712623a695de5de6e3f195203006c23074413d5cd9dcddb76ba54b0e1789850"
+    },
+    {
+      "id": "20261006150423_AddSosEmailChannelStatus",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261006150423_AddSosEmailChannelStatus.Designer.cs",
+      "operationsSha256": "e8deba5a8c1fcd5dc3c14252b06e5cc997fbc4d9ccb442104c71c78fd7769331"
+    },
+    {
+      "id": "20261006220959_AddEmployeeSoftDelete",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261006220959_AddEmployeeSoftDelete.Designer.cs",
+      "operationsSha256": "fd4bc736b2a1009cd89aa56f418abe07bca88e63c9a52e435a99f0b25b0bddeb"
+    },
+    {
+      "id": "20261103214607_AddNutritionReviewWorkflowAndEmergencyContacts",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261103214607_AddNutritionReviewWorkflowAndEmergencyContacts.Designer.cs",
+      "operationsSha256": "44007b7b1e87e340f44761baadd508b757b19e5b1740ec186fbbc32303f383a4"
+    },
+    {
+      "id": "20261104152556_AddProgramAssignmentCatalog",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104152556_AddProgramAssignmentCatalog.Designer.cs",
+      "operationsSha256": "7eada3d842221dcbf7c19fccc885d9db2cd883928b94f1ada2075e8f73dacc0e"
+    },
+    {
+      "id": "20261104152746_AddSosRecipientSnapshots",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104152746_AddSosRecipientSnapshots.Designer.cs",
+      "operationsSha256": "f9aaf94bf5e60c8086d06a550a8d84ed1542dcb3d4ccf272eaf8765c6e8e4dea"
+    },
+    {
+      "id": "20261104154406_AddProgramAssignmentPatientContext",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104154406_AddProgramAssignmentPatientContext.Designer.cs",
+      "operationsSha256": "7d33619a11d929b73b2b9a37775974e9f73e4251fe851dab2fdbdccd708353ab"
+    },
+    {
+      "id": "20261104154415_AddAssessmentProfileInsights",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104154415_AddAssessmentProfileInsights.Designer.cs",
+      "operationsSha256": "b52ab61bda310d9fce6f8657c9a7f01c9723c2bca254122bb19c80994f788e24"
+    },
+    {
+      "id": "20261104161744_AddProgramAssignmentRecoveryAndNotices",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261104161744_AddProgramAssignmentRecoveryAndNotices.Designer.cs",
+      "operationsSha256": "639b00879ea113c40f14fa572d74524c2022c23b422b14a59c5c99ff1363da21"
+    },
+    {
+      "id": "20261105145334_AddNutritionPrescriptions",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105145334_AddNutritionPrescriptions.Designer.cs",
+      "operationsSha256": "aabacbf261efd4236b27fe28a03a3ff7446243d0e3d81ca82d9ee72c38340240"
+    },
+    {
+      "id": "20261105153934_AddNutritionCaseAudit",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105153934_AddNutritionCaseAudit.Designer.cs",
+      "operationsSha256": "3fc1b7c54fd53366ffb7c4d9f0acdc6d4e15f11e9af23454a0c4898950892728"
+    },
+    {
+      "id": "20261105210600_AddStructuredEmotionalAssessment",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105210600_AddStructuredEmotionalAssessment.Designer.cs",
+      "operationsSha256": "db2d0d2c201de62ba30d183173e1bd021e6b9c6ebdecccac7dcf517988ba9826"
+    },
+    {
+      "id": "20261105220445_AddNutritionDraftReservations",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261105220445_AddNutritionDraftReservations.Designer.cs",
+      "operationsSha256": "3ac76a06ad7bbb5d9ca625b6ddc1b83a37020e4c9dd828af8a4a4ac5c637ff20"
+    },
+    {
+      "id": "20261106135712_AddFoodAnalysisEnglishNames",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106135712_AddFoodAnalysisEnglishNames.Designer.cs",
+      "operationsSha256": "e9a2a8ab7ed4624c8158cf291917b2b44df9898c9ec35f9c0c244f9ccaa50b6a"
+    },
+    {
+      "id": "20261106142633_AddDeviceTokenLanguage",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106142633_AddDeviceTokenLanguage.Designer.cs",
+      "operationsSha256": "caaea1001162ebcd27df7efbc763b36d56f7bb1850cdb390a8d359f45f3e9116"
+    },
+    {
+      "id": "20261106142836_AddNutritionInstructionTranslationProvenance",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106142836_AddNutritionInstructionTranslationProvenance.Designer.cs",
+      "operationsSha256": "2a8302070393c37ce1533d11330ef39850620755c07edc278a7b09b7dd0ed5c6"
+    },
+    {
+      "id": "20261106203006_AddSosLocationDescription",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261106203006_AddSosLocationDescription.Designer.cs",
+      "operationsSha256": "5b457cb30bb81619c30b8e1dd39439e1c9b98fe9e7d1b0e665dea75af89b4e23"
+    },
+    {
+      "id": "20261109192959_AddSosLocationShortLink",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261109192959_AddSosLocationShortLink.Designer.cs",
+      "operationsSha256": "fd0c93904e4c2b69d680005f3aa4c483fdfc010eb9868f96a92da36d9d3bd968"
+    },
+    {
+      "id": "20261110174324_AddLegalConsentReceipts",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261110174324_AddLegalConsentReceipts.Designer.cs",
+      "operationsSha256": "97c3d3d0635c07bf5fca70464b38d36cda4a288416b36685c2aaae37983c425f"
+    },
+    {
+      "id": "20261112155905_AddSosVitalsSnapshot",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261112155905_AddSosVitalsSnapshot.Designer.cs",
+      "operationsSha256": "f09acc61a8507d2a5a2d524cc1558100023deeb9261f42c9a06445c2d66a36e2"
+    },
+    {
+      "id": "20261113185456_AddWeeklyTemplateWeekNumber",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261113185456_AddWeeklyTemplateWeekNumber.Designer.cs",
+      "operationsSha256": "03767fe83b88df7e480231bc3e84013799ccb5e4826d73f49e4dfbf8a57baa72"
+    },
+    {
+      "id": "20261113192158_AddMediaSourceAndTags",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261113192158_AddMediaSourceAndTags.Designer.cs",
+      "operationsSha256": "33740d2a3d5c3b09d8722675d7c2af664f3c60effa9b0d39fa2aa42ad9e335fe"
+    },
+    {
+      "id": "20261113195741_AddSosWhatsAppOutbox",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261113195741_AddSosWhatsAppOutbox.Designer.cs",
+      "operationsSha256": "8f8fccb20c1fba260e162f1bb19852cea5305c62888d2f46d9c9a44baf06806e"
+    },
+    {
+      "id": "20261114141434_AddExerciseSessionDetailSnapshot",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs",
+      "operationsSha256": "8f06cbbfb9a0ac137d93594485aa5c37902774cff5e4a4e8415b0279bae98b40"
+    },
+    {
+      "id": "20261112163426_InitialWhatsApp",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112163426_InitialWhatsApp.Designer.cs",
+      "operationsSha256": "fa1a8d899034279e4618f83932635f564e201cd4901ed2bd9185bb567eaee240"
+    },
+    {
+      "id": "20261112164437_PatientLinksAndConversations",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112164437_PatientLinksAndConversations.Designer.cs",
+      "operationsSha256": "51eb1a6f9d04cf179b5e64e0b4450a8dc0614865f8d99447cc52042cd73654f4"
+    },
+    {
+      "id": "20261112165457_AccompanimentReminders",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112165457_AccompanimentReminders.Designer.cs",
+      "operationsSha256": "4d24bba082e713cd81d66245f1e3f3d310f08c288fed4d84c6beaeb020d78176"
+    },
+    {
+      "id": "20261112170205_ProgramAccompanimentReasons",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112170205_ProgramAccompanimentReasons.Designer.cs",
+      "operationsSha256": "dd25e18ab1e08c4093464d57dfb27c5160cd393a25f26d59974ce25bf8ed0daa"
+    },
+    {
+      "id": "20261112183130_WhatsAppOtpBinding",
+      "context": "WhatsAppDbContext",
+      "path": "src/CoppAddresd.WhatsApp/Persistence/Migrations/20261112183130_WhatsAppOtpBinding.Designer.cs",
+      "operationsSha256": "ae81490c337ead7f55493ce1064c1c849d1924bc64041988d042257474089b11"
+    },
+    {
+      "id": "20260810221731_InitialCreate",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260810221731_InitialCreate.Designer.cs",
+      "operationsSha256": "f85b08843bbace9e711f54829e05aaf1015118717bb08932714d6ba6be1bb4f5"
+    },
+    {
+      "id": "20260810221740_AddRefreshTokens",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260810221740_AddRefreshTokens.Designer.cs",
+      "operationsSha256": "dbcd3a506c897dcada683313ed7f0a2a8f4d7e2de37bd7373377c75d8a0d1cdd"
+    },
+    {
+      "id": "20260813200500_AddApplicationsAndUserApplications",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260813200500_AddApplicationsAndUserApplications.Designer.cs",
+      "operationsSha256": "479f1cf56e12bba58613bb9e9dc7efb494f894b7510d7049cf7504b4432ce7a9"
+    },
+    {
+      "id": "20260819201840_AddOtpCodes",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260819201840_AddOtpCodes.Designer.cs",
+      "operationsSha256": "cf84d8adb4ff0339b6744b29a882b670800eb632b624ab34f88d65aee50d87de"
+    },
+    {
+      "id": "20260819214445_AddScopedAssignments",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260819214445_AddScopedAssignments.Designer.cs",
+      "operationsSha256": "96188cce77aac4c32c2d77c4300f583203a6ed77f4e5bb4d8cc2bbbe2c1cc720"
+    },
+    {
+      "id": "20260819221901_AddInvitations",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260819221901_AddInvitations.Designer.cs",
+      "operationsSha256": "5a6c748c6d3b09e836d1114baf66ea25a27e75a66e636347bc8a60189ed36161"
+    },
+    {
+      "id": "20260825185203_AddUserPreferences",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260825185203_AddUserPreferences.Designer.cs",
+      "operationsSha256": "fa7d4bd8a133090b8c5066408ee61fcb7186799c5298146364ae68606889f7c3"
+    },
+    {
+      "id": "20260825211249_AddAppointmentsPermissionCodes",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260825211249_AddAppointmentsPermissionCodes.Designer.cs",
+      "operationsSha256": "4d94ea4c047c1fd8747501c9b08508a3a57ee81ee55cba639f086b521bb36e93"
+    },
+    {
+      "id": "20260826203637_AddRoleIsSystem",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260826203637_AddRoleIsSystem.Designer.cs",
+      "operationsSha256": "78006fe4229aedcfe715c295782adbbdea724e9ec579f7b0b08689b1dc7423f4"
+    },
+    {
+      "id": "20260826203649_AddScopedAssignmentsCompositeIndex",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260826203649_AddScopedAssignmentsCompositeIndex.Designer.cs",
+      "operationsSha256": "66c46c8d9adc29a72f49886782f6f67ec1a10bd2402e8643dbd4c8c2ab338566"
+    },
+    {
+      "id": "20260829000824_AddUserPreferenceAccentColor",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260829000824_AddUserPreferenceAccentColor.Designer.cs",
+      "operationsSha256": "9a179174d8cd2c720094873f10ecd5eee1e261154276e7ae6200e2a5f0326543"
+    },
+    {
+      "id": "20260913184501_AddErpApplicationSuspension",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260913184501_AddErpApplicationSuspension.Designer.cs",
+      "operationsSha256": "5b1b607d280de44ff840e87b4f03a63353f38a616e7151ad514834135d76a1c0"
+    },
+    {
+      "id": "20260914152543_AddAvatarConfigurationPreference",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20260914152543_AddAvatarConfigurationPreference.Designer.cs",
+      "operationsSha256": "58b9966022c02bfec13f0c60d0b73ffb7e1290602de23c78f650453646324935"
+    },
+    {
+      "id": "20261005155715_AddAccountDeletion",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20261005155715_AddAccountDeletion.Designer.cs",
+      "operationsSha256": "3f8859df493eac33b836a8b467ed3c53d2451f5f20d6f20964e50e553e1c8c8c"
+    },
+    {
+      "id": "20261005190901_AddAccountDeletionHandoffs",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20261005190901_AddAccountDeletionHandoffs.Designer.cs",
+      "operationsSha256": "1aa7fdcd70f3e5a093551374de72b04a85c5039decc6c154093fca3d1902f53b"
+    },
+    {
+      "id": "20261005200454_AddAccountDeletionSessions",
+      "context": "AuthDbContext",
+      "path": "src/Services/CoppAddresd.Auth/Migrations/20261005200454_AddAccountDeletionSessions.Designer.cs",
+      "operationsSha256": "823ae30ba5c8b1cafe12e02c43d9c00700f7146c0ca41746308f36a9cf7a9b63"
+    },
+    {
+      "id": "20260821131348_InitialCommunitySchema",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821131348_InitialCommunitySchema.Designer.cs",
+      "operationsSha256": "20bd6c658d24d65859ac4aed2c7e3fbbdc8f06c8d8f96e6c167deef3421b571e"
+    },
+    {
+      "id": "20260821173824_ChangeProfileStatusToActiveBanned",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821173824_ChangeProfileStatusToActiveBanned.Designer.cs",
+      "operationsSha256": "819772fb7047c7382abb0ae9b6e9246c67a16cedf519d39c805b60eab666a5d2"
+    },
+    {
+      "id": "20260821200946_AddFollowsAndMessages",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821200946_AddFollowsAndMessages.Designer.cs",
+      "operationsSha256": "b774f14ffcb705e29a53a13e0ae1dd5e0460679c2377947d9c437d7e2730daff"
+    },
+    {
+      "id": "20260821204542_AddUnaccentSearch",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260821204542_AddUnaccentSearch.Designer.cs",
+      "operationsSha256": "c4c94e485394123130515e23d9a57ca6757da86fa6daacf8197820bcac53710b"
+    },
+    {
+      "id": "20260824171713_AddChatGroups",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260824171713_AddChatGroups.Designer.cs",
+      "operationsSha256": "cb28416f56774bd05a62fecf1f5129efa49a48e36994f7ca384311e1b2396f4c"
+    },
+    {
+      "id": "20260825193854_AddPostImageKeyToPosts",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260825193854_AddPostImageKeyToPosts.Designer.cs",
+      "operationsSha256": "9305d7612efd24d6d066493b29d6ee571f929dd67ea67ae9a416cb320b4b18f9"
+    },
+    {
+      "id": "20260825220512_AddProfileCoverKey",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260825220512_AddProfileCoverKey.Designer.cs",
+      "operationsSha256": "13ccf4638652eb352e2c8e70e5135d5cd7d550a97c6bec8c5eeadaa9ab275791"
+    },
+    {
+      "id": "20260827003917_CommunityErpSchema",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827003917_CommunityErpSchema.Designer.cs",
+      "operationsSha256": "00eb3d58e1027c09dbf3ea0ef9e8f335755662068343d02911a63fd4b604598d"
+    },
+    {
+      "id": "20260827100000_AddPostReports",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827100000_AddPostReports.cs",
+      "operationsSha256": "334ed4e75b304b16c77b40b81893a8fb641f8e71ce5c3533df02d11cf7423cb8"
+    },
+    {
+      "id": "20260827161646_AddSystemProfileSupport",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827161646_AddSystemProfileSupport.Designer.cs",
+      "operationsSha256": "36b8c2e3766bc2fd14519d0f164677a0c737bf1b843a6f8b4beaed39d5b93b28"
+    },
+    {
+      "id": "20260827161959_AddMessageTriggeredBy",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827161959_AddMessageTriggeredBy.Designer.cs",
+      "operationsSha256": "1b033ef408c0798da5f9d4e028c5a6225d3a3b3e8f64a2f99f8523f11699a4d1"
+    },
+    {
+      "id": "20260827171604_AddRecognitionsAndNetworks",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827171604_AddRecognitionsAndNetworks.Designer.cs",
+      "operationsSha256": "f51104e485066db898d8ed708c4ea3d81e46179b793b1d05903a33397e53157f"
+    },
+    {
+      "id": "20260827220039_AddCommunityPolls",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260827220039_AddCommunityPolls.Designer.cs",
+      "operationsSha256": "63e532f4f6789b6e2c71f9fde3729ac62f8c89ff00015b0d82c661776b2a2d90"
+    },
+    {
+      "id": "20260831162947_AddPinnedOrder",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260831162947_AddPinnedOrder.Designer.cs",
+      "operationsSha256": "505ef8769c88a40abd76beafda88df312656aeca210c45cdf70f29b51165522a"
+    },
+    {
+      "id": "20260831172746_AddCommentReports",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260831172746_AddCommentReports.Designer.cs",
+      "operationsSha256": "dbd5e9e7a46e8fc2ef29813bfd2561b072459dcb971dac68c4b48b0636f488c0"
+    },
+    {
+      "id": "20260831191026_AddReposts",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260831191026_AddReposts.Designer.cs",
+      "operationsSha256": "14bfc3616297f6f1e5125a31024a99bce1db461d56b486d5f4eae7802bbc2fdb"
+    },
+    {
+      "id": "20260903203155_AddClubs",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260903203155_AddClubs.Designer.cs",
+      "operationsSha256": "285c2aced51c2737084bcc2b6e7b16d9aab4ce251c132bad00d47c038e1a66fe"
+    },
+    {
+      "id": "20260904164020_AddCommunityDailyMetrics",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260904164020_AddCommunityDailyMetrics.Designer.cs",
+      "operationsSha256": "f983f89959ae1c3351d36a9f6ad71377df31e0567273a00e2c6fd3c7aafd26a3"
+    },
+    {
+      "id": "20260904191503_AddLiveSessionSpeakers",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260904191503_AddLiveSessionSpeakers.Designer.cs",
+      "operationsSha256": "790c7fe8fd64cd6a52bc5afa855067e521ef133515f1cb56c3a3822661b4bff4"
+    },
+    {
+      "id": "20260917164102_RenameAntaresBrandInCommunityData",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20260917164102_RenameAntaresBrandInCommunityData.Designer.cs",
+      "operationsSha256": "12f95eda7f327d568f9add95a7e8032cbefdc0486611f0cb418ad4fe89f3c8e8"
+    },
+    {
+      "id": "20261110180222_AddCommunityProfileBlocks",
+      "context": "CommunityDbContext",
+      "path": "src/Services/CoppAddresd.Community/Migrations/20261110180222_AddCommunityProfileBlocks.Designer.cs",
+      "operationsSha256": "f9897788584af1673607b131335889466a51e2f920f81c428648e169efb0250c"
+    },
+    {
+      "id": "20260820185512_AddTelemedicineSchema",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260820185512_AddTelemedicineSchema.Designer.cs",
+      "operationsSha256": "558ee268b6c9e427c75fa0d2d2eed8939d730f9bcbc966a61ebef6c9a3f56504"
+    },
+    {
+      "id": "20260820195554_AddAppointmentOverlapExclusion",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260820195554_AddAppointmentOverlapExclusion.Designer.cs",
+      "operationsSha256": "9131ff610d6f7997d3d2fe050e32df13e639beee788dc85203cde490926ab7c6"
+    },
+    {
+      "id": "20260820204816_AddWebhookEventsTable",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260820204816_AddWebhookEventsTable.Designer.cs",
+      "operationsSha256": "4f921c863932c4bf7d1bee71a52d1274e2776f121880858d976dec7bd2a07c13"
+    },
+    {
+      "id": "20260821135142_AttachClinicalEncounterAudit",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260821135142_AttachClinicalEncounterAudit.Designer.cs",
+      "operationsSha256": "93e3ba3fd0985d5bcb5dea92e08bd78e97f0dbc02e22413b89b45010a54388aa"
+    },
+    {
+      "id": "20260821185842_AddCanonicalEncounterLink",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260821185842_AddCanonicalEncounterLink.Designer.cs",
+      "operationsSha256": "e886cb43f5ea11db7a08eb85a3ce643cca2d4c0610593ba413737f561278c670"
+    },
+    {
+      "id": "20260825213158_RenameTelemedicineAppointmentsToAppointments",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260825213158_RenameTelemedicineAppointmentsToAppointments.Designer.cs",
+      "operationsSha256": "9a06a3e05fdc4d7c9c27bfaa4c3487cd530b0adc1b2188cb3e29537f7c596487"
+    },
+    {
+      "id": "20260826154035_AddRequestRejectionReason",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260826154035_AddRequestRejectionReason.Designer.cs",
+      "operationsSha256": "5015d60a32d70cedc8e11ca1a2ae86b8ad5ee784103a5de499c8212604716849"
+    },
+    {
+      "id": "20260907134758_AddTelemedicineDailyMetrics",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260907134758_AddTelemedicineDailyMetrics.Designer.cs",
+      "operationsSha256": "3eed2978d29dbaab2110d1c3cd3994c961be5b2ebe62f5940546830a6734d69a"
+    },
+    {
+      "id": "20260918153337_AddVirtualRoomPatientJoinedAt",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918153337_AddVirtualRoomPatientJoinedAt.Designer.cs",
+      "operationsSha256": "c335a6e634e28a0be4be579655e7d816924581f03a5a575ee40cf55f9a44272b"
+    },
+    {
+      "id": "20260918200744_AddAppointmentReopenTracking",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918200744_AddAppointmentReopenTracking.Designer.cs",
+      "operationsSha256": "de138303505b4763132833f9ea05d68c119ee9581cc96651ec81cd6d2cd5e28a"
+    },
+    {
+      "id": "20260918205617_AddTelemedicineNotifications",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918205617_AddTelemedicineNotifications.Designer.cs",
+      "operationsSha256": "d0d6b3f2715ed553ba847c6ce76dda3836fa6153f49f7f40d46a9f7374d4bd12"
+    },
+    {
+      "id": "20260918214156_AddRoomChatAndCapacity",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260918214156_AddRoomChatAndCapacity.Designer.cs",
+      "operationsSha256": "d9778991d1738c463325955ee688ffa03f8fe85a810358b66815bdb1b8581eed"
+    },
+    {
+      "id": "20260919192848_AddPreVisitIntakeAndAddenda",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260919192848_AddPreVisitIntakeAndAddenda.Designer.cs",
+      "operationsSha256": "ab512c269a91fd7d7acdfc1f40c19fa00df064cd75e99f3854122467edde232c"
+    },
+    {
+      "id": "20260919192918_AttachAppointmentLifecycleAudit",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260919192918_AttachAppointmentLifecycleAudit.Designer.cs",
+      "operationsSha256": "557c164291a2433b1218e9def2541f128e34805ab8a77af3e261e3483eae0ed3"
+    },
+    {
+      "id": "20260919195120_AddReopenGraceMinutes",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20260919195120_AddReopenGraceMinutes.Designer.cs",
+      "operationsSha256": "606f6f1c396fd809ce435bb22999c5c74481c59e1864b7d1570a1da124268e55"
+    },
+    {
+      "id": "20261001221715_AddRequestPriority",
+      "context": "TelemedicineDbContext",
+      "path": "src/Services/CoppAddresd.Telemedicine/Infrastructure/Migrations/20261001221715_AddRequestPriority.Designer.cs",
+      "operationsSha256": "4caf413bc29cdec5fde8682a0bf831322c570137fdbf8ab88e063f934cc02925"
+    }
+  ],
+  "sharedIds": 161,
+  "sharedIdsWithDifferentOperations": [],
+  "devOnly": [
+    {
+      "id": "20261113195741_AddSosWhatsAppOutbox",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261113195741_AddSosWhatsAppOutbox.Designer.cs",
+      "operationsSha256": "8f8fccb20c1fba260e162f1bb19852cea5305c62888d2f46d9c9a44baf06806e"
+    }
+  ],
+  "f4Only": [
+    {
+      "id": "20261114122311_AddExerciseRoutineContraindications",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114122311_AddExerciseRoutineContraindications.Designer.cs",
+      "operationsSha256": "0f74875e8500f633d55fca55d7d097b53707e2ec2867387f00b06b8393cb2282"
+    },
+    {
+      "id": "20261114171403_AddNutritionCycles",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114171403_AddNutritionCycles.Designer.cs",
+      "operationsSha256": "00865f086a001e61f37c52171236e74ac6d3d2842de7d1551ac2bf702cdfc583"
+    },
+    {
+      "id": "20261114174950_AddNutritionCycleInterruption",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114174950_AddNutritionCycleInterruption.Designer.cs",
+      "operationsSha256": "cc575da2eeaa8a2b87eb20f283003fbda197f24840dee03c334455b1640391ec"
+    },
+    {
+      "id": "20261114184553_AddNutritionIntakeRequests",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114184553_AddNutritionIntakeRequests.Designer.cs",
+      "operationsSha256": "528066c7ac221b3ca84a8e9ce3714d4293fbfc037adf89a70805cb3706fdf33e"
+    },
+    {
+      "id": "20261114193738_AddNutritionIntakeDayReviews",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114193738_AddNutritionIntakeDayReviews.Designer.cs",
+      "operationsSha256": "7dc218e7da9b6810700f94893144663012ede58657a481cf165dee36884b0bf3"
+    },
+    {
+      "id": "20261114194459_AddNutritionCycleHighlights",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114194459_AddNutritionCycleHighlights.Designer.cs",
+      "operationsSha256": "a6b8db6ebd46fdd4b2f324c9689c6170d005e1e79c18f71d5151b52e9bbdc08f"
+    },
+    {
+      "id": "20261114200555_AddNutritionCycleReviews",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114200555_AddNutritionCycleReviews.Designer.cs",
+      "operationsSha256": "88a8f9d720adc5902f2772abf70518890f508752f2b148ea48a8d223a5669126"
+    },
+    {
+      "id": "20261115174139_AddPatientAiBriefs",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261115174139_AddPatientAiBriefs.Designer.cs",
+      "operationsSha256": "89c53fe44078c79db404c5e28fc0ae232bc15a2fd8fec44cf9140e93de146707"
+    },
+    {
+      "id": "20261115184418_ExpandPatientAiBriefModelName",
+      "context": "AppDbContext",
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261115184418_ExpandPatientAiBriefModelName.Designer.cs",
+      "operationsSha256": "b58c0b2cf290f5c42181890e60434935cdd41ff268f3aa1e769eaf7d85ce184b"
+    }
+  ]
+}

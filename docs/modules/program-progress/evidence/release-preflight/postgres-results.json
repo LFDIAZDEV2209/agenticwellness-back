@@ -1,0 +1,1151 @@
+{
+  "rawTrx": "postgres.trx",
+  "rawSha256": "548636eeac87cc05b042a0b9a61ed6b6f3249b18b02139d44001b0b980f704f7",
+  "counters": {
+    "total": "224",
+    "executed": "223",
+    "passed": "223",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-11-15T23:00:32.5565910-05:00",
+    "queuing": "2026-11-15T23:00:32.5565915-05:00",
+    "start": "2026-11-15T23:00:29.8634678-05:00",
+    "finish": "2026-11-15T23:12:58.4902477-05:00"
+  },
+  "results": [
+    {
+      "testName": "CoppAddresd.IntegrationTests.ActivityLogE2ETests.CambiosNull_SeDetectanSoloCuandoCambian",
+      "outcome": "Passed",
+      "duration": "00:00:00.1545063"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ActivityLogE2ETests.CrudCompleto_GeneraAuditoriaAutomaticaSinDuplicacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.1536820"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ActivityLogE2ETests.Rollback_NoGeneraAuditoria",
+      "outcome": "Passed",
+      "duration": "00:00:02.8565990"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.AuditTriggerTests.ConexionReutilizada_NoFiltraActorDeTransaccionAnterior",
+      "outcome": "Passed",
+      "duration": "00:00:00.1574808"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.AuditTriggerTests.Crud_ConActorViaGuc_RegistraAccionesSinColumnasSensibles",
+      "outcome": "Passed",
+      "duration": "00:00:00.2001482"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.AuditTriggerTests.InterceptorEf_PropagaActorAlTrigger",
+      "outcome": "Passed",
+      "duration": "00:00:01.4662228"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.AuditTriggerTests.Rollback_NoPersisteAuditoria",
+      "outcome": "Passed",
+      "duration": "00:00:01.2196460"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.DashboardKpisFallbackIntegrationTests.Kpis_ConRollup_PriorizaElRollupSobreOltp",
+      "outcome": "Passed",
+      "duration": "00:00:01.8383023"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.DashboardKpisFallbackIntegrationTests.Kpis_SinRollup_UsaFallbackOltp",
+      "outcome": "Passed",
+      "duration": "00:00:00.4137133"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.DeviceTokenLanguageMigrationTests.Account_switch_prunes_old_links_and_concurrent_registration_has_one_final_owner",
+      "outcome": "Passed",
+      "duration": "00:00:29.4862714"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.DeviceTokenLanguageMigrationTests.UpDownUp_defaults_legacy_spanish_preserves_tokens_and_enforces_supported_languages",
+      "outcome": "Passed",
+      "duration": "00:00:08.1691024"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ErpAccessIntegrationTests.CambiosConcurrentes_UnaOperacionPendienteYUnaVersionPersistida",
+      "outcome": "Passed",
+      "duration": "00:00:00.9222312"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ErpAccessIntegrationTests.JournalRechazado_RevierteSuspensionVersionYRevocacionRefresh",
+      "outcome": "Passed",
+      "duration": "00:00:00.7773934"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ErpAccessIntegrationTests.RefreshToken_RecuerdaLaAplicacionConLaQueSeEmitio",
+      "outcome": "Passed",
+      "duration": "00:00:00.9561242"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ErpAccessIntegrationTests.ReintentoMismaOperacion_NoDuplicaJournalNiIncrementaVersion",
+      "outcome": "Passed",
+      "duration": "00:00:00.2460390"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ErpAccessIntegrationTests.SuspensionYReactivacion_PreservaAppYNoReviveJwtErpAnteriores",
+      "outcome": "Passed",
+      "duration": "00:00:03.9276849"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAiNutritionTests.Provider_alimento_inexistente_devuelve_null",
+      "outcome": "Passed",
+      "duration": "00:00:00.0551644"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAiNutritionTests.Provider_resuelve_por_alias_y_devuelve_nutricion_por_100g",
+      "outcome": "Passed",
+      "duration": "00:00:00.0890526"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAiNutritionTests.Seed_es_reproducible_y_no_duplica",
+      "outcome": "Passed",
+      "duration": "00:00:01.5343338"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAnalysisEnglishNameMigrationTests.NullableNameEn_UpDownUp_PreservesLegacyIdentityPortionAndNutrition_AndFutureEnglish",
+      "outcome": "Passed",
+      "duration": "00:00:29.4031410"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAnalysisPersistenceTests.AddAsync_es_idempotente_por_analysis_id",
+      "outcome": "Passed",
+      "duration": "00:00:00.0129292"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAnalysisPersistenceTests.Analisis_sin_items_y_analisis_con_varios_items",
+      "outcome": "Passed",
+      "duration": "00:00:00.0164375"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAnalysisPersistenceTests.Feedback_preserva_original_y_corregido",
+      "outcome": "Passed",
+      "duration": "00:00:00.0443965"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.FoodAnalysisPersistenceTests.Persistir_y_recuperar_analisis_con_items_y_snapshot",
+      "outcome": "Passed",
+      "duration": "00:00:00.0581286"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.Aislamiento_PacientePorUserId_ResuelveSoloSuPerfil",
+      "outcome": "Passed",
+      "duration": "00:00:00.0861708"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.Alertas_Dedup_UnaAlertaPorReglaYResultado",
+      "outcome": "Passed",
+      "duration": "00:00:00.2690532"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.AsignacionMasiva_BateriaVariosPacientes_CreaAsignaciones",
+      "outcome": "Passed",
+      "duration": "00:00:00.1370440"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.DetalleEvaluacion_IntentosComentariosYRespuestas",
+      "outcome": "Passed",
+      "duration": "00:00:00.6361686"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.EvaluacionesPorPaciente_PaginacionYFiltros",
+      "outcome": "Passed",
+      "duration": "00:00:00.4092794"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.FlujoCompleto_CatalogoBateriaAsignacionSubmit_GeneraResultados",
+      "outcome": "Passed",
+      "duration": "00:00:00.8130875"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.GetGeo_PorcentajeRiesgoSoloSobreEvaluados",
+      "outcome": "Passed",
+      "duration": "00:00:00.5665410"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.GetMasterRows_ConFiltroGeo_AcotaPacientesDeLaZona",
+      "outcome": "Passed",
+      "duration": "00:00:00.5644043"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.GetPatientIdsByGeo_FiltraPorEstadoYCiudad",
+      "outcome": "Passed",
+      "duration": "00:00:00.2658543"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.ListAssignmentsWithPatientData_FiltraPorPacientesDeLaZona",
+      "outcome": "Passed",
+      "duration": "00:00:00.9074570"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.HealthTestsIntegrationTests.ResultadosPorPaciente_TodasLasEvaluaciones_OrdenadasPorCompletado",
+      "outcome": "Passed",
+      "duration": "00:00:01.1333816"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.LegalConsentPersistenceTests.Concurrent_acceptance_is_one_receipt_with_actor_audit_and_withdrawal_blocks_reuse",
+      "outcome": "Passed",
+      "duration": "00:00:01.3275925"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.LegalConsentPersistenceTests.Migration_roundtrip_preserves_existing_legal_documents_and_published_content_cannot_change",
+      "outcome": "Passed",
+      "duration": "00:00:00.2012731"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.Delete_DemostracionReferenciadaPorEjercicio_ProtegeLaRutinaYCuentaUso(mediaType: Image)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1150544"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.Delete_DemostracionReferenciadaPorEjercicio_ProtegeLaRutinaYCuentaUso(mediaType: Video)",
+      "outcome": "Passed",
+      "duration": "00:00:00.6191295"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.Delete_MedioReferenciadoEnPlantilla_Bloquea409",
+      "outcome": "Passed",
+      "duration": "00:00:00.0874177"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.Delete_MedioReferenciadoEnSnapshotDeSemana_BloqueaYMarcaCongelada",
+      "outcome": "Passed",
+      "duration": "00:00:00.1248143"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.Delete_MedioSinReferencias_EliminaRegistroYBlobs",
+      "outcome": "Passed",
+      "duration": "00:00:00.3576708"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.SearchPage_ILikeYFiltros_CumplenElContrato",
+      "outcome": "Passed",
+      "duration": "00:00:00.1524108"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.MediaIntegrationTests.UsageSnapshot_ConReferenciasPlantillaYSnapshot_CuentaSinNPlusOne",
+      "outcome": "Passed",
+      "duration": "00:00:00.0699627"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionInstructionProvenanceMigrationTests.NullableProvenance_UpDownUp_DoesNotBlessHistoricalEnglishOrModifyClinicalSource",
+      "outcome": "Passed",
+      "duration": "00:00:29.5643709"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ActivacionPorFecha_CombinaJuevesIndividualYPlantillaVigente",
+      "outcome": "Passed",
+      "duration": "00:00:00.1653377"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ActivacionPorFecha_ConservaPreedicionFutura",
+      "outcome": "Passed",
+      "duration": "00:00:00.1012842"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ActivacionPorSemanaPerfecta_CombinaJuevesIndividualYPlantillaVigente",
+      "outcome": "Passed",
+      "duration": "00:00:00.3289338"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ActivacionPorSemanaPerfecta_ConservaPreedicionFutura",
+      "outcome": "Passed",
+      "duration": "00:00:00.3043777"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.AdjuntosCiclo_ValidacionPrivada_RevisionOptimista_LimpiezaTrasRollback_YAjenoDenegado",
+      "outcome": "Passed",
+      "duration": "00:00:00.2250399"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.AllBatteriesRequired_QueueIsDurableAndIdempotentAcrossContexts",
+      "outcome": "Passed",
+      "duration": "00:00:00.0675746"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ApprovalPublishesThirtyDays_AndEditingRevokesPublicationWithActorHistory",
+      "outcome": "Passed",
+      "duration": "00:00:00.1384349"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ApprovedHistory_RemainsApproved_OnlyOneVersionIsPublishedPerCycle",
+      "outcome": "Passed",
+      "duration": "00:00:00.0382451"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ArchivoDefault_SimulaIdempotenteRevierteYConservaInscripcionYContenidoLegado",
+      "outcome": "Passed",
+      "duration": "00:00:02.7866573"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.AvisoCierre_VentanaLocal_ProfesionalesAsignados_ConcurrenteSinDuplicar_YBandejaSinAjenos",
+      "outcome": "Passed",
+      "duration": "00:00:00.3531557"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.BandejaIntake_MenuPorFecha_FotoFirmada_OrigenCorreccion_CoordinacionSinFotos_YAjenoDenegado",
+      "outcome": "Passed",
+      "duration": "00:00:00.5409494"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.BitacoraSemanal_TresOperacionesActorAntesDespues_AlcancePaginacionYRollbackAtomico",
+      "outcome": "Passed",
+      "duration": "00:00:00.3705651"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.BulkApproval_PublishesAllReviewedPatientsAndTracesEachActor",
+      "outcome": "Passed",
+      "duration": "00:00:00.2253669"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.BulkApproval_StaleRevision_DoesNotPublishAnyPlan",
+      "outcome": "Passed",
+      "duration": "00:00:00.0921563"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloAdherencia_RangoSeisSieteOcho_PausaCuenta_FuturoNo_AlcanceAdminYPaginacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.1795972"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloAdherencia_VersionVigentePorDia_ContinuidadNoSeDuplicaEnSucesorTardio",
+      "outcome": "Passed",
+      "duration": "00:00:00.1400357"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloFechas_PublicacionTardia_NumeraSoloPublicados_YVersionConservaFechas",
+      "outcome": "Passed",
+      "duration": "00:00:01.1514511"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloFechas_RetiroInterrumpeSoloVigente_YFalloRevierteInscripcion",
+      "outcome": "Passed",
+      "duration": "00:00:00.9650926"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloIA_EdicionYRevocacionDuranteHttp_NoPisanRevision_CancelacionYPermisoSinEscritura",
+      "outcome": "Passed",
+      "duration": "00:00:00.2968541"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloIA_FalloTimeoutYContratoInvalido_NoEscriben_InsuficientePermitePublicacionManual",
+      "outcome": "Passed",
+      "duration": "00:00:01.8571779"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CicloIA_HttpReal_MapeaAgregadosMuestraAnteriorMediciones_SinPII_HashYBorradorSeparados",
+      "outcome": "Passed",
+      "duration": "00:00:00.6031618"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Ciclos_BorradoresSinNumero_PublicacionConcurrenteSinHuecos_YAjenoRechazado",
+      "outcome": "Passed",
+      "duration": "00:00:00.1277220"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Ciclos_MigracionRellenaCuatro_VolumenFKYReversaSinCambiarPrescripciones",
+      "outcome": "Passed",
+      "duration": "00:00:01.3118716"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CierreCiclo_PasosObligatorios_IAConfirmada_PlanSiguienteAtomico_AuditoriaYResumenCongelado",
+      "outcome": "Passed",
+      "duration": "00:00:01.4454016"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ClasificacionOrigin_SimulaEsIdempotenteYRevierteSinPisarEdiciones",
+      "outcome": "Passed",
+      "duration": "00:00:02.7640645"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ClonarRutina_CopiaGrafoYDemostraciones_PreservaAdvertencias_AlcancePropioAjenoYAdmin",
+      "outcome": "Passed",
+      "duration": "00:00:00.2386928"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ConcurrentApproval_PublishesOnceAndKeepsOneActiveCycle",
+      "outcome": "Passed",
+      "duration": "00:00:00.0835395"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Context_ProfileBatterySticksToLatestCompleteBaseline_NotLaterRetest",
+      "outcome": "Passed",
+      "duration": "00:00:00.0362165"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Contraindicaciones_MigracionAditivaDiezMilFilas_ReversaProtegeDatos",
+      "outcome": "Passed",
+      "duration": "00:00:00.4121731"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Cqrs_ApplyDay_ChangesOnlyOwnPlan_AndStaleRevisionCannotWrite",
+      "outcome": "Passed",
+      "duration": "00:00:00.3414198"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Cqrs_AuditFailure_RollsBackAggregateAndChildren",
+      "outcome": "Passed",
+      "duration": "00:00:00.2032350"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Cqrs_BadLlmMenuFallsBackToDeterministicPlan",
+      "outcome": "Passed",
+      "duration": "00:00:00.4597273"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Cqrs_GenerateEditApproveNewVersion_PreservesPublicationAndActorHistory",
+      "outcome": "Passed",
+      "duration": "00:00:00.6828391"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.CurrentCycle_CannotBeReplacedWithAnotherDraft_AndReapprovalKeepsCycleDates",
+      "outcome": "Passed",
+      "duration": "00:00:00.1257137"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Descanso_CompleteTaskMaximoRachaReplayYReconciliacion(completeAll: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.1866836"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Descanso_CompleteTaskMaximoRachaReplayYReconciliacion(completeAll: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.3902393"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Descanso_InterruptorRechazaSinEscribir_YEncendidoPersisteDescanso",
+      "outcome": "Passed",
+      "duration": "00:00:00.1089343"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.DraftGeneration_ReplayRetryReadyAndInbox_AreDurable",
+      "outcome": "Passed",
+      "duration": "00:00:00.3502773"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.DraftPipeline_FailureIsVisibleAndCancellationDoesNotBecomeFailure",
+      "outcome": "Passed",
+      "duration": "00:00:00.0702988"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.DraftPipeline_ReconcilesLostEvents_AndSuppressesLegacyProducer",
+      "outcome": "Passed",
+      "duration": "00:00:00.2430660"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.DraftPipeline_ReplayAndRestart_ProduceExactlyOneSystemDraftWithFallback",
+      "outcome": "Passed",
+      "duration": "00:00:00.3486926"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.DraftReservation_AuditUsesTechnicalGuc_AndDoesNotLeakAcrossTransactions",
+      "outcome": "Passed",
+      "duration": "00:00:00.0476253"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.DraftReservation_ConcurrentReplayAndClaims_AreUniqueAndRecoverExpiredLease",
+      "outcome": "Passed",
+      "duration": "00:00:00.0551893"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_ActivacionPorFechaConservaIndividualYCompletaPrograma",
+      "outcome": "Passed",
+      "duration": "00:00:00.1358621"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_ActivacionPorSemanaPerfectaConservaIndividualYCompletaPrograma",
+      "outcome": "Passed",
+      "duration": "00:00:00.5177160"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_CambioPlantillaSoloLlegaAFutura_ConservaPodcastProgramIniciado",
+      "outcome": "Passed",
+      "duration": "00:00:00.1520394"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_ConsumidorUsaFallbackPublicadoYNoReferenciasPrivadas",
+      "outcome": "Passed",
+      "duration": "00:00:00.3752870"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_ContinuidadYUltimoMenuCoincidenEnMisionPlanYCalendario",
+      "outcome": "Passed",
+      "duration": "00:00:00.1694035"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_LegadoDia8CompletaConReferenciaExactaYMigracionReversible",
+      "outcome": "Passed",
+      "duration": "00:00:01.1869753"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_MotorSoloUsaDecisionFinalDelPacienteDeLaInscripcion",
+      "outcome": "Passed",
+      "duration": "00:00:00.1374788"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Effective_PrecargaConstanteRangoVacioArchivadoYCancelacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0988548"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.EjemplosCiclo_UnicosConcurrentes_CorreccionViva_NotaProtegida_YAlcanceCicloYRegistro",
+      "outcome": "Passed",
+      "duration": "00:00:00.8127261"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ExpiredCycle_QueuesNextDraft_WithoutReusingOldMenu",
+      "outcome": "Passed",
+      "duration": "00:00:00.0980741"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Foods_SeededCatalog_MapsRealPostgresForBothPermissions_WithoutPatientScope",
+      "outcome": "Passed",
+      "duration": "00:00:00.0168514"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.FotoIntake_ConcurrenteUnaOperacion_AguaAdmiteVariasClaves_YReversaProtegida",
+      "outcome": "Passed",
+      "duration": "00:00:02.1850361"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.FotoIntake_PropiedadEstricta_ReintentoSinDuplicar_NiDeshacerCorreccion_YLegadoSinClave",
+      "outcome": "Passed",
+      "duration": "00:00:00.2230375"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Huecos_ResolvedorTresClasesPaginacionAlcanceAdminYSinEscrituras",
+      "outcome": "Passed",
+      "duration": "00:00:00.1946337"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Impacto_UsaResolvedorAlcanceAdminYNoPublicaNiEscribeSnapshots",
+      "outcome": "Passed",
+      "duration": "00:00:00.0952749"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_CurrentPublicationIsIndependentOfFutureCycle_AndChangesAtLocalMidnight",
+      "outcome": "Passed",
+      "duration": "00:00:00.0351275"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_OnlyFutureDraft_AndAnyFutureDraftAreVisible_WithStablePaging",
+      "outcome": "Passed",
+      "duration": "00:00:00.0497847"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_PublishedPatientsComeFirstBeforePagination_WithoutDuplicates",
+      "outcome": "Passed",
+      "duration": "00:00:00.0737618"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_RenewalFilter_UsesEachPatientLocalDateBeforeCountingAndPaging",
+      "outcome": "Passed",
+      "duration": "00:00:00.0788843"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_ScopeLatestDraftFiltersNameAndState_IncludePatientsWithoutPlan",
+      "outcome": "Passed",
+      "duration": "00:00:00.1513334"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_StableTiesLastAndEmptyPage_LiteralSearchAndCancellation",
+      "outcome": "Passed",
+      "duration": "00:00:00.1125787"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Inbox_ThousandsOfHeaders_UsesTwoQueriesWithoutLoadingMeals_AndExplainsRealSql",
+      "outcome": "Passed",
+      "duration": "00:00:02.5061363"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.InvalidAiStorageFields_PersistFailureWithoutSavingDirtyMenu",
+      "outcome": "Passed",
+      "duration": "00:00:00.0829800"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.InvalidItem_RollsBackEntireNewAggregate_AndCatalogForeignKeyIsRequired",
+      "outcome": "Passed",
+      "duration": "00:00:00.0673507"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.LegacyUpdate_FailureAfterDeletingDays_RollsBackPlanDaysAndAudit",
+      "outcome": "Passed",
+      "duration": "00:00:00.1102127"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.LegadoFuturo_CopiaIndividual_ConflictosSimulacionIdempotenciaReversa_YHuecosCero",
+      "outcome": "Passed",
+      "duration": "00:00:03.5216154"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.LoteMedios_CincoArchivosUnoFalla_ReintentosSinRepetirCorrectos",
+      "outcome": "Passed",
+      "duration": "00:00:00.2067115"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.MediosExternos_FiltrosSqlCombinadosTotalesPaginacionYContrato",
+      "outcome": "Passed",
+      "duration": "00:00:00.1610524"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.MediosOrigenTags_MigracionAditivaReversaProtegidaYVolumen",
+      "outcome": "Passed",
+      "duration": "00:00:01.2092122"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Migration_CleanDatabase_ExactCatalogIdempotent_AndReversibleWithoutLegacyChanges",
+      "outcome": "Passed",
+      "duration": "00:00:01.3534450"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Mission_LocalMidnightSwitchesCycles_RangeAgreesAndFallsBackAfterLastCycle",
+      "outcome": "Passed",
+      "duration": "00:00:01.6487601"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Mission_PrescriptionWinsOverWellness_AtTheFinalConsumer",
+      "outcome": "Passed",
+      "duration": "00:00:03.5157963"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Mission_WithoutWellnessAssignment_HasPrescribedMealsAndAdherenceGate",
+      "outcome": "Passed",
+      "duration": "00:00:00.4631169"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.NewAggregate_RoundTrips_ReplacesChildren_EnforcesRevisionAndCancellation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0590672"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.NutricionContinuidad_VersionHistoricaMisionApp_SucesorTardio_MotorSiFaltaMenu_YHuecosCero",
+      "outcome": "Passed",
+      "duration": "00:00:00.3547761"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.OverviewCycleHeaders_OnlyRequestedPatientApprovedHistory_WithoutMealGraph",
+      "outcome": "Passed",
+      "duration": "00:00:00.0305471"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientAiBrief_Migracion_DownUpConservaNarrativaYPropuestaExistentes",
+      "outcome": "Passed",
+      "duration": "00:00:00.3802304"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientAiBrief_Restricciones_RechazaPacienteInexistenteYMetadatosInvalidos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0611179"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientAiBrief_SinInscripcion_ConservaTiposHistorialYOrdenPorPaciente",
+      "outcome": "Passed",
+      "duration": "00:00:00.1608333"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientScope_ActiveAssignmentOnly_AndBothAssignmentListsFilterInDatabase",
+      "outcome": "Passed",
+      "duration": "00:00:00.1214293"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_HttpReal_HechosPropiosDesidentificados_HashMetadataHistorialYLecturaPorIdioma",
+      "outcome": "Passed",
+      "duration": "00:00:00.4133934"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_IAFallida_InsuficienteTimeoutYCancelacion_NoPersistenNiBorranBorradorPrevio",
+      "outcome": "Passed",
+      "duration": "00:00:01.3115984"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_Modelo200_MigracionReversibleSinTruncarDatos",
+      "outcome": "Passed",
+      "duration": "00:00:00.2844851"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PatientSummary_RevocacionDeAlcanceOConsentimientoDuranteRed_RechazaEscritura_SinDatosNoLlamaIA",
+      "outcome": "Passed",
+      "duration": "00:00:00.1070709"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PlantillaPorSemana_UnicidadVolumenYReversaProtegida",
+      "outcome": "Passed",
+      "duration": "00:00:01.7638128"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PodcastMasivo_DiezPacientes_DosIniciadosDosAjenos_IndividualIdempotenteYAdmin",
+      "outcome": "Passed",
+      "duration": "00:00:00.3229259"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PodcastMetadata_HTTPReal_NoCreaEditaPublicaNiAfectaPlanes_TimeoutDeCuerpoYCancelacion",
+      "outcome": "Passed",
+      "duration": "00:00:01.1919410"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ProgramaCierre_Concurrente_SoloUnaPasadaCierraYSinCambiarPausadoOLegado",
+      "outcome": "Passed",
+      "duration": "00:00:00.1553706"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ProgramaCierre_Dia84Rechazado_SinTareaNiXp",
+      "outcome": "Passed",
+      "duration": "00:00:00.0429601"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ProgramaCierre_JobPorFechaLocal_CierraIncompletoUnaVezYExigeNuevoInicioExplicito",
+      "outcome": "Passed",
+      "duration": "00:00:00.1366425"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ProgramaCierre_SeisDiasFinales_CierraSinRepetirYReintentoUltimaTareaEsReplay",
+      "outcome": "Passed",
+      "duration": "00:00:00.2754263"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ProximosDias_SeisConDescansoIndividualesSinEscriturasNiContenidoAjeno",
+      "outcome": "Passed",
+      "duration": "00:00:00.3806143"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Publicacion_HuecoRechazaSinCambiarVersion_CompletaPublica83Dias",
+      "outcome": "Passed",
+      "duration": "00:00:00.0862039"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.PublishedMission_PreservesClinicalNotesAndNutrition_WithoutShowingInternalGenerationStatus",
+      "outcome": "Passed",
+      "duration": "00:00:00.1634355"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RealGenerationReceivesResults_AndPublishesAutomaticallyWithDisclaimer",
+      "outcome": "Passed",
+      "duration": "00:00:00.1233102"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RecomendacionesMovil_UltimaPublicacionNoVigenciaNiNumero_DTOExacto_SoloImagenesVisibles_YPropias",
+      "outcome": "Passed",
+      "duration": "00:00:00.1519136"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Reconcile_PartialPatientsDoNotStarveReadyPatient_AndLegacyArchiveDoesNotBlock",
+      "outcome": "Passed",
+      "duration": "00:00:00.7181063"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ReleaseMerge_MigracionesNuevasYSaltosDesdeAmbasRamas_NoColisionanNiPierdenModelo",
+      "outcome": "Passed",
+      "duration": "00:00:00.9241861"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RestartDuringFifthAttempt_ExpiredLeaseBecomesRecoverableFailure",
+      "outcome": "Passed",
+      "duration": "00:00:00.0397368"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Retiro_ConflictoSustitucionAlcanceHistorialIndividualYDeleteAtomico",
+      "outcome": "Passed",
+      "duration": "00:00:00.4008397"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.ReviewerWithoutPatientAssignment_CannotReadOrApprove",
+      "outcome": "Passed",
+      "duration": "00:00:00.0471299"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RevisionDiaria_CorreccionReabre_ReintentoNo_ContadorSoloPropios_YAjenoDenegado",
+      "outcome": "Passed",
+      "duration": "00:00:00.8514542"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_AlcanceReal_DistintosSinInflarDias_ExcluyeInactivosYCerrados",
+      "outcome": "Passed",
+      "duration": "00:00:00.1331187"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_HTTP401403404_ContratoYAlcanceConPostgresReadOnly",
+      "outcome": "Passed",
+      "duration": "00:00:00.5875215"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_MilSemanas_ConsultasAcotadasYSinTracking",
+      "outcome": "Passed",
+      "duration": "00:00:00.7829431"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RoutineUsage_ResolverCanonico_SnapshotPlantillaDescansoYLegado_ConteosReadOnly",
+      "outcome": "Passed",
+      "duration": "00:00:00.1450069"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RutinaDia_Postgres_PrecedenciaSimpleRangoYSnapshotAntiguo",
+      "outcome": "Passed",
+      "duration": "00:00:00.1884869"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RutinaMasiva_DiezPacientes_DosIniciadosDosAjenos_IndividualIdempotenteYAdmin",
+      "outcome": "Passed",
+      "duration": "00:00:00.1977300"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RutinaRespuestas_SnapshotYDetalleSemanalCoinciden(scenario: \"empty\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1520365"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RutinaRespuestas_SnapshotYDetalleSemanalCoinciden(scenario: \"old\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1438906"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RutinaRespuestas_SnapshotYDetalleSemanalCoinciden(scenario: \"rest\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1264286"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.RutinaRespuestas_SnapshotYDetalleSemanalCoinciden(scenario: \"snapshot\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1242736"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Scope_NewModuleEnforcesOwnForeignGlobal_AndSeparateApprovalPermission",
+      "outcome": "Passed",
+      "duration": "00:00:00.6493676"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Scope_RequestCancelledDuringDraft_PersistsNothing",
+      "outcome": "Passed",
+      "duration": "00:00:00.1582868"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Scope_RevokedWhileLlmRuns_IsCheckedAgainBeforePersisting",
+      "outcome": "Passed",
+      "duration": "00:00:00.1325700"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SelfService_PublishedSelection_LocalBoundaries_Ties_AndLegacyCoexistence",
+      "outcome": "Passed",
+      "duration": "00:00:00.1181608"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaContenido_GuardaSoloSnapshot_NoCreaNiModificaAsignacionesAntiguas_YAjenoRechazado",
+      "outcome": "Passed",
+      "duration": "00:00:00.2242708"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaEdicion_FechaDerivadaZonaPaciente_IgnoraFechaDenormalizada(offset: -1, editable: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.2086301"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaEdicion_FechaDerivadaZonaPaciente_IgnoraFechaDenormalizada(offset: 0, editable: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.3128861"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaEdicion_FechaDerivadaZonaPaciente_IgnoraFechaDenormalizada(offset: 1, editable: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.3003951"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaEdicion_IniciadaRechazada_SnapshotCompletacionesYXpIntactos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0890266"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaEdicion_RutinaDescansoRestablecer_PreservaOmitidos_YAlcanceAjeno",
+      "outcome": "Passed",
+      "duration": "00:00:00.2542436"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemanaPodcasts_ConservaReferenciasClinicasEnDtoYReemplazo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0951507"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SemillaDemostraciones_CuatroMedios_EnlacesExactos_ConcurrenteIdempotenteYConservaSubidos",
+      "outcome": "Passed",
+      "duration": "00:00:01.5736718"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_CapturaAlCompletar_EditarlaNoCambiaHistorialNiReplay",
+      "outcome": "Passed",
+      "duration": "00:00:00.3825202"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.SesionEjercicio_MigracionNullableVolumen_ReversaProtegida",
+      "outcome": "Passed",
+      "duration": "00:00:02.9236865"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.State_ConcurrentApprovalsPublishOnce",
+      "outcome": "Passed",
+      "duration": "00:00:00.3561524"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.State_LocalCycleHasThirtyDays_RenewalAtFiveDays_AndOverlapsAreRejected",
+      "outcome": "Passed",
+      "duration": "00:00:01.4626611"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.State_NineCompletedTestsOfferRegeneration_AndConfirmedEditsSurvive",
+      "outcome": "Passed",
+      "duration": "00:00:00.5989042"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.State_RejectsInvalidTransitionsAndEmptyReturn_ConfirmsCriticalAlertsWithActor",
+      "outcome": "Passed",
+      "duration": "00:00:00.4967833"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.TareasPorSemana_ReemplazoAisladoLecturaEfectivaYRechazoDia84",
+      "outcome": "Passed",
+      "duration": "00:00:00.1443993"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.VersionPlantilla_Copia83YLoDemas_BorradorEditable_ActivaInscripcionesYOtraPlantillaIntactas",
+      "outcome": "Passed",
+      "duration": "00:00:00.2234761"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_CancelarDentroDeTransaccionNoDejaCompletacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0492980"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_CatalogoComunSinInstancias_PublicacionRevocacionYVersionPropiaSinConfig",
+      "outcome": "Passed",
+      "duration": "00:00:00.1820056"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_DescansoRealYIdentidadAjenaSinContenidoInventado",
+      "outcome": "Passed",
+      "duration": "00:00:00.1233204"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_DobleConfirmacionConcurrente_IdempotenteConUnaSolaXP",
+      "outcome": "Passed",
+      "duration": "00:00:01.5902909"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_LecturasRealesCoincidenConSnapshotSinMutarSemanasTestsNiXP",
+      "outcome": "Passed",
+      "duration": "00:00:00.5645584"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_PropuestaObsoletaYCambioDeCuentaNoEscriben",
+      "outcome": "Passed",
+      "duration": "00:00:00.2970728"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.Vita_WearableRealSinPrograma_AislaOrigenPacientePeriodoYNoSumaSnapshots",
+      "outcome": "Passed",
+      "duration": "00:00:00.0488956"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CambioManualYRecursoRetirado_RechazanBorradorSinEscribir",
+      "outcome": "Passed",
+      "duration": "00:00:00.4145379"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_CancelarDespuesDeSnapshotYBitacora_RevierteTodaLaAplicacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.4285287"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ConfirmacionesConcurrentes_UnaEscrituraYUnaBitacora",
+      "outcome": "Passed",
+      "duration": "00:00:00.2502781"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_ErrorAlMarcarBorrador_RevierteSnapshotYBitacora_DespuesPermiteReintento",
+      "outcome": "Passed",
+      "duration": "00:00:00.3076229"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_FallosIAInsuficienciaCancelacionYConsentimiento_NoPersistenNiAplican",
+      "outcome": "Passed",
+      "duration": "00:00:02.0414184"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_GenerarListarNoAplica_HashHTTP_ConfirmacionIndividualBitacoraYAplicacionParcial",
+      "outcome": "Passed",
+      "duration": "00:00:00.4880319"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_RevalidaAlcanceDespuesDeIA_YNoAplicaSemanaAjenaOIniciada",
+      "outcome": "Passed",
+      "duration": "00:00:00.1935369"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WeeklyAI_SeguridadDescansoYVersionCambian_RevalidacionSinRecomendacionAutomatica",
+      "outcome": "Passed",
+      "duration": "00:00:00.5676809"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.NutritionPlanWorkflowTests.WellbeingGuard_RealSqlFiltersInboxCountsLegacyListsAndEnrollments_AndResolvesForeignResources",
+      "outcome": "Passed",
+      "duration": "00:00:00.1316590"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDashboardIntegrationTests.Board_CalculaRiesgoSeguimientoYAlertasSinConsultasPorFila",
+      "outcome": "Passed",
+      "duration": "00:00:01.8351930"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDashboardIntegrationTests.Dashboard_ConClinica_AgregaDemografiaEstadosYFiltroPorEstado",
+      "outcome": "Passed",
+      "duration": "00:00:00.4206154"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDashboardIntegrationTests.Listado_IncluyeEstadoYDiagnosticoPrincipal",
+      "outcome": "Passed",
+      "duration": "00:00:00.4407369"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDashboardIntegrationTests.Status_ActualizaSoloEstadoYConservaColeccionesHijas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0860144"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDirectoryIntegrationTests.Listado_IncluyeAsignacionesYResuelveNombresSinN1",
+      "outcome": "Passed",
+      "duration": "00:00:01.5669598"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDirectoryIntegrationTests.Stats_ConAlcancePropio_SoloPacientesAsignadosAlProfesional",
+      "outcome": "Passed",
+      "duration": "00:00:00.1803088"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.PatientDirectoryIntegrationTests.Stats_ConClinicaActiva_CalculaTotalActivosNuevosYSinAsignar",
+      "outcome": "Passed",
+      "duration": "00:00:00.1045210"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.DefaultConDemo_RevierteNovenoTest_NoConfirmaBateriaVacia_ReintentoRecupera",
+      "outcome": "Passed",
+      "duration": "00:00:00.4696936"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.FalloTrasCrearEnrollment_NoRevierteSubmit_RecuperacionConcurrenteNoDuplica",
+      "outcome": "Passed",
+      "duration": "00:00:00.5279671"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.GateDeshabilitado_UltimosTestsConcurrentes_Default83DiasSinIA_YReplayUnico",
+      "outcome": "Passed",
+      "duration": "00:00:00.4362413"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Inbox_ConservaAlcanceYCopy_YRedirigeAvisosHistoricosAlPerfil",
+      "outcome": "Passed",
+      "duration": "00:00:00.2246640"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Job_Dia8_DefaultsDePlantilla_ActivaUnaVezYSinDuplicarAvisos",
+      "outcome": "Passed",
+      "duration": "00:00:00.3025678"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Job_RecuperaInscripcionPendienteSinRecomendacion_ClaimYBackoffPersistidos",
+      "outcome": "Passed",
+      "duration": "00:00:00.4296469"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.MigracionRecoveryAvisos_DownYReaplicacionEnBdAislada",
+      "outcome": "Passed",
+      "duration": "00:00:00.8177475"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Narrativa_RecuperaAplicadasEditadasFallback_YRegeneraConAntiIdorSinReabrirEstados",
+      "outcome": "Passed",
+      "duration": "00:00:00.2441457"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.NueveTests_DefaultActivoMaterializado_PropuestaOpcional_Idempotentes",
+      "outcome": "Passed",
+      "duration": "00:00:01.8164719"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Podcasts_CatalogoExcluyeDestinosNoPublicadosDemoSinArchivoYOtrosTipos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0662232"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Podcasts_ConRegla_UsaPlantillaDeInscripcionPendienteYGuardaOverrideConRazon",
+      "outcome": "Passed",
+      "duration": "00:00:00.3377549"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.Podcasts_SinRegla_PropuestaPersistidaConservaPlantillaEspecificaGenericaYHuecos",
+      "outcome": "Passed",
+      "duration": "00:00:00.2032029"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramAssignmentIntegrationTests.ProgramaTerminado_ReplayBateriaYRecuperacionNoCreanOtraInscripcion",
+      "outcome": "Passed",
+      "duration": "00:00:00.3434945"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.ProgramNarrativeHttpIntegrationTests.ClienteReal_ContratoBilingueY503DeProveedor",
+      "outcome": "NotExecuted",
+      "duration": "00:00:00.0010000",
+      "error": "Requiere simulación HTTP de Postman en COP_PROGRAM_NARRATIVE_SIM_URL."
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.ActivacionConcurrente_MismasClavesDistintas_UnaGanaElIndiceParcial",
+      "outcome": "Passed",
+      "duration": "00:00:00.0938090"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.AtenderYCancelarSimultaneos_UnaTerminalGanaYLaOtraQueda409",
+      "outcome": "Passed",
+      "duration": "00:00:00.1411818"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.DobleTapSimultaneo_MismaClave_CarreralRealNoDuplicaFilas",
+      "outcome": "Passed",
+      "duration": "00:00:00.4186162"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.DobleTapSimultaneo_MismaIdempotencyKey_CreaUnoYResuelveReplay",
+      "outcome": "Passed",
+      "duration": "00:00:00.0670689"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.ListadoStaff_ResolucionDeScope_UnionDistintaYDenegacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.1487333"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.OutboxDurable_DedupeFilasComprometidasConLaAlerta",
+      "outcome": "Passed",
+      "duration": "00:00:00.3918620"
+    },
+    {
+      "testName": "CoppAddresd.IntegrationTests.SosIntegrationTests.ScopeStaff_AsignacionDirectaYContextoClinico",
+      "outcome": "Passed",
+      "duration": "00:00:00.1124924"
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "sourceMerge": "a79bbaebfe94241283e1522caed791716c6180f6",
+  "encoding": "UTF-8 sin BOM; LF",
+  "files": [
+    {
+      "file": "build.log",
+      "bytes": 14138,
+      "sha256": "44c336a77d842677844c54002b28c6b80ee532817afcc1d871b7499670933bf2"
+    },
+    {
+      "file": "community-pg-results.json",
+      "bytes": 21382,
+      "sha256": "e3c0e4dcb9e1098676f7c03fee61869516d9ace123dbc26735366a312046435d"
+    },
+    {
+      "file": "community-pg.log",
+      "bytes": 13554,
+      "sha256": "211a2894c7523868d747efde7f85d74512b42f427119075fbbc650419b73e84e"
+    },
+    {
+      "file": "conflicts.json",
+      "bytes": 2403,
+      "sha256": "54469dd6fc67590c9c65777d7b6e39db28a80dc10c2462cca760528fe353a588"
+    },
+    {
+      "file": "fetch.json",
+      "bytes": 359,
+      "sha256": "f3fa000b83b03204f30b3ed70edaa2bd21d540c3d6d1e9ac5dd05a2bc9874956"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 5116,
+      "sha256": "48c26f4d8c8e71ecfe1a5b733426d5b1a62eededd5a4fe187f314624bdd820a6"
+    },
+    {
+      "file": "head-before.txt",
+      "bytes": 41,
+      "sha256": "7f6c709fe749645784783ce26abaa3ff618539ad2ac251ee8c3dd2fa6b65ffc9"
+    },
+    {
+      "file": "legacy-baseline-proof.json",
+      "bytes": 13337,
+      "sha256": "959e02f0907d4993169a9e3162da5bf82250006ec9c07561a588b76b3d1ec9e9"
+    },
+    {
+      "file": "legacy-failures-comparison.json",
+      "bytes": 4074,
+      "sha256": "481c2d976465bc2bc71bc56ff4a9186f5fe737d42b07bb9ff6fc41884317cc41"
+    },
+    {
+      "file": "merge-base.txt",
+      "bytes": 41,
+      "sha256": "33aa0161f22fe64d0cbb0c0208a687bb6778a10bca7ba7594a36576072993e70"
+    },
+    {
+      "file": "merge-start.log",
+      "bytes": 3197,
+      "sha256": "8f78805ba7217585fa127e615c5cad07386674a78fc04a26d941bd105b92fd49"
+    },
+    {
+      "file": "merge.json",
+      "bytes": 3649,
+      "sha256": "379b0e596478f476612184f233698f98564a031ea2ed0b64d52b8d9ce9b58909"
+    },
+    {
+      "file": "migration-branches.json",
+      "bytes": 106251,
+      "sha256": "412e9070736cee7166f97f33f4cace3d175a3444e9a1b8ba506092ac68b31c4e"
+    },
+    {
+      "file": "migration-id-check.json",
+      "bytes": 312,
+      "sha256": "669f846bdf8c158d4deed46c3f91d131abdfd10fa9344b0c6385cc3dbdfe7401"
+    },
+    {
+      "file": "migration-probe-results.json",
+      "bytes": 968,
+      "sha256": "dfa78cbcbedc299214d3ad46a4220fa2b5e893eb144426e3829584b5645b794f"
+    },
+    {
+      "file": "migration-probe.log",
+      "bytes": 5990,
+      "sha256": "10fdb84f069cfc7be55a7319fa0fca6e16c04a71de934183bf3688b16c2737da"
+    },
+    {
+      "file": "migration-runtime.json",
+      "bytes": 6267,
+      "sha256": "7ac663ce5f6d6b6c72fde95d00087d81cba7a595f4f8046faf790d557aedc720"
+    },
+    {
+      "file": "postgres-exit.json",
+      "bytes": 95,
+      "sha256": "e576f180093302ed987bda445f9d971104f7d82c983bc78a8d41393e3f2dae14"
+    },
+    {
+      "file": "postgres-results.json",
+      "bytes": 50277,
+      "sha256": "fa18c2b8fb36cd2dfcc493b3c76d3a54d3cbe7fcc847a4a0468e4cf952a4d60b"
+    },
+    {
+      "file": "postgres.log",
+      "bytes": 32473,
+      "sha256": "e6bed85ccab78c0dfbb19c2f55707cb0af445e41e7e70dc2e2f0ebab1d5b6ecb"
+    },
+    {
+      "file": "raw-artifacts.json",
+      "bytes": 3349,
+      "sha256": "96d849b1ca646d1456b10622e0c0cf9be60bc5c70710d4f9ef112aeb3b871c88"
+    },
+    {
+      "file": "resolutions.json",
+      "bytes": 3808,
+      "sha256": "e812e2901c4b1be434ac243d7988616f667a8279ec856c6dee4beb43452ad07d"
+    },
+    {
+      "file": "service-exits.json",
+      "bytes": 324,
+      "sha256": "c8fcaa61e53faf318e8b4c52a0be8c65332dcd6c38dbd894699690cc1b33b540"
+    },
+    {
+      "file": "shared-history-readonly.json",
+      "bytes": 143,
+      "sha256": "fb39a514c931d866369372a4d6cf9dad71ec40dff55d0c0ca73909c2de4d0ad4"
+    },
+    {
+      "file": "tele-pg-results.json",
+      "bytes": 9923,
+      "sha256": "f20b3c5515ea6a195992959e70a7f4c2c5a01b8aba862cf1f3a1af3d8a48727d"
+    },
+    {
+      "file": "tele-pg.log",
+      "bytes": 6543,
+      "sha256": "63d4650276e0c536ef872dc4f81a80519c4acd9035e924ac053e4407b6c01def"
+    },
+    {
+      "file": "tele-unit-results.json",
+      "bytes": 85771,
+      "sha256": "c6a390bf1566960385ca8787de4bf9ba4c37d7f017896e8fadedd09e9d721b83"
+    },
+    {
+      "file": "tele-unit.log",
+      "bytes": 544,
+      "sha256": "22e121ccb4093821b07c05626b46fa1cb38661c4f0942021917d22c72c578f2f"
+    },
+    {
+      "file": "test-template-collation.json",
+      "bytes": 99,
+      "sha256": "a13574b80cc0566708cf136cd4a12ede5adeafc3acb8812c57112c5cb415af07"
+    },
+    {
+      "file": "unit-exits.json",
+      "bytes": 197,
+      "sha256": "dc741a6b67b22b14003b8584a6a6ee9059744a2b75fdea9d447104beff861d67"
+    },
+    {
+      "file": "unit-postgres-baseline-exit.json",
+      "bytes": 79,
+      "sha256": "c79e4113dd9f2faf70b1928d048db169d73279d8ab21e0c39956a60d8f91d66d"
+    },
+    {
+      "file": "unit-postgres-baseline-results.json",
+      "bytes": 38573,
+      "sha256": "f7775a71b29429f7dba79e3dce6497d4ac5a0a4cdec6872bb98904125bfaa281"
+    },
+    {
+      "file": "unit-postgres-exit.json",
+      "bytes": 78,
+      "sha256": "96419d0055a5814bdcc270d006d040b86bf418229694a465ebbac10bbb8c09ca"
+    },
+    {
+      "file": "unit-postgres-results.json",
+      "bytes": 38408,
+      "sha256": "70d70cfbcaa2187b8b8945109294a47c3e24762e6c3184bdfc637a19b71b82bc"
+    },
+    {
+      "file": "unit-postgres-selection.json",
+      "bytes": 12721,
+      "sha256": "b451865f586e2c51b1f9a1a7c9b9392b5f531c12009fe3674527a990388b21d4"
+    },
+    {
+      "file": "unit-results.json",
+      "bytes": 790308,
+      "sha256": "56adc6028a080c053d4a965f1f326f23508a6468ac3696d766d2a17d1024e29c"
+    },
+    {
+      "file": "unit.log",
+      "bytes": 29817,
+      "sha256": "bd6c8b5e79cf5416dd69b5cd9f6d94f24ee673be8099c520622cbcb43e1b9953"
+    },
+    {
+      "file": "whatsapp-results.json",
+      "bytes": 22231,
+      "sha256": "c38eeeb0be4064abf021c01e4b6afafa6aa3f68458a97fb01932639a72d7b79c"
+    },
+    {
+      "file": "whatsapp.log",
+      "bytes": 13881,
+      "sha256": "8ea76bb7f5030a635b993bc696a13de5fd4ef7f18f992bda51bd8d753d582dce"
+    }
+  ]
+}

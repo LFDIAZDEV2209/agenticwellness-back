@@ -1,0 +1,17 @@
+[
+  {
+    "project": "CoppAddresd.Community.IntegrationTests",
+    "label": "community-pg",
+    "exitCode": 0
+  },
+  {
+    "project": "CoppAddresd.Telemedicine.IntegrationTests",
+    "label": "tele-pg",
+    "exitCode": 0
+  },
+  {
+    "project": "CoppAddresd.WhatsApp.Tests",
+    "label": "whatsapp",
+    "exitCode": 0
+  }
+]

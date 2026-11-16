@@ -1,0 +1,545 @@
+{
+  "rawTrx": "whatsapp.trx",
+  "rawSha256": "ea6d65b29ef1defb18d1c6056f7199fae215652a551077bff111c39ea670e7cd",
+  "counters": {
+    "total": "103",
+    "executed": "103",
+    "passed": "103",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-11-15T23:03:00.1099928-05:00",
+    "queuing": "2026-11-15T23:03:00.1099941-05:00",
+    "start": "2026-11-15T23:02:58.7495599-05:00",
+    "finish": "2026-11-15T23:03:14.4425628-05:00"
+  },
+  "results": [
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.ApprovedWrongSubject_IsNotLinked",
+      "outcome": "Passed",
+      "duration": "00:00:00.1136433"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.AuthRateLimit_IsRespectedWithoutAutomaticRetry(endpoint: \"send\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0541101"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.AuthRateLimit_IsRespectedWithoutAutomaticRetry(endpoint: \"verify\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1143910"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.DocumentThenApprovedCode_LinksOnlyAfterVerification_AndNextMessageCallsAgent",
+      "outcome": "Passed",
+      "duration": "00:00:00.2603974"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.DuplicateWebhook_SendsOneSms",
+      "outcome": "Passed",
+      "duration": "00:00:00.0814194"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.ExpiredWorkerLease_CannotCreateBindingEvenWithApprovedCode",
+      "outcome": "Passed",
+      "duration": "00:00:00.1457049"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.MissingInactiveDeletedOrAmbiguousDocument_HasSameGenericReplyAndNoAuth(condition: \"ambiguous\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0454178"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.MissingInactiveDeletedOrAmbiguousDocument_HasSameGenericReplyAndNoAuth(condition: \"deleted\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0555742"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.MissingInactiveDeletedOrAmbiguousDocument_HasSameGenericReplyAndNoAuth(condition: \"inactive\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0556774"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.MissingInactiveDeletedOrAmbiguousDocument_HasSameGenericReplyAndNoAuth(condition: \"missing\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0460928"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.OlderAuthWithoutPhoneProof_FailsClosed",
+      "outcome": "Passed",
+      "duration": "00:00:00.0956567"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.PasswordText_IsRejectedAndNotSentToAuth",
+      "outcome": "Passed",
+      "duration": "00:00:00.0439841"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.PatientDeactivatedWhileWaiting_CannotVerifyOrLink",
+      "outcome": "Passed",
+      "duration": "00:00:00.1013075"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.Resend_DoesNotResetCodeAttempts",
+      "outcome": "Passed",
+      "duration": "00:00:00.6773759"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.TenMinutes_ExpiresWithoutAuthVerification",
+      "outcome": "Passed",
+      "duration": "00:00:00.0859971"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.ThreeBadCodes_EndFlow_AndFourthDoesNotCallAuth",
+      "outcome": "Passed",
+      "duration": "00:00:00.2320837"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingFlowTests.TwoSendsPerRollingHour_SurviveCancelAndNewScope",
+      "outcome": "Passed",
+      "duration": "00:00:00.3262240"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.AuthBaseUrl_RejectsEmbeddedCredentials(url: \"file:///auth\", valid: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000206"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.AuthBaseUrl_RejectsEmbeddedCredentials(url: \"http://localhost:5123\", valid: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0109634"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.AuthBaseUrl_RejectsEmbeddedCredentials(url: \"http://user:secret@auth.example.test\", valid: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010380"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.AuthBaseUrl_RejectsEmbeddedCredentials(url: \"https://auth.example.test/\", valid: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000132"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.AuthBaseUrl_RejectsEmbeddedCredentials(url: \"https://auth.example.test/?token=secret\", valid: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000174"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.DocumentQuery_DoesNotExposeDocumentToGenericLogging",
+      "outcome": "Passed",
+      "duration": "00:00:00.0327737"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.SendLimit_IsRollingHour_AndSurvivesRestart",
+      "outcome": "Passed",
+      "duration": "00:00:00.0125170"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.Session_ExpiresExactlyAtTenMinutes",
+      "outcome": "Passed",
+      "duration": "00:00:00.0038070"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.Verification_HasThreeAttempts(attempts: 0, expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003501"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.Verification_HasThreeAttempts(attempts: 2, expected: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0032247"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.BindingPolicyTests.Verification_HasThreeAttempts(attempts: 3, expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000085"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ConfigurationTests.Binding_UsesOnlyNamedEnvironmentVariables",
+      "outcome": "Passed",
+      "duration": "00:00:00.0113861"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ConfigurationTests.Disabled_RegistersNothing_AndIgnoresAppsettings",
+      "outcome": "Passed",
+      "duration": "00:00:00.0120681"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.AgentFailure_SendsSafeMessage_AndRetainsCause",
+      "outcome": "Passed",
+      "duration": "00:00:00.1786783"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.Commands_UpdatePreference_WithoutAgent(command: \"INÍCIAR\", optOut: False, language: \"es\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1244588"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.Commands_UpdatePreference_WithoutAgent(command: \"SALIR\", optOut: True, language: \"es\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1452705"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.Commands_UpdatePreference_WithoutAgent(command: \"SÁLIR\", optOut: True, language: \"es\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1480970"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.Commands_UpdatePreference_WithoutAgent(command: \"sTaRt\", optOut: False, language: \"en\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1944462"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.Commands_UpdatePreference_WithoutAgent(command: \"sToP\", optOut: True, language: \"en\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1717150"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.ConcurrentInboundWorkers_RespondOnlyOnce",
+      "outcome": "Passed",
+      "duration": "00:00:01.3660665"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.PatientReply_CancelsPendingReminderBeforeAck_AndContinuesAgent",
+      "outcome": "Passed",
+      "duration": "00:00:00.2966051"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.TransientSendFailure_ReplaysSavedReply_WithoutAnotherAgentCall",
+      "outcome": "Passed",
+      "duration": "00:00:00.1535590"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.InboundFlowTests.TwoEnglishTurns_UseRealChatHandlerAndHttpContract_WithStableThread_AndDedupe",
+      "outcome": "Passed",
+      "duration": "00:00:00.3186474"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.LanguageTests.Language_ChangesOnlyWithClearSignal(text: \"Hello, how are you?\", previous: \"es\", expected: \"en\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0111854"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.LanguageTests.Language_ChangesOnlyWithClearSignal(text: \"Hola, me siento mejor\", previous: \"en\", expected: \"es\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000033"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.LanguageTests.Language_ChangesOnlyWithClearSignal(text: \"I feel better\", previous: \"en\", expected: \"en\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000199"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.LanguageTests.Language_ChangesOnlyWithClearSignal(text: \"ok\", previous: \"en\", expected: \"en\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004210"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.LanguageTests.Language_ChangesOnlyWithClearSignal(text: \"ok\", previous: \"es\", expected: \"es\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000028"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.ConvierteEncabezadosANegrita(input: \"## Tu plan de salud\", expected: \"*Tu plan de salud*\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002700"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.ConvierteEncabezadosANegrita(input: \"### Nutrición\", expected: \"*Nutrición*\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001948"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.ConvierteNegritaDobleASimple(input: \"\", expected: \"\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002598"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.ConvierteNegritaDobleASimple(input: \"**Nutrición**\", expected: \"*Nutrición*\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019150"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.ConvierteNegritaDobleASimple(input: \"Lo que **no** puedo\", expected: \"Lo que *no* puedo\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000878"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.ConvierteNegritaDobleASimple(input: \"Texto sin markdown\", expected: \"Texto sin markdown\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000101"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.EliminaSeparadoresHorizontales(input: \"***\\r\\nTexto\", expected: \"\\nTexto\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000133"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.EliminaSeparadoresHorizontales(input: \"---\\r\\nSiguiente sección\", expected: \"\\nSiguiente sección\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0148299"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.EliminaSeparadoresHorizontales(input: \"___\\r\\nTexto\", expected: \"\\nTexto\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008972"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.NoAlternaAsteriscosSimplesYaValidos",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001314"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MessagePolicyTests.PreservaSaltosDeLineaYBloques",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001243"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MigrationTests.Migration_IsIsolated_AndWamidIsUnique",
+      "outcome": "Passed",
+      "duration": "00:00:00.4760091"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.MigrationTests.Migrations_DownAndUp_AffectOnlyDisposableWhatsAppSchema",
+      "outcome": "Passed",
+      "duration": "00:00:00.3282859"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PatientResolutionTests.NewPhone_LinksOnce_AndReusesThreadWithoutAnotherPatientQuery",
+      "outcome": "Passed",
+      "duration": "00:00:03.5449318"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PatientResolutionTests.UnknownPhone_GuidesWithoutCreatingConversationOrCallingChat",
+      "outcome": "Passed",
+      "duration": "00:00:00.1285049"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PhoneTests.Normalize_HandlesProfileAndMetaFormats(input: \"+57 (305) 392-4819\", expected: \"+573053924819\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000023"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PhoneTests.Normalize_HandlesProfileAndMetaFormats(input: \"00573053924819\", expected: \"+573053924819\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000050"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PhoneTests.Normalize_HandlesProfileAndMetaFormats(input: \"123\", expected: null)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0162106"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PhoneTests.Normalize_HandlesProfileAndMetaFormats(input: \"305 392-4819\", expected: \"+573053924819\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000071"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PhoneTests.Normalize_HandlesProfileAndMetaFormats(input: \"573053924819\", expected: \"+573053924819\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003349"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.PhoneTests.Normalize_HandlesProfileAndMetaFormats(input: \"abc3053924819\", expected: null)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000012"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.AcceptedCheckin_DefersNextOneWithoutConsumingAttemptBefore24Hours",
+      "outcome": "Passed",
+      "duration": "00:00:00.0611967"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.ConcurrentWorkers_ClaimOneAttempt",
+      "outcome": "Passed",
+      "duration": "00:00:01.1522529"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.InitialAssessment_CanExistBeforeActiveEnrollment_AndExcludesOtherBatteries",
+      "outcome": "Passed",
+      "duration": "00:00:00.0796586"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.PermanentError_Cancels_AndOptOutNeverSends",
+      "outcome": "Passed",
+      "duration": "00:00:00.1154286"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.RealEvaluationSubmit_CancelsReminderAfterClinicalCommit",
+      "outcome": "Passed",
+      "duration": "00:00:00.6202315"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.RealProgramTaskCompletion_ResolvesPodcastAndStreakReminders",
+      "outcome": "Passed",
+      "duration": "00:00:00.9132938"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.RealSources_CreateFourKinds_AndCancelEachResolvedReason",
+      "outcome": "Passed",
+      "duration": "00:00:00.1650152"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.Retry_FailsTwiceThenSucceeds_WithThreeDurableDeliveries",
+      "outcome": "Passed",
+      "duration": "00:00:00.2468941"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ReminderTests.TransientErrors_StopAtFiveAttempts",
+      "outcome": "Passed",
+      "duration": "00:00:00.2893587"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Backoff_Uses120MinutesAndExponentialGrowth(attempt: 1, minutes: 120)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003956"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Backoff_Uses120MinutesAndExponentialGrowth(attempt: 2, minutes: 240)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000017"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Backoff_Uses120MinutesAndExponentialGrowth(attempt: 3, minutes: 480)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0148791"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Backoff_Uses120MinutesAndExponentialGrowth(attempt: 4, minutes: 960)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000017"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Backoff_Uses120MinutesAndExponentialGrowth(attempt: 5, minutes: 1920)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000064"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Daily_NeverRepeatsBefore24Hours",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005166"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Window_RespectsBogotaAndBusinessDay(input: \"2026-11-12T12:00:00Z\", expected: \"2026-11-12T14:00:00Z\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000052"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Window_RespectsBogotaAndBusinessDay(input: \"2026-11-12T22:59:00Z\", expected: \"2026-11-12T22:59:00Z\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0058151"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Window_RespectsBogotaAndBusinessDay(input: \"2026-11-12T23:00:00Z\", expected: \"2026-11-13T14:00:00Z\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000033"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Window_RespectsBogotaAndBusinessDay(input: \"2026-11-13T23:00:00Z\", expected: \"2026-11-16T14:00:00Z\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000124"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.ScheduleTests.Window_RespectsBogotaAndBusinessDay(input: \"2026-11-14T16:00:00Z\", expected: \"2026-11-16T14:00:00Z\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003294"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.CallerCancellation_Propagates",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010062"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.ClosedWindow_IsRejectedWithoutHttp",
+      "outcome": "Passed",
+      "duration": "00:00:00.0063802"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 400, code: 1, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000017"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 400, code: 130429, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000033"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 400, code: 2, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000019"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 400, code: 4, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000020"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 400, code: 80007, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000019"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 400, code: null, expected: Permanent)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000095"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 429, code: null, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003941"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 500, code: 190, expected: Permanent)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0140822"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Errors_AreClassified(status: 503, code: null, expected: Transient)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000036"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Sender_VerifiesEndpointHeadersPayload_AndSequentialFragments",
+      "outcome": "Passed",
+      "duration": "00:00:00.0152377"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Split_PreservesLongUnicode_AndMaskHidesPhone",
+      "outcome": "Passed",
+      "duration": "00:00:00.0041263"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.Template_HasLanguageAndBodyParameters",
+      "outcome": "Passed",
+      "duration": "00:00:00.0574230"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.SenderTests.TypingIndicator_SendsReadStatusAndNeverThrows",
+      "outcome": "Passed",
+      "duration": "00:00:00.0112732"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.WebhookTests.Handshake_ValidInvalidModeAndDisabled",
+      "outcome": "Passed",
+      "duration": "00:00:00.1162158"
+    },
+    {
+      "testName": "CoppAddresd.WhatsApp.Tests.WebhookTests.Signatures_DedupeConcurrency_AndFastAcknowledgement",
+      "outcome": "Passed",
+      "duration": "00:00:00.9577292"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "project": "CoppAddresd.UnitTests",
+    "label": "unit",
+    "exitCode": 0
+  },
+  {
+    "project": "CoppAddresd.Telemedicine.UnitTests",
+    "label": "tele-unit",
+    "exitCode": 0
+  }
+]

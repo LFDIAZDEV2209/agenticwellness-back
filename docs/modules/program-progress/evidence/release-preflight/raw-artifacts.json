@@ -1,0 +1,110 @@
+{
+  "sharedDirectory": "C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\openspec\\changes\\organizar-experiencia-bienestar\\revision-release-preflight-back",
+  "files": [
+    {
+      "file": "build-initial.log",
+      "bytes": 28352,
+      "sha256": "3e815b6c75b108038442fc027f7a84e870a4f97a8c17bd3da461c804861b8e6e"
+    },
+    {
+      "file": "build.log",
+      "bytes": 14138,
+      "sha256": "44c336a77d842677844c54002b28c6b80ee532817afcc1d871b7499670933bf2"
+    },
+    {
+      "file": "community-pg.log",
+      "bytes": 13665,
+      "sha256": "5d4322b29ebee518cbe5f0ee646318314f2a86375425bf7989b233f6219251de"
+    },
+    {
+      "file": "community-pg.trx",
+      "bytes": 154064,
+      "sha256": "5cc9f2c7b49a2eac9b7fe1baf68ae697b26e86ee8a407eabeaa5cbcffae886a4"
+    },
+    {
+      "file": "merge-start.log",
+      "bytes": 3197,
+      "sha256": "8f78805ba7217585fa127e615c5cad07386674a78fc04a26d941bd105b92fd49"
+    },
+    {
+      "file": "migration-probe.log",
+      "bytes": 6013,
+      "sha256": "d0b65e35c38b186110581631934d24cb7aa60ae2146a9ef93752ed109f24c526"
+    },
+    {
+      "file": "migration-probe.trx",
+      "bytes": 3231,
+      "sha256": "81d10af985095bf376ec3cdfe7be9b6c43c0456ee0638a690d4ce0a900efd205"
+    },
+    {
+      "file": "postgres.log",
+      "bytes": 32713,
+      "sha256": "a248b75e7b65cf6402ce1e24d25bdb21067adc8146ade1812211b2d849d72a41"
+    },
+    {
+      "file": "postgres.trx",
+      "bytes": 349068,
+      "sha256": "548636eeac87cc05b042a0b9a61ed6b6f3249b18b02139d44001b0b980f704f7"
+    },
+    {
+      "file": "tele-pg.log",
+      "bytes": 6600,
+      "sha256": "9eb88d1f1e57f8d8aa567912eec7f77969f60a0db9f80ff440c98d8da99a4b12"
+    },
+    {
+      "file": "tele-pg.trx",
+      "bytes": 70552,
+      "sha256": "a49db544d6b3da193e4b4eb461ccd199dde195e9743df40f22963d8736827c98"
+    },
+    {
+      "file": "tele-unit.log",
+      "bytes": 549,
+      "sha256": "939098f880976c0fa380dfd76967b98f68626bc574f001b85af3d56f206019cd"
+    },
+    {
+      "file": "tele-unit.trx",
+      "bytes": 630932,
+      "sha256": "f37ea46d35ad6240bd9174f9a72721a7fe533438759d9005657e046c6cf9e7d4"
+    },
+    {
+      "file": "unit-postgres-baseline.log",
+      "bytes": 4829300,
+      "sha256": "3b5b4015ff25aaaf13ab3b238155cbeb988d06ed62cb50973c5efa405a512c0a"
+    },
+    {
+      "file": "unit-postgres-baseline.trx",
+      "bytes": 5185848,
+      "sha256": "59c0a42997e99ee9a2029186f12aa382f1882b60e956c6b2553777ee88babd09"
+    },
+    {
+      "file": "unit-postgres.log",
+      "bytes": 4997360,
+      "sha256": "041fb5a4077f21c2615e5f75e89413b0443aae43f4074b3522e1bd78b7fb5860"
+    },
+    {
+      "file": "unit-postgres.trx",
+      "bytes": 5358877,
+      "sha256": "baa4481e7fae42d71d1337dceb91d89ce395db18d5beb7cad6d1c5cd00652f93"
+    },
+    {
+      "file": "unit.log",
+      "bytes": 30032,
+      "sha256": "a5f55f22c3015f2d4b1bc9726b8f9338f18e523a1d69c155fb27bb55e2917d1d"
+    },
+    {
+      "file": "unit.trx",
+      "bytes": 5273000,
+      "sha256": "bd4ec8bb57eddbfc94855bb067a5acec9b12706f8aa8708995124e8e2af3efa8"
+    },
+    {
+      "file": "whatsapp.log",
+      "bytes": 13997,
+      "sha256": "b5a2ec2d1544e18fe9952d0618351e3e7cbdfc14b744568e516cfcb9d1323eed"
+    },
+    {
+      "file": "whatsapp.trx",
+      "bytes": 154992,
+      "sha256": "ea6d65b29ef1defb18d1c6056f7199fae215652a551077bff111c39ea670e7cd"
+    }
+  ]
+}

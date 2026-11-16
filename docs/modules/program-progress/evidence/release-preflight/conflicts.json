@@ -1,0 +1,92 @@
+[
+  {
+    "path": "docs/database/indexes.md",
+    "oursBytes": 62222,
+    "theirsBytes": 58453,
+    "hunks": 1
+  },
+  {
+    "path": "docs/modules/program-progress/DAILY-ROUTINES.md",
+    "oursBytes": 12401,
+    "theirsBytes": 2594,
+    "hunks": 2
+  },
+  {
+    "path": "docs/modules/program-progress/EFFECTIVE-CONTENT.md",
+    "oursBytes": 7730,
+    "theirsBytes": 3611,
+    "hunks": 1
+  },
+  {
+    "path": "docs/modules/program-progress/FASE1-VALIDACION.md",
+    "oursBytes": 11589,
+    "theirsBytes": 9347,
+    "hunks": 1
+  },
+  {
+    "path": "src/CoppAddresd.Application/DTOs/ProgramProgress/ProgramProgressDtos.cs",
+    "oursBytes": 30140,
+    "theirsBytes": 30024,
+    "hunks": 1
+  },
+  {
+    "path": "src/CoppAddresd.Application/Features/Nutrition/Queries/GetMyNutritionPlan/GetMyNutritionPlanQuery.cs",
+    "oursBytes": 10928,
+    "theirsBytes": 10685,
+    "hunks": 1
+  },
+  {
+    "path": "src/CoppAddresd.Application/Services/ProgramProgress/EffectiveDayContentResolver.cs",
+    "oursBytes": 11908,
+    "theirsBytes": 12531,
+    "hunks": 5
+  },
+  {
+    "path": "src/CoppAddresd.Infrastructure/DependencyInjection.cs",
+    "oursBytes": 31244,
+    "theirsBytes": 29295,
+    "hunks": 1
+  },
+  {
+    "path": "src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs",
+    "oursBytes": 486180,
+    "theirsBytes": 490261,
+    "hunks": 4
+  },
+  {
+    "path": "src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs",
+    "oursBytes": 486489,
+    "theirsBytes": 490402,
+    "hunks": 4
+  },
+  {
+    "path": "src/CoppAddresd.Infrastructure/Repositories/EffectiveDayContentStore.cs",
+    "oursBytes": 8833,
+    "theirsBytes": 6615,
+    "hunks": 6
+  },
+  {
+    "path": "src/CoppAddresd.Infrastructure/Repositories/ProgramRepository.cs",
+    "oursBytes": 477061,
+    "theirsBytes": 465900,
+    "hunks": 2
+  },
+  {
+    "path": "tests/CoppAddresd.IntegrationTests/EffectiveDayContentPostgresTests.cs",
+    "oursBytes": 22707,
+    "theirsBytes": 22449,
+    "hunks": 1
+  },
+  {
+    "path": "tests/CoppAddresd.IntegrationTests/ExerciseSessionSnapshotTests.cs",
+    "oursBytes": 6189,
+    "theirsBytes": 6204,
+    "hunks": 2
+  },
+  {
+    "path": "tests/CoppAddresd.UnitTests/ProgramProgress/EffectiveDayContentResolverTests.cs",
+    "oursBytes": 16178,
+    "theirsBytes": 11651,
+    "hunks": 2
+  }
+]

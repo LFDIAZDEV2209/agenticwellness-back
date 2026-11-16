@@ -1,0 +1,585 @@
+{
+  "rawTrx": "unit-postgres-baseline.trx",
+  "rawSha256": "59c0a42997e99ee9a2029186f12aa382f1882b60e956c6b2553777ee88babd09",
+  "counters": {
+    "total": "105",
+    "executed": "105",
+    "passed": "90",
+    "failed": "15",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-11-15T23:06:59.1173610-05:00",
+    "queuing": "2026-11-15T23:06:59.1173615-05:00",
+    "start": "2026-11-15T23:06:37.3752087-05:00",
+    "finish": "2026-11-15T23:08:08.9132987-05:00"
+  },
+  "results": [
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.EntryCreated_UpdatesCostEntered",
+      "outcome": "Passed",
+      "duration": "00:00:00.7638355"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.EntryCreated_UpdatesEntriesCount",
+      "outcome": "Failed",
+      "duration": "00:00:15.9066371",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: 1\r\nActual:   null",
+      "stackTrace": "   at CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.EntryCreated_UpdatesEntriesCount() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\Inventory\\InventoryMetricsProcessorTests.cs:line 222\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.EntryCreated_UpdatesPerProductAndCategory",
+      "outcome": "Passed",
+      "duration": "00:00:00.7555980"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.EntryCreated_UpdatesUnitsEntered",
+      "outcome": "Passed",
+      "duration": "00:00:00.7548456"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.ExitCreated_UpdatesExitsCount",
+      "outcome": "Passed",
+      "duration": "00:00:00.7568743"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.GetAnalyticsAsync_WithRollupData_UsesFastPath",
+      "outcome": "Passed",
+      "duration": "00:00:00.8834251"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.GetAnalyticsAsync_WithoutRollupData_FallsBackToOltp",
+      "outcome": "Passed",
+      "duration": "00:00:00.1126697"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.TwoEntriesSameDay_Accumulates",
+      "outcome": "Passed",
+      "duration": "00:00:00.7553298"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_EmocionalSinMoodScore_Devuelve400",
+      "outcome": "Passed",
+      "duration": "00:00:00.5597168"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_InscripcionPausada_Devuelve409EnrollmentInactive",
+      "outcome": "Failed",
+      "duration": "00:00:00.5365256",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: Conflict\r\nActual:   UnprocessableEntity",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_InscripcionPausada_Devuelve409EnrollmentInactive() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\AuthorizationTests.cs:line 518\r\n   at CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_InscripcionPausada_Devuelve409EnrollmentInactive() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\AuthorizationTests.cs:line 522\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_SobreInscripcionDeOtroPaciente_Devuelve404",
+      "outcome": "Passed",
+      "duration": "00:00:00.5321165"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_TareaPropia_Devuelve200",
+      "outcome": "Failed",
+      "duration": "00:00:00.5237869",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: OK\r\nActual:   UnprocessableEntity",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_TareaPropia_Devuelve200() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\AuthorizationTests.cs:line 591\r\n   at CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_TareaPropia_Devuelve200() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\AuthorizationTests.cs:line 591\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.ListTemplates_ConPermisoProgramView_Devuelve200",
+      "outcome": "Failed",
+      "duration": "00:00:10.5287860",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: OK\r\nActual:   499",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.ListTemplates_ConPermisoProgramView_Devuelve200() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\AuthorizationTests.cs:line 607\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.ListTemplates_SinPermisoProgramView_Devuelve403",
+      "outcome": "Failed",
+      "duration": "00:00:10.4554810",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: Forbidden\r\nActual:   499",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.ListTemplates_SinPermisoProgramView_Devuelve403() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\AuthorizationTests.cs:line 479\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.Snapshot_SinInscripcionActiva_Devuelve404",
+      "outcome": "Passed",
+      "duration": "00:00:00.4910944"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.Snapshot_SinToken_Devuelve401",
+      "outcome": "Passed",
+      "duration": "00:00:00.5045836"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ContractTests.Calendar_JsonShape_CumpleSpec73",
+      "outcome": "Passed",
+      "duration": "00:00:00.5562875"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ContractTests.CompleteTask_PrimeraEscritura_JsonShapeCumpleSpec72",
+      "outcome": "Passed",
+      "duration": "00:00:01.0709299"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ContractTests.Path_JsonShape_CumpleSpec74",
+      "outcome": "Passed",
+      "duration": "00:00:00.5520862"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ContractTests.Snapshot_JsonShape_CumpleSpec71",
+      "outcome": "Failed",
+      "duration": "00:00:01.1155082",
+      "error": "Assert.InRange() Failure: Value not in range\r\nRange:  (11/16/2026 - 11/22/2026)\r\nActual: 11/15/2026",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.ContractTests.Snapshot_JsonShape_CumpleSpec71() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\ContractTests.cs:line 67\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_Clinico_Devuelve200ConHeader",
+      "outcome": "Failed",
+      "duration": "00:00:00.4894257",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: OK\r\nActual:   NotFound",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_Clinico_Devuelve200ConHeader() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\ScoresContractTests.cs:line 90\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_PacienteSinPermiso_Devuelve403",
+      "outcome": "Failed",
+      "duration": "00:00:11.0487021",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: Forbidden\r\nActual:   499",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_PacienteSinPermiso_Devuelve403() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\ScoresContractTests.cs:line 114\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_PeriodoFuturo_Devuelve422InvalidPeriod",
+      "outcome": "Failed",
+      "duration": "00:00:00.9924320",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: UnprocessableEntity\r\nActual:   NotFound",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_PeriodoFuturo_Devuelve422InvalidPeriod() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\Api\\ScoresContractTests.cs:line 153\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.GetScoresHistory_HistorialEsparcido_SoloEmiteSemanasPersistidas",
+      "outcome": "Passed",
+      "duration": "00:00:04.6460432"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.GetScoresHistory_JwtScoping_NuncaFiltraFilasDeOtroPaciente",
+      "outcome": "Passed",
+      "duration": "00:00:04.8638292"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.GetScoresHistory_SerieExactaDe3Semanas_Devuelve200Ascendente",
+      "outcome": "Passed",
+      "duration": "00:00:17.3957089"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.GetScoresHistory_SinInscripcionActiva_Devuelve404",
+      "outcome": "Passed",
+      "duration": "00:00:02.5207579"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.GetScores_PacienteActivo_DevuelveFormaSpec1371",
+      "outcome": "Passed",
+      "duration": "00:00:00.7832464"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.GetScores_SinInscripcionActiva_Devuelve404",
+      "outcome": "Passed",
+      "duration": "00:00:00.8443047"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.BiometriaRollupBackfillTests.RecomputeAll_EsIdempotente",
+      "outcome": "Passed",
+      "duration": "00:00:00.0509267"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.BiometriaRollupBackfillTests.RecomputeAll_GlucosaDistribution_ClasificaAdaYExcluyeSinDato",
+      "outcome": "Passed",
+      "duration": "00:00:00.0346115"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.BiometriaRollupBackfillTests.RecomputeAll_GrasaDistribution_ClasificaPorSexoConCortesDelDashboard",
+      "outcome": "Passed",
+      "duration": "00:00:00.0458410"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.BiometriaRollupBackfillTests.RecomputeAll_ImcDistribution_ClasificaBucketsOmsYComunidad",
+      "outcome": "Passed",
+      "duration": "00:00:00.6433027"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.BiometriaRollupBackfillTests.RecomputeAll_NoTocaLasClavesSoloDeEvento",
+      "outcome": "Passed",
+      "duration": "00:00:00.0659744"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_BaseXpNula_Fallback50",
+      "outcome": "Failed",
+      "duration": "00:00:00.3557892",
+      "error": "Npgsql.PostgresException : 23001: update or delete on table \"xp_rules\" violates RESTRICT setting of foreign key constraint \"FK_xp_ledger_xp_rules_rule_code\" on table \"xp_ledger\"\r\n\r\nDETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.",
+      "stackTrace": "   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)\r\n   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)\r\n   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DeleteDayBonusRuleAsync() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2579\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DeleteDayBonusRuleAsync() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2579\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_BaseXpNula_Fallback50() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 707\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_Multiplicador2_MaxUsaBaseYGrantReflejaMultiplicador",
+      "outcome": "Failed",
+      "duration": "00:00:00.4581298",
+      "error": "Npgsql.PostgresException : 23001: update or delete on table \"xp_rules\" violates RESTRICT setting of foreign key constraint \"FK_xp_ledger_xp_rules_rule_code\" on table \"xp_ledger\"\r\n\r\nDETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.",
+      "stackTrace": "   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)\r\n   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)\r\n   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DeleteDayBonusRuleAsync() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2579\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DeleteDayBonusRuleAsync() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2579\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_Multiplicador2_MaxUsaBaseYGrantReflejaMultiplicador() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 757\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_ReglaBase75_SnapshotYCompletacionSiguenLaRegla",
+      "outcome": "Failed",
+      "duration": "00:00:00.3204741",
+      "error": "Npgsql.PostgresException : 23001: update or delete on table \"xp_rules\" violates RESTRICT setting of foreign key constraint \"FK_xp_ledger_xp_rules_rule_code\" on table \"xp_ledger\"\r\n\r\nDETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.",
+      "stackTrace": "   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)\r\n   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)\r\n   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)\r\n   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteNonQueryAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)\r\n   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DeleteDayBonusRuleAsync() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2579\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DeleteDayBonusRuleAsync() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2579\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_ReglaBase75_SnapshotYCompletacionSiguenLaRegla() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 535\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_ReglaInactiva_Fallback50",
+      "outcome": "Passed",
+      "duration": "00:00:00.2878125"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_ReglaVencida_Fallback50",
+      "outcome": "Passed",
+      "duration": "00:00:00.4327467"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_SinRegla_Fallback50EnSnapshotYCompletacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.2838999"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_50Concurrentes_UnaSolaFilaYUnaSolaXp",
+      "outcome": "Passed",
+      "duration": "00:00:01.0208365"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_FechaFueraDelPrograma_LanzaDateOutsideActiveWeek",
+      "outcome": "Passed",
+      "duration": "00:00:00.1038144"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_MismaClaveDiferenteRequestId_DevuelveExistenteSinDobleXp",
+      "outcome": "Passed",
+      "duration": "00:00:00.0933320"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_MismoRequestIdDiferenteFecha_DevuelveIdempotencyKeyReused",
+      "outcome": "Passed",
+      "duration": "00:00:00.1069178"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_NutSinPlan_ContenidoNuloYConXp",
+      "outcome": "Passed",
+      "duration": "00:00:00.1238817"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_PrimeraVez_OtorgaXpExactamenteUnaVez",
+      "outcome": "Passed",
+      "duration": "00:00:00.1336148"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_ReplayMismoClientRequestId_SinFilasNuevas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0839437"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Replay_DevuelveMismoDayPointsMaxQueLaPrimeraEscritura",
+      "outcome": "Passed",
+      "duration": "00:00:00.3135294"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_TareaNoProgramadaEnSnapshot_LanzaTaskNotScheduled",
+      "outcome": "Passed",
+      "duration": "00:00:00.0603230"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_TodasLasTareasDelDia_DiaPerfectoYBonusUnico",
+      "outcome": "Passed",
+      "duration": "00:00:00.3838250"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Vitals_6Campos_7Filas_Y_FKApuntaAlAncla",
+      "outcome": "Passed",
+      "duration": "00:00:00.1507901"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Vitals_ConPasosYSueno_MapeaStepCountYSleepMinutes",
+      "outcome": "Passed",
+      "duration": "00:00:00.1587585"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Vitals_MetricaInactiva_Lanza422_Y_0Filas",
+      "outcome": "Passed",
+      "duration": "00:00:00.0840453"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Vitals_ReplayMismoClientRequestId_SinFilasDuplicadas",
+      "outcome": "Passed",
+      "duration": "00:00:00.1732001"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Vitals_SinPayload_0Filas",
+      "outcome": "Passed",
+      "duration": "00:00:00.1330731"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.CompleteTask_Vitals_TemperaturaC_UsaUnidadCelsius",
+      "outcome": "Passed",
+      "duration": "00:00:00.0901592"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DecideAdaptacion_PendingAprobadaAplicada_YTransicionesInvalidas",
+      "outcome": "Passed",
+      "duration": "00:00:00.1071015"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.DecideAdaptacion_RejectSoloDesdePending_YListado",
+      "outcome": "Passed",
+      "duration": "00:00:00.0784469"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.EdicionPlantillaMitadDeSemana_SnapshotActualInmutable_ProximaUsaNuevoValor",
+      "outcome": "Passed",
+      "duration": "00:00:00.2280389"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.EdicionPlantilla_SeAplicaAlActivarLaSemana2DeLaMismaInscripcion",
+      "outcome": "Passed",
+      "duration": "00:00:00.1440044"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.EnrollAsync_CreaInscripcionSemanasYRacha",
+      "outcome": "Passed",
+      "duration": "00:00:00.0661122"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.EnrollAsync_ReInscripcion_PurgaPuntajesDeLaCorridaAnterior",
+      "outcome": "Passed",
+      "duration": "00:00:00.1543466"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.EnrollAsync_SegundaInscripcionActiva_LanzaPatienteYaInscrito",
+      "outcome": "Passed",
+      "duration": "00:00:00.0468764"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.FK_VitalSignsBatch_ApuntaACatalogClinicalMeasurements",
+      "outcome": "Passed",
+      "duration": "00:00:00.0212279"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetCalendar_VentanaDevuelveDiasYResumen",
+      "outcome": "Passed",
+      "duration": "00:00:00.2083780"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetPath_DevuelveLas83Semanas",
+      "outcome": "Passed",
+      "duration": "00:00:00.2392433"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetSnapshot_DevuelveEstadoCompletoDelDia",
+      "outcome": "Passed",
+      "duration": "00:00:00.1257705"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetSnapshot_RachaVencida_DevuelveCurrent0ConservandoLongestYFreezes",
+      "outcome": "Passed",
+      "duration": "00:00:00.0723299"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetSnapshot_RachaVigenteAyer_ConservaElEscalar",
+      "outcome": "Passed",
+      "duration": "00:00:00.2433278"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetSnapshot_RecentVitals_NuloSinMediciones",
+      "outcome": "Passed",
+      "duration": "00:00:00.1168025"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetSnapshot_RecentVitals_PobladoTrasVitals",
+      "outcome": "Passed",
+      "duration": "00:00:00.1270120"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.GetSnapshot_TareaPodcastPendiente_MuestraContenidoFallbackDePlantilla",
+      "outcome": "Passed",
+      "duration": "00:00:00.1591386"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.PausaResumeRetiro_MaquinaDeEstados_YBloqueoDeCompletacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0890246"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Plantillas_UpsertCreaActualiza_YReemplazoDeTareas",
+      "outcome": "Failed",
+      "duration": "00:00:00.0774207",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: 3\r\nActual:   4",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Plantillas_UpsertCreaActualiza_YReemplazoDeTareas() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 1225\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Plantillas_UpsertCreaActualiza_YReemplazoDeTareas() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 1229\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_DiaPerdidoConsumeCongelamiento_InventarioDecrementaYRachaSePreserva",
+      "outcome": "Passed",
+      "duration": "00:00:02.3806193"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_DiaPerdido_ReseteaYRegistraFechaDeQuiebre",
+      "outcome": "Passed",
+      "duration": "00:00:00.5646307"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_DiasPerfectosConsecutivos_IncrementaRacha",
+      "outcome": "Passed",
+      "duration": "00:00:00.7947930"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Hito14_OtorgaStreak14UnaVezYNoActivaMultiplicador",
+      "outcome": "Failed",
+      "duration": "00:00:03.4532615",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: 300\r\nActual:   600",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Hito14_OtorgaStreak14UnaVezYNoActivaMultiplicador() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 1928\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Hito14_OtorgaStreak14UnaVezYNoActivaMultiplicador() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 1935\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Hito7_OtorgaStreak7UnaVezYSnapshotExponeCofres",
+      "outcome": "Passed",
+      "duration": "00:00:02.2532540"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_CasoReal5DiasQuiebre_ReiniciaEn1_SinDeriva",
+      "outcome": "Passed",
+      "duration": "00:00:01.8305155"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_DobleQuiebre_ParidadEnCadaPaso",
+      "outcome": "Passed",
+      "duration": "00:00:00.2204389"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_F1_JobZeroeadoConRescate_CurrentDelModelo7",
+      "outcome": "Passed",
+      "duration": "00:00:01.3350556"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_Hueco1DiaConRescate_7_SinDeriva",
+      "outcome": "Passed",
+      "duration": "00:00:01.5237893"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_HuecoMultiDiaConRescate_2_SinDeriva",
+      "outcome": "Passed",
+      "duration": "00:00:01.3851230"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_JobZeroeado_SinRescate_ReiniciaEn1",
+      "outcome": "Passed",
+      "duration": "00:00:01.3110980"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_Legacy0_Contiguo_CurrentDelModelo6",
+      "outcome": "Passed",
+      "duration": "00:00:01.8222566"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_MismoDia_Idempotente_SinDeriva",
+      "outcome": "Passed",
+      "duration": "00:00:00.1856452"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Parity_QuiebreSinCongelamiento_ReiniciaEn1_SinDeriva",
+      "outcome": "Passed",
+      "duration": "00:00:01.3885620"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.SemanaParcial_RolloverCompletaSemana1YActivaSemana2SinBloqueo",
+      "outcome": "Passed",
+      "duration": "00:00:00.2248297"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.SemanaPerfecta_CompletaSemanaAvanzaYOtorgaCongelamiento",
+      "outcome": "Passed",
+      "duration": "00:00:01.7641805"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.SupersedePending_NuevaRecomendacionReemplazaALaAnterior",
+      "outcome": "Passed",
+      "duration": "00:00:00.0773993"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_MigracionReversible_ConservaRegistrosAnteriores",
+      "outcome": "Failed",
+      "duration": "00:00:00.1194864",
+      "error": "Assert.EndsWith() Failure: String end does not match\r\nString:       ···\"61115184418_ExpandPatientAiBriefModelName\"\r\nExpected end: \"_AddStructuredEmotionalAssessment\"",
+      "stackTrace": "   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_MigracionReversible_ConservaRegistrosAnteriores() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2041\r\n   at CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_MigracionReversible_ConservaRegistrosAnteriores() in C:\\Users\\Luis\\Documents\\CoppAddresd\\Repos\\.tmp\\back-f4-412-e0a9c29\\tests\\CoppAddresd.UnitTests\\ProgramProgress\\ProgramRepositoryTests.cs:line 2051\r\n--- End of stack trace from previous location ---"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_PersisteRegistroEmocionalYAnimoDelDia",
+      "outcome": "Passed",
+      "duration": "00:00:00.1344227"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_SinDatoYClienteAnterior_NoInfiereValores",
+      "outcome": "Passed",
+      "duration": "00:00:00.1690409"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_SinMoodScore_LanzaErrorSinFabricarDatoClinico",
+      "outcome": "Passed",
+      "duration": "00:00:00.0788027"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.WriteAuditRow_AdaptationApplied_PersisteYSePuedeLeer",
+      "outcome": "Passed",
+      "duration": "00:00:00.0154791"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.ZonaUTCPlus_Tokyo_HoyLocalSeAceptaYRachaQuedaEnFechaLocal",
+      "outcome": "Passed",
+      "duration": "00:00:00.2811585"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.GetOrComputeHealthScore_ExponeDimensionesDelPeriodoAnterior_YNullEnPrimerComputo",
+      "outcome": "Passed",
+      "duration": "00:00:00.1233721"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.GetOrComputeHealthScore_MezclaAC19_CumpleBandasYPersiste",
+      "outcome": "Passed",
+      "duration": "00:00:00.2054632"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.GetOrComputeTransformationScore_AC20_Devuelve88ConDetalle",
+      "outcome": "Passed",
+      "duration": "00:00:00.0491995"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.Scores_SegundaLectura_DevuelveFilaPersistidaSinDuplicar",
+      "outcome": "Passed",
+      "duration": "00:00:00.0565482"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.Scores_SinDatos_DevuelveNeutrosYTransformacion0",
+      "outcome": "Passed",
+      "duration": "00:00:00.2650481"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.UpsertBaseline_Clinico_FijaYActualizaLaBase",
+      "outcome": "Passed",
+      "duration": "00:00:00.0648953"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.UpsertBaseline_LlamadorPaciente_LanzaForbidden",
+      "outcome": "Passed",
+      "duration": "00:00:00.0140710"
+    },
+    {
+      "testName": "CoppAddresd.UnitTests.ProgramProgress.Scores.ScoreEngineIntegrationTests.UpsertBaseline_TargetInvalido_LanzaUnprocessable",
+      "outcome": "Passed",
+      "duration": "00:00:00.0798056"
+    }
+  ]
+}

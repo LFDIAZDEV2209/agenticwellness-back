@@ -1,0 +1,57 @@
+Test run for C:\Users\Luis\Documents\CoppAddresd\Repos\.worktrees\back-f4\tests\CoppAddresd.Telemedicine.IntegrationTests\bin\Validation114D\CoppAddresd.Telemedicine.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: CoppAddresd.Telemedicine.IntegrationTests
+[xUnit.net 00:00:00.17]   Discovered:  CoppAddresd.Telemedicine.IntegrationTests
+[xUnit.net 00:00:00.20]   Starting:    CoppAddresd.Telemedicine.IntegrationTests
+  Passed CoppAddresd.Telemedicine.IntegrationTests.WebhookIdempotencyTests.RoomEnded_CompletaCitaYPersisteTodo [1 s]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.WebhookIdempotencyTests.WebhookSalaDesconocida_RegistraSinMutaciones [39 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.WebhookIdempotencyTests.WebhookDuplicado_DevuelveDuplicateYSinDobleMutacion [67 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.StartSessionPersistenceTests.AgregarSesionAlAgregado_PersisteComoInsert [63 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.SettingsProviderTests.FilaDeClinica_PrecedeALaDeOrganizacion [82 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.SettingsProviderTests.SinConfiguracion_DevuelveDefaults [5 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.SettingsProviderTests.ClinicSinFila_CaeALaDeOrganizacion [10 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.SettingsProviderTests.ConFilaDeOrganizacion_UsaEsosValores [8 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RoomRepositoryTests.WebhookEvent_Duplicado_LanzaBusinessRule [10 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RoomRepositoryTests.WebhookEvent_DistintoParticipante_NoEsDuplicado [8 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RoomRepositoryTests.MismaCita_LaSegundaCreacionDevuelveLaExistente [47 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RequestReviewPersistenceTests.Rechazo_DesdeApproved_ReemplazaMotivo [127 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RequestReviewPersistenceTests.Aprobacion_PersisteEstadoApproved [11 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RequestReviewPersistenceTests.SolicitudConvertida_NoSeRechaza [11 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.RequestReviewPersistenceTests.Rechazo_PersisteEstadoYMotivo [11 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.ProviderRoomReconcilerTests.Reconcile_KeysetPages_All205Rows_AndConcurrentRunsAreIdempotent [5 s]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.PatientAppointmentCycleTests.CicloCompleto_CrearConfirmarListarYCancelar [408 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.PatientAppointmentCycleTests.Cancel_PacienteCitaAjena_NoCambiaEstado [58 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.MetricsBackfillTests.Backfill_CubreCitasFuturas [149 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.MetricsBackfillTests.Backfill_MismoProfesionalDosClinicas_NoFalla [79 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.MetricsBackfillTests.Backfill_Reejecucion_EsIdempotente [55 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.MetricsBackfillTests.Backfill_DryRun_NoEscribeNada [47 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.MetricsBackfillTests.Backfill_AgregaPorDiaProfesionalEstadoYHora [87 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.EncounterRepositoryTests.GuardadoYCompletado_PersistenEstados [95 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.EncounterRepositoryTests.CreacionConcurrente_DevuelveElExistente [45 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.EncounterRepositoryTests.EncuentroDeCitaCancelada_SePersisteComoCancelled [16 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.CallMetricsIntegrationTests.Backfill_ReconstruyeClavesDeLlamadaYChatConEspejoGlobal [66 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.CallMetricsIntegrationTests.GetCallMetrics_SinRollup_UsaConteosVivos [132 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.CallMetricsIntegrationTests.GetCallMetrics_ConRollup_UsaLasFilasPreAgregadas [32 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.Cancelacion_RegistraHistorialYEstado [24 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.Agenda_FiltraPorProfesionalYRango [46 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.ListAdmin_FiltrosYPaginacion [89 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.Upcoming_ExcludesTerminalStatusesAndKeepsProfessionalScope [95 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.CountInRange_SinPreagg_CuentaDirecto [34 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.AltaYLectura_PersistenTodosLosCampos [21 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.Reprogramacion_RegistraHistorialYContador [71 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.ListAdmin_PaginaFueraDeRango_Vacia [55 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentRepositoryPersistenceTests.CountInRange_PreaggRespetaToExclusivo [53 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentConcurrencyTests.DosInsercionesConcurrentesSolapadas_UnaFallaConExclusion [40 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentConcurrencyTests.MismoInicioExacto_ViolaIndiceUnicoParcial [55 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentConcurrencyTests.UnaSolicitudUnaCita_IndiceUnicoRequestId [33 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentConcurrencyTests.ReprogramacionConcurrenteAlMismoSlot_UnaFallaConExclusion [65 ms]
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentConcurrencyTests.CitasNoSolapadas_AmbasPersisten [17 ms]
+[xUnit.net 00:00:13.82]   Finished:    CoppAddresd.Telemedicine.IntegrationTests
+  Passed CoppAddresd.Telemedicine.IntegrationTests.AppointmentConcurrencyTests.CitaCancelada_NoBloqueaElCalendario [18 ms]
+Results File: C:\Users\Luis\Documents\CoppAddresd\Repos\openspec\changes\organizar-experiencia-bienestar\revision-release-preflight-back\tele-pg.trx
+
+Test Run Successful.
+Total tests: 44
+     Passed: 44
+ Total time: 14.8856 Seconds

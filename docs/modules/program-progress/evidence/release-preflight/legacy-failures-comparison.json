@@ -1,0 +1,25 @@
+{
+  "merge": "a79bbaebfe94241283e1522caed791716c6180f6",
+  "baseline": "e0a9c29",
+  "sameFailedTests": true,
+  "sameMessages": true,
+  "mergeFailures": {
+    "CoppAddresd.UnitTests.Inventory.InventoryMetricsProcessorTests.EntryCreated_UpdatesEntriesCount": "Assert.Equal() Failure: Values differ\r\nExpected: 1\r\nActual:   null",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_InscripcionPausada_Devuelve409EnrollmentInactive": "Assert.Equal() Failure: Values differ\r\nExpected: Conflict\r\nActual:   UnprocessableEntity",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.CompleteTask_TareaPropia_Devuelve200": "Assert.Equal() Failure: Values differ\r\nExpected: OK\r\nActual:   UnprocessableEntity",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.ListTemplates_ConPermisoProgramView_Devuelve200": "Assert.Equal() Failure: Values differ\r\nExpected: OK\r\nActual:   499",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.AuthorizationTests.ListTemplates_SinPermisoProgramView_Devuelve403": "Assert.Equal() Failure: Values differ\r\nExpected: Forbidden\r\nActual:   499",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.ContractTests.Snapshot_JsonShape_CumpleSpec71": "Assert.InRange() Failure: Value not in range\r\nRange:  (11/16/2026 - 11/22/2026)\r\nActual: 11/15/2026",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_Clinico_Devuelve200ConHeader": "Assert.Equal() Failure: Values differ\r\nExpected: OK\r\nActual:   NotFound",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_PacienteSinPermiso_Devuelve403": "Assert.Equal() Failure: Values differ\r\nExpected: Forbidden\r\nActual:   499",
+    "CoppAddresd.UnitTests.ProgramProgress.Api.ScoresContractTests.CalculateScores_PeriodoFuturo_Devuelve422InvalidPeriod": "Assert.Equal() Failure: Values differ\r\nExpected: UnprocessableEntity\r\nActual:   NotFound",
+    "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_BaseXpNula_Fallback50": "Npgsql.PostgresException : 23001: update or delete on table \"xp_rules\" violates RESTRICT setting of foreign key constraint \"FK_xp_ledger_xp_rules_rule_code\" on table \"xp_ledger\"\r\n\r\nDETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.",
+    "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_Multiplicador2_MaxUsaBaseYGrantReflejaMultiplicador": "Npgsql.PostgresException : 23001: update or delete on table \"xp_rules\" violates RESTRICT setting of foreign key constraint \"FK_xp_ledger_xp_rules_rule_code\" on table \"xp_ledger\"\r\n\r\nDETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.",
+    "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.BonusDayBonus_ReglaBase75_SnapshotYCompletacionSiguenLaRegla": "Npgsql.PostgresException : 23001: update or delete on table \"xp_rules\" violates RESTRICT setting of foreign key constraint \"FK_xp_ledger_xp_rules_rule_code\" on table \"xp_ledger\"\r\n\r\nDETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.",
+    "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Plantillas_UpsertCreaActualiza_YReemplazoDeTareas": "Assert.Equal() Failure: Values differ\r\nExpected: 3\r\nActual:   4",
+    "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.Racha_Hito14_OtorgaStreak14UnaVezYNoActivaMultiplicador": "Assert.Equal() Failure: Values differ\r\nExpected: 300\r\nActual:   600",
+    "CoppAddresd.UnitTests.ProgramProgress.ProgramRepositoryTests.TareaEmocional_MigracionReversible_ConservaRegistrosAnteriores": "Assert.EndsWith() Failure: String end does not match\r\nString:       ···\"61115184418_ExpandPatientAiBriefModelName\"\r\nExpected end: \"_AddStructuredEmotionalAssessment\""
+  },
+  "baselineOnly": [],
+  "mergeOnly": []
+}

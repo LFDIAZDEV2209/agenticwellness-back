@@ -1,0 +1,79 @@
+{
+  "conflicts": [
+    {
+      "path": "docs/database/indexes.md",
+      "resolution": "union F4 + SOS documentation"
+    },
+    {
+      "path": "docs/modules/program-progress/DAILY-ROUTINES.md",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "docs/modules/program-progress/EFFECTIVE-CONTENT.md",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "docs/modules/program-progress/FASE1-VALIDACION.md",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "src/CoppAddresd.Application/DTOs/ProgramProgress/ProgramProgressDtos.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Features/Nutrition/Queries/GetMyNutritionPlan/GetMyNutritionPlanQuery.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "src/CoppAddresd.Application/Services/ProgramProgress/EffectiveDayContentResolver.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/DependencyInjection.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs",
+      "resolution": "F4 target model + cumulative SOS metadata"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs",
+      "resolution": "F4 target model + cumulative SOS metadata"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/EffectiveDayContentStore.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "src/CoppAddresd.Infrastructure/Repositories/ProgramRepository.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/EffectiveDayContentPostgresTests.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "tests/CoppAddresd.IntegrationTests/ExerciseSessionSnapshotTests.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    },
+    {
+      "path": "tests/CoppAddresd.UnitTests/ProgramProgress/EffectiveDayContentResolverTests.cs",
+      "resolution": "F4 conflict hunks + all auto-merged dev hunks"
+    }
+  ],
+  "cumulativeSosMetadata": [
+    "src/CoppAddresd.Infrastructure/Migrations/20261114122311_AddExerciseRoutineContraindications.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114141434_AddExerciseSessionDetailSnapshot.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114171403_AddNutritionCycles.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114174950_AddNutritionCycleInterruption.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114184553_AddNutritionIntakeRequests.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114193738_AddNutritionIntakeDayReviews.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114194459_AddNutritionCycleHighlights.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261114200555_AddNutritionCycleReviews.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261115174139_AddPatientAiBriefs.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Migrations/20261115184418_ExpandPatientAiBriefModelName.Designer.cs",
+    "src/CoppAddresd.Infrastructure/Infrastructure/Migrations/20261113205636_AllowThirtyDayLegacyNutritionCompletions.Designer.cs"
+  ],
+  "changedMigrationOperations": false,
+  "renamedMigrationIds": false
+}

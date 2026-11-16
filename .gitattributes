@@ -19,3 +19,6 @@ docs/modules/program-progress/REPAIR-1.14-LEGACY.md text eol=lf
 docs/modules/program-progress/evidence/1.14-legacy/** text eol=lf
 docs/modules/program-progress/ROUTINE-USAGE-2.22.md text eol=lf
 docs/modules/program-progress/evidence/2.22/** text eol=lf
+
+docs/modules/program-progress/RELEASE-PREFLIGHT.md text eol=lf
+docs/modules/program-progress/evidence/release-preflight/** text eol=lf

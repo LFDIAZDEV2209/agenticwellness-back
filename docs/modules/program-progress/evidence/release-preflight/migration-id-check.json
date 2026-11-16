@@ -1,0 +1,16 @@
+{
+  "duplicatesByContextAndId": {
+    "before": [],
+    "dev": [],
+    "merge": []
+  },
+  "countsMerged": {
+    "AppDbContext": 113,
+    "WhatsAppDbContext": 5,
+    "AuthDbContext": 16,
+    "CommunityDbContext": 21,
+    "TelemedicineDbContext": 16
+  },
+  "totalMerged": 171,
+  "sharedOperationDifferences": []
+}

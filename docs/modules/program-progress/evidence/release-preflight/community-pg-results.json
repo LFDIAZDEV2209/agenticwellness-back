@@ -1,0 +1,520 @@
+{
+  "rawTrx": "community-pg.trx",
+  "rawSha256": "5cc9f2c7b49a2eac9b7fe1baf68ae697b26e86ee8a407eabeaa5cbcffae886a4",
+  "counters": {
+    "total": "98",
+    "executed": "98",
+    "passed": "98",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "times": {
+    "creation": "2026-11-15T23:01:18.6563294-05:00",
+    "queuing": "2026-11-15T23:01:18.6563298-05:00",
+    "start": "2026-11-15T23:01:14.1611726-05:00",
+    "finish": "2026-11-15T23:02:41.3464413-05:00"
+  },
+  "results": [
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ChatQueryTests.Conversation_ExcludesMessagesWithOtherPeers",
+      "outcome": "Passed",
+      "duration": "00:00:00.0920672"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ChatQueryTests.Conversation_FromPeerSide_WorksSymmetric",
+      "outcome": "Passed",
+      "duration": "00:00:00.1356997"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ChatQueryTests.Conversation_ReturnsOnlyThatPeer_OrderedNewestFirst",
+      "outcome": "Passed",
+      "duration": "00:00:00.0939151"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ChatQueryTests.Conversations_AppliesTakeAndSkip",
+      "outcome": "Passed",
+      "duration": "00:00:00.1078722"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ChatQueryTests.Conversations_ReturnsOnePerPeer_WithLatestMessage",
+      "outcome": "Passed",
+      "duration": "00:00:00.0675867"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.AddClubComment_NoMiembro_Lanza",
+      "outcome": "Passed",
+      "duration": "00:00:00.0424135"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.CheckIn_RequiereConfirmacion_Previa",
+      "outcome": "Passed",
+      "duration": "00:00:00.0875802"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.ClubFeed_NoMiembro_SoloVePublicos",
+      "outcome": "Passed",
+      "duration": "00:00:00.1956018"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.ConfirmAttendance_AntiOverbooking_SegundoVaAListaEspera",
+      "outcome": "Passed",
+      "duration": "00:00:00.3119781"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.JoinClubDirect_ClubPublico_CreaMembresiaActiva",
+      "outcome": "Passed",
+      "duration": "00:00:00.0642832"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.JoinClubDirect_CupoLleno_LanzaError",
+      "outcome": "Passed",
+      "duration": "00:00:00.0417443"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.JoinWithInvitation_TokenValido_Une_Y_Consume",
+      "outcome": "Passed",
+      "duration": "00:00:00.1538226"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.MuteMember_NoPuedeComentar",
+      "outcome": "Passed",
+      "duration": "00:00:00.0777152"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.RequestMembership_Privado_QuedaPendiente_Y_ApruebaConNotificacion",
+      "outcome": "Passed",
+      "duration": "00:00:00.1141043"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.ResolveReport_Resuelto_BorraElPostDelClub",
+      "outcome": "Passed",
+      "duration": "00:00:00.0904504"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.ToggleClubPostLike_Alterna",
+      "outcome": "Passed",
+      "duration": "00:00:00.2172584"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubMutationTests.VoteClubPoll_UnVotoPorPerfil_Reemplaza",
+      "outcome": "Passed",
+      "duration": "00:00:00.1814400"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubSeederTests.Seed_CreaClubesSistemaYDemo_ConContenido",
+      "outcome": "Passed",
+      "duration": "00:00:00.4931409"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubSeederTests.Seed_CreaPostsDeClub_ConEncuestaYEstadoProgramado",
+      "outcome": "Passed",
+      "duration": "00:00:00.1094851"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ClubSeederTests.Seed_EsIdempotente",
+      "outcome": "Passed",
+      "duration": "00:00:00.0680489"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.CommunityDirectoryAndAnnouncementTests.DirectorySearchesBeyondFirstFiftyAndCountsFilteredPages",
+      "outcome": "Passed",
+      "duration": "00:00:00.1121062"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.CommunityDirectoryAndAnnouncementTests.OfficialAnnouncementPollPersistsOptionsAndAcceptsPatientVote",
+      "outcome": "Passed",
+      "duration": "00:00:00.1125953"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.AwardXpToAll_AwardsEveryActiveProfile",
+      "outcome": "Passed",
+      "duration": "00:00:00.1902523"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.AwardXp_CreatesEntry_AndUpdatesXpTotal",
+      "outcome": "Passed",
+      "duration": "00:00:00.0708865"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.CreatePost_StoresTypeAndDestination",
+      "outcome": "Passed",
+      "duration": "00:00:00.0766552"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.FeedEvents_ReturnsMostRecentFirst",
+      "outcome": "Passed",
+      "duration": "00:00:00.0598645"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.Me_UsesJwtNameClaim_ForDisplayName",
+      "outcome": "Passed",
+      "duration": "00:00:00.2527341"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.TopStreaks_OrdersByStreakThenXp",
+      "outcome": "Passed",
+      "duration": "00:00:00.0428611"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ErpFeaturesTests.ViewPost_IncrementsViewCount",
+      "outcome": "Passed",
+      "duration": "00:00:00.0591492"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.FeedFiltersTests.Feed_FiltersByAuthor_UnaccentInsensitive",
+      "outcome": "Passed",
+      "duration": "00:00:00.2669537"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.FeedFiltersTests.Feed_FiltersByWordAndDateRange",
+      "outcome": "Passed",
+      "duration": "00:00:00.2907205"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.AddGroupMember_RequiresMutualFriendOfAdder",
+      "outcome": "Passed",
+      "duration": "00:00:00.0689275"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.Conversations_ExcludesGroupMessages",
+      "outcome": "Passed",
+      "duration": "00:00:00.0702089"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.CreateGroup_AddsCreatorAsMember_AndPublishesChangedTopic",
+      "outcome": "Passed",
+      "duration": "00:00:00.0572395"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.CreateGroup_RejectsInvalidName",
+      "outcome": "Passed",
+      "duration": "00:00:00.0281098"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.CreateGroup_RequiresMutualFriendMembers",
+      "outcome": "Passed",
+      "duration": "00:00:00.0466933"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.GroupMembers_ReturnsAllMembers",
+      "outcome": "Passed",
+      "duration": "00:00:00.0546621"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.GroupMessageAdded_RejectsNonMember",
+      "outcome": "Passed",
+      "duration": "00:00:00.0713953"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.Group_ReturnsHistory_ForMember",
+      "outcome": "Passed",
+      "duration": "00:00:00.0860451"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.Groups_ReturnsMyGroups_WithLastMessageAndMemberCount",
+      "outcome": "Passed",
+      "duration": "00:00:00.1049440"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.LeaveGroup_DeletesGroupWhenEmpty",
+      "outcome": "Passed",
+      "duration": "00:00:00.0927413"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.RemoveGroupMember_CannotRemoveCreator",
+      "outcome": "Passed",
+      "duration": "00:00:00.0508112"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.RenameGroup_RejectsNonMember",
+      "outcome": "Passed",
+      "duration": "00:00:00.0501159"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.SendGroupMessage_PublishesToGroupTopic",
+      "outcome": "Passed",
+      "duration": "00:00:00.0458817"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.GroupChatTests.SendGroupMessage_RejectsNonMember",
+      "outcome": "Passed",
+      "duration": "00:00:00.0502294"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.CreatePollPost_CreatesPostWithPollAndOptions",
+      "outcome": "Passed",
+      "duration": "00:00:00.0883572"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.CreatePollPost_Rejects_DuplicateOptions",
+      "outcome": "Passed",
+      "duration": "00:00:00.0198773"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.CreatePollPost_Rejects_EmptyQuestion",
+      "outcome": "Passed",
+      "duration": "00:00:00.0171829"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.CreatePollPost_Rejects_TooFewOptions",
+      "outcome": "Passed",
+      "duration": "00:00:00.0130228"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.VotePoll_RegistersVoteAndReturnsResults",
+      "outcome": "Passed",
+      "duration": "00:00:00.0550151"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.VotePoll_Rejects_DoubleVote",
+      "outcome": "Passed",
+      "duration": "00:00:00.2354869"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.PollTests.VotePoll_Rejects_UnknownOption",
+      "outcome": "Passed",
+      "duration": "00:00:00.0305298"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingMigrationTests.BlockingMigration_DownThenUp_RestoresFunctionAndTable_AndPreservesExistingEvidence",
+      "outcome": "Passed",
+      "duration": "00:00:01.2451376"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingDirectMessageSubscription_DoesNotExposeQueuedMessageAfterBlock",
+      "outcome": "Passed",
+      "duration": "00:00:04.2931971"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingGroupSubscription_StopsDeliveringAfterMembershipIsRemoved",
+      "outcome": "Passed",
+      "duration": "00:00:02.9511014"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingSubscription_FiltersBlockedSenderAfterBlock_AndStillDeliversOtherSenders(kind: \"comment\")",
+      "outcome": "Passed",
+      "duration": "00:00:02.0263746"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingSubscription_FiltersBlockedSenderAfterBlock_AndStillDeliversOtherSenders(kind: \"feed\")",
+      "outcome": "Passed",
+      "duration": "00:00:01.9835514"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingSubscription_FiltersBlockedSenderAfterBlock_AndStillDeliversOtherSenders(kind: \"group\")",
+      "outcome": "Passed",
+      "duration": "00:00:02.4752024"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingSubscription_FiltersBlockedSenderAfterBlock_AndStillDeliversOtherSenders(kind: \"group-changed\")",
+      "outcome": "Passed",
+      "duration": "00:00:01.8471073"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingSubscription_FiltersBlockedSenderAfterBlock_AndStillDeliversOtherSenders(kind: \"nested-comment\")",
+      "outcome": "Passed",
+      "duration": "00:00:02.3964699"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.ExistingSubscription_FiltersBlockedSenderAfterBlock_AndStillDeliversOtherSenders(kind: \"post\")",
+      "outcome": "Passed",
+      "duration": "00:00:02.7327406"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.PersonalClubSubscriptions_RejectAnotherProfilesTopic(field: \"clubMembershipChanged\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.9407424"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.PersonalClubSubscriptions_RejectAnotherProfilesTopic(field: \"clubNotificationAdded\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.9446888"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.PrivateClubSubscriptions_RequireMembershipInitiallyAndAfterOpening(liveChat: False)",
+      "outcome": "Passed",
+      "duration": "00:00:03.6835183"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingSubscriptionTests.PrivateClubSubscriptions_RequireMembershipInitiallyAndAfterOpening(liveChat: True)",
+      "outcome": "Passed",
+      "duration": "00:00:04.1968863"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_IsOwnedByActor_IdempotentAndRemovesBothFollows_WithoutDeletingHistory",
+      "outcome": "Passed",
+      "duration": "00:00:02.6880835"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_RejectsInvalidTargets_WithoutChangingOwnList(targetKind: \"self\")",
+      "outcome": "Passed",
+      "duration": "00:00:01.1845377"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_RejectsInvalidTargets_WithoutChangingOwnList(targetKind: \"system\")",
+      "outcome": "Passed",
+      "duration": "00:00:01.0176184"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_RejectsInvalidTargets_WithoutChangingOwnList(targetKind: \"unknown\")",
+      "outcome": "Passed",
+      "duration": "00:00:01.3596826"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_RequiresAuthenticatedExistingActor_AndCannotAcceptSpoofedActorId",
+      "outcome": "Passed",
+      "duration": "00:00:01.4065224"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_TwoConcurrentRequests_PreserveDirectedChoicesAndRemoveFollows(reverseDirection: False)",
+      "outcome": "Passed",
+      "duration": "00:00:02.8176515"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockUser_TwoConcurrentRequests_PreserveDirectedChoicesAndRemoveFollows(reverseDirection: True)",
+      "outcome": "Passed",
+      "duration": "00:00:02.3816561"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.Block_FiltersSharedClubPostsAndComments_AndPreservesModeratorEvidence",
+      "outcome": "Passed",
+      "duration": "00:00:03.6105631"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.Block_FiltersSharedGroupHistoryLastMessageAndNestedNavigation_WithoutRemovingMemberships",
+      "outcome": "Passed",
+      "duration": "00:00:01.3354785"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.Block_HidesFeedSinglePostNestedCommentsRepliesAndReposts_InEitherDirection(peerBlocks: False)",
+      "outcome": "Passed",
+      "duration": "00:00:04.2312813"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.Block_HidesFeedSinglePostNestedCommentsRepliesAndReposts_InEitherDirection(peerBlocks: True)",
+      "outcome": "Passed",
+      "duration": "00:00:02.4442593"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.Block_HidesPeopleFollowsFriendsAndDirectMessages_ButKeepsUnrelatedPeers",
+      "outcome": "Passed",
+      "duration": "00:00:03.3044668"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.BlockedProfiles_PaginatesOnlyOwnChoices_WithStableOrder",
+      "outcome": "Passed",
+      "duration": "00:00:00.5334101"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.ReportAfterBlock_PersistsEvidence_AndReturnsNoHiddenContent(peerBlocks: False)",
+      "outcome": "Passed",
+      "duration": "00:00:02.7987334"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.ReportAfterBlock_PersistsEvidence_AndReturnsNoHiddenContent(peerBlocks: True)",
+      "outcome": "Passed",
+      "duration": "00:00:01.0993378"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.ProfileBlockingTests.UnblockUser_RemovesOnlyActorsChoice_AndReverseBlockStillHidesProfile",
+      "outcome": "Passed",
+      "duration": "00:00:02.3524609"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_Allows_BodyOfExactly1000",
+      "outcome": "Passed",
+      "duration": "00:00:00.0651985"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_Rejects_BodyOver1000",
+      "outcome": "Passed",
+      "duration": "00:00:00.0295544"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_Rejects_EmptyBody",
+      "outcome": "Passed",
+      "duration": "00:00:00.0309542"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_Rejects_UnknownRecipient",
+      "outcome": "Passed",
+      "duration": "00:00:00.0364963"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_Rejects_WhenNoMutualFollow",
+      "outcome": "Passed",
+      "duration": "00:00:00.0414435"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_Rejects_WhenSenderHasNoProfile",
+      "outcome": "Passed",
+      "duration": "00:00:00.0316089"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SendMessageTests.SendMessage_SavesAndPublishesTopic_ToSortedConversationKey",
+      "outcome": "Passed",
+      "duration": "00:00:00.1652210"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.EnsureParticipant_AllowsEitherSideOfTheConversation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0631587"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.EnsureParticipant_RejectsMalformedKey",
+      "outcome": "Passed",
+      "duration": "00:00:00.5944279"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.EnsureParticipant_RejectsOutsider",
+      "outcome": "Passed",
+      "duration": "00:00:00.0294633"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.EnsureParticipant_RejectsUnauthenticated",
+      "outcome": "Passed",
+      "duration": "00:00:00.0969507"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.EnsureParticipant_RejectsUserWithoutProfile",
+      "outcome": "Passed",
+      "duration": "00:00:00.0217093"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.TryParseConversationKey_ParsesTwoGuids",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026962"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.TryParseConversationKey_ValidatesFormat(key: \"\", expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0034338"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.TryParseConversationKey_ValidatesFormat(key: \"aaaa\", expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000032"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.TryParseConversationKey_ValidatesFormat(key: \"aaaa:bbbb\", expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003200"
+    },
+    {
+      "testName": "CoppAddresd.Community.IntegrationTests.SubscriptionTests.TryParseConversationKey_ValidatesFormat(key: \"not-a-guid:bbbb\", expected: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000111"
+    }
+  ]
+}
