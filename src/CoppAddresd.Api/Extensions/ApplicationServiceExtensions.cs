@@ -57,6 +57,7 @@ public static class ApplicationServiceExtensions
         IConfiguration configuration
     )
     {
+        services.AddVita(configuration);
         services.Configure<AiServiceSettings>(
             configuration.GetSection(AiServiceSettings.SectionName)
         );

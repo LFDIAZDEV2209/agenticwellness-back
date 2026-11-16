@@ -12,7 +12,8 @@ namespace CoppAddresd.Application.Features.Chat;
 /// de la app: el ai-service deja el agente hablando ese idioma antes de
 /// emitir el signed URL.
 /// </summary>
-public record VoiceSessionCommand(string UserId, string? PatientId, string? ThreadId, string? Language = null)
+public record VoiceSessionCommand(string UserId, string? PatientId, string? ThreadId,
+    string? Language = null, bool SupportsVitaVoice = false)
     : IRequest<VoiceSessionResponseDto>;
 
 /// <summary>

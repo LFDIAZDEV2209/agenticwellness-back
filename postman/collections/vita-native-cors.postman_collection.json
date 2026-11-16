@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "Vita — CORS del chat nativo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Regresión pública sin credenciales ni datos de pacientes: preflight de iOS/Android, rechazo de terceros y autenticación intacta. No prueba generación ni micrófono."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://erp.coppadresd.com"
+    }
+  ],
+  "item": [
+    {
+      "name": "OPTIONS capacitor://localhost",
+      "request": {
+        "method": "OPTIONS",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "capacitor://localhost"
+          },
+          {
+            "key": "Access-Control-Request-Method",
+            "value": "POST"
+          },
+          {
+            "key": "Access-Control-Request-Headers",
+            "value": "authorization,content-type"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/chat/stream"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Preflight responde 204\", () => pm.response.to.have.status(204));",
+              "pm.test(\"Origen exacto autorizado\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"capacitor://localhost\"));",
+              "pm.test(\"POST autorizado\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Methods\")).to.include(\"POST\"));",
+              "pm.test(\"Authorization y JSON autorizados\", () => { const h = pm.response.headers.get(\"Access-Control-Allow-Headers\").toLowerCase(); pm.expect(h).to.include(\"authorization\"); pm.expect(h).to.include(\"content-type\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "OPTIONS http://localhost",
+      "request": {
+        "method": "OPTIONS",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "http://localhost"
+          },
+          {
+            "key": "Access-Control-Request-Method",
+            "value": "POST"
+          },
+          {
+            "key": "Access-Control-Request-Headers",
+            "value": "authorization,content-type"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/chat/stream"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Preflight responde 204\", () => pm.response.to.have.status(204));",
+              "pm.test(\"Origen exacto autorizado\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"http://localhost\"));",
+              "pm.test(\"POST autorizado\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Methods\")).to.include(\"POST\"));",
+              "pm.test(\"Authorization y JSON autorizados\", () => { const h = pm.response.headers.get(\"Access-Control-Allow-Headers\").toLowerCase(); pm.expect(h).to.include(\"authorization\"); pm.expect(h).to.include(\"content-type\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "OPTIONS http://cooppadresd-alb-269201785.us-east-2.elb.amazonaws.com",
+      "request": {
+        "method": "OPTIONS",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "http://cooppadresd-alb-269201785.us-east-2.elb.amazonaws.com"
+          },
+          {
+            "key": "Access-Control-Request-Method",
+            "value": "POST"
+          },
+          {
+            "key": "Access-Control-Request-Headers",
+            "value": "authorization,content-type"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/chat/stream"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Preflight responde 204\", () => pm.response.to.have.status(204));",
+              "pm.test(\"Origen exacto autorizado\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"http://cooppadresd-alb-269201785.us-east-2.elb.amazonaws.com\"));",
+              "pm.test(\"POST autorizado\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Methods\")).to.include(\"POST\"));",
+              "pm.test(\"Authorization y JSON autorizados\", () => { const h = pm.response.headers.get(\"Access-Control-Allow-Headers\").toLowerCase(); pm.expect(h).to.include(\"authorization\"); pm.expect(h).to.include(\"content-type\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "OPTIONS https://vita-untrusted.invalid",
+      "request": {
+        "method": "OPTIONS",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "https://vita-untrusted.invalid"
+          },
+          {
+            "key": "Access-Control-Request-Method",
+            "value": "POST"
+          },
+          {
+            "key": "Access-Control-Request-Headers",
+            "value": "authorization,content-type"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/chat/stream"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Preflight responde 204\", () => pm.response.to.have.status(204));",
+              "pm.test(\"Origen ajeno rechazado\", () => pm.expect(pm.response.headers.has(\"Access-Control-Allow-Origin\")).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "OPTIONS null",
+      "request": {
+        "method": "OPTIONS",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "null"
+          },
+          {
+            "key": "Access-Control-Request-Method",
+            "value": "POST"
+          },
+          {
+            "key": "Access-Control-Request-Headers",
+            "value": "authorization,content-type"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/chat/stream"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Preflight responde 204\", () => pm.response.to.have.status(204));",
+              "pm.test(\"Origen ajeno rechazado\", () => pm.expect(pm.response.headers.has(\"Access-Control-Allow-Origin\")).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sin credenciales /api/v1/chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "capacitor://localhost"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": "{{baseUrl}}/api/v1/chat"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sigue exigiendo autenticación\", () => pm.response.to.have.status(401));",
+              "pm.test(\"El WebView puede leer el 401\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"capacitor://localhost\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sin credenciales /api/v1/chat/stream",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "capacitor://localhost"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": "{{baseUrl}}/api/v1/chat/stream"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sigue exigiendo autenticación\", () => pm.response.to.have.status(401));",
+              "pm.test(\"El WebView puede leer el 401\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"capacitor://localhost\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sin credenciales /api/v1/internal/vita/voice/v1/chat/completions",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "capacitor://localhost"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": "{{baseUrl}}/api/v1/internal/vita/voice/v1/chat/completions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sigue exigiendo autenticación\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -72,6 +72,34 @@ public interface IAiServiceClient
     );
 
     /// <summary>
+    /// Señal interna de apertura Vita derivada por BACK de aud=app, nunca del cliente.
+    /// Registra la retención sin exigir procesamiento de voz; la firma anterior conserva su comportamiento.
+    /// </summary>
+    Task<ThreadStateResult> GetThreadStateAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateAsync(threadId, userId, limit, before, ct);
+
+    /// <summary>
+    /// Vacía el historial del propietario autenticado y devuelve la confirmación persistida por AI.
+    /// No exige consentimiento de lectura; nunca degrada fallos a una confirmación local.
+    /// </summary>
+    Task<ThreadHistoryClearResult> ClearThreadHistoryAsync(
+        string threadId, string userId, CancellationToken ct = default);
+
+    /// <summary>Opt-in interno solo tras autorizar paciente/propiedad y consentimiento chat+voz.</summary>
+    async Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit = null, int? before = null, CancellationToken ct = default)
+    {
+        var state = await GetThreadStateAsync(threadId, userId, limit, before, ct);
+        return state with { VoiceSyncStatus = "unavailable" };
+    }
+
+    /// <summary>Sincronización de voz autorizada con señal interna de apertura de la app.</summary>
+    Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateWithVoiceSyncAsync(threadId, userId, limit, before, ct);
+
+    /// <summary>
     /// Registra el feedback del paciente sobre una respuesta del chat
     /// (rating 1-5 + comentario opcional). Canal interno con X-Internal-Key;
     /// alimenta la adaptive memory del AI Service. El <c>userId</c> proviene
@@ -126,4 +154,8 @@ public interface IAiServiceClient
         VoiceSessionInternalRequest request,
         CancellationToken ct = default
     );
+
+    /// <summary>Revoca una sesión de voz del mismo usuario, sin depender del consentimiento retirado.</summary>
+    Task RevokeVoiceSessionAsync(string sessionId, string userId, CancellationToken ct = default)
+        => throw new NotSupportedException("Revocación de voz no implementada.");
 }

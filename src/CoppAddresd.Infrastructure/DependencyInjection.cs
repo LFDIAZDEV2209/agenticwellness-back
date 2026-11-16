@@ -279,6 +279,7 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        services.AddSosWhatsApp(configuration);
         services.AddScoped<ISosAlertRepository, SosAlertRepository>();
         services.AddSingleton<ISosLocationLinkService, SosLocationLinkService>();
         services.Configure<SosGeocodingSettings>(configuration.GetSection("SosGeocoding"));

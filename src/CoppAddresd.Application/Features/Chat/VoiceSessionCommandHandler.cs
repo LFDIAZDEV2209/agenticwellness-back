@@ -2,6 +2,8 @@ using CoppAddresd.Application.DTOs.Ai;
 using CoppAddresd.Application.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using CoppAddresd.Application.Features.Agents.Vita;
+using CoppAddresd.Domain.Exceptions;
 
 namespace CoppAddresd.Application.Features.Chat;
 
@@ -14,7 +16,8 @@ namespace CoppAddresd.Application.Features.Chat;
 /// </summary>
 public sealed class VoiceSessionCommandHandler(
     IAiServiceClient aiService,
-    ILogger<VoiceSessionCommandHandler> logger
+    ILogger<VoiceSessionCommandHandler> logger,
+    VitaPatientAccess access
 ) : IRequestHandler<VoiceSessionCommand, VoiceSessionResponseDto>
 {
     public async Task<VoiceSessionResponseDto> Handle(
@@ -22,24 +25,17 @@ public sealed class VoiceSessionCommandHandler(
         CancellationToken ct
     )
     {
-        logger.LogInformation(
-            "Sesión de voz: UserId={UserId} PatientId={PatientId} ThreadId={ThreadId}",
-            request.UserId,
-            request.PatientId ?? "-",
-            request.ThreadId ?? "-"
-        );
+        ct.ThrowIfCancellationRequested();
+        if (!Guid.TryParse(request.UserId, out var userId)) throw new ForbiddenException("VITA_PATIENT_UNAVAILABLE");
+        var patient = await access.RequireAsync(userId, "voice", ct);
 
         var result = await aiService.CreateVoiceSessionAsync(
-            new VoiceSessionInternalRequest(request.UserId, request.PatientId, request.ThreadId, request.Language),
+            new VoiceSessionInternalRequest(userId.ToString(), patient.Id.ToString(), request.ThreadId,
+                request.Language, request.SupportsVitaVoice),
             ct
         );
 
-        logger.LogInformation(
-            "Sesión de voz creada: UserId={UserId} AgentId={AgentId} ConversationId={ConversationId}",
-            request.UserId,
-            result.AgentId,
-            result.ConversationId ?? "-"
-        );
+        logger.LogInformation("Sesión de voz creada: modo={RuntimeMode}", result.RuntimeMode);
 
         return result;
     }

@@ -55,7 +55,8 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             // turno para el AI Service (permite cambiar de idioma a mitad de
             // conversación). Null ⇒ el AI Service mantiene su espejo.
             request.Language,
-            request.PatientId);
+            request.PatientId,
+            request.SupportsVita);
 
         try
         {
@@ -63,7 +64,8 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             await ProgramControlChatHooks.TryConsumeSignalAsync(
                 _programControls, result.ControlSignal, openControl?.ControlId, _logger, ct);
             _logger.LogInformation("Chat response: ThreadId={ThreadId}", result.ThreadId);
-            return new ChatResult(result.Reply, result.ThreadId, result.ExecutionId, result.Agent, result.Suggestions);
+            return new ChatResult(result.Reply, result.ThreadId, result.ExecutionId, result.Agent,
+                result.Suggestions, result.Actions, result.Sources, result.VersionId);
         }
         catch (AiServiceException exc) when (exc.StatusCode == 404 && request.AgentTypeId is not null)
         {
@@ -83,7 +85,8 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             await ProgramControlChatHooks.TryConsumeSignalAsync(
                 _programControls, result.ControlSignal, openControl?.ControlId, _logger, ct);
             _logger.LogInformation("Chat response (tras re-sync): ThreadId={ThreadId}", result.ThreadId);
-            return new ChatResult(result.Reply, result.ThreadId, result.ExecutionId, result.Agent, result.Suggestions);
+            return new ChatResult(result.Reply, result.ThreadId, result.ExecutionId, result.Agent,
+                result.Suggestions, result.Actions, result.Sources, result.VersionId);
         }
     }
 }

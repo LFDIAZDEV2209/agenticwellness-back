@@ -62,6 +62,7 @@ public class AiServiceClient : IAiServiceClient
             // Idioma de la app del paciente ('es' | 'en'): JsonOpts omite el campo
             // cuando es null (comportamiento byte-idéntico para clientes viejos).
             language = request.Language,
+            supports_vita = request.SupportsVita,
         };
 
     /// <summary>
@@ -132,7 +133,7 @@ public class AiServiceClient : IAiServiceClient
             result.ExecutionId,
             result.Agent,
             result.Suggestions,
-            result.ControlSignal
+            result.ControlSignal, result.Actions, result.Sources ?? result.DataSources, result.VersionId
         );
     }
 
@@ -391,6 +392,7 @@ public class AiServiceClient : IAiServiceClient
             // voz hablando ese idioma antes de emitir el signed URL. Null ⇒
             // se omite (JsonOpts omit-null) y el ai-service no toca la config.
             language = request.Language,
+            supports_vita_voice = request.SupportsVitaVoice,
         };
 
         using var httpRequest = new HttpRequestMessage(
@@ -420,17 +422,74 @@ public class AiServiceClient : IAiServiceClient
         return new VoiceSessionResponseDto(
             result.SignedUrl,
             result.AgentId ?? string.Empty,
-            result.ConversationId
+            result.ConversationId, result.ThreadId, result.SessionId, result.SessionToken,
+            result.ExpiresAt, result.RuntimeMode ?? "legacy"
         );
     }
 
-    public async Task<ThreadStateResult> GetThreadStateAsync(
+    public async Task RevokeVoiceSessionAsync(string sessionId, string userId, CancellationToken ct = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Delete,
+            $"{_settings.VoiceSessionEndpoint.TrimEnd('/')}/{Uri.EscapeDataString(sessionId)}?user_id={Uri.EscapeDataString(userId)}");
+        AddInternalKeyHeader(request);
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) await ThrowForResponseAsync(response, ct);
+    }
+
+    public Task<ThreadStateResult> GetThreadStateAsync(
         string threadId,
         string userId,
         int? limit = null,
         int? before = null,
         CancellationToken ct = default
     )
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, false, false, ct);
+
+    public Task<ThreadStateResult> GetThreadStateAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, false, supportsVita, ct);
+
+    public async Task<ThreadHistoryClearResult> ClearThreadHistoryAsync(
+        string threadId, string userId, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(_settings.InternalApiKey))
+            throw new AiServiceException(503, "Canal interno de historial no configurado.");
+        using var request = new HttpRequestMessage(HttpMethod.Delete,
+            $"{_settings.ApiPrefix}/threads/{Uri.EscapeDataString(threadId)}/state?user_id={Uri.EscapeDataString(userId)}");
+        request.Options.Set(AiConsentHttpHandler.ThreadHistoryDeletion, true);
+        AddInternalKeyHeader(request);
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) await ThrowForResponseAsync(response, ct);
+        if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            throw new AiServiceException(502, "Limpieza de historial sin confirmación válida.");
+
+        ThreadHistoryClearResponseJson? result;
+        try
+        {
+            result = await response.Content.ReadFromJsonAsync<ThreadHistoryClearResponseJson>(JsonOpts, ct);
+        }
+        catch (JsonException)
+        {
+            throw new AiServiceException(502, "Confirmación de limpieza de historial inválida.");
+        }
+        if (result is null || result.ThreadId != threadId || result.HistoryRevision is null or < 0
+            || result.ClearedAt is null || result.ResetReason is not ("manual" or "monthly"))
+            throw new AiServiceException(502, "Confirmación de limpieza de historial incompleta.");
+
+        return new(result.ThreadId, result.HistoryRevision.Value, result.ClearedAt.Value, result.ResetReason);
+    }
+
+    public Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit = null, int? before = null, CancellationToken ct = default)
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, true, false, ct);
+
+    public Task<ThreadStateResult> GetThreadStateWithVoiceSyncAsync(string threadId, string userId,
+        int? limit, int? before, CancellationToken ct, bool supportsVita)
+        => GetThreadStateCoreAsync(threadId, userId, limit, before, true, supportsVita, ct);
+
+    private async Task<ThreadStateResult> GetThreadStateCoreAsync(string threadId, string userId,
+        int? limit, int? before, bool syncVoice, bool supportsVita, CancellationToken ct)
     {
         // Proxy de lectura del historial de un thread (canal interno). El AI
         // Service aísla el thread por user_id (`{user_id}::{thread_id}`) y
@@ -445,8 +504,14 @@ public class AiServiceClient : IAiServiceClient
             url += $"&limit={limit.Value.ToString(CultureInfo.InvariantCulture)}";
         if (before is not null)
             url += $"&before={before.Value.ToString(CultureInfo.InvariantCulture)}";
+        if (syncVoice) url += "&sync_voice=true";
+        if (supportsVita) url += "&supports_vita=true";
 
         using var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+        if (syncVoice)
+            httpRequest.Options.Set(AiConsentSubject.Key, new("chat",
+                UserId: Guid.TryParse(userId, out var syncOwner) ? syncOwner : null,
+                RequireRecipientConsent: true, RequireVoiceConsent: true));
         AddInternalKeyHeader(httpRequest);
 
         using var response = await _httpClient.SendAsync(httpRequest, ct);
@@ -468,9 +533,12 @@ public class AiServiceClient : IAiServiceClient
             result.ThreadId,
             result.MessageCount,
             result.LastMessage,
-            result.Messages?.Select(m => new ThreadMessageResult(m.Role, m.Text)).ToList() ?? [],
+            result.Messages?.Select(m => new ThreadMessageResult(m.Role, m.Text, m.MessageId,
+                m.Channel, m.Status, m.Revision, m.Source, m.VoiceSessionId,
+                m.ProviderMessageId, m.SourceEventId, m.ExecutionId)).ToList() ?? [],
             result.HasMore,
-            result.NextCursor
+            result.NextCursor, result.VoiceSyncStatus,
+            result.HistoryRevision, result.ClearedAt, result.ResetReason
         );
     }
 
@@ -654,7 +722,11 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("agent")] string? Agent = null,
         [property: JsonPropertyName("suggestions")]
             IReadOnlyList<ChatSuggestion>? Suggestions = null,
-        [property: JsonPropertyName("control_signal")] string? ControlSignal = null
+        [property: JsonPropertyName("control_signal")] string? ControlSignal = null,
+        [property: JsonPropertyName("actions")] IReadOnlyList<CoppAddresd.Application.Features.Agents.Vita.VitaActionDto>? Actions = null,
+        [property: JsonPropertyName("sources")] JsonElement? Sources = null,
+        [property: JsonPropertyName("data_sources")] JsonElement? DataSources = null,
+        [property: JsonPropertyName("version_id")] string? VersionId = null
     );
 
     private record DoneJson(string ThreadId);
@@ -690,13 +762,32 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("last_message")] string? LastMessage,
         [property: JsonPropertyName("messages")] IReadOnlyList<ThreadMessageJson>? Messages = null,
         [property: JsonPropertyName("has_more")] bool HasMore = false,
-        [property: JsonPropertyName("next_cursor")] int? NextCursor = null
+        [property: JsonPropertyName("next_cursor")] int? NextCursor = null,
+        [property: JsonPropertyName("voice_sync_status")] string? VoiceSyncStatus = null,
+        [property: JsonPropertyName("history_revision")] long HistoryRevision = 0,
+        [property: JsonPropertyName("cleared_at")] DateTimeOffset? ClearedAt = null,
+        [property: JsonPropertyName("reset_reason")] string? ResetReason = null
     );
+
+    private sealed record ThreadHistoryClearResponseJson(
+        [property: JsonPropertyName("thread_id")] string? ThreadId,
+        [property: JsonPropertyName("history_revision")] long? HistoryRevision,
+        [property: JsonPropertyName("cleared_at")] DateTimeOffset? ClearedAt,
+        [property: JsonPropertyName("reset_reason")] string? ResetReason);
 
     // Mensaje visible del thread según el contrato del AI Service.
     private sealed record ThreadMessageJson(
         [property: JsonPropertyName("role")] string Role,
-        [property: JsonPropertyName("text")] string Text
+        [property: JsonPropertyName("text")] string Text,
+        [property: JsonPropertyName("message_id")] string? MessageId = null,
+        [property: JsonPropertyName("channel")] string Channel = "text",
+        [property: JsonPropertyName("status")] string Status = "final",
+        [property: JsonPropertyName("revision")] int Revision = 1,
+        [property: JsonPropertyName("source")] string? Source = null,
+        [property: JsonPropertyName("voice_session_id")] string? VoiceSessionId = null,
+        [property: JsonPropertyName("provider_message_id")] string? ProviderMessageId = null,
+        [property: JsonPropertyName("source_event_id")] long? SourceEventId = null,
+        [property: JsonPropertyName("execution_id")] string? ExecutionId = null
     );
 
     // Contrato del endpoint de feedback: eco del thread/rating más si la
@@ -720,6 +811,11 @@ public class AiServiceClient : IAiServiceClient
     private sealed record VoiceSessionResponseJson(
         [property: JsonPropertyName("signed_url")] string? SignedUrl,
         [property: JsonPropertyName("agent_id")] string? AgentId,
-        [property: JsonPropertyName("conversation_id")] string? ConversationId = null
+        [property: JsonPropertyName("conversation_id")] string? ConversationId = null,
+        [property: JsonPropertyName("thread_id")] string? ThreadId = null,
+        [property: JsonPropertyName("session_id")] string? SessionId = null,
+        [property: JsonPropertyName("session_token")] string? SessionToken = null,
+        [property: JsonPropertyName("expires_at")] DateTimeOffset? ExpiresAt = null,
+        [property: JsonPropertyName("runtime_mode")] string? RuntimeMode = null
     );
 }

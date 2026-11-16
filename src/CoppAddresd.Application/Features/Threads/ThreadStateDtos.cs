@@ -4,7 +4,10 @@ namespace CoppAddresd.Application.Features.Threads;
 /// Mensaje visible del historial de un thread (contrato aditivo del AI
 /// Service): <c>role</c> ("user" | "bot") + <c>text</c>, en el orden del thread.
 /// </summary>
-public record ThreadMessageResult(string Role, string Text);
+public record ThreadMessageResult(string Role, string Text, string? MessageId = null,
+    string Channel = "text", string Status = "final", int Revision = 1,
+    string? Source = null, string? VoiceSessionId = null, string? ProviderMessageId = null,
+    long? SourceEventId = null, string? ExecutionId = null);
 
 /// <summary>
 /// Resumen del historial de un thread devuelto por el AI Service (proxy de
@@ -17,6 +20,9 @@ public record ThreadMessageResult(string Role, string Text);
 /// cursor desde el más reciente (<c>before</c> = offset desde el final del
 /// historial); un ai-service anterior no los envía y se degradan a
 /// false/null.
+/// HistoryRevision/ClearedAt/ResetReason preservan las limpiezas incluso sin mensajes;
+/// un AI anterior mantiene los defaults 0/null/null. La revisión pertenece al historial
+/// completo y no sustituye Revision de cada mensaje.
 /// </summary>
 public record ThreadStateResult(
     string ThreadId,
@@ -24,4 +30,15 @@ public record ThreadStateResult(
     string? LastMessage,
     IReadOnlyList<ThreadMessageResult>? Messages = null,
     bool HasMore = false,
-    int? NextCursor = null);
+    int? NextCursor = null,
+    string? VoiceSyncStatus = null,
+    long HistoryRevision = 0,
+    DateTimeOffset? ClearedAt = null,
+    string? ResetReason = null);
+
+/// <summary>Confirmación del AI Service de una limpieza manual o mensual del historial.</summary>
+public record ThreadHistoryClearResult(
+    string ThreadId,
+    long HistoryRevision,
+    DateTimeOffset ClearedAt,
+    string ResetReason);

@@ -1,0 +1,9 @@
+{
+  "Vita": {
+    "InternalEnabled": false,
+    "TaskCompletionEnabled": false,
+    "TaskProposalSecret": "",
+    "VoiceProxyEnabled": false,
+    "VoiceServiceKey": ""
+  }
+}

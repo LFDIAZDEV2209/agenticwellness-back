@@ -52,7 +52,7 @@ public class StreamChatCommandHandler : IRequestHandler<StreamChatCommand, IAsyn
             // Idioma de la app del paciente ('es' | 'en'): señal explícita por
             // turno para el AI Service (permite cambiar de idioma a mitad de
             // conversación). Null ⇒ el AI Service mantiene su espejo.
-            request.Language);
+            request.Language, SupportsVita: request.SupportsVita);
 
         // El stream es lazy: el 404 del runtime surge en el primer MoveNext
         // (el SendAsync). Se envuelve el enumerador para re-sincronizar el

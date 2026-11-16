@@ -5,9 +5,10 @@ namespace CoppAddresd.Application.DTOs.Ai;
 /// cliente NO define identidad: el usuario/paciente proviene del JWT que el
 /// controller inyecta; solo se aceptan el thread opcional (correlación con
 /// el chat) y el idioma de la app ('es' | 'en') para que el agente de voz
-/// arranque hablando el idioma de la app.
+/// arranque hablando el idioma de la app. SupportsVitaVoice declara compatibilidad;
+/// su ausencia mantiene false para clientes anteriores.
 /// </summary>
-public record VoiceSessionRequestDto(string? ThreadId, string? Language = null);
+public record VoiceSessionRequestDto(string? ThreadId, string? Language = null, bool SupportsVitaVoice = false);
 
 /// <summary>
 /// Payload interno backend → ai-service para emitir la sesión. Los ids
@@ -16,11 +17,14 @@ public record VoiceSessionRequestDto(string? ThreadId, string? Language = null);
 /// El <c>Language</c> ('es' | 'en') viaja si la app lo envió; con null el
 /// ai-service no toca la configuración del agente (compatible hacia atrás).
 /// </summary>
-public record VoiceSessionInternalRequest(string UserId, string? PatientId, string? ThreadId, string? Language = null);
+public record VoiceSessionInternalRequest(string UserId, string? PatientId, string? ThreadId,
+    string? Language = null, bool SupportsVitaVoice = false);
 
 /// <summary>
 /// Sesión temporal de voz lista para conectar desde la app de pacientes.
 /// El <c>SignedUrl</c> es de vida corta y solo viaja por HTTPS en esta
 /// respuesta: jamás se persiste, se loguea ni se expone la API key.
 /// </summary>
-public record VoiceSessionResponseDto(string SignedUrl, string AgentId, string? ConversationId);
+public record VoiceSessionResponseDto(string SignedUrl, string AgentId, string? ConversationId,
+    string? ThreadId = null, string? SessionId = null, string? SessionToken = null,
+    DateTimeOffset? ExpiresAt = null, string RuntimeMode = "legacy");

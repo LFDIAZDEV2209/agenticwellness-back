@@ -36,6 +36,9 @@ public static class PermissionCodes
     public const string PatientsUpdate = "Patients.Update";
     public const string PatientsDelete = "Patients.Delete";
 
+    // Código existente en Auth; asignar una instancia modifica el acceso al agente.
+    public const string AgentsUpdate = "Agents.Update";
+
     // Progreso del Programa (T-04): códigos sembrados en el Auth Service.
     public const string ProgramView = "Program.View";
     public const string ProgramEdit = "Program.Edit";
@@ -118,6 +121,7 @@ public static class PermissionCodes
         PatientsCreate,
         PatientsUpdate,
         PatientsDelete,
+        AgentsUpdate,
         ProgramView,
         ProgramEdit,
         ProgramEnroll,
