@@ -89,6 +89,7 @@ public static class PermissionCodes
     public const string NutritionApprove = "Nutrition.Approve";
 
     // Mantenimiento y administración del sistema.
+    public const string AuditView = "Audit.View";
     public const string SystemAdminSettings = "System.AdminSettings";
 
     // SOS real (change sos-panic-real): atención de alertas por staff ERP.
@@ -157,6 +158,7 @@ public static class PermissionCodes
         NutritionReviewManage,
         NutritionManage,
         NutritionApprove,
+        AuditView,
         SystemAdminSettings,
         SosAlertsManage,
     ];
