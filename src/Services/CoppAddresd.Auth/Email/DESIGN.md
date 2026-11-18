@@ -10,8 +10,8 @@ colors:
   body: "#52677b"
   border: "#dfe9e8"
 rounded:
-  button: "8px"
-  message: "16px"
+  button: "28px"
+  message: "22px"
 ---
 
 # Design System: Copp Adresd email
@@ -26,18 +26,22 @@ del email, sin redefinir el diseño del ERP o la app.
 
 Azul `#142855` para encabezado y títulos; verde `#035d4d` para acciones con texto
 blanco. Cuerpo blanco y fondo secundario verde claro. El texto de apoyo usa
-`#52677b`; divisores `#dfe9e8`. Sin degradados ni sombras decorativas.
+`#52677b`; divisores `#dfe9e8`. El encabezado combina azul y verde en un
+degradado de 125 grados; botones con transición verde a azul. Ambos conservan
+color sólido de respaldo para clientes sin soporte de degradados.
 
 ## Typography
 
-Título 36px (30px móvil), secciones 21px, cuerpo 15–16px y pie 11–14px. El stack
-Arial/Helvetica es una excepción deliberada por compatibilidad entre clientes
-de correo; no se adopta como tipografía del resto del producto. Sin webfonts.
+Saludo editorial Georgia de 54px (44px móvil), secciones sans de 23px, cuerpo
+15–16px y pie 11–13px. Georgia también aparece en el cierre de ayuda, a 25px.
+Arial/Helvetica se conserva en cuerpo y controles por compatibilidad entre
+clientes de correo; no redefine la tipografía del resto del producto. Sin webfonts.
 
 ## Layout
 
-Tabla fluida con máximo de 600px. Padding horizontal 40px en escritorio, 22px
-en pantallas de hasta 600px. Orden: marca, saludo, rol, primer acceso si aplica,
+Tabla fluida con máximo de 600px. Padding horizontal de 42px en escritorio,
+24px de cuerpo y 26px de encabezado en pantallas de hasta 600px. Orden: marca
+integrada al encabezado, saludo, rol, primer acceso si aplica,
 ERP si está habilitado, app si está habilitada, ayuda y seguridad.
 
 ## Elevation & Depth
@@ -46,14 +50,17 @@ Separación por color y espacio; no hay elevación con sombras.
 
 ## Shapes
 
-Contenedor de 16px y botones de 8px. Los separadores de capacidades son líneas
-horizontales de 1px; las tiendas pendientes son bloques informativos sin enlace.
+Contenedor de 22px, sello del logo de 18px y botones de 28px. La activación
+aparece en una superficie verde clara de 16px; las capacidades usan filas
+sombreadas con separación de 8px. Las tiendas pendientes tienen borde
+discontinuo de 1px y no se presentan como enlaces.
 
 ## Components
 
 Logo PNG original (`coppaddresd-front/public/LogoIndividual.png`), copiado con
 metadatos de procedencia y embebido mediante CID con alt. No depende de un CDN.
-Botones en tablas y estilos inline. La alternativa de texto contiene las mismas
+Logo sobre un sello blanco y cierre de ayuda sobre azul oscuro. Botones en
+tablas y estilos inline. La alternativa de texto contiene las mismas
 instrucciones y destinos. El generador de muestras usa el mismo renderer que producción.
 
 ## Do's and Don'ts

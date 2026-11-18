@@ -178,3 +178,7 @@ Auth. No usar el gating laxo de /me para describir permisos: omite Deny. Un logi
 OTP repetido no debe limpiar InvitationId/ReadyAt de una bienvenida ERP pendiente.
 Una bienvenida app ya enviada tampoco puede bloquear la primera invitación ERP.
 Logo CID y muestras .eml permiten comprobar el correo sin credenciales ni SMTP.
+
+La revisión visual de KAN-86 pidió más personalidad: saludo Georgia, logo en
+sello blanco, encabezado degradado navy/teal y activación destacada. Conservar
+los colores sólidos de respaldo para Outlook y las tablas/estilos inline.
