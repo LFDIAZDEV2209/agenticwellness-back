@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="CoppAddresd.UnitTests" />
+    <InternalsVisibleTo Include="CoppAddresd.IntegrationTests" />
   </ItemGroup>
 
   <PropertyGroup>

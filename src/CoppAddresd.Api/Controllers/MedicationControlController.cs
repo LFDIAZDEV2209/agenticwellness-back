@@ -11,7 +11,7 @@ namespace CoppAddresd.Api.Controllers;
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("api/v1")]
-public sealed class MedicationControlController(MedicationControlService medications, ICurrentContext current, MedicationMonitoringService? monitoring = null) : ControllerBase
+public sealed class MedicationControlController(MedicationControlService medications, ICurrentContext current, MedicationMonitoringService? monitoring = null, IConfiguration? settings = null) : ControllerBase
 {
     [HttpGet("me/capabilities")]
     public async Task<IActionResult> Capabilities(CancellationToken ct)
@@ -22,12 +22,14 @@ public sealed class MedicationControlController(MedicationControlService medicat
         var manageAccess = false;
         var canViewAudit = false;
         var canExport = false;
+        var canSnooze = false;
         var revision = 0;
         if (medications.Enabled && IsApplication("app"))
         {
             var access = await medications.SelfAccessAsync(ActorId, ct);
             enabled = view = manage = access.Enabled;
             revision = access.Revision;
+            canSnooze = access.Enabled && settings?.GetValue<bool>("Medications:RemindersEnabled") == true;
         }
         else if (medications.Enabled && IsApplication("erp"))
         {
@@ -41,7 +43,7 @@ public sealed class MedicationControlController(MedicationControlService medicat
         return Ok(new
         {
             policyVersion = $"medications-v1:{(medications.Enabled ? revision.ToString() : "off")}",
-            modules = new { medications = new { enabled, canView = view, canManage = manage, canManageAccess = manageAccess, canViewAudit, canExport } },
+            modules = new { medications = new { enabled, canView = view, canManage = manage, canManageAccess = manageAccess, canViewAudit, canExport, canSnooze } },
         });
     }
 
@@ -67,6 +69,18 @@ public sealed class MedicationControlController(MedicationControlService medicat
     {
         var patient = await SelfAsync(ct);
         return Ok(await medications.RecordAsync(patient, ActorId, "patient_reported", doseId, request, ct));
+    }
+
+    [HttpPost("me/medications/doses/{doseId:guid}/snooze")]
+    public async Task<IActionResult> Snooze(Guid doseId, SnoozeMedicationDoseRequest request,
+        [FromServices] IMedicationReminderScheduler reminders, [FromServices] IConfiguration configuration,
+        CancellationToken ct)
+    {
+        var patient = await SelfAsync(ct);
+        if (!configuration.GetValue<bool>("Medications:RemindersEnabled")) return NotFound();
+        if (request.Minutes is not (15 or 30) || request.ScheduledAt == default) return BadRequest();
+        return await reminders.SnoozeAsync(patient, doseId, request.ScheduledAt.UtcDateTime, request.Minutes, ct)
+            ? NoContent() : Conflict();
     }
 
     [HttpPut("me/medications/treatments/{id:guid}/status")]
