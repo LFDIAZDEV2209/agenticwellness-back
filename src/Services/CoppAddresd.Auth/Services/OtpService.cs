@@ -404,6 +404,7 @@ public class OtpService : IOtpService
             application.Code
         );
 
+        await WelcomeEmailQueue.EnqueueAsync(_dbContext, user.Id, ct: ct);
         return await IssueTokensAsync(user, application, ct);
     }
 

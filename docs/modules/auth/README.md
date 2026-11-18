@@ -708,3 +708,8 @@ funcional `NutritionReviewer`, conservando alcance propio y sin conceder
 aprobar/devolver usa Approve; generar/editar/versionar/enviar usa Manage.
 El backend deriva actor y permisos efectivos del JWT/contexto scoped; requiere
 audiencia ERP y valida la relación activa paciente–profesional.
+
+## Bienvenida de nuevos usuarios (KAN-86)
+
+Plantilla de marca, entrega durable por acceso e instrucciones de pruebas y
+recuperación: [welcome-emails.md](welcome-emails.md).

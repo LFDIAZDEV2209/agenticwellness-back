@@ -11267,6 +11267,42 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("vital_signs", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.WelcomeEmailFinalization", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("InvitationId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<DateTime>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("NextAttemptAt")
+                        .HasFilter("completed_at IS NULL");
+
+                    b.ToTable("welcome_email_finalizations", "erp");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.AgentDocument", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.KnowledgeBase", "KnowledgeBase")

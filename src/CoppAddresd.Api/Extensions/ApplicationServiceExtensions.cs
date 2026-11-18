@@ -250,6 +250,7 @@ public static class ApplicationServiceExtensions
             CoppAddresd.Infrastructure.Repositories.ProfessionalAccessProjectionRepository
         >();
         services.AddHostedService<ErpAccessProjectionWorker>();
+        services.AddHostedService<WelcomeEmailFinalizationWorker>();
         services.AddHttpClient<IErpAccessClient, ErpAccessClient>(
             (sp, client) =>
             {

@@ -188,7 +188,25 @@ public class BulkCreateUsersTests
         }, grantErpAccess: grantErpAccess);
         Assert.Equal(2, result.Created);
         Assert.Equal(grantErpAccess ? 2 : 0, await h.Db.UserApplications.CountAsync());
+        Assert.Equal(grantErpAccess ? 2 : 0, await h.Db.WelcomeEmailDeliveries.CountAsync());
         Assert.False((await h.UserManager.FindByEmailAsync("inactiva@example.test"))!.IsActive);
+    }
+
+    [Fact]
+    public async Task BulkCreate_ErpPartialFailure_QueuesOnlySuccessfulAccount()
+    {
+        using var h = new Harness();
+        h.Db.Applications.Add(new CoppAddresd.Auth.Entities.Application { Id = Guid.NewGuid(), Code = "erp", Name = "ERP", IsActive = true });
+        await h.Db.SaveChangesAsync();
+        var result = await h.Users.CreateBulkAsync(new BulkCreateUsersRequest
+        {
+            Rows = [new() { FirstName = "Ana", LastName = "Prueba", Email = "welcome-one@example.test" },
+                    new() { FirstName = "Sin", LastName = "Rol", Email = "welcome-bad@example.test", RoleName = "MissingRole" },
+                    new() { FirstName = "Ana", LastName = "Duplicada", Email = "welcome-one@example.test" }],
+        }, grantErpAccess: true);
+        Assert.Equal(1, result.Created);
+        Assert.Equal(2, result.Failed);
+        Assert.Single(await h.Db.WelcomeEmailDeliveries.ToListAsync());
     }
 
     [Fact]

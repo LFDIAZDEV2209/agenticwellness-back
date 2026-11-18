@@ -353,6 +353,9 @@ public class UserService : IUserService
                 await _dbContext.SaveChangesAsync(ct);
             }
 
+            if (grantErpAccess)
+                await WelcomeEmailQueue.EnqueueAsync(_dbContext, user.Id, ct: ct);
+
             await tx.CommitAsync(ct);
 
             _logger.LogInformation("User {UserId} created successfully", user.Id);
@@ -495,6 +498,7 @@ public class UserService : IUserService
                 }
             }
 
+            await WelcomeEmailQueue.EnqueueAsync(_dbContext, user.Id, ct: ct);
             await tx.CommitAsync(ct);
 
             _logger.LogInformation(

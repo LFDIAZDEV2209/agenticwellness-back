@@ -148,6 +148,8 @@ builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IScopedPermissionService, ScopedPermissionService>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
+builder.Services.AddScoped<WelcomeEmailDispatcher>();
+builder.Services.AddHostedService<WelcomeEmailWorker>();
 builder.Services.AddScoped<IDemoPatientSeedService, DemoPatientSeedService>();
 builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
 builder.Services.AddScoped<

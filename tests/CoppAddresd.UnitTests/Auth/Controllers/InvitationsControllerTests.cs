@@ -47,7 +47,7 @@ public class InvitationsControllerTests
     }
 
     private InvitationsController CreateController()
-        => new(_invitations, _emailSender, _userManager, _dbContext, _emailOptions, _logger);
+        => new(_invitations, _userManager, _dbContext, _emailOptions);
 
     /// <summary>Simula un usuario existente en la BD de Identity (in-memory).</summary>
     private async Task<ApplicationUser> SeedUserAsync(
@@ -89,6 +89,22 @@ public class InvitationsControllerTests
         }
 
         return user;
+    }
+
+    [Fact]
+    public async Task CreateInvitation_RepeatedAdoption_ReusesPendingInvitationWithoutDuplicateMail()
+    {
+        var user = await SeedUserAsync();
+        var invitation = new Invitation { Id = Guid.NewGuid(), UserId = user.Id, TokenHash = "existing", ExpiresAt = DateTime.UtcNow.AddHours(72) };
+        _dbContext.Invitations.Add(invitation);
+        _dbContext.WelcomeEmailDeliveries.Add(new WelcomeEmailDelivery { UserId = user.Id, InvitationId = invitation.Id, DeduplicationKey = $"welcome:{user.Id}" });
+        await _dbContext.SaveChangesAsync();
+        var response = await CreateController().CreateInvitation(new(user.Email!, "Ana", "López", AdoptExisting: true, DeferWelcome: true), default);
+        Assert.IsType<OkObjectResult>(response.Result);
+        await _invitations.DidNotReceiveWithAnyArgs().CreateAsync(default, default, default);
+        Assert.Single(await _dbContext.Invitations.ToListAsync());
+        Assert.Single(await _dbContext.WelcomeEmailDeliveries.ToListAsync());
+        Assert.Null((await _dbContext.WelcomeEmailDeliveries.SingleAsync()).ReadyAt);
     }
 
     // ─── Tests ────────────────────────────────────────────────────────
@@ -148,7 +164,8 @@ public class InvitationsControllerTests
 
         // Se creó una nueva invitación y se envió el correo.
         await _invitations.Received(1).CreateAsync(user.Id, Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
-        await _emailSender.Received(1).SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+        await _emailSender.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+        Assert.Single(await _dbContext.WelcomeEmailDeliveries.ToListAsync());
     }
 
     [Fact]
@@ -203,7 +220,8 @@ public class InvitationsControllerTests
 
         // Se creó invitación y se envió correo.
         await _invitations.Received(1).CreateAsync(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
-        await _emailSender.Received(1).SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+        await _emailSender.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+        Assert.Single(await _dbContext.WelcomeEmailDeliveries.ToListAsync());
     }
 
     [Theory]
