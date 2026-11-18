@@ -1,14 +1,14 @@
 # Control de medicamentos: circuito manual
 
-Implementación local en `feat/medication-control-e2e` de backend, ERP y app.
-No está desplegada; `Medications:Enabled` tiene default `false`.
+Circuito compartido por backend, ERP y app. `Medications:Enabled` es el
+interruptor operativo del entorno (default de configuración `false`).
 
 ## Alcance
 
-- App: acceso a Control de medicamentos en lugar de la tarjeta Mi perfil en Inicio; Perfil permanece en la barra inferior; los datos y acciones requieren habilitación de la cuenta. Perfil sigue accesible desde la barra inferior y el menú de Inicio. Nutracéutico sigue separado.
+- App: acceso a Control de medicamentos en lugar de la tarjeta Mi perfil en Inicio; Perfil permanece en la barra inferior. Los pacientes activos tienen acceso por defecto, salvo restricción explícita. Nutracéutico sigue separado.
 - Tratamientos registrados manualmente por paciente o personal: nombre/catálogo, tipo, cantidad/unidad, vía, indicaciones existentes, horarios, zona y vigencia.
 - Hoy: registro de toma/omisión, historial atribuible y correcciones con motivo/revisión. Pausa, reactivación y finalización conservan los estados efectivos.
-- ERP: directorio acotado, activación por paciente, mismo seguimiento persistido y accesos desde paciente/Perfil 360.
+- ERP: directorio acotado, restricciones/restauración de acceso por paciente, mismo seguimiento persistido y accesos desde paciente/Perfil 360.
 - ES/EN, estados vacíos/errores, lectura sin gestión y temas claro/oscuro del ERP.
 
 No crea prescripciones ni recomienda dosis. Suministros, síntomas, notificaciones,
@@ -18,16 +18,28 @@ Perfil 360 ofrece un enlace al workspace, sin duplicar allí el detalle clínico
 
 ## Acceso
 
-El flag global es el interruptor del despliegue. Habilitación por paciente en
-`patient_module_access` y permisos del personal son controles distintos.
+El flag global es el interruptor del despliegue. Con el módulo habilitado, un
+paciente activo y no eliminado tiene acceso sin crear una fila en
+`patient_module_access`: ausencia de excepción significa `enabled=true`,
+`revision=0`. Una fila explícita `enabled=false` sigue restringiendo el acceso;
+no se sobrescribe con el nuevo default. Restaurar acceso requiere
+`Medications.ManageAccess`. Un paciente inactivo sigue sin acceso, incluso con
+una excepción `enabled=true`.
+
+`MedicationAccessQuery` resuelve esta política para capacidades, workspace,
+directorio, contador `enabledPatients` y programa. Las lecturas no crean
+activaciones. La restricción no pausa tratamientos ni borra eventos; al
+restaurar el acceso se conserva el historial. No tener tratamientos muestra
+un estado vacío en la app.
+
+Los permisos del personal son un control distinto.
 `Medications.View`, `Medications.Manage` y `Medications.ManageAccess` utilizan el
 contexto efectivo de clínica/organización y el ámbito profesional; un grant
 acotado no necesita aparecer como permiso global en el JWT. El servidor vuelve
 a comprobar identidad, aplicación, paciente y contexto en cada operación.
 
 App sin acceso, fallo de capacidades o backend antiguo con 404 muestra Medicamentos no disponible, sin consultas de tratamientos ni escrituras.
-No hay cola offline ni escrituras clínicas en almacenamiento local. El flag y
-los grants solo se activaron en la infraestructura aislada de pruebas.
+No hay cola offline ni escrituras clínicas en almacenamiento local.
 
 ## Base de datos
 
@@ -42,7 +54,7 @@ Ocho tablas nuevas en el mismo PostgreSQL/`AppDbContext`, bajo `app`:
 | `medication_intake_events` | Registro de toma/omisión y cadena de correcciones |
 | `medication_treatment_status_events` | Estado efectivo por instante |
 | `medication_dose_operations` | Claves y hashes de operaciones aceptadas, incluidos no-ops |
-| `patient_module_access` | Habilitación explícita por paciente |
+| `patient_module_access` | Excepciones al acceso predeterminado por paciente |
 
 Migraciones aditivas: `20261117190158_AddMedicationControl` y
 `20261117192114_AddMedicationLifecycleAndOperations`. Deben entregarse juntas.
@@ -57,6 +69,12 @@ Las pausas se resuelven por el estado efectivo en el horario programado; visitar
 un día antes o después de reactivar no cambia su historia. Las transacciones y
 los reintentos se describen en [transactions.md](../../database/transactions.md).
 El [contrato HTTP](contracts.md) documenta `scheduledAt`, revisión e idempotencia.
+
+El cambio a acceso predeterminado no necesita migración ni backfill. No modifica
+filas existentes, permisos, tratamientos, tomas o XP. Se aplica al leer la
+política y conserva las restricciones explícitas. La consulta usa el índice
+único `(patient_id,module_code)` y la PK de pacientes; el contador sigue siendo
+una consulta del estado actual del ámbito, sin un nuevo agregado histórico.
 
 ## Compatibilidad con Apple 67
 
@@ -82,6 +100,7 @@ del entorno candidato siguen siendo el gate antes de habilitar producción.
 - App: `docs/MEDICATIONS.md` y `e2e/medications-ui.mjs` en antares-paciente.
 - ERP: `playwright.medications-ui.config.ts` / `e2e/medications-ui.spec.ts`.
 - Integración real: [host de pruebas](../../../tests/CoppAddresd.Medications.E2EHost/README.md), `playwright.medications-real.config.ts` y `e2e/medications-cross-app-real.spec.ts` en ERP.
+- Default habilitado: `e2e/medications-default-access-real.spec.ts` en ERP verifica app sin activación, estado vacío, alta/toma sin override, contador/directorio/programa coherentes, restricción explícita con permiso, restauración con historial y denegación de pacientes inactivos.
 - Regresiones backend: namespace `CoppAddresd.UnitTests.Medications`, `PatientProfilePromotionTests` y `PatientMedicationIdentityTests`.
 
 Las pruebas UI sintéticas establecieron RED antes de implementar las pantallas;

@@ -6,7 +6,10 @@ using System.Text.Json;
 using CoppAddresd.Auth.Data;
 using CoppAddresd.Auth.Entities;
 using CoppAddresd.Domain.Entities;
+using CoppAddresd.Domain.Entities.ProgramProgress;
+using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Infrastructure.Persistence;
+using CoppAddresd.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -233,6 +236,33 @@ static async Task<Dictionary<string, object>> SeedAsync(IServiceProvider authSer
         Guid[] qaProfessionalIds = [Id("301"), Id("302"), Id("303")];
         await db.Professionals.Where(x => qaProfessionalIds.Contains(x.Id) && x.OnboardingCompletedAt == null)
             .ExecuteUpdateAsync(update => update.SetProperty(x => x.OnboardingCompletedAt, DateTime.UtcNow));
+        // Programa mínimo sintético para comprobar el mismo acceso en el protocolo diario.
+        var templateId = Id("501");
+        if (!await db.ProgramTemplates.AnyAsync(x => x.Id == templateId))
+        {
+            db.ProgramTemplates.Add(new ProgramTemplate
+            {
+                Id = templateId, Code = "medication-access-e2e", Name = "Medication access QA",
+                TotalWeeks = 1, Status = TemplateStatus.Active,
+            });
+            foreach (var weekday in Enumerable.Range(1, 7))
+                foreach (var task in new[] { TaskCode.emocional, TaskCode.nutraceutico })
+                    db.WeeklyDayTemplates.Add(new WeeklyDayTemplate
+                    {
+                        Id = Guid.NewGuid(), TemplateId = templateId, Weekday = (short)weekday,
+                        TaskCode = task, Points = 80, SortOrder = task == TaskCode.emocional ? 0 : 1,
+                    });
+            await db.SaveChangesAsync();
+        }
+        var programPatientId = Id("101");
+        if (!await db.ProgramEnrollments.AnyAsync(x => x.PatientId == programPatientId))
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+                { ["Medications:Enabled"] = "true" }).Build();
+            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("America/Bogota")));
+            await new ProgramRepository(db, configuration).EnrollAsync(programPatientId, templateId, "America/Bogota", today, Id("3"));
+        }
     }
     return specs.ToDictionary(x => x.Code, x => (object)new { userId = x.Id, login = x.Email, documentNumber = x.Document, password });
 }

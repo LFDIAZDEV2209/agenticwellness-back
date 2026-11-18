@@ -80,7 +80,7 @@ public sealed class PatientModuleAccess
     public Guid Id { get; set; }
     public Guid PatientId { get; set; }
     public string ModuleCode { get; set; } = "medications";
-    public bool Enabled { get; set; }
+    public bool Enabled { get; set; } = true;
     public int Revision { get; set; }
     public Guid UpdatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }

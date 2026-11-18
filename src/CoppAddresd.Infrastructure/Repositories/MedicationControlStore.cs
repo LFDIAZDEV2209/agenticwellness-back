@@ -15,7 +15,7 @@ namespace CoppAddresd.Infrastructure.Repositories;
 public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard scope, TimeProvider clock) : IMedicationControlStore
 {
     public async Task<MedicationAccessDto> GetAccessAsync(Guid patientId, CancellationToken ct)
-        => await db.PatientModuleAccess.AsNoTracking().Where(a => a.PatientId == patientId && a.ModuleCode == "medications")
+        => await MedicationAccessQuery.Resolve(db).Where(a => a.PatientId == patientId)
             .Select(a => new MedicationAccessDto(a.Enabled, a.Revision)).SingleOrDefaultAsync(ct) ?? new(false, 0);
 
     public Task<bool> IsActivePatientAsync(Guid patientId, CancellationToken ct)
@@ -43,8 +43,8 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
         var patients = await scope.FilterAsync(ContextPatients(clinicId, organizationId), p => p.Id, "Medications.View", ct);
         var ids = patients.Select(p => p.Id);
         var total = await patients.CountAsync(ct);
-        var enabled = await db.PatientModuleAccess.AsNoTracking()
-            .CountAsync(a => ids.Contains(a.PatientId) && a.ModuleCode == "medications" && a.Enabled, ct);
+        var enabled = await MedicationAccessQuery.Resolve(db)
+            .CountAsync(a => ids.Contains(a.PatientId) && a.Enabled, ct);
         var treatments = db.MedicationTreatments.AsNoTracking().Where(t => ids.Contains(t.PatientId) && t.Status == "active");
         var active = await treatments.CountAsync(ct);
         var inTreatment = await treatments.Select(t => t.PatientId).Distinct().CountAsync(ct);
@@ -78,10 +78,11 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
                 || EF.Functions.ILike(p.MedicalRecordNumber ?? "", pattern));
         }
         var total = await patients.CountAsync(ct);
+        var access = MedicationAccessQuery.Resolve(db);
         var items = await patients.OrderBy(p => p.FirstName).ThenBy(p => p.LastName).ThenBy(p => p.Id)
             .Skip((page - 1) * pageSize).Take(pageSize)
             .Select(p => new MedicationPatientRow(p.Id, p.FirstName + " " + p.LastName, p.MedicalRecordNumber ?? "",
-                db.PatientModuleAccess.Any(a => a.PatientId == p.Id && a.ModuleCode == "medications" && a.Enabled),
+                access.Any(a => a.PatientId == p.Id && a.Enabled),
                 db.MedicationTreatments.Count(t => t.PatientId == p.Id && t.Status == "active")))
             .ToListAsync(ct);
         return new(items, total, page, pageSize);
