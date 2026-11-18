@@ -6,8 +6,16 @@ namespace CoppAddresd.Infrastructure.Repositories;
 
 internal static class ClinicalMeasurementVersions
 {
+    public static IQueryable<Guid> SupersededClinicalMeasurementIds(this AppDbContext db, Guid patientId)
+        => db.ClinicalMeasurements
+            .Where(replacement => replacement.PatientId == patientId && replacement.SupersedesId != null
+                && replacement.Status != "pending_confirmation")
+            .Select(replacement => replacement.SupersedesId!.Value);
+
     public static IQueryable<ClinicalMeasurement> EffectiveClinicalMeasurements(this AppDbContext db, Guid patientId)
-        => db.ClinicalMeasurements.AsNoTracking().Where(m => m.PatientId == patientId && m.Status == "confirmed"
-            && !db.ClinicalMeasurements.Any(replacement => replacement.SupersedesId == m.Id
-                && replacement.PatientId == patientId && replacement.Status != "pending_confirmation"));
+    {
+        var supersededIds = db.SupersededClinicalMeasurementIds(patientId);
+        return db.ClinicalMeasurements.AsNoTracking()
+            .Where(m => m.PatientId == patientId && m.Status == "confirmed" && !supersededIds.Contains(m.Id));
+    }
 }

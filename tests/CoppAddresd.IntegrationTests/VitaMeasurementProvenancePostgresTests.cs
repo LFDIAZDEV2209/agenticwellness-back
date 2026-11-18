@@ -8,6 +8,8 @@ using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,17 +33,7 @@ public sealed partial class NutritionPlanWorkflowTests
         db.ClinicalMeasurements.AddRange(professional, historic);
         await db.SaveChangesAsync();
 
-        var current = Substitute.For<ICurrentContext>();
-        current.UserId.Returns(userId);
-        current.HasPermissionAsync("Patients.View", Arg.Any<CancellationToken>()).Returns(true);
-        await using var host = await VitaAHostAsync(captureEnabled: true, configureServices: services =>
-        {
-            services.AddAuthentication("measurements-test")
-                .AddScheme<AuthenticationSchemeOptions, MeasurementContractAuthentication>("measurements-test", _ => { });
-            services.AddSingleton(current);
-            services.AddSingleton(Substitute.For<IEmployeeRepository>());
-            services.AddScoped<IPatientMeasurementRepository, PatientMeasurementRepository>();
-        });
+        await using var host = await MeasurementContractHostAsync(userId, captureEnabled: true);
         using var client = VitaAClient(host);
         var voice = await CapturePulseAsync("vita_voice", "voice-provenance", VitaANow.AddHours(-1), 75m);
         var whatsapp = await CapturePulseAsync("vita_whatsapp", "whatsapp-provenance", VitaANow.AddHours(-2), 76m);
@@ -70,6 +62,72 @@ public sealed partial class NutritionPlanWorkflowTests
             var proposal = await ProposeCaptureAsync(client, userId, input);
             return (await ConfirmCaptureAsync(client, userId, input, proposal.Token)).EntityId;
         }
+    }
+
+    [NutritionPostgresFact]
+    public async Task VitaProvenance_ConfirmedCorrectionSupersedesTheOriginalWithoutDeletingIt()
+    {
+        await using var db = Context();
+        var patient = await PatientAsync(db);
+        var (metric, unit) = await VitaAMetricAsync(db, "heart_rate", "bpm", "bpm", "vital");
+        var original = VitaAReading(patient.Id, metric, unit, VitaANow.UtcDateTime.AddHours(-2), 72m, "patient");
+        db.ClinicalMeasurements.Add(original);
+        await db.SaveChangesAsync();
+
+        var userId = patient.UserId!.Value;
+        await using var host = await MeasurementContractHostAsync(userId);
+        using var client = VitaAClient(host);
+        client.DefaultRequestHeaders.Add("X-Test-Measurement-Auth", userId.ToString());
+        const string mobilePath = "/api/v1/me/measurements?codes=heart_rate";
+        var before = await client.GetFromJsonAsync<JsonElement>(mobilePath);
+        Assert.Equal("confirmed", Assert.Single(before.GetProperty("items").EnumerateArray()).GetProperty("status").GetString());
+
+        var correction = VitaAReading(patient.Id, metric, unit, VitaANow.UtcDateTime.AddHours(-1), 75m, "patient");
+        correction.SupersedesId = original.Id;
+        correction.Status = "pending_confirmation";
+        db.ClinicalMeasurements.Add(correction);
+        await db.SaveChangesAsync();
+        var pending = await client.GetFromJsonAsync<JsonElement>(mobilePath);
+        Assert.Contains(pending.GetProperty("items").EnumerateArray(), row =>
+            row.GetProperty("id").GetGuid() == original.Id && row.GetProperty("status").GetString() == "confirmed");
+
+        correction.Status = "confirmed";
+        await db.SaveChangesAsync();
+
+        var mobile = await client.GetFromJsonAsync<JsonElement>(mobilePath);
+        var readings = mobile.GetProperty("items").EnumerateArray().ToArray();
+        Assert.Equal(2, readings.Length);
+        AssertStatus(Assert.Single(readings, row => row.GetProperty("id").GetGuid() == original.Id), original.Id, "superseded");
+        AssertStatus(Assert.Single(readings, row => row.GetProperty("id").GetGuid() == correction.Id), correction.Id, "confirmed");
+        var erp = await client.GetFromJsonAsync<JsonElement>($"/api/v1/patients/{patient.Id}/measurements");
+        AssertStatus(Assert.Single(erp.EnumerateArray()), correction.Id, "confirmed");
+
+        var stored = await db.ClinicalMeasurements.AsNoTracking().Where(row => row.PatientId == patient.Id).ToListAsync();
+        var preserved = Assert.Single(stored, row => row.Id == original.Id);
+        Assert.Equal(72m, preserved.Value);
+        Assert.Equal("confirmed", preserved.Status);
+        Assert.Equal(original.Id, Assert.Single(stored, row => row.Id == correction.Id).SupersedesId);
+
+        static void AssertStatus(JsonElement row, Guid id, string status)
+        {
+            Assert.Equal(id, row.GetProperty("id").GetGuid());
+            Assert.Equal(status, row.GetProperty("status").GetString());
+        }
+    }
+
+    private Task<WebApplication> MeasurementContractHostAsync(Guid userId, bool captureEnabled = false)
+    {
+        var current = Substitute.For<ICurrentContext>();
+        current.UserId.Returns(userId);
+        current.HasPermissionAsync("Patients.View", Arg.Any<CancellationToken>()).Returns(true);
+        return VitaAHostAsync(captureEnabled: captureEnabled, configureServices: services =>
+        {
+            services.AddAuthentication("measurements-test")
+                .AddScheme<AuthenticationSchemeOptions, MeasurementContractAuthentication>("measurements-test", _ => { });
+            services.AddSingleton(current);
+            services.AddSingleton(Substitute.For<IEmployeeRepository>());
+            services.AddScoped<IPatientMeasurementRepository, PatientMeasurementRepository>();
+        });
     }
 
     private static void AssertMeasurementProvenance(JsonElement row, string source, string? channel, string? reporter)

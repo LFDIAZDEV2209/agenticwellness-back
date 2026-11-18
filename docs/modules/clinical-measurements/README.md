@@ -238,13 +238,18 @@ paginación. Los campos son aditivos y aceptan `null`.
 | --- | --- |
 | `sourceChannel` | Canal registrado, como `vita_voice`, `vita_whatsapp`, `vita_chat` o `professional`. |
 | `reportedBy` | Actor registrado, como `patient`, `professional` o `device`. |
-| `status` | Estado persistido, como `confirmed`, `pending_confirmation` o `superseded`, según las filas visibles en cada ruta. |
+| `status` | Estado de lectura, como `confirmed`, `pending_confirmation` o `superseded`, según las filas visibles en cada ruta. |
 
 Una captura de voz confirmada lleva `source: "patient"`,
 `sourceChannel: "vita_voice"`, `reportedBy: "patient"` y
 `status: "confirmed"`. Un registro profesional conserva
 `source: "professional"` y su actor registrado. Los registros históricos
 sin canal o actor devuelven esos campos como `null`.
+
+Cuando se confirma una corrección, la app conserva la observación anterior
+con `status: "superseded"` y muestra la nueva como `confirmed`. El ERP
+devuelve la medición confirmada vigente. Las dos filas se conservan en
+el historial clínico y una propuesta pendiente no reemplaza la anterior.
 
 ### 4.8 Analítica de la captura
 

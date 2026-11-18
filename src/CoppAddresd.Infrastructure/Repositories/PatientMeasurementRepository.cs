@@ -72,6 +72,7 @@ public sealed class PatientMeasurementRepository(AppDbContext dbContext)
         // Orden estable obligatorio (índice ix_clinical_measurements_patient_observed
         // cubre patient_id + observed_at; el Id desempata filas con igual fecha).
         // Take(pageSize + 1): peek para HasNextPage sin COUNT (skill pagination).
+        var supersededIds = dbContext.SupersededClinicalMeasurementIds(patientId);
         var rows = await query
             .OrderByDescending(m => m.ObservedAt)
             .ThenByDescending(m => m.Id)
@@ -87,7 +88,7 @@ public sealed class PatientMeasurementRepository(AppDbContext dbContext)
                 m.Source,
                 m.SourceChannel,
                 m.ReportedBy,
-                m.Status
+                supersededIds.Contains(m.Id) ? "superseded" : m.Status
             ))
             .ToListAsync(ct);
 
