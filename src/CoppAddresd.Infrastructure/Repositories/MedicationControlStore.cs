@@ -309,22 +309,42 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
 
     private sealed record Occurrence(MedicationDoseDto Dto, Guid RegimenId, Guid SlotId);
 
+    public async Task<MedicationCurrentDayDto> ReadCurrentDayAsync(Guid patientId, DateOnly date,
+        TimeZoneInfo viewZone, DateTimeOffset asOf, CancellationToken ct)
+    {
+        var treatments = (await TreatmentDtosAsync(patientId, ct, activeOnly: true)).Where(t =>
+        {
+            var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(asOf, MedicationControlService.Zone(t.TimeZone)).DateTime);
+            return t.StartDate <= today && (t.EndDate is null || t.EndDate >= today);
+        }).ToArray();
+        if (treatments.Length == 0) return new(treatments, []);
+        var ids = treatments.Select(t => t.Id).ToArray();
+        var occurrences = await ProjectDosesAsync(patientId, date, viewZone, ct, treatmentFilter: ids);
+        return new(treatments, occurrences.Select(o => o.Dto).ToArray());
+    }
+
     // Lecturas puras: las ocurrencias programadas se proyectan; solo una confirmación autorizada las persiste.
-    private async Task<IReadOnlyList<Occurrence>> ProjectDosesAsync(Guid patientId, DateOnly date, TimeZoneInfo viewZone, CancellationToken ct, int days = 1)
+    private async Task<IReadOnlyList<Occurrence>> ProjectDosesAsync(Guid patientId, DateOnly date,
+        TimeZoneInfo viewZone, CancellationToken ct, int days = 1, Guid[]? treatmentFilter = null)
     {
         var start = Bounds(date, viewZone).Start;
         var end = Bounds(date.AddDays(days - 1), viewZone).End;
+        var treatments = db.MedicationTreatments.AsNoTracking();
+        if (treatmentFilter is not null) treatments = treatments.Where(t => treatmentFilter.Contains(t.Id));
         var regimens = await (from r in db.MedicationRegimens.AsNoTracking()
-            join t in db.MedicationTreatments.AsNoTracking() on r.TreatmentId equals t.Id
+            join t in treatments on r.TreatmentId equals t.Id
             where t.PatientId == patientId
                 && !db.MedicationRegimens.Any(later => later.TreatmentId == t.Id && later.Version > r.Version)
             select new { Regimen = r, Treatment = t }).ToListAsync(ct);
         var regimenIds = regimens.Select(r => r.Regimen.Id).ToArray();
         var treatmentIds = regimens.Select(r => r.Treatment.Id).ToArray();
-        var slots = await db.MedicationScheduleSlots.AsNoTracking().Where(s => regimenIds.Contains(s.RegimenId)).ToListAsync(ct);
-        var statuses = await db.MedicationTreatmentStatusEvents.AsNoTracking()
-            .Where(e => treatmentIds.Contains(e.TreatmentId)).OrderBy(e => e.EffectiveAt).ThenBy(e => e.Revision).ToListAsync(ct);
-        var persisted = await db.MedicationDoses.AsNoTracking().Where(d => d.PatientId == patientId && d.ScheduledAt >= start && d.ScheduledAt < end)
+        var slots = (await db.MedicationScheduleSlots.AsNoTracking().Where(s => regimenIds.Contains(s.RegimenId))
+            .ToListAsync(ct)).ToLookup(s => s.RegimenId);
+        var statuses = (await db.MedicationTreatmentStatusEvents.AsNoTracking()
+            .Where(e => treatmentIds.Contains(e.TreatmentId) && e.EffectiveAt < end)
+            .OrderBy(e => e.EffectiveAt).ThenBy(e => e.Revision).ToListAsync(ct)).ToLookup(e => e.TreatmentId);
+        var persisted = await db.MedicationDoses.AsNoTracking().Where(d => d.PatientId == patientId
+                && treatmentIds.Contains(d.TreatmentId) && d.ScheduledAt >= start && d.ScheduledAt < end)
             .ToDictionaryAsync(d => (d.SlotId, d.ScheduledAt), ct);
         var result = new List<Occurrence>();
         foreach (var entry in regimens)
@@ -334,7 +354,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             var first = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(start, zone));
             var last = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(end.AddTicks(-1), zone));
             var registeredOn = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(entry.Treatment.CreatedAt, zone));
-            foreach (var slot in slots.Where(s => s.RegimenId == regimen.Id))
+            foreach (var slot in slots[regimen.Id])
             for (var day = first; day <= last; day = day.AddDays(1))
             {
                 if (day < regimen.StartDate || day < registeredOn || regimen.EndDate is { } until && day > until) continue;
@@ -342,7 +362,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 if (zone.IsInvalidTime(local)) continue;
                 var scheduled = ToUtc(local, zone);
                 if (scheduled < start || scheduled >= end) continue;
-                var effective = statuses.LastOrDefault(e => e.TreatmentId == entry.Treatment.Id && e.EffectiveAt <= scheduled)?.Status;
+                var effective = statuses[entry.Treatment.Id].LastOrDefault(e => e.EffectiveAt <= scheduled)?.Status;
                 var projectedStatus = effective == "active" ? "pending" : "cancelled";
                 persisted.TryGetValue((slot.Id, scheduled), out var saved);
                 // Un evento ya registrado conserva su estado y fecha; el ciclo de vida rige las pendientes.
@@ -359,17 +379,20 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
     private static Guid OccurrenceId(Guid slotId, DateTime scheduledAt)
         => new(SHA256.HashData(Encoding.UTF8.GetBytes($"med-dose-v1:{slotId:D}:{scheduledAt.Ticks}"))[..16]);
 
-    private async Task<IReadOnlyList<MedicationTreatmentDto>> TreatmentDtosAsync(Guid patientId, CancellationToken ct)
+    private async Task<IReadOnlyList<MedicationTreatmentDto>> TreatmentDtosAsync(Guid patientId, CancellationToken ct,
+        bool activeOnly = false)
     {
         var rows = await (from t in db.MedicationTreatments.AsNoTracking()
             join r in db.MedicationRegimens.AsNoTracking() on t.Id equals r.TreatmentId
-            where t.PatientId == patientId && !db.MedicationRegimens.Any(later => later.TreatmentId == t.Id && later.Version > r.Version)
+            where t.PatientId == patientId && (!activeOnly || t.Status == "active")
+                && !db.MedicationRegimens.Any(later => later.TreatmentId == t.Id && later.Version > r.Version)
             orderby t.CreatedAt descending, t.Id
             select new { Treatment = t, Regimen = r }).ToListAsync(ct);
         var ids = rows.Select(x => x.Regimen.Id).ToArray();
-        var times = await db.MedicationScheduleSlots.AsNoTracking().Where(s => ids.Contains(s.RegimenId)).OrderBy(s => s.LocalTime).ToListAsync(ct);
+        var times = (await db.MedicationScheduleSlots.AsNoTracking().Where(s => ids.Contains(s.RegimenId))
+            .OrderBy(s => s.LocalTime).ToListAsync(ct)).ToLookup(s => s.RegimenId);
         return rows.Select(row => ToTreatment(row.Treatment, row.Regimen,
-            times.Where(s => s.RegimenId == row.Regimen.Id).Select(s => s.LocalTime.ToString("HH:mm", CultureInfo.InvariantCulture)).ToArray())).ToArray();
+            times[row.Regimen.Id].Select(s => s.LocalTime.ToString("HH:mm", CultureInfo.InvariantCulture)).ToArray())).ToArray();
     }
 
     private async Task<MedicationTreatmentDto> TreatmentDtoAsync(MedicationTreatment treatment, CancellationToken ct)

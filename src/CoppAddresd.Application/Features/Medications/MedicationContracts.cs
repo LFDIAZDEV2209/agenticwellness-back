@@ -31,6 +31,8 @@ public sealed record MedicationAdherenceDto(int ScheduledDoses, int DueDoses, in
 public sealed record MedicationWorkspaceDto(MedicationPatientDto Patient, MedicationAccessDto Access,
     IReadOnlyList<MedicationTreatmentDto> Treatments, IReadOnlyList<MedicationDoseDto> Doses,
     IReadOnlyList<MedicationEventDto> History, MedicationSummaryDto Summary, MedicationAdherenceDto? Adherence = null);
+public sealed record MedicationCurrentDayDto(IReadOnlyList<MedicationTreatmentDto> Treatments,
+    IReadOnlyList<MedicationDoseDto> Doses);
 
 public sealed record CreateMedicationTreatmentRequest(Guid ClientRequestId, Guid? MedicationId, string Name,
     string ProductType, decimal Dosage, string Unit, string? Route, string? Instructions,
@@ -51,6 +53,8 @@ public interface IMedicationControlStore
         Guid? clinicId, Guid? organizationId, CancellationToken ct);
     Task<MedicationAccessDto> SetAccessAsync(Guid patientId, Guid actorId, ChangeMedicationAccessRequest request, CancellationToken ct);
     Task<MedicationWorkspaceDto> WorkspaceAsync(Guid patientId, DateOnly date, string timeZone, bool selfService, CancellationToken ct);
+    Task<MedicationCurrentDayDto> ReadCurrentDayAsync(Guid patientId, DateOnly date, TimeZoneInfo viewZone,
+        DateTimeOffset asOf, CancellationToken ct);
     Task<MedicationCreateResult> CreateAsync(Guid patientId, Guid actorId, string origin,
         CreateMedicationTreatmentRequest request, CancellationToken ct);
     Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,

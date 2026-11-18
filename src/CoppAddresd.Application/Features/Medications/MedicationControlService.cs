@@ -13,6 +13,16 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
 {
     public bool Enabled => settings.Value.Enabled;
 
+    /// <summary>Lectura acotada para el paciente ya resuelto y autorizado por Vita.</summary>
+    public async Task<MedicationCurrentDayDto> ReadCurrentDayAsync(Guid patientId, DateOnly date,
+        TimeZoneInfo viewZone, DateTimeOffset asOf, CancellationToken ct)
+    {
+        EnsureEnabled();
+        if (!(await store.GetAccessAsync(patientId, ct)).Enabled)
+            throw new ForbiddenException("VITA_MEDICATIONS_FORBIDDEN");
+        return await store.ReadCurrentDayAsync(patientId, date, viewZone, asOf, ct);
+    }
+
     public void EnsureEnabled()
     {
         if (!Enabled) throw new NotFoundException("Módulo no disponible.");

@@ -11,6 +11,7 @@ public static class VitaServiceExtensions
     {
         services.AddScoped<VitaPatientAccess>();
         services.AddScoped<IVitaAgentCatalogReader, VitaAgentCatalogReader>();
+        services.AddScoped<IVitaClinicalReader, VitaClinicalReader>();
         services.AddOptions<VitaTaskProtectionSettings>().Bind(configuration.GetSection("Vita"))
             .Validate(o => !o.TaskCompletionEnabled || VitaProposalTokens.DedicatedSecret(o.TaskProposalSecret,
                 configuration["Jwt:Secret"], configuration["AiService:InternalApiKey"], configuration["Vita:VoiceServiceKey"]),

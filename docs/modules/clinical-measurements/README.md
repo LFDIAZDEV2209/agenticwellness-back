@@ -149,6 +149,32 @@ El canónico NO replica el `clinical_data` JSONB del tele. Queda estructurado y 
 `ix_clinical_measurements_encounter_id`, `ix_clinical_measurements_patient_observed`
 (`patient_id`, `observed_at` DESC) — para el "último valor por métrica" y series temporales.
 
+## Procedencia y recibos de Vita (Ola A)
+
+`20261118201312_AddVitaClinicalWriteModel` agrega `source_channel`,
+`reported_by`, `status`, `supersedes_id` e `idempotency_key` a
+`app.clinical_measurements`. Las filas previas se leen como `confirmed`.
+Si no se registró el canal o actor, los campos respectivos siguen nulos.
+La FK de `supersedes_id` referencia la medición anterior. La lectura de Vita
+respeta el ámbito del paciente y excluye las filas pendientes y reemplazadas.
+
+| Índice | Uso |
+| --- | --- |
+| `ux_clinical_measurements_patient_idempotency` | Unicidad del par paciente/clave cuando existe clave. Permite la consulta de reintentos sin afectar filas históricas. |
+| `ix_clinical_measurements_supersedes_id` | FK y búsqueda de reemplazos. Indexa las filas que apuntan a una medición anterior. |
+| `ux_vita_write_receipts_patient_channel_turn_tool` | Unicidad del recibo por paciente, canal, turno y tool. El prefijo paciente sirve para la FK al perfil. |
+
+La migración crea los índices de la tabla existente con `CONCURRENTLY` y agrega
+las restricciones con `NOT VALID` antes de validarlas en un paso separado.
+La ejecución por el migrador de EF respeta esos límites de transacción. Los
+dos índices se reconstruyen al reintentar una aplicación interrumpida.
+El `Down` conserva las filas y valores de mediciones y retira las columnas
+nuevas y la tabla de recibos. Antes de usar `Down` tras habilitar capturas,
+respaldar los metadatos y recibos que se necesiten conservar.
+
+La recepción de confirmaciones, la consolidación de `vital_signs` y la
+emisión de eventos a los dashboards corresponden a tareas posteriores.
+
 ## Cambio en módulo tele
 
 `tele.clinical_encounters` + columna:

@@ -13,7 +13,15 @@ public sealed class ClinicalMeasurementConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ClinicalMeasurement> builder)
     {
-        builder.ToTable("clinical_measurements", "app");
+        builder.ToTable("clinical_measurements", "app", table =>
+        {
+            table.HasCheckConstraint("ck_clinical_measurements_source_channel",
+                "source_channel IN ('vita_chat', 'vita_voice', 'vita_whatsapp', 'app_manual', 'device', 'professional', 'lab')");
+            table.HasCheckConstraint("ck_clinical_measurements_reported_by",
+                "reported_by IN ('patient', 'professional', 'device')");
+            table.HasCheckConstraint("ck_clinical_measurements_status",
+                "status IN ('confirmed', 'pending_confirmation', 'superseded')");
+        });
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
@@ -48,6 +56,24 @@ public sealed class ClinicalMeasurementConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.Source)
             .HasColumnName("source")
             .HasMaxLength(20);
+
+        builder.Property(x => x.SourceChannel).HasColumnName("source_channel").HasMaxLength(24);
+        builder.Property(x => x.ReportedBy).HasColumnName("reported_by").HasMaxLength(16);
+        builder.Property(x => x.Status).HasColumnName("status").HasMaxLength(24).HasDefaultValue("confirmed");
+        builder.Property(x => x.SupersedesId).HasColumnName("supersedes_id");
+        builder.Property(x => x.IdempotencyKey).HasColumnName("idempotency_key").HasColumnType("text");
+
+        builder.HasIndex(x => new { x.PatientId, x.IdempotencyKey })
+            .HasDatabaseName("ux_clinical_measurements_patient_idempotency")
+            .IsUnique().HasFilter("idempotency_key IS NOT NULL");
+
+        builder.HasIndex(x => x.SupersedesId)
+            .HasDatabaseName("ix_clinical_measurements_supersedes_id")
+            .HasFilter("supersedes_id IS NOT NULL");
+
+        builder.HasOne<ClinicalMeasurement>().WithMany().HasForeignKey(x => x.SupersedesId)
+            .HasConstraintName("fk_clinical_measurements_supersedes")
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(x => x.BatchId)
             .HasColumnName("batch_id");

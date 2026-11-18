@@ -102,6 +102,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         Set<MeasurementReferenceRange>();
     public DbSet<Encounter> Encounters => Set<Encounter>();
     public DbSet<ClinicalMeasurement> ClinicalMeasurements => Set<ClinicalMeasurement>();
+    public DbSet<VitaWriteReceipt> VitaWriteReceipts => Set<VitaWriteReceipt>();
     public DbSet<PlanSafetyRule> PlanSafetyRules => Set<PlanSafetyRule>();
     public DbSet<BiometriaDailyMetric> BiometriaDailyMetrics => Set<BiometriaDailyMetric>();
 

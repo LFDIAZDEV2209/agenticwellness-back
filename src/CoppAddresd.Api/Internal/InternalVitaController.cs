@@ -3,6 +3,7 @@ using CoppAddresd.Application.Features.Agents.Vita;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CoppAddresd.Api.Internal;
 
@@ -29,5 +30,28 @@ public sealed class InternalVitaController(ISender sender, IConfiguration config
     {
         if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
         return Ok(await sender.Send(new GetVitaAgentsQuery(userId), ct));
+    }
+
+    [HttpGet("profile")]
+    public async Task<ActionResult<VitaProfileDto>> Profile([FromQuery, BindRequired] Guid userId, CancellationToken ct)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaProfileQuery(userId), ct));
+    }
+
+    [HttpGet("vitals")]
+    public async Task<ActionResult<VitaVitalsDto>> Vitals([FromQuery, BindRequired] Guid userId,
+        [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken ct)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaVitalsQuery(userId, from, to), ct));
+    }
+
+    [HttpGet("medications")]
+    public async Task<ActionResult<VitaMedicationsDto>> Medications([FromQuery, BindRequired] Guid userId,
+        CancellationToken ct)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaMedicationsQuery(userId), ct));
     }
 }

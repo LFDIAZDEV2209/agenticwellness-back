@@ -2,7 +2,7 @@
 
 Base de integración `cbaed6e` (F2 2.11), sin incorporar WIP de Bienestar.
 La fachada compone fuentes existentes; AI conserva routing, generación, RAG,
-tokens de voz y persistencia del hilo. No hay migraciones nuevas de backend.
+tokens de voz y persistencia del hilo.
 
 ## Rutas e identidad
 
@@ -12,15 +12,18 @@ tokens de voz y persistencia del hilo. No hay migraciones nuevas de backend.
 | GET | `/api/v1/vita/me/agents` | Igual; todos los tipos activos con versión publicada activa coincidente |
 | GET | `/api/v1/internal/vita/context?userId=<uuid>&scope=day` | `X-Internal-Key` de AI y `Vita:InternalEnabled=true` |
 | GET | `/api/v1/internal/vita/agents?userId=<uuid>` | Igual |
+| GET | `/api/v1/internal/vita/profile?userId=<uuid>` | Igual, perfil activo y consentimiento de chat |
+| GET | `/api/v1/internal/vita/vitals?userId=<uuid>&from=&to=` | Igual, ventana local de hasta 31 días |
+| GET | `/api/v1/internal/vita/medications?userId=<uuid>` | Igual y acceso del paciente al módulo de medicamentos |
 | POST | `/api/v1/vita/me/task-completion-proposals` | JWT app y `Vita:TaskCompletionEnabled=true` |
 | POST | `/api/v1/vita/me/task-completion-confirmations` | Igual; confirmación explícita |
 | POST | `/api/v1/chat/voice/session` | Ruta existente, JWT y consentimiento de voz |
 | DELETE | `/api/v1/chat/voice/session/{sessionId}` | JWT app; permite revocar tras retirar consentimiento |
 | POST | `/api/v1/internal/vita/voice/v1/chat/completions` | Clave de voz dedicada y `Vita:VoiceProxyEnabled=true` |
 
-Scopes de lectura: `day`, `nutrition`, `assessments`, `podcast`, `exercise`,
-`progress`. Desconocido → 400. No se acepta fecha/inscripción/paciente del
-modelo. En la ruta interna `userId` lo inyecta el runtime autenticado desde su
+Scopes de `context`: `day`, `nutrition`, `assessments`, `podcast`, `exercise`,
+`progress`. Desconocido → 400. El scope de contexto no acepta selectores de
+fecha, inscripción o paciente. En las rutas internas `userId` lo inyecta el runtime autenticado desde su
 contexto; no es argumento de herramienta. La clave interna confía en ese runtime:
 no permite exponer la fachada directamente a proveedores o al móvil.
 
@@ -28,6 +31,21 @@ Cada consulta resuelve paciente activo/no eliminado y verifica consentimiento
 `chat`. Crear voz exige además consentimiento `voice`. No basta conocer un ID.
 La revocación de voz se reenvía con el dueño del JWT incluso si ya retiró el
 consentimiento. Todas las respuestas de estas rutas se sirven sin caché HTTP.
+
+## Lecturas clínicas internas de Ola A
+
+`profile`, `vitals` y `medications` devuelven DTOs directos. El contrato enumera
+sus campos, unidades, fechas, estados y errores. [CONTRATOS-A.md](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
+
+`profile` proyecta el perfil mínimo, alergias, metas y restricciones registradas del
+plan vigente y la serie de peso, talla e IMC. `vitals` devuelve el último punto por
+métrica y el historial acotado, con unidades y origen de cada lectura.
+`medications` aplica la disponibilidad del módulo y del paciente. Proyecta las
+tomas del día local con el mismo cálculo de horarios y estados del módulo.
+
+Las lecturas envían la fecha del paciente y los instantes en UTC según el DTO.
+El esquema de procedencia de Ola A prepara futuros recibos de escritura
+idempotentes. [Migración de mediciones clínicas](../clinical-measurements/README.md#procedencia-y-recibos-de-vita-ola-a)
 
 ## Envelope y fuentes
 

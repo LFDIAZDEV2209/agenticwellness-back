@@ -36,6 +36,19 @@ public sealed class ClinicalMeasurement
     /// <summary>Origen: <c>device</c> | <c>patient</c> | <c>professional</c> | <c>lab</c>.</summary>
     public string Source { get; set; } = default!;
 
+    /// <summary>Canal de captura si quedó registrado. Null para procedencia histórica desconocida.</summary>
+    public string? SourceChannel { get; set; }
+
+    /// <summary>Tipo de actor que reportó el valor, si quedó registrado.</summary>
+    public string? ReportedBy { get; set; }
+
+    public string Status { get; set; } = "confirmed";
+
+    /// <summary>Medición anterior reemplazada por esta corrección.</summary>
+    public Guid? SupersedesId { get; set; }
+
+    public string? IdempotencyKey { get; set; }
+
     /// <summary>Lote de examen que originó la medición. Null si no proviene de lab upload.</summary>
     public Guid? BatchId { get; set; }
 
