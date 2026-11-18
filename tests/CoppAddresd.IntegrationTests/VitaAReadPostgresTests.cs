@@ -267,13 +267,15 @@ public sealed partial class NutritionPlanWorkflowTests
 
     private async Task<WebApplication> VitaAHostAsync(bool internalEnabled = true, bool medicationEnabled = true,
         Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null, IProgramMetricsQueue? metrics = null,
-        IBiometriaMetricsQueue? biometria = null, Action<IServiceCollection>? configureServices = null)
+        IBiometriaMetricsQueue? biometria = null, Action<IServiceCollection>? configureServices = null,
+        bool documentIndexingEnabled = false)
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders();
         builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
         builder.Configuration["Vita:InternalEnabled"] = internalEnabled.ToString();
         builder.Configuration["Vita:CaptureEnabled"] = captureEnabled.ToString();
+        builder.Configuration["Vita:DocumentIndexingEnabled"] = documentIndexingEnabled.ToString();
         if (captureEnabled) builder.Configuration["Vita:CaptureProposalSecret"] = Convert.ToBase64String(
             System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         builder.Services.AddControllers().AddApplicationPart(typeof(InternalVitaController).Assembly);

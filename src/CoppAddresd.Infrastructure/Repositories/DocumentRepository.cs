@@ -142,7 +142,15 @@ public sealed class DocumentRepository(AppDbContext dbContext) : IDocumentReposi
 
     public async Task UpdateAsync(Document document, CancellationToken ct = default)
     {
-        dbContext.Documents.Update(document);
+        // Una edición leída antes de un borrado no debe reactivar el documento.
+        var entry = dbContext.Entry(document);
+        entry.State = EntityState.Unchanged;
+        entry.Property(x => x.Title).IsModified = true;
+        entry.Property(x => x.Description).IsModified = true;
+        entry.Property(x => x.DocumentTypeId).IsModified = true;
+        entry.Property(x => x.Status).IsModified = true;
+        entry.Property(x => x.UpdatedAt).IsModified = true;
+        entry.Property(x => x.UpdatedBy).IsModified = true;
         await dbContext.SaveChangesAsync(ct);
     }
 

@@ -359,3 +359,50 @@ captura devuelve el mismo resultado. `entityType` es `clinical_measurement`,
 | 409 | La clave se usó con otros datos, el canal o turno no coinciden, falta la confirmación adicional, la ocurrencia o inscripción cambió, la medición ya tiene un reemplazo o ya existe una comida o un check-in para ese día. |
 | 422 | El módulo canónico rechaza la fecha o no dispone de la configuración necesaria. |
 | 503 | No se puede verificar el consentimiento. |
+
+## Índice privado de documentos · 5.2
+
+El backend envía las altas y bajas al AI Service con `X-Internal-Key`. El
+`patientId` y el `documentId` proceden del expediente persistido. El runtime
+de Vita y los clientes no eligen estos valores para indexar.
+
+`POST /internal/vita/documents/index` reemplaza los fragmentos existentes del
+documento. El backend envía texto extraído en `content` y
+`contentType: "text/plain"`. El AI Service también admite `contentBase64`
+con `contentType: "application/pdf"` como alternativa excluyente.
+
+```json
+{
+  "patientId": "985832c7-ec84-464c-b476-25b5f5a7fd0b",
+  "documentId": "97609143-62df-4946-b3b9-01e11bd6f613",
+  "title": "Informe de ejemplo",
+  "documentDate": "2026-11-18T12:00:00Z",
+  "status": "active",
+  "content": "Texto extraído del documento de ejemplo.",
+  "contentType": "text/plain"
+}
+```
+
+Respuesta `200` del alta.
+
+```json
+{"documentId":"97609143-62df-4946-b3b9-01e11bd6f613","status":"active","chunksCreated":1,"replacedChunks":0}
+```
+
+Para archivo o borrado, el backend llama a
+`DELETE /internal/vita/documents/97609143-62df-4946-b3b9-01e11bd6f613?patientId=985832c7-ec84-464c-b476-25b5f5a7fd0b`.
+La respuesta `204` es vacía. La baja es idempotente.
+
+| HTTP | Motivo |
+| --- | --- |
+| 401 | Clave interna ausente o inválida. |
+| 404 | Documento inexistente o ajeno. En una baja se trata como ausencia de un documento propio para ese par. |
+| 409 | El documento ya no está activo para indexación. |
+| 422 | Solicitud inválida o documento sin texto extraíble. |
+| 503 | Indexación temporalmente no disponible. |
+
+El alta documental y el trabajo pendiente se confirman juntos en PostgreSQL.
+La subida responde sin esperar extracción ni AI. El worker vuelve a leer el
+estado vigente y comprueba el consentimiento antes de enviar texto. Los fallos
+quedan pendientes de reintento. La retirada del índice surte efecto cuando AI
+acepta la baja.

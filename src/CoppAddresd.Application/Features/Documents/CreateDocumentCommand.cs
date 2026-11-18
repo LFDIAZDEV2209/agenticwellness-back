@@ -1,3 +1,4 @@
+using CoppAddresd.Application.Common.Storage;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Exceptions;
@@ -38,9 +39,6 @@ public sealed class CreateDocumentCommandHandler(
 
         ValidateExtension(type, request.StorageKey);
 
-        if (!request.StorageKey.StartsWith("documents/", StringComparison.OrdinalIgnoreCase))
-            throw new BusinessRuleViolationException("La clave de storage debe vivir bajo documents/.");
-
         Guid? patientId = request.PatientId;
         Guid? clinicId = request.ClinicId;
         int version = 1;
@@ -69,6 +67,9 @@ public sealed class CreateDocumentCommandHandler(
             // La clínica del documento es la del paciente; el cuerpo nunca la impone.
             clinicId = await repository.GetPatientClinicIdAsync(request.PatientId.Value, ct);
         }
+
+        if (patientId is not { } ownerId || !PatientDocumentStorageKeys.IsUploadKey(request.StorageKey, ownerId))
+            throw new BusinessRuleViolationException("La clave de subida no pertenece al paciente del documento.");
 
         var now = DateTime.UtcNow;
         var document = new Document

@@ -158,7 +158,10 @@ public class DocumentCommandHandlerTests
 
         var handler = CreateHandler();
 
-        var result = await handler.Handle(ComandoBase() with { PatientId = patientId }, CancellationToken.None);
+        var result = await handler.Handle(ComandoBase() with
+        {
+            PatientId = patientId, StorageKey = $"documents/{patientId:D}/{Guid.NewGuid():N}.pdf",
+        }, CancellationToken.None);
 
         Assert.Equal(clinicId, persisted!.ClinicId);
         Assert.Equal(1, persisted.Version);
@@ -193,6 +196,7 @@ public class DocumentCommandHandlerTests
         {
             PatientId = null,
             ParentDocumentId = parentId,
+            StorageKey = $"documents/{patientId:D}/{Guid.NewGuid():N}.pdf",
         }, CancellationToken.None);
 
         Assert.Equal(2, persisted!.Version);

@@ -36,7 +36,7 @@ public sealed class CreateDocumentUploadIntentCommandHandler(
         if (request.ParentDocumentId is { } parentId)
         {
             var root = await repository.GetRootAsync(parentId, ct);
-            if (root is null)
+            if (root is null || root.PatientId != request.PatientId)
                 throw new NotFoundException("El documento raíz de la nueva versión no existe.");
         }
 

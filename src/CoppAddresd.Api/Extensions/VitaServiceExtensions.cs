@@ -2,6 +2,7 @@ using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Infrastructure.Repositories;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Api.Security;
+using CoppAddresd.Infrastructure.Services;
 
 namespace CoppAddresd.Api.Extensions;
 
@@ -14,6 +15,16 @@ public static class VitaServiceExtensions
         services.AddScoped<IVitaClinicalReader, VitaClinicalReader>();
         services.AddScoped<IVitaExtendedReadStore, VitaExtendedReadStore>();
         services.AddScoped<IVitaDocumentLink, VitaDocumentLink>();
+        services.AddScoped<VitaDocumentIndexOutbox>();
+        services.AddScoped<VitaDocumentTextReader>();
+        services.AddScoped<VitaDocumentIndexProcessor>();
+        services.AddHostedService<VitaDocumentIndexWorker>();
+        services.AddHttpClient<VitaDocumentIndexClient>((sp, client) =>
+        {
+            var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<CoppAddresd.Application.Common.AiServiceSettings>>().Value;
+            client.BaseAddress = ApplicationServiceExtensions.ResolveBaseUri(settings.BaseUrl, "http://localhost:8000");
+        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false })
+            .RemoveAllLoggers();
         services.AddOptions<VitaTaskProtectionSettings>().Bind(configuration.GetSection("Vita"))
             .Validate(o => !o.TaskCompletionEnabled || VitaProposalTokens.DedicatedSecret(o.TaskProposalSecret,
                 configuration["Jwt:Secret"], configuration["AiService:InternalApiKey"], configuration["Vita:VoiceServiceKey"]),

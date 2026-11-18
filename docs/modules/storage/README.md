@@ -161,3 +161,46 @@ caducidad ni afirma resolver la autorización de todos los namespaces legacy.
 Las pruebas de proveedor usan filesystem temporal/SDK simulado y las pruebas
 HTTP usan MVC real con identidad/repositorios sintéticos; no acceden a S3 ni a
 bases de datos reales.
+
+## Índice privado de Vita
+
+La subida ERP crea un intent y transfiere el binario al storage. Al registrar
+la metadata con `POST /api/v1/documents` se encola el documento, igual que
+cuando `uploadLabExam` guarda su original en el expediente. Un adjunto se
+incluye cuando tiene fila en `app.documents`. El PUT del objeto por sí solo
+no crea un registro; los sidecars de extracción y los adjuntos de borradores
+que viven fuera del expediente quedan fuera del índice.
+
+La migración `20261118223000_AddVitaDocumentIndexOutbox` guarda el trabajo
+en la misma transacción que la creación, edición de título, archivo o
+borrado. La cola guarda el par paciente/documento y datos de reintento. El
+texto y la clave de storage se leen del expediente cuando el worker toma el
+trabajo. En un documento raíz, el archivo o borrado alcanza también las
+versiones. Restaurar la raíz vuelve a evaluar las versiones vigentes.
+
+El worker lee originales de la clave exacta del paciente. El registro ERP
+acepta las claves generadas por el intent de ese paciente. El archivo de
+laboratorio exige a la vez el paciente y el documento correctos en la ruta,
+y usa el método protegido de lectura. Para el alta se comprueba el
+consentimiento `chat` según la política vigente. Se envía texto UTF-8 de
+`.txt`, `.md`, `.csv` o texto de PDF con PdfPig, hasta 16 MiB de entrada,
+100 páginas y 100.000 caracteres. Los documentos sin texto recuperable se
+retiran del índice. Las imágenes y los escaneos sin capa de texto quedan
+pendientes de la capacidad multimodal.
+
+El worker usa `FOR UPDATE SKIP LOCKED` y un lease de dos minutos. Fuera de
+la transacción consulta storage y llama con `X-Internal-Key` a
+`POST /internal/vita/documents/index` o `DELETE /internal/vita/documents/{documentId}?patientId=...`.
+La generación de la fila conserva cambios recientes aunque un intento anterior
+termine tarde. El envío se puede repetir; el AI Service reemplaza o retira
+fragmentos por documento y paciente. Los fallos se reintentan con backoff de
+5 segundos a 5 minutos. Si falta consentimiento, se reevalúa a los 30 minutos.
+Los logs del worker incluyen tipo de fallo e intento.
+
+Activar `Vita:DocumentIndexingEnabled=true` tras aplicar la migración y
+disponer del endpoint del AI Service. El worker usa `AiService:BaseUrl` y
+`AiService:InternalApiKey`. El switch está apagado por defecto y el trabajo
+persiste mientras está apagado. Se encolan cambios desde la migración.
+La retirada del índice es asíncrona y un fallo de AI puede demorarla.
+
+[Contrato y ejemplos](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
