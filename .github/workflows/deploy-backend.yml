@@ -71,7 +71,7 @@ jobs:
 
           # Cambios en infraestructura compartida (Infrastructure, Application, Domain,
           # slnx, Dockerfiles, workflows) afectan a todos los servicios backend.
-          SHARED=$(echo "$CHANGED" | grep -E "(src/Shared/|src/CoppAddresd\.(Infrastructure|Application|Domain)|CoppAddresd\.slnx|Dockerfile|\.github/workflows|scripts/ecs-migrate-task\.sh|tests/scripts/test_ecs_migrate_task\.py)" || true)
+          SHARED=$(echo "$CHANGED" | grep -E "(src/Shared/|src/CoppAddresd\.(Infrastructure|Application|Domain)|CoppAddresd\.slnx|Dockerfile|\.github/workflows|scripts/ecs-migrate-task\.sh|scripts/ecs-medication-demo-task\.sh|tools/CoppAddresd.MedicationDemoSeed/|tests/scripts/test_ecs_migrate_task\.py)" || true)
           # Una recuperación manual debe incluir todos los servicios: HEAD~1
           # puede ser solo un arreglo de CI y omitir cambios cuyo deploy falló.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -154,6 +154,13 @@ jobs:
         run: |
           bash -n scripts/ecs-migrate-task.sh
           python3 tests/scripts/test_ecs_migrate_task.py
+          bash -n scripts/ecs-medication-demo-task.sh
+          set +e
+          dotnet run --project tools/CoppAddresd.MedicationDemoSeed -c Release > "$RUNNER_TEMP/medication-demo-guard.log" 2>&1
+          DEMO_EXIT=$?
+          set -e
+          test "$DEMO_EXIT" -eq 1
+          grep -q '^DEMO_FAILED: DEMO_DISABLED$' "$RUNNER_TEMP/medication-demo-guard.log"
 
   deploy:
     needs: [detect, test]
@@ -271,8 +278,9 @@ jobs:
             # Referencias al secret; nunca leer valores en el runner ni en sus logs.
             WA_ENABLED="${{ vars.WHATSAPP_ENABLED_DEV || '0' }}"
             WA_REMINDERS="${{ vars.WHATSAPP_REMINDERS_ENABLED_DEV || 'false' }}"
-            EXTRA_ENV=$(echo "$EXTRA_ENV" | jq --arg enabled "$WA_ENABLED" --arg reminders "$WA_REMINDERS" \
-              '. + [{name:"WHATSAPP_ENABLED",value:$enabled},{name:"WhatsApp__Reminders__Enabled",value:$reminders}]')
+            MEDICATIONS_ENABLED="${{ vars.MEDICATIONS_ENABLED_DEV || 'false' }}"
+            EXTRA_ENV=$(echo "$EXTRA_ENV" | jq --arg enabled "$WA_ENABLED" --arg reminders "$WA_REMINDERS" --arg medications "$MEDICATIONS_ENABLED" \
+              '. + [{name:"WHATSAPP_ENABLED",value:$enabled},{name:"WhatsApp__Reminders__Enabled",value:$reminders},{name:"Medications__Enabled",value:$medications}]')
             if [ "$WA_ENABLED" = "1" ] || [ "$WA_ENABLED" = "true" ]; then
               WA_SECRET_ARN="${{ vars.WHATSAPP_SECRET_ARN_DEV }}"
               test -n "$WA_SECRET_ARN" || { echo "Falta WHATSAPP_SECRET_ARN_DEV"; exit 1; }
@@ -323,6 +331,13 @@ jobs:
           MIGRATION_SERVICE: cooppadresd-${{ matrix.service }}
           MIGRATION_TASK_DEFINITION: ${{ steps.taskdef.outputs.arn }}
         run: bash scripts/ecs-migrate-task.sh
+
+      - name: Preparar cuenta sintética de medicamentos (solo ejecución manual)
+        if: matrix.service == 'api' && github.event_name == 'workflow_dispatch' && vars.MEDICATION_DEMO_SEED_DEV == 'true'
+        timeout-minutes: 12
+        env:
+          MEDICATION_DEMO_TASK_DEFINITION: ${{ steps.taskdef.outputs.arn }}
+        run: bash scripts/ecs-medication-demo-task.sh
 
       - name: Actualizar ECS Service
         run: |
