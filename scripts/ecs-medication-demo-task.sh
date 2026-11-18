@@ -7,11 +7,11 @@ set -euo pipefail
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 aws ecs describe-task-definition --task-definition "$MEDICATION_DEMO_TASK_DEFINITION" --region "$AWS_REGION" --query taskDefinition > "$WORK/base.json"
-jq '{family:"cooppadresd-medication-demo",executionRoleArn,networkMode,requiresCompatibilities,cpu,memory,runtimePlatform,
+jq '{family:"cooppadresd-medication-demo",executionRoleArn,networkMode,requiresCompatibilities:["FARGATE"],cpu,memory,runtimePlatform,
  containerDefinitions:[.containerDefinitions[0] | {name:"medication-demo",image,essential:true,
  entryPoint:["dotnet","/app/medication-demo/CoppAddresd.MedicationDemoSeed.dll"],command:["--production"],
  environment:[{name:"COPP_MEDICATION_DEMO_CONFIRM",value:"SYNTHETIC_ACCOUNT_ONLY"}],
- secrets:[.secrets[] | select(.name=="ConnectionStrings__DefaultConnection")],logConfiguration}]}' "$WORK/base.json" > "$WORK/demo.json"
+ secrets:[.secrets[] | select(.name=="ConnectionStrings__DefaultConnection")],logConfiguration}]} | with_entries(select(.value != null))' "$WORK/base.json" > "$WORK/demo.json"
 TD=$(aws ecs register-task-definition --cli-input-json "file://$WORK/demo.json" --region "$AWS_REGION" --query taskDefinition.taskDefinitionArn --output text)
 NET=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services cooppadresd-api --region "$AWS_REGION" --query 'services[0].networkConfiguration' --output json)
 aws ecs run-task --cluster "$ECS_CLUSTER" --task-definition "$TD" --region "$AWS_REGION" --launch-type FARGATE --network-configuration "$NET" > "$WORK/run.json"
