@@ -47,7 +47,7 @@ var settings = new Dictionary<string, string?>
     ["Jwt:RefreshTokenExpirationDays"] = "1",
     ["Storage:SignatureKey"] = key, ["Storage:Provider"] = "Local",
     ["Storage:Local:RootPath"] = Path.Combine(output, "storage"),
-    ["Cache:Provider"] = "Memory", ["Medications:Enabled"] = "true",
+    ["Cache:Provider"] = "Memory", ["Medications:Enabled"] = "true", ["Medications:MonitoringWorkerEnabled"] = "false",
     ["Auth:InternalApiKey"] = key, ["AuthService:InternalApiKey"] = key,
     ["AuthService:BaseUrl"] = "http://127.0.0.1:5163",
     ["Cors:Origins"] = "http://localhost:3100,http://127.0.0.1:3100,http://localhost:5188,http://127.0.0.1:5188,http://localhost:5160,http://127.0.0.1:5160",
@@ -119,6 +119,15 @@ relay.Run(async context =>
         await context.Response.WriteAsJsonAsync(new { utcNow = clock.GetUtcNow() });
         return;
     }
+    if (context.Request.Path == "/__qa/medications/refresh" && context.Request.Method == "POST")
+    {
+        await using var scope = api.Services.CreateAsyncScope();
+        var store = scope.ServiceProvider.GetRequiredService<CoppAddresd.Application.Features.Medications.IMedicationMonitoringStore>();
+        var patients = await store.MonitoredPatientsAsync(null, 50, context.RequestAborted);
+        foreach (var patient in patients) await store.RefreshAlertsAsync(patient, context.RequestAborted);
+        if (patients.Count > 0) await store.MonitoredPatientsAsync(patients[^1], 50, context.RequestAborted);
+        await context.Response.WriteAsJsonAsync(new { refreshed = true, count = patients.Count }); return;
+    }
     var port = context.Request.Path.StartsWithSegments("/api/auth") ? 5163 : 5162;
     using var request = new HttpRequestMessage(new HttpMethod(context.Request.Method),
         $"http://127.0.0.1:{port}{context.Request.Path}{context.Request.QueryString}");
@@ -147,7 +156,7 @@ static async Task<Dictionary<string, object>> SeedAsync(IServiceProvider authSer
 {
     var scopedClinicId = Id("201");
     var scopedProfessionalId = Id("303");
-    string[] permissionCodes = ["Medications.View", "Medications.Manage", "Medications.ManageAccess", "Patients.View", "Patients.ViewOwn", "Patients.ViewAll", "Patients.Update", "Program.Profile360View", "Nutrition.View", "System.AdminSettings", "Organizations.View", "Clinics.View"];
+    string[] permissionCodes = ["Medications.View", "Medications.Manage", "Medications.ManageAccess", "Medications.Export", "Audit.View", "Patients.View", "Patients.ViewOwn", "Patients.ViewAll", "Patients.Update", "Program.Profile360View", "Nutrition.View", "System.AdminSettings", "Organizations.View", "Clinics.View"];
     var specs = new[]
     {
         new { Code = "patient", Id = Id("1"), Email = "medication.patient@copp.test", Document = "900000067" },

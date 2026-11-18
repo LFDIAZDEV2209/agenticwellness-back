@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CoppAddresd.Infrastructure.Repositories;
 
 /// <summary>Persistencia del circuito inicial. Cada mutación serializa solo el paciente afectado.</summary>
-public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard scope, TimeProvider clock) : IMedicationControlStore
+public sealed partial class MedicationControlStore(AppDbContext db, IPatientScopeGuard scope, TimeProvider clock, IPatientScopeActor? auditActor = null, IAuditActorContext? auditContext = null) : IMedicationControlStore, IMedicationMonitoringStore
 {
     public async Task<MedicationAccessDto> GetAccessAsync(Guid patientId, CancellationToken ct)
         => await MedicationAccessQuery.Resolve(db).Where(a => a.PatientId == patientId)
@@ -104,6 +104,7 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
             row.Revision++;
             row.UpdatedBy = actorId;
             row.UpdatedAt = Now;
+            AddMedicationAudit(patientId, actorId, "staff_recorded", "access_changed", "access", row.Id);
             await db.SaveChangesAsync(ct);
             return new MedicationAccessDto(row.Enabled, row.Revision);
         }, ct);
@@ -148,7 +149,9 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
                 Id = Guid.NewGuid(), TreatmentId = treatment.Id, Status = "active", Revision = 1,
                 EffectiveAt = Bounds(date, zone).Start,
             });
+            AddMedicationAudit(patientId, actorId, origin, "treatment_created", "treatment", treatment.Id);
             await db.SaveChangesAsync(ct);
+            await RefreshAlertsCoreAsync(patientId, ct);
             return new MedicationCreateResult(await TreatmentDtoAsync(treatment, ct), true);
         }, ct);
 
@@ -170,9 +173,20 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
                 select new MedicationEventDto(e.Id, e.DoseId, e.TreatmentId, t.Name, e.Status,
                     e.OccurredAt, e.RecordedAt, e.Reason, e.Origin)).Take(100).ToListAsync(ct);
             var access = await GetAccessAsync(patientId, ct);
+            // Solo las tomas asignadas y ya programadas para este instante forman la adherencia.
+            // Futuras, canceladas, adicionales y nutracéuticos no inflan el denominador.
+            var required = treatments.Where(t => t.IsRequired).Select(t => t.Id).ToHashSet();
+            var assigned = doses.Where(d => required.Contains(d.TreatmentId) && d.Status != "cancelled").ToArray();
+            var due = assigned.Where(d => d.ScheduledAt <= Now).ToArray();
+            var taken = due.Count(d => d.Status == "taken");
+            var offPlan = treatments.Where(t => !t.IsRequired && t.ProductType != "supplement").Select(t => t.Id).ToHashSet();
+            var adherence = new MedicationAdherenceDto(assigned.Length, due.Length, taken,
+                due.Count(d => d.Status == "omitted"), due.Count(d => d.Status == "pending"),
+                due.Length == 0 ? null : (int)Math.Round(100m * taken / due.Length, MidpointRounding.AwayFromZero),
+                doses.Count(d => offPlan.Contains(d.TreatmentId) && d.Status == "taken"));
             return new MedicationWorkspaceDto(patient, access, treatments, doses, history,
                 new(treatments.Count(t => t.Status == "active"), doses.Count(d => d.Status != "cancelled"),
-                    doses.Count(d => d.Status == "taken"), doses.Count(d => d.Status == "pending")));
+                    doses.Count(d => d.Status == "taken"), doses.Count(d => d.Status == "pending")), adherence);
         }, ct);
 
     public Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
@@ -226,17 +240,21 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
             if (occurred < earliest) throw new UnprocessableEntityException("La fecha de toma es anterior al tratamiento.");
             var previousEvent = await db.MedicationIntakeEvents.AsNoTracking().Where(e => e.DoseId == doseId)
                 .OrderByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).Select(e => (Guid?)e.Id).FirstOrDefaultAsync(ct);
-            db.MedicationIntakeEvents.Add(new MedicationIntakeEvent
+            var intakeEvent = new MedicationIntakeEvent
             {
                 Id = Guid.NewGuid(), PatientId = patientId, TreatmentId = dose.TreatmentId, DoseId = doseId,
                 ClientRequestId = request.ClientRequestId, RequestHash = hash, Status = request.Status,
                 OccurredAt = occurred, RecordedAt = Now, ActorId = actorId, Origin = origin,
                 Reason = request.Reason, CorrectsEventId = previousEvent,
-            });
+            };
+            db.MedicationIntakeEvents.Add(intakeEvent);
+            await ApplyIntakeStockAsync(patientId, actorId, origin, dose, intakeEvent, regimen.Dosage, ct);
+            AddMedicationAudit(patientId, actorId, origin, previousEvent is null ? "dose_recorded" : "dose_corrected", "dose", dose.Id);
             dose.Status = request.Status;
             dose.OccurredAt = occurred;
             dose.Revision++;
             await db.SaveChangesAsync(ct);
+            await RefreshAlertsCoreAsync(patientId, ct);
             return await DoseQuery(patientId, doseId).SingleAsync(ct);
         }, ct);
 
@@ -246,6 +264,10 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
         {
             if (selfService) await EnsurePatientOriginAsync(patientId, "patient_reported", ct);
             var treatment = await db.MedicationTreatments.SingleOrDefaultAsync(t => t.Id == treatmentId && t.PatientId == patientId, ct) ?? throw Missing();
+            // El paciente registra tomas/omisiones, pero nunca altera el plan del equipo.
+            // Se deniega incluso el no-op para no crear una vía de actualización ambigua.
+            if (selfService && treatment.Origin != "patient_reported")
+                throw new ForbiddenException("Solo tu equipo puede cambiar un tratamiento asignado.");
             if (treatment.Status == request.Status) return await TreatmentDtoAsync(treatment, ct);
             if (request.ExpectedRevision != treatment.Revision) throw Conflict("El tratamiento cambió. Actualiza la ficha.");
             if (treatment.Status == "completed")
@@ -258,7 +280,9 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
                 Id = Guid.NewGuid(), TreatmentId = treatment.Id, Status = request.Status,
                 Revision = treatment.Revision, EffectiveAt = Now,
             });
+            AddMedicationAudit(patientId, auditActor?.UserId, selfService ? "patient_reported" : "staff_recorded", "treatment_status_changed", "treatment", treatment.Id);
             await db.SaveChangesAsync(ct);
+            await RefreshAlertsCoreAsync(patientId, ct);
             return await TreatmentDtoAsync(treatment, ct);
         }, ct);
 
@@ -286,9 +310,10 @@ public sealed class MedicationControlStore(AppDbContext db, IPatientScopeGuard s
     private sealed record Occurrence(MedicationDoseDto Dto, Guid RegimenId, Guid SlotId);
 
     // Lecturas puras: las ocurrencias programadas se proyectan; solo una confirmación autorizada las persiste.
-    private async Task<IReadOnlyList<Occurrence>> ProjectDosesAsync(Guid patientId, DateOnly date, TimeZoneInfo viewZone, CancellationToken ct)
+    private async Task<IReadOnlyList<Occurrence>> ProjectDosesAsync(Guid patientId, DateOnly date, TimeZoneInfo viewZone, CancellationToken ct, int days = 1)
     {
-        var (start, end) = Bounds(date, viewZone);
+        var start = Bounds(date, viewZone).Start;
+        var end = Bounds(date.AddDays(days - 1), viewZone).End;
         var regimens = await (from r in db.MedicationRegimens.AsNoTracking()
             join t in db.MedicationTreatments.AsNoTracking() on r.TreatmentId equals t.Id
             where t.PatientId == patientId
