@@ -345,3 +345,15 @@ perfil y scopes; `erp.welcome_email_finalizations` persiste esa confirmación pa
 reintentar HTTP tras reinicios. No hay transacción distribuida. El lease se
 reclama por UPDATE condicional y el envío ocurre después. Una caída entre SMTP
 y `Sent` admite duplicado excepcional; ver [operación y pruebas](../modules/auth/welcome-emails.md).
+
+## Medicamentos: existencias, alertas y seguimiento
+
+`InPatientTransactionAsync` usa READ COMMITTED, execution strategy y lock FOR
+UPDATE del paciente. Orden: paciente → tratamiento/dosis/suministro → movimientos
++operación idempotente → auditoría → refresco de alertas → commit. No hay HTTP ni
+envíos dentro de la transacción. Stock, eventos clínicos, correcciones y auditoría
+se confirman juntos. Consultas de reglas por rango se resuelven por lotes, no una
+query por dosis/día. Procesos distintos comparten el lock; solicitudes repetidas
+usan UUID/hash y revisiones esperadas. La cancelación deshace toda la escritura.
+Lecturas semanales/inventario no materializan dosis; solo añaden el acceso a la
+bitácora. Un conteo físico usa supply_revision para cerrar conciliaciones previas.

@@ -4458,6 +4458,117 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("medications", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationAlertFollowUp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<Guid>("AlertId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("alert_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("AlertId", "CreatedAt");
+
+                    b.ToTable("medication_alert_followups", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("ActorEmail")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("actor_email");
+
+                    b.Property<Guid?>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("origin");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("purpose");
+
+                    b.Property<string>("RequestId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("request_id");
+
+                    b.Property<string>("Resource")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("resource");
+
+                    b.Property<Guid?>("ResourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resource_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action", "CreatedAt");
+
+                    b.HasIndex("ActorId", "CreatedAt");
+
+                    b.HasIndex("PatientId", "CreatedAt");
+
+                    b.ToTable("medication_audit_entries", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationDose", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4569,6 +4680,125 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("medication_dose_operations", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationEffectFollowUp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("report_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("ReportId", "CreatedAt");
+
+                    b.ToTable("medication_effect_followups", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationEffectReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("origin");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<Guid>("ReportedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reported_by");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("revision");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("severity");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Symptom")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("symptom");
+
+                    b.Property<Guid?>("TreatmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("treatment_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreatmentId");
+
+                    b.HasIndex("PatientId", "CreatedAt");
+
+                    b.ToTable("medication_effect_reports", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_med_effect_severity", "severity IN ('mild','moderate','severe')");
+
+                            t.HasCheckConstraint("ck_med_effect_status", "status IN ('open','follow_up','resolved')");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationIntakeEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4650,6 +4880,129 @@ namespace CoppAddresd.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_med_event_status", "status IN ('taken','omitted')");
                         });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationMonitoringAlert", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_to");
+
+                    b.Property<bool>("ConditionActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("condition_active");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DedupKey")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("dedup_key");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("ResolutionNote")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("resolution_note");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("revision");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("severity");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid?>("TreatmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("treatment_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreatmentId");
+
+                    b.HasIndex("PatientId", "DedupKey")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "UpdatedAt");
+
+                    b.ToTable("medication_monitoring_alerts", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_med_alert_status", "status IN ('open','in_progress','resolved')");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationMonitoringOperation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClientRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_request_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("request_hash");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("result_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId", "ClientRequestId")
+                        .IsUnique();
+
+                    b.ToTable("medication_monitoring_operations", "app");
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationRegimen", b =>
@@ -4744,6 +5097,135 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasDatabaseName("ux_med_schedule_time");
 
                     b.ToTable("medication_schedule_slots", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationStockMovement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<decimal>("BalanceAfter")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("balance_after");
+
+                    b.Property<Guid?>("DoseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("dose_id");
+
+                    b.Property<Guid?>("IntakeEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("intake_event_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("origin");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<decimal>("QuantityDelta")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("quantity_delta");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("recorded_at");
+
+                    b.Property<Guid>("SupplyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supply_id");
+
+                    b.Property<int>("SupplyRevision")
+                        .HasColumnType("integer")
+                        .HasColumnName("supply_revision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoseId");
+
+                    b.HasIndex("IntakeEventId")
+                        .IsUnique();
+
+                    b.HasIndex("PatientId", "RecordedAt");
+
+                    b.HasIndex("SupplyId", "RecordedAt");
+
+                    b.ToTable("medication_stock_movements", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_med_stock_kind", "kind IN ('initial','refill','adjustment','consumption','correction')");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationSupply", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("balance");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date")
+                        .HasColumnName("expires_on");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("revision");
+
+                    b.Property<Guid>("TreatmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("treatment_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreatmentId")
+                        .IsUnique();
+
+                    b.HasIndex("PatientId", "ExpiresOn");
+
+                    b.ToTable("medication_supplies", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_med_supply_revision", "revision > 0");
+                        });
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationTreatment", b =>
@@ -11483,6 +11965,30 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Navigation("Unit");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationAlertFollowUp", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationMonitoringAlert", null)
+                        .WithMany()
+                        .HasForeignKey("AlertId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationAuditEntry", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationDose", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
@@ -11525,6 +12031,35 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationEffectFollowUp", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationEffectReport", null)
+                        .WithMany()
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationEffectReport", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationTreatment", null)
+                        .WithMany()
+                        .HasForeignKey("TreatmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationIntakeEvent", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.MedicationIntakeEvent", null)
@@ -11551,6 +12086,29 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationMonitoringAlert", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationTreatment", null)
+                        .WithMany()
+                        .HasForeignKey("TreatmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationMonitoringOperation", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationRegimen", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.MedicationTreatment", null)
@@ -11565,6 +12123,46 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.HasOne("CoppAddresd.Domain.Entities.MedicationRegimen", null)
                         .WithMany()
                         .HasForeignKey("RegimenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationStockMovement", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationDose", null)
+                        .WithMany()
+                        .HasForeignKey("DoseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationIntakeEvent", null)
+                        .WithMany()
+                        .HasForeignKey("IntakeEventId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationSupply", null)
+                        .WithMany()
+                        .HasForeignKey("SupplyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationSupply", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.MedicationTreatment", null)
+                        .WithMany()
+                        .HasForeignKey("TreatmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

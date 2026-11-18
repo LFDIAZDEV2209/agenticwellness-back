@@ -347,3 +347,32 @@ Solo tablas nuevas vacías: B-tree normales, sin bloqueo de tablas con datos.
 | auth.WelcomeEmailDeliveries / UserId, InvitationId | Cada FK | Estado por usuario y búsqueda/revocación de invitación; entradas por entrega |
 | erp.welcome_email_finalizations / PK | UserId | Confirmación idempotente por usuario (`user_id`) |
 | erp.welcome_email_finalizations / NextAttemptAt parcial | next_attempt_at WHERE completed_at IS NULL | Reintentos API→Auth; solo pendientes |
+
+## Control de medicamentos — seguimiento (2026-11-18)
+
+Índices de tablas nuevas; no se construyen índices bloqueantes sobre tablas
+anteriores. La paginación siempre aplica el ámbito autorizado antes de contar.
+Los planes se verifican en PostgreSQL18 de QA; para las tablas recién creadas y
+pequeñas un seq-scan es esperable. No se atribuye una prueba de carga productiva.
+
+| Índice | Tabla | Columnas | Tipo | Motivo | Consulta | Efecto/costo |
+| --- | --- | --- | --- | --- | --- | --- |
+| `IX_medication_alert_followups_alert_id_created_at` | `app.medication_alert_followups` | `alert_id, created_at` | B-tree | FK y consulta por recurso | `WHERE alert_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_alert_followups_patient_id` | `app.medication_alert_followups` | `patient_id` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY patient_id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_audit_entries_action_created_at` | `app.medication_audit_entries` | `action, created_at` | B-tree | Filtro de acción/fecha de auditoría | `WHERE action = @action ORDER BY created_at DESC` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_audit_entries_actor_id_created_at` | `app.medication_audit_entries` | `actor_id, created_at` | B-tree | Filtro de usuario/fecha de auditoría | `WHERE actor_id = @actor ORDER BY created_at DESC` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_audit_entries_patient_id_created_at` | `app.medication_audit_entries` | `patient_id, created_at` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY created_at` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_effect_followups_patient_id` | `app.medication_effect_followups` | `patient_id` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY patient_id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_effect_followups_report_id_created_at` | `app.medication_effect_followups` | `report_id, created_at` | B-tree | FK y consulta por recurso | `WHERE report_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_effect_reports_patient_id_created_at` | `app.medication_effect_reports` | `patient_id, created_at` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY created_at` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_effect_reports_treatment_id` | `app.medication_effect_reports` | `treatment_id` | B-tree | FK y consulta por recurso | `WHERE treatment_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_monitoring_alerts_patient_id_dedup_key` | `app.medication_monitoring_alerts` | `patient_id, dedup_key` | B-tree único | Unicidad por episodio de alerta | `WHERE patient_id = @patient AND dedup_key = @key` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_monitoring_alerts_status_updated_at` | `app.medication_monitoring_alerts` | `status, updated_at` | B-tree | Filtro y orden de alertas | `WHERE status = @status ORDER BY updated_at DESC` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_monitoring_alerts_treatment_id` | `app.medication_monitoring_alerts` | `treatment_id` | B-tree | FK y consulta por recurso | `WHERE treatment_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_monitoring_operations_patient_id_client_request_~` | `app.medication_monitoring_operations` | `patient_id, client_request_id` | B-tree único | Idempotencia de operaciones | `WHERE patient_id = @patient AND client_request_id = @operation` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_stock_movements_dose_id` | `app.medication_stock_movements` | `dose_id` | B-tree | FK y consulta por recurso | `WHERE dose_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_stock_movements_intake_event_id` | `app.medication_stock_movements` | `intake_event_id` | B-tree único | Un único movimiento por evento de toma | `WHERE intake_event_id = @event` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_stock_movements_patient_id_recorded_at` | `app.medication_stock_movements` | `patient_id, recorded_at` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY recorded_at` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_stock_movements_supply_id_recorded_at` | `app.medication_stock_movements` | `supply_id, recorded_at` | B-tree | FK y consulta por recurso | `WHERE supply_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_supplies_patient_id_expires_on` | `app.medication_supplies` | `patient_id, expires_on` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY expires_on` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+| `IX_medication_supplies_treatment_id` | `app.medication_supplies` | `treatment_id` | B-tree único | FK y consulta por recurso | `WHERE treatment_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |

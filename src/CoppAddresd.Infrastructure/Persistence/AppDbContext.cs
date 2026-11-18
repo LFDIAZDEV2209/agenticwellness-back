@@ -209,6 +209,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MedicationDoseOperation> MedicationDoseOperations => Set<MedicationDoseOperation>();
     public DbSet<PatientModuleAccess> PatientModuleAccess => Set<PatientModuleAccess>();
 
+    public DbSet<MedicationSupply> MedicationSupplies => Set<MedicationSupply>();
+    public DbSet<MedicationStockMovement> MedicationStockMovements => Set<MedicationStockMovement>();
+    public DbSet<MedicationEffectReport> MedicationEffectReports => Set<MedicationEffectReport>();
+    public DbSet<MedicationEffectFollowUp> MedicationEffectFollowUps => Set<MedicationEffectFollowUp>();
+    public DbSet<MedicationMonitoringAlert> MedicationMonitoringAlerts => Set<MedicationMonitoringAlert>();
+    public DbSet<MedicationAlertFollowUp> MedicationAlertFollowUps => Set<MedicationAlertFollowUp>();
+    public DbSet<MedicationMonitoringOperation> MedicationMonitoringOperations => Set<MedicationMonitoringOperation>();
+    public DbSet<MedicationAuditEntry> MedicationAuditEntries => Set<MedicationAuditEntry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
