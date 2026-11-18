@@ -24,10 +24,7 @@ public sealed class ArchivedDocumentAccess(
         var document = await documents.GetByIdAsync(documentId, ct);
         if (document is null || document.DeletedAt is not null || document.PatientId != patientId
             || document.Patient?.DeletedAt is not null || document.Status is not ("Ready" or "Archived")) return null;
-        var prefix = $"documents/{patientId:D}/{documentId:D}/";
-        if (!document.StorageKey.StartsWith(prefix + "original.", StringComparison.Ordinal)
-            || document.StorageKey[prefix.Length..].Contains('/')
-            || (key != document.StorageKey && key != prefix + "extraction.json")) return null;
+        if (!IsValidArchiveReadKey(document, key)) return null;
 
         // Como el presign GET de S3, una firma válida es una capacidad de lectura
         // temporal emitida solo después de autorizar al dueño o al equipo.
@@ -42,5 +39,13 @@ public sealed class ArchivedDocumentAccess(
         if (context.ActiveClinicId is { } clinicId && document.ClinicId != clinicId) return null;
         if (context.ActiveOrganizationId is { } organizationId && document.Clinic?.OrganizationId != organizationId) return null;
         return document;
+    }
+
+    public static bool IsValidArchiveReadKey(Document document, string key)
+    {
+        var prefix = $"documents/{document.PatientId:D}/{document.Id:D}/";
+        return document.PatientId is not null && document.StorageKey.StartsWith(prefix + "original.", StringComparison.Ordinal)
+            && !document.StorageKey[prefix.Length..].Contains('/')
+            && (key == document.StorageKey || key == prefix + "extraction.json");
     }
 }

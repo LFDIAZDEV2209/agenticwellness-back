@@ -362,6 +362,12 @@ mismos datos reutiliza el recibo y con datos distintos devuelve 409. La
 invalidación de caché se ejecuta después del commit y puede repetirse al
 reproducir un recibo.
 
+Las capturas de comida y check-in también bloquean la inscripción del programa
+dentro de la misma transacción. Reutilizan el núcleo de `LogNutritionAsync` y
+`CompleteTaskCoreAsync` sin abrir otra transacción. Las filas clínicas, las
+completaciones y el XP quedan sujetos al mismo commit que el recibo. Los eventos
+existentes del programa se publican después del commit de la primera captura.
+
 ## Medicamentos: existencias, alertas y seguimiento
 
 `InPatientTransactionAsync` usa READ COMMITTED, execution strategy y lock FOR

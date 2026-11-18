@@ -12,6 +12,8 @@ public static class VitaServiceExtensions
         services.AddScoped<VitaPatientAccess>();
         services.AddScoped<IVitaAgentCatalogReader, VitaAgentCatalogReader>();
         services.AddScoped<IVitaClinicalReader, VitaClinicalReader>();
+        services.AddScoped<IVitaExtendedReadStore, VitaExtendedReadStore>();
+        services.AddScoped<IVitaDocumentLink, VitaDocumentLink>();
         services.AddOptions<VitaTaskProtectionSettings>().Bind(configuration.GetSection("Vita"))
             .Validate(o => !o.TaskCompletionEnabled || VitaProposalTokens.DedicatedSecret(o.TaskProposalSecret,
                 configuration["Jwt:Secret"], configuration["AiService:InternalApiKey"], configuration["Vita:VoiceServiceKey"]),
@@ -29,6 +31,7 @@ public static class VitaServiceExtensions
             Microsoft.Extensions.Options.IOptionsMonitor<VitaCaptureSettings>>().CurrentValue.CaptureProposalSecret));
         services.AddScoped<IVitaCaptureStore, VitaCaptureStore>();
         services.AddScoped<MedicationControlStore>();
+        services.AddScoped(sp => (ProgramRepository)sp.GetRequiredService<IProgramRepository>());
         services.AddScoped<IVitaTaskWriter>(sp => (ProgramRepository)sp.GetRequiredService<IProgramRepository>());
         services.AddHttpClient("VitaVoice", (sp, client) =>
         {

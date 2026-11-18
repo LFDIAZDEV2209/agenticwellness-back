@@ -16,6 +16,7 @@ public sealed record RecommendationReadData(IReadOnlyList<RecommendationReadHead
 public interface INutritionRecommendationStore
 {
     Task<RecommendationReadData> ReadAsync(Guid patientId, CancellationToken ct);
+    Task<IReadOnlyList<RecommendationReadHeader>> ReadPublishedHeadersAsync(Guid patientId, int limit, CancellationToken ct);
 }
 /// <summary>UserId exclusivo del JWT; la ruta no acepta IDs del paciente ni del ciclo.</summary>
 public sealed record GetMyNutritionRecommendations(Guid UserId, string Language = "es") : IRequest<NutritionRecommendationsDto>;

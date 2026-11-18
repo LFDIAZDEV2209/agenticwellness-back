@@ -4,10 +4,12 @@ using System.Text.Json;
 using CoppAddresd.Api.Extensions;
 using CoppAddresd.Api.Internal;
 using CoppAddresd.Api.Middleware;
+using CoppAddresd.Api.Security;
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.Common.Behaviors;
 using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Application.Features.Medications;
+using CoppAddresd.Application.Features.Nutrition.Queries;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Enums;
@@ -264,7 +266,7 @@ public sealed partial class NutritionPlanWorkflowTests
     }
 
     private async Task<WebApplication> VitaAHostAsync(bool internalEnabled = true, bool medicationEnabled = true,
-        Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null)
+        Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null, IProgramMetricsQueue? metrics = null)
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders();
@@ -285,6 +287,13 @@ public sealed partial class NutritionPlanWorkflowTests
         builder.Services.AddValidatorsFromAssemblyContaining<GetVitaProfileQuery>();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connection));
         builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+        builder.Services.AddScoped<IProgramRepository>(sp => EffectiveRepository(sp.GetRequiredService<AppDbContext>()));
+        builder.Services.AddScoped<INutritionPrescriptionRepository, NutritionPrescriptionRepository>();
+        builder.Services.AddScoped<INutritionRecommendationStore, NutritionRecommendationStore>();
+        builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+        builder.Services.AddSingleton(Substitute.For<IObjectStorageService>());
+        builder.Services.AddSingleton(new StorageSignatureService("synthetic-vita-document-signature-for-tests"));
+        if (metrics is not null) builder.Services.AddSingleton(metrics);
         builder.Services.AddVita(builder.Configuration);
         builder.Services.AddScoped<IMedicationControlStore, MedicationControlStore>();
         builder.Services.AddScoped<MedicationControlService>();

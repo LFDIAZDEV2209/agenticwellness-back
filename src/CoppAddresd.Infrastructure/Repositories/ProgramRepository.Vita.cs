@@ -1,6 +1,7 @@
 using System.Data;
 using CoppAddresd.Application.DTOs.ProgramProgress;
 using CoppAddresd.Application.Features.Agents.Vita;
+using CoppAddresd.Application.Features.ProgramProgress.DTOs.Nutrition;
 using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,37 @@ namespace CoppAddresd.Infrastructure.Repositories;
 // de la transacción de CompleteTask permitiría completar contenido cambiado entre ambos pasos.
 public sealed partial class ProgramRepository : IVitaTaskWriter
 {
+    internal Task<NutritionLogResultDto> RecordVitaMealAsync(VitaCaptureProposal proposal, CancellationToken ct)
+    {
+        var program = proposal.Data.Program!;
+        var meal = program.Meal!;
+        return LogNutritionCoreAsync(proposal.PatientId, Enum.Parse<MealCode>(meal.MealCode), program.LocalDate,
+            meal.ToIntake(proposal.Channel), proposal.UserId, $"vita:{proposal.Nonce:N}", ct, program.EnrollmentId);
+    }
+
+    internal async Task<CompleteTaskResult> RecordVitaCheckInAsync(VitaCaptureProposal proposal, CancellationToken ct)
+    {
+        if (dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("El check-in de Vita requiere la transacción del paciente.");
+        var program = proposal.Data.Program!;
+        var enrollment = await dbContext.ProgramEnrollments.FromSqlInterpolated(
+            $"SELECT * FROM app.program_enrollments WHERE id = {program.EnrollmentId} FOR UPDATE").FirstOrDefaultAsync(ct);
+        if (enrollment is null || enrollment.PatientId != proposal.PatientId || enrollment.Status != ProgramEnrollmentStatus.Active)
+            throw new BusinessRuleViolationException("VITA_CAPTURE_ENROLLMENT_CHANGED");
+        if (program.LocalDate < enrollment.StartLocalDate || program.LocalDate > PatientLocalToday(enrollment.Timezone))
+            throw new UnprocessableEntityException("VITA_CAPTURE_INVALID_DATE");
+        if (await dbContext.EmotionalRecords.AnyAsync(r => r.ProgramEnrollmentId == enrollment.Id
+                && r.RecordedLocalDate == program.LocalDate, ct))
+            throw new BusinessRuleViolationException("VITA_CAPTURE_CHECKIN_ALREADY_RECORDED");
+
+        var result = await CompleteTaskCoreAsync(new(enrollment.Id, program.LocalDate, TaskCode.emocional,
+            $"vita:{proposal.Nonce:N}", proposal.Data.ObservedAt.UtcDateTime,
+            program.MoodScore, null, null, SourceRefType: proposal.Channel, ActorId: proposal.UserId), ct);
+        if (result.Outcome != CompleteTaskOutcome.Created)
+            throw new BusinessRuleViolationException("VITA_CAPTURE_CHECKIN_ALREADY_RECORDED");
+        return result;
+    }
+
     public Task<CompleteTaskResult> CompleteAsync(VitaTaskProposal proposal,
         Func<CancellationToken, Task> validate, CancellationToken ct) =>
         dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>

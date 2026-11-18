@@ -5250,16 +5250,23 @@ public sealed partial class ProgramRepository(
         => LogNutritionCoreAsync(patientId, mealCode, localDate, intake, actorId, clientRequestId, ct);
 
     private async Task<NutritionLogResultDto> LogNutritionCoreAsync(Guid patientId, MealCode mealCode, DateOnly? localDate,
-        NutritionIntakePayload? intake, Guid? actorId, string? clientRequestId, CancellationToken ct)
+        NutritionIntakePayload? intake, Guid? actorId, string? clientRequestId, CancellationToken ct,
+        Guid? expectedEnrollmentId = null)
     {
         ct.ThrowIfCancellationRequested();
         if (clientRequestId is not null && (string.IsNullOrWhiteSpace(clientRequestId) || clientRequestId.Length > 128))
             throw new UnprocessableEntityException("CLIENT_REQUEST_ID_INVALID: clave de reintento inválida.");
         var fingerprint = clientRequestId is null ? null : NutritionIntakeRequestFingerprint.Create(mealCode, localDate, intake);
-        var strategy = dbContext.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync(async () =>
+        var ownsTransaction = expectedEnrollmentId is null;
+        if (!ownsTransaction && dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("El registro de Vita requiere la transacción del paciente.");
+        return ownsTransaction
+            ? await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(_ => PersistAsync(), ct)
+            : await PersistAsync();
+
+        async Task<NutritionLogResultDto> PersistAsync()
         {
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+            await using var transaction = ownsTransaction ? await dbContext.Database.BeginTransactionAsync(ct) : null;
             var trackedBefore = dbContext.ChangeTracker.Entries().Select(e => e.Entity).ToHashSet(ReferenceEqualityComparer.Instance);
             var rowsBefore = dbContext.ChangeTracker.Entries<NutritionIntakeLog>().Where(e => e.Entity.PatientId == patientId)
                 .ToDictionary(e => e.Entity, e => e.CurrentValues.Clone());
@@ -5290,7 +5297,7 @@ public sealed partial class ProgramRepository(
                             .Where(x => x.SourceRefType == HabitLogSourceRefType && x.SourceRefId == previous.HabitCheckId)
                             .Select(x => (Guid?)x.EnrollmentId).FirstOrDefaultAsync(ct);
                         var priorBalance = originalEnrollment is { } enrollmentKey ? await CurrentBalanceAsync(enrollmentKey, ct) : 0;
-                        await transaction.CommitAsync(ct);
+                        if (transaction is not null) await transaction.CommitAsync(ct);
                         return new(previous.HabitCheckId, previous.MealCode.ToString(), previous.LocalDate, true, 0, priorBalance);
                     }
                 }
@@ -5303,8 +5310,11 @@ public sealed partial class ProgramRepository(
                         .ProgramEnrollments.FromSqlInterpolated(
                             $"SELECT * FROM app.program_enrollments WHERE patient_id = {patientId} AND status = 'Active' ORDER BY created_at DESC LIMIT 1 FOR UPDATE"
                         )
-                        .FirstOrDefaultAsync(ct)
-                    ?? throw new NotFoundException(
+                        .FirstOrDefaultAsync(ct);
+                if (expectedEnrollmentId is { } expected && enrollment?.Id != expected)
+                    throw new BusinessRuleViolationException("VITA_CAPTURE_ENROLLMENT_CHANGED");
+                if (enrollment is null)
+                    throw new NotFoundException(
                         $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {patientId}."
                     );
 
@@ -5417,7 +5427,7 @@ public sealed partial class ProgramRepository(
                     var waterRepeatBalance = await CurrentBalanceAsync(enrollment.Id, ct);
                     await dbContext.SaveChangesAsync(ct);
                     await SaveIntakeRequestAsync(patientId, clientRequestId, fingerprint, existing.Id, ct);
-                    await transaction.CommitAsync(ct);
+                    if (transaction is not null) await transaction.CommitAsync(ct);
 
                     return new NutritionLogResultDto(
                         existing.Id,
@@ -5537,7 +5547,7 @@ public sealed partial class ProgramRepository(
 
                 await dbContext.SaveChangesAsync(ct);
                 await SaveIntakeRequestAsync(patientId, clientRequestId, fingerprint, check.Id, ct);
-                await transaction.CommitAsync(ct);
+                if (transaction is not null) await transaction.CommitAsync(ct);
 
                 return new NutritionLogResultDto(
                     check.Id,
@@ -5553,17 +5563,17 @@ public sealed partial class ProgramRepository(
                 // Carrera: otra petición registró la misma comida/hidratación.
                 // El único de habit_checks y el dedupe parcial del libro mayor
                 // protegen; el duplicado se reporta con la misma semántica 409.
-                try { await transaction.RollbackAsync(ct); } finally { RestoreTracking(); }
+                try { if (transaction is not null) await transaction.RollbackAsync(ct); } finally { RestoreTracking(); }
                 throw new BusinessRuleViolationException(
                     "HABIT_ALREADY_LOGGED: la comida/hidratación de esa fecha ya fue registrada."
                 );
             }
             catch
             {
-                try { await transaction.RollbackAsync(ct); } finally { RestoreTracking(); }
+                try { if (transaction is not null) await transaction.RollbackAsync(ct); } finally { RestoreTracking(); }
                 throw;
             }
-        });
+        }
     }
 
     public async Task<NutritionLogResultDto> UpdateNutritionIntakeAsync(

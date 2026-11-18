@@ -11,16 +11,22 @@ namespace CoppAddresd.Infrastructure.Repositories;
 
 /// <summary>Serializa las confirmaciones por paciente y guarda el recibo junto al resultado canónico.</summary>
 public sealed class VitaCaptureStore(AppDbContext db, IClinicalMeasurementRepository measurements,
-    MedicationControlStore medications, ILegalConsentService consent, TimeProvider clock) : IVitaCaptureStore
+    MedicationControlStore medications, ILegalConsentService consent, TimeProvider clock, ProgramRepository programs) : IVitaCaptureStore
 {
     public async Task ValidateMeasurementAsync(Guid patientId, VitaCaptureData data, CancellationToken ct)
         => await ResolveMeasurementAsync(patientId, data, ct);
 
-    public Task<VitaCaptureReceiptDto> ConfirmAsync(VitaCaptureProposal proposal, CancellationToken ct)
+    public Task<VitaCaptureCommit> ConfirmAsync(VitaCaptureProposal proposal, CancellationToken ct)
     {
         var data = proposal.Data;
         var patientId = proposal.PatientId;
-        var hash = VitaVersions.Hash(new
+        var hash = data.Program is { } program ? VitaVersions.Hash(new
+        {
+            data.Tool, data.ObservedAt, program.EnrollmentId, program.LocalDate, program.MoodScore, program.Meal?.MealCode,
+            Calories = FingerprintValue(program.Meal?.Calories), Protein = FingerprintValue(program.Meal?.ProteinG),
+            Carbs = FingerprintValue(program.Meal?.CarbsG), Fat = FingerprintValue(program.Meal?.FatG),
+            Fiber = FingerprintValue(program.Meal?.FiberG),
+        }) : VitaVersions.Hash(new
         {
             data.Tool, data.MetricCode, Value = data.Value?.ToString("G29", CultureInfo.InvariantCulture), data.UnitCode,
             data.ObservedAt, data.SupersedesId, data.DoseId, data.ScheduledAt, data.Status,
@@ -51,12 +57,10 @@ public sealed class VitaCaptureStore(AppDbContext db, IClinicalMeasurementReposi
             {
                 if (receipt.RequestHash != hash) throw new BusinessRuleViolationException("VITA_CAPTURE_IDEMPOTENCY_CONFLICT");
                 await transaction.CommitAsync(token);
-                return ToResult(receipt);
+                return new VitaCaptureCommit(ToResult(receipt));
             }
 
-            var (entityType, entityId) = data.Tool == VitaCaptureRules.Measurement
-                ? ("clinical_measurement", await InsertMeasurementAsync(proposal, now.UtcDateTime, token))
-                : ("medication_dose", await RecordDoseAsync(proposal, now, token));
+            var (entityType, entityId, effects) = await WriteEntityAsync(proposal, now, token);
             receipt = new VitaWriteReceipt
             {
                 Id = Guid.NewGuid(), PatientId = patientId, Channel = proposal.Channel, TurnId = proposal.TurnId,
@@ -66,9 +70,36 @@ public sealed class VitaCaptureStore(AppDbContext db, IClinicalMeasurementReposi
             db.VitaWriteReceipts.Add(receipt);
             await db.SaveChangesAsync(token);
             await transaction.CommitAsync(token);
-            return ToResult(receipt);
+            return new VitaCaptureCommit(ToResult(receipt), effects);
         }, ct);
     }
+
+    private async Task<(string EntityType, Guid EntityId, VitaProgramCaptureEffects? Effects)> WriteEntityAsync(
+        VitaCaptureProposal proposal, DateTimeOffset now, CancellationToken ct)
+    {
+        switch (proposal.Data.Tool)
+        {
+            case VitaCaptureRules.Measurement:
+                return ("clinical_measurement", await InsertMeasurementAsync(proposal, now.UtcDateTime, ct), null);
+            case VitaCaptureRules.Medication:
+                return ("medication_dose", await RecordDoseAsync(proposal, now, ct), null);
+            case VitaCaptureRules.Meal:
+                var meal = await programs.RecordVitaMealAsync(proposal, ct);
+                var intakeId = await db.NutritionIntakeLogs.AsNoTracking().Where(x => x.HabitCheckId == meal.HabitCheckId)
+                    .Select(x => x.Id).SingleAsync(ct);
+                return ("nutrition_intake_log", intakeId, new(meal.LocalDate, null, $"NUTRITION_{meal.MealCode}", meal.XpAwarded));
+            case VitaCaptureRules.CheckIn:
+                var checkin = await programs.RecordVitaCheckInAsync(proposal, ct);
+                var checkinId = await db.TaskCompletions.AsNoTracking().Where(x => x.Id == checkin.TaskCompletionId)
+                    .Select(x => x.DailyCheckinId).SingleAsync(ct);
+                return ("daily_checkin", checkinId, new(proposal.Data.Program!.LocalDate,
+                    "emocional", "TASK_emocional", checkin.PointsAwarded));
+            default:
+                throw VitaCaptureRules.Invalid("tool", "VITA_CAPTURE_INVALID_PROGRAM");
+        }
+    }
+
+    private static string? FingerprintValue(decimal? value) => value?.ToString("G29", CultureInfo.InvariantCulture);
 
     private async Task<Guid> InsertMeasurementAsync(VitaCaptureProposal proposal, DateTime now, CancellationToken ct)
     {

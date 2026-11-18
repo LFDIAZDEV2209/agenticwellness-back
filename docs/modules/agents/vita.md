@@ -15,6 +15,10 @@ tokens de voz y persistencia del hilo.
 | GET | `/api/v1/internal/vita/profile?userId=<uuid>` | Igual, perfil activo y consentimiento de chat |
 | GET | `/api/v1/internal/vita/vitals?userId=<uuid>&from=&to=` | Igual, ventana local de hasta 31 días |
 | GET | `/api/v1/internal/vita/medications?userId=<uuid>` | Igual y acceso del paciente al módulo de medicamentos |
+| GET | `/api/v1/internal/vita/nutrition?userId=<uuid>&date=` | Igual, ciclo publicado e historial acotado |
+| GET | `/api/v1/internal/vita/assessments?userId=<uuid>` | Igual, baterías y resultados visibles al paciente |
+| GET | `/api/v1/internal/vita/documents?userId=<uuid>` | Igual, documentos propios paginados |
+| GET | `/api/v1/internal/vita/documents/{id}?userId=<uuid>` | Igual, enlace de lectura de 120 s |
 | POST | `/api/v1/internal/vita/capture/propose?userId=<uuid>` | Clave interna, consentimiento y `Vita:CaptureEnabled=true` |
 | POST | `/api/v1/internal/vita/capture/confirm?userId=<uuid>` | Igual, con token vigente y confirmación explícita |
 | POST | `/api/v1/vita/me/task-completion-proposals` | JWT app y `Vita:TaskCompletionEnabled=true` |
@@ -45,6 +49,12 @@ métrica y el historial acotado, con unidades y origen de cada lectura.
 `medications` aplica la disponibilidad del módulo y del paciente. Proyecta las
 tomas del día local con el mismo cálculo de horarios y estados del módulo.
 
+`nutrition` compone hasta 30 días de la prescripción publicada, con recomendaciones
+publicadas y el historial de comidas. `assessments` usa el resultado persistido
+y la proyección móvil. Omite resultados en baterías pendientes, respuestas y
+calificadores de subescalas. `documents` solo lista metadatos propios y firma
+la URL después de validar la pertenencia y el estado del documento.
+
 Las lecturas envían la fecha del paciente y los instantes en UTC según el DTO.
 Las lecturas incluyen el identificador canónico de una medición o toma para que
 el runtime pueda proponer una captura sobre el recurso correcto.
@@ -65,6 +75,12 @@ toma/omisión con el módulo de medicamentos y guarda el recibo en la misma
 transacción. Un replay devuelve los identificadores originales. El backend
 rechaza una clave de turno reutilizada con datos diferentes. Las correcciones
 de mediciones guardan una fila nueva y mantienen la original. [Contrato de API](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
+
+Comidas y check-in completan el registro nutricional o la tarea emocional de la
+inscripción activa. El token fija esa inscripción y el día local, derivados en
+el backend. Después del commit el flujo publica los eventos de XP y de tarea
+que ya consume el procesador del programa. Las repeticiones devuelven el recibo
+sin volver a emitir esos eventos.
 
 ## Envelope y fuentes
 

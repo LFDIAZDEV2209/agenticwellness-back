@@ -70,6 +70,7 @@ public sealed class DocumentRepository(AppDbContext dbContext) : IDocumentReposi
 
         var items = await baseQuery
             .OrderByDescending(x => x.CreatedAt)
+            .ThenByDescending(x => x.Id)
             .Include(x => x.Patient)
             .Include(x => x.DocumentType)
                 .ThenInclude(t => t.Category)

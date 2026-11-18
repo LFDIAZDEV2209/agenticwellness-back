@@ -176,7 +176,7 @@ public sealed class GetMyNutritionPlanQueryHandler(
         );
     }
 
-    private static MyNutritionPlanDto Compose(NutritionPrescription plan, DateOnly today, CancellationToken ct, int? resolvedMenuDay = null)
+    internal static MyNutritionPlanDto Compose(NutritionPrescription plan, DateOnly today, CancellationToken ct, int? resolvedMenuDay = null)
     {
         var foods = plan.Meals.SelectMany(x => x.Items).Select(x => x.FoodItem!)
             .DistinctBy(x => x.Id).ToDictionary(x => x.Id);

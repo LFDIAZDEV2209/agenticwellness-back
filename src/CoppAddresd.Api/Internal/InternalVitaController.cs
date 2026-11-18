@@ -55,6 +55,37 @@ public sealed class InternalVitaController(ISender sender, IConfiguration config
         return Ok(await sender.Send(new GetVitaMedicationsQuery(userId), ct));
     }
 
+    [HttpGet("nutrition")]
+    public async Task<ActionResult<VitaNutritionDto>> Nutrition([FromQuery, BindRequired] Guid userId,
+        [FromQuery] DateOnly? date, CancellationToken ct)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaNutritionQuery(userId, date), ct));
+    }
+
+    [HttpGet("assessments")]
+    public async Task<ActionResult<VitaAssessmentsDto>> Assessments([FromQuery, BindRequired] Guid userId, CancellationToken ct)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaAssessmentsQuery(userId), ct));
+    }
+
+    [HttpGet("documents")]
+    public async Task<ActionResult<VitaDocumentsDto>> Documents([FromQuery, BindRequired] Guid userId,
+        CancellationToken ct, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaDocumentsQuery(userId, page, pageSize), ct));
+    }
+
+    [HttpGet("documents/{id:guid}")]
+    public async Task<ActionResult<VitaDocumentReadDto>> Document(Guid id, [FromQuery, BindRequired] Guid userId,
+        CancellationToken ct)
+    {
+        if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
+        return Ok(await sender.Send(new GetVitaDocumentQuery(userId, id), ct));
+    }
+
     [HttpPost("capture/propose")]
     public async Task<ActionResult<VitaCaptureProposalDto>> ProposeCapture([FromQuery, BindRequired] Guid userId,
         [FromBody] ProposeVitaCaptureRequest input, CancellationToken ct)

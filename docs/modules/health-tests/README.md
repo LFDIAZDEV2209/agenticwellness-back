@@ -328,6 +328,13 @@ En la batería inicial, un test completado **sigue en la lista** (estado `comple
 «Hecho»); no se oculta. Tras **al menos 3** evaluaciones completadas, la app permite omitir el
 resto o continuar después.
 
+### Lectura de baterías para Vita
+
+`GET /api/v1/internal/vita/assessments` lista hasta 20 baterías asignadas del
+paciente de la sesión. Solo proyecta evaluaciones completadas de baterías
+completadas y aplica el mapeo de resultados móvil. Las baterías pendientes
+o en curso se devuelven sin resultados ni respuestas. [Contrato de Vita](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
+
 ### Detalle de evaluación (hub del paciente ERP)
 
 `GET /health-tests/patients/{id}/evaluations/{evaluationId}` devuelve el detalle completo de una

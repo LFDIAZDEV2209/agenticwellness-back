@@ -186,7 +186,71 @@ historial de otros días.
 }
 ```
 
-## Captura confirmada · 4.2, 4.3 y 4.5
+## Ciclo nutricional e historial · 3.4
+
+`GET /nutrition?userId={uuid}&date=2026-11-18`. `date` es una fecha local
+opcional y por defecto es hoy. Una fecha futura o inválida devuelve 400.
+`plan` es el ciclo publicado del paciente vigente en esa fecha, o `null`.
+El calendario cubre la ventana publicada, hasta 30 días. Cada día lleva
+`date`, `status` (`planned` o `unavailable`) y `meals` con los campos
+`mealType`, `description`, `foods`, `calories`, `proteinG`, `carbsG`,
+`fatG`, `fiberG`, `waterMl`, `notes`, `sortOrder`, `suggestedTime` y
+`notesEn` del menú que ve el paciente. `status` se refiere a disponibilidad
+del menú. El consumo registrado se devuelve por separado.
+`history` cubre los 30 días locales hasta `date`, inclusive. Sus lecturas
+conservan `null` para los nutrientes que no fueron reportados.
+`recommendations` contiene hasta 12 mensajes publicados y visibles al paciente.
+
+```json
+{
+  "date":"2026-11-18","plan":null,"recommendations":[],
+  "history":[{"date":"2026-11-18","mealCode":"alm","calories":420,"proteinG":null,"carbsG":null,"fatG":null,"fiberG":null,"waterMl":null,"source":"vita_chat"}]
+}
+```
+
+Si hay ciclo, `plan` tiene `id`, `revision`, `startDate`, `endDate` y
+`days`. Cada recomendación tiene `cycleNumber`, `publishedAt` y
+`patientMessage`. Los arreglos vacíos representan ausencia de datos con 200.
+
+## Baterías · 3.5
+
+`GET /assessments?userId={uuid}` devuelve `batteries`, hasta 20 asignaciones
+recientes. Cada batería tiene `id`, `name`, `status`, `dueDate`,
+`completedAt` y `tests`. Una batería pendiente o en curso lleva `tests: []`.
+Una batería completada incluye las evaluaciones completadas cuyos resultados
+están disponibles para el paciente. Cada evaluación tiene `testName`,
+`testCode`, `completedAt`, `score`, `scorePercentage` y `results`.
+Cada resultado tiene `resultType`, `code`, `label`, `value`, `qualifier`
+y `severity`. Las subescalas conservan el puntaje y omiten la interpretación
+cualitativa. Las respuestas originales y las notas internas quedan fuera.
+
+```json
+{"batteries":[{"id":"a2baa408-9421-4741-8f21-c810a01a7b73","name":"Batería inicial","status":"pending","dueDate":null,"completedAt":null,"tests":[]}]}
+```
+
+## Documentos del expediente · 3.6
+
+`GET /documents?userId={uuid}&page=1&pageSize=20` devuelve `items`, `total`,
+`page` y `pageSize`. Tamaño de página 1–50, página 1–10.000.
+`GET /documents/{id}?userId={uuid}` devuelve `document`, `url` y
+`expiresInSeconds` (120). La URL puede ser relativa al backend en storage local.
+La respuesta para un documento ajeno, eliminado o no disponible es 404.
+Las URL son capacidades temporales de lectura y no deben enviarse al usuario
+como texto de conversación ni guardarse en memoria.
+
+```json
+{"items":[{"id":"97609143-62df-4946-b3b9-01e11bd6f613","name":"Documento de ejemplo","type":"Informe","date":"2026-11-18T13:00:00Z","status":"Ready"}],"total":1,"page":1,"pageSize":20}
+```
+
+```json
+{"document":{"id":"97609143-62df-4946-b3b9-01e11bd6f613","name":"Documento de ejemplo","type":"Informe","date":"2026-11-18T13:00:00Z","status":"Ready"},"url":"https://storage.example/documento?signature=example","expiresInSeconds":120}
+```
+
+Las tres lecturas aplican los errores comunes de identidad, consentimiento y
+clave interna, incluida la respuesta 404 si `Vita:InternalEnabled` está apagado.
+Las respuestas con datos llevan `Cache-Control: no-store`.
+
+## Captura confirmada · 4.2 a 4.5
 
 Las dos rutas exigen `Vita:InternalEnabled`, `Vita:CaptureEnabled`, la clave
 interna y el consentimiento de chat. El runtime agrega `userId` en la consulta.
@@ -240,8 +304,31 @@ captura son nulos.
   "token":"v1.token.opaco.ejemplo",
   "expiresAt":"2026-11-18T13:10:00Z",
   "requiresAdditionalConfirmation":false,
-  "data":{"tool":"record_measurement","metricCode":"weight","value":74.5,"unitCode":"kg","observedAt":"2026-11-18T13:00:00Z","supersedesId":null,"doseId":null,"scheduledAt":null,"status":null}
+  "data":{"tool":"record_measurement","metricCode":"weight","value":74.5,"unitCode":"kg","observedAt":"2026-11-18T13:00:00Z","supersedesId":null,"doseId":null,"scheduledAt":null,"status":null,"program":null}
 }
+```
+
+`record_meal` y `record_checkin` usan la inscripción activa resuelta por el
+backend. `observedAt` determina el día local de esa inscripción. El token
+fija el recurso resuelto y la fecha. El objeto `data.program` de la propuesta
+contiene `enrollmentId`, `localDate`, `meal` y `moodScore`.
+
+Una comida usa `meal.mealCode` (`des`, `alm`, `mer` o `cen`).
+`calories` (kcal), `proteinG`, `carbsG`, `fatG` y `fiberG` (g) son
+opcionales. Admite hasta dos decimales y los mismos límites del registro
+nutricional. Una comida ya registrada devuelve 409. El canal se guarda como
+origen del registro y el recibo vincula la captura con la fila de nutrición.
+
+```json
+{"tool":"record_meal","channel":"vita_chat","turnId":"comida-12","observedAt":"2026-11-18T13:00:00-05:00","meal":{"mealCode":"alm","calories":420,"proteinG":24}}
+```
+
+El check-in usa `moodScore` entero de 1 a 5 y la tarea emocional programada
+del día. Devuelve 409 si el check-in ya se registró o ya no está disponible.
+Ambas capturas conservan los puntos del programa y su comportamiento de replay.
+
+```json
+{"tool":"record_checkin","channel":"vita_voice","turnId":"checkin-18","observedAt":"2026-11-18T18:00:00-05:00","moodScore":4}
 ```
 
 ### Confirmar
@@ -256,8 +343,8 @@ cancelación o un cambio de tema no llama a esta ruta.
 ```
 
 La respuesta 200 contiene identificadores estables. Un replay válido de la misma
-captura devuelve el mismo resultado. `entityType` es `clinical_measurement` o
-`medication_dose`.
+captura devuelve el mismo resultado. `entityType` es `clinical_measurement`,
+`medication_dose`, `nutrition_intake_log` o `daily_checkin`.
 
 ```json
 {"receiptId":"02eb1189-cc15-4001-b1de-5784dc6179b8","entityType":"clinical_measurement","entityId":"07686a2d-c782-4e7b-b410-e4a74d99e720"}
@@ -268,7 +355,7 @@ captura devuelve el mismo resultado. `entityType` es `clinical_measurement` o
 | 400 | Payload, rango, unidad o fecha inválidos, confirmación ausente o token alterado/expirado. |
 | 401 | Clave interna ausente o inválida. |
 | 403 | Paciente distinto, identidad inactiva, consentimiento ausente, módulo de medicamentos deshabilitado para el paciente o intento de corregir una medición ajena o de otro origen. |
-| 404 | Rutas de captura apagadas, módulo de medicamentos apagado u ocurrencia no disponible para el paciente. |
-| 409 | La clave se usó con otros datos, el canal o turno no coinciden, falta la confirmación adicional, la ocurrencia cambió o la medición ya tiene un reemplazo. |
-| 422 | Regla de negocio de medicamentos que invalida la fecha de toma. |
+| 404 | Rutas de captura apagadas, módulo de medicamentos apagado, ausencia de inscripción activa u ocurrencia no disponible. |
+| 409 | La clave se usó con otros datos, el canal o turno no coinciden, falta la confirmación adicional, la ocurrencia o inscripción cambió, la medición ya tiene un reemplazo o ya existe una comida o un check-in para ese día. |
+| 422 | El módulo canónico rechaza la fecha o no dispone de la configuración necesaria. |
 | 503 | No se puede verificar el consentimiento. |
