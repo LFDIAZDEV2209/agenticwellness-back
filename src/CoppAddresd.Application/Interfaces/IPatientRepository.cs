@@ -48,6 +48,9 @@ public interface IPatientRepository
 
     Task UpdateAsync(PatientProfile patient, CancellationToken ct = default);
 
+    /// <summary>Guarda campos del perfil sin reemplazar medicamentos ni otras colecciones clínicas.</summary>
+    Task UpdateProfileAsync(PatientProfile patient, CancellationToken ct = default) => UpdateAsync(patient, ct);
+
     /// <summary>Soft delete: marca <c>deleted_at</c> (trazabilidad PHI); las filas hijas se conservan.</summary>
     Task SoftDeleteAsync(PatientProfile patient, CancellationToken ct = default);
 

@@ -11,12 +11,14 @@ namespace CoppAddresd.Infrastructure.Sos;
 
 /// <summary>Claim atómico entre réplicas; HTTP fuera de transacción. Incertidumbre no se reenvía.</summary>
 public sealed class SosWhatsAppProcessor(AppDbContext db, ISosAlertRepository alerts,
-    IWhatsAppMessageSender sender, IOptions<SosWhatsAppSettings> settings, TimeProvider clock,
-    ISosLocationLinkService? links = null, SosLocationEnricher? locations = null) : ISosWhatsAppStatusReceiver
+    IOptions<SosWhatsAppSettings> settings, TimeProvider clock,
+    ISosLocationLinkService? links = null, SosLocationEnricher? locations = null,
+    IWhatsAppMessageSender? sender = null) : ISosWhatsAppStatusReceiver
 {
     public async Task<bool> ProcessNextAsync(CancellationToken ct)
     {
-        if (!settings.Value.Enabled) return false;
+        // El canal global apagado no registra transporte; conservar el outbox sin reclamarlo.
+        if (!settings.Value.Enabled || sender is null) return false;
         var now=clock.GetUtcNow().UtcDateTime;
         // Una caída después de enviar puede haber alcanzado Meta. No repetir a ciegas.
         await db.SosWhatsAppDeliveries.Where(x=>x.State=="Processing" && x.LeaseUntil<now)

@@ -211,10 +211,19 @@ public sealed class PatientRepository(AppDbContext dbContext) : IPatientReposito
         return patient;
     }
 
+    public async Task UpdateProfileAsync(PatientProfile patient, CancellationToken ct = default)
+    {
+        // El build 67 solo modifica escalares. No cargar/borrar/recrear filas clínicas.
+        dbContext.Attach(patient);
+        dbContext.Entry(patient).State = EntityState.Modified;
+        await dbContext.SaveChangesAsync(ct);
+    }
+
     public async Task UpdateAsync(PatientProfile patient, CancellationToken ct = default)
     {
-        // Reemplazo de agregado: borra las colecciones hijas actuales y agrega
-        // las nuevas en la misma transacción (evita dejar huérfanos).
+        // El DTO legacy solo trae medicationId/frequency. Reconciliar esos
+        // registros conserva su identidad y creación al editar otros datos.
+        // Las demás colecciones mantienen su reemplazo transaccional actual.
         // Con NpgsqlRetryingExecutionStrategy activa, la transacción manual debe
         // ejecutarse dentro de la estrategia para ser reintentable como una unidad.
         var strategy = dbContext.Database.CreateExecutionStrategy();
@@ -222,11 +231,30 @@ public sealed class PatientRepository(AppDbContext dbContext) : IPatientReposito
         {
             await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
+            var existingMedications = await dbContext.PatientMedications.AsNoTracking()
+                .Where(x => x.PatientId == patient.Id)
+                .OrderBy(x => x.SortOrder).ThenBy(x => x.Id)
+                .ToListAsync(ct);
+            var medicationMatches = existingMedications.GroupBy(x => x.MedicationId)
+                .ToDictionary(group => group.Key, group => new Queue<PatientMedication>(group));
+            var retainedMedicationIds = new List<Guid>();
+            foreach (var medication in patient.Medications)
+            {
+                medication.PatientId = patient.Id;
+                if (medicationMatches.TryGetValue(medication.MedicationId, out var matches)
+                    && matches.TryDequeue(out var existing))
+                {
+                    medication.Id = existing.Id;
+                    medication.CreatedAt = existing.CreatedAt;
+                    retainedMedicationIds.Add(existing.Id);
+                }
+            }
+
             await dbContext
                 .PatientDiagnoses.Where(x => x.PatientId == patient.Id)
                 .ExecuteDeleteAsync(ct);
             await dbContext
-                .PatientMedications.Where(x => x.PatientId == patient.Id)
+                .PatientMedications.Where(x => x.PatientId == patient.Id && !retainedMedicationIds.Contains(x.Id))
                 .ExecuteDeleteAsync(ct);
             await dbContext
                 .PatientAllergies.Where(x => x.PatientId == patient.Id)
@@ -239,7 +267,8 @@ public sealed class PatientRepository(AppDbContext dbContext) : IPatientReposito
             foreach (var diagnosis in patient.Diagnoses)
                 dbContext.Entry(diagnosis).State = EntityState.Added;
             foreach (var medication in patient.Medications)
-                dbContext.Entry(medication).State = EntityState.Added;
+                dbContext.Entry(medication).State = retainedMedicationIds.Contains(medication.Id)
+                    ? EntityState.Modified : EntityState.Added;
             foreach (var allergy in patient.Allergies)
                 dbContext.Entry(allergy).State = EntityState.Added;
             foreach (var vital in patient.VitalSigns)

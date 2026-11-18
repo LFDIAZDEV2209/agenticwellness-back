@@ -127,7 +127,8 @@ public sealed record ProgramSnapshotDto(
     IReadOnlyList<StreakChestDto>? StreakChests = null,
     int? DailyBonusAmount = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<ProgramUpcomingDayDto>? Upcoming = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? Rest = null
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? Rest = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? OptionalTaskCodes = null
 );
 
 /// <summary>

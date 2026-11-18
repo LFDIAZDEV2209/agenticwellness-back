@@ -293,3 +293,29 @@ o cancelación no escriben ni borran el borrador previo. `insufficient` guarda l
 trazabilidad, sin texto a confirmar; la publicación manual sigue siendo atómica
 con el plan siguiente. No hay red dentro de los locks ni cambios de mensaje
 aprobado, notas o calendario causados por la IA.
+
+
+## Control de medicamentos (circuito manual)
+
+Cada mutación usa la estrategia de ejecución de EF/Npgsql y una transacción corta
+con `SELECT … FOR UPDATE` sobre el paciente. Alta + pauta + horarios + estado
+inicial, confirmación + dosis + reserva de operación + evento, y cambio de estado
++ evento efectivo se confirman o revierten juntos. El tracker se limpia antes de
+cada reintento; no hay HTTP, archivos ni notificaciones dentro del lock.
+
+La habilitación por paciente usa el mismo lock y se revalida antes de las
+escrituras propias: una retirada concurrente no admite una escritura obsoleta.
+La revisión optimista evita correcciones perdidas. Las reservas aceptadas incluyen
+no-ops: doble confirmación no añade un evento clínico, pero tampoco deja su clave
+reutilizable para otro cuerpo o dosis.
+
+Las lecturas de workspace proyectan ocurrencias sin guardar datos, incluso para
+personal de solo lectura. La pauta y los estados efectivos determinan UUID y
+estado de cada horario; una confirmación autorizada materializa únicamente esa
+dosis y comprueba de nuevo el horario dentro de la transacción. Abrir o no un día
+no altera el historial ni la cantidad de filas persistidas.
+
+`patient_medications` permanece separado del seguimiento nuevo. El PUT propio
+antiguo guarda escalares sin reemplazar colecciones; el PUT general del ERP
+reconcilia los medicamentos por catálogo y conserva IDs/fechas de los existentes.
+Las migraciones del circuito son aditivas y registran auditoría en ocho tablas.

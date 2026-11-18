@@ -63,7 +63,8 @@ public class PatientProfilePromotionTests
 
         Assert.True(result.Success);
         Assert.Equal("Activo", patient.Status);
-        await _repository.Received(1).UpdateAsync(patient, Arg.Any<CancellationToken>());
+        await _repository.Received(1).UpdateProfileAsync(patient, Arg.Any<CancellationToken>());
+        await _repository.DidNotReceive().UpdateAsync(Arg.Any<PatientProfile>(), Arg.Any<CancellationToken>());
         await _metricsQueue
             .Received(1)
             .EnqueueAsync(
