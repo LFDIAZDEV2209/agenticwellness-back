@@ -92,10 +92,14 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
         var errors = new List<ValidationFailure>();
         if (request.ClientRequestId == Guid.Empty) errors.Add(new("clientRequestId", "La operación debe tener un identificador."));
         if (request.MedicationId == Guid.Empty) errors.Add(new("medicationId", "Medicamento no válido."));
-        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Trim().Length > 200) errors.Add(new("name", "Escribe un nombre de hasta 200 caracteres."));
+        if (request.RxCui is { } code && (code.Length is < 1 or > 18 || code.Any(c => !char.IsAsciiDigit(c))
+            || request.MedicationId is not null || request.ProductType != "medication" || origin != "staff_recorded"))
+            errors.Add(new("rxCui", "Selecciona un medicamento válido del catálogo de EE. UU."));
+        if (request.RxCui is null && (string.IsNullOrWhiteSpace(request.Name) || request.Name.Trim().Length > 200)) errors.Add(new("name", "Escribe un nombre de hasta 200 caracteres."));
         if (request.ProductType is not ("medication" or "vitamin" or "supplement")) errors.Add(new("productType", "Selecciona el tipo de producto."));
         if (request.Dosage <= 0 || request.Dosage > 1000000 || decimal.Round(request.Dosage, 4) != request.Dosage) errors.Add(new("dosage", "Escribe una cantidad positiva con hasta cuatro decimales."));
         if (string.IsNullOrWhiteSpace(request.Unit) || request.Unit.Trim().Length > 40) errors.Add(new("unit", "Escribe una unidad de hasta 40 caracteres."));
+        if (request.RxCui is not null && string.IsNullOrWhiteSpace(request.Route)) errors.Add(new("route", "Registra la vía del tratamiento."));
         if ((request.Route?.Length ?? 0) > 80) errors.Add(new("route", "La vía admite hasta 80 caracteres."));
         if ((request.Instructions?.Length ?? 0) > 2000) errors.Add(new("instructions", "Las indicaciones admiten hasta 2000 caracteres."));
         if (request.StartDate.Year is < 1900 or > 2100 || request.EndDate < request.StartDate) errors.Add(new("startDate", "Revisa las fechas de vigencia."));
@@ -107,7 +111,7 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
         if (errors.Count > 0) throw new ValidationException(errors);
         return store.CreateAsync(patientId, actorId, origin, request with
         {
-            Name = request.Name.Trim(), Unit = request.Unit.Trim(), Route = request.Route?.Trim() ?? "",
+            Name = request.RxCui is null ? request.Name.Trim() : "", Unit = request.Unit.Trim(), Route = request.Route?.Trim() ?? "",
             Instructions = request.Instructions?.Trim() ?? "", Times = times.Order().ToArray(), TimeZone = zone!.Id,
         }, ct);
     }

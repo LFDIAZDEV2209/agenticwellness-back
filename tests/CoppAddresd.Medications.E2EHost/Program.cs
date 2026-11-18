@@ -13,6 +13,7 @@ using CoppAddresd.Domain.Entities.ProgramProgress;
 using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Infrastructure.Persistence;
 using CoppAddresd.Infrastructure.Repositories;
+using CoppAddresd.Infrastructure.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -99,6 +100,12 @@ await using (var scope = api.Services.CreateAsyncScope())
 }
 
 var accounts = await SeedAsync(auth.Services, api.Services, password);
+using var rxTermsSync = dbName.StartsWith("copp_review_medications_rxterms", StringComparison.Ordinal)
+    ? ActivatorUtilities.CreateInstance<RxTermsSyncWorker>(api.Services)
+    : null;
+if (rxTermsSync is not null)
+    await rxTermsSync.StartAsync(CancellationToken.None);
+
 var fixture = new
 {
     database = dbName, container = "copp-medications-e2e", gateway = gatewayUrl,

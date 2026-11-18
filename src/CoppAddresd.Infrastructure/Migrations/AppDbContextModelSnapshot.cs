@@ -5336,8 +5336,7 @@ namespace CoppAddresd.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("text")
                         .HasColumnName("name");
 
                     b.Property<string>("Origin")
@@ -5367,6 +5366,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("revision");
 
+                    b.Property<string>("RxCui")
+                        .HasMaxLength(18)
+                        .HasColumnType("character varying(18)")
+                        .HasColumnName("rx_cui");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -5380,6 +5384,8 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MedicationId");
+
+                    b.HasIndex("RxCui");
 
                     b.HasIndex("PatientId", "ClientRequestId")
                         .IsUnique()
@@ -10644,6 +10650,45 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("routine_exercises", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.RxTermsProduct", b =>
+                {
+                    b.Property<string>("RxCui")
+                        .HasMaxLength(18)
+                        .HasColumnType("character varying(18)")
+                        .HasColumnName("rx_cui");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Release")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)")
+                        .HasColumnName("release");
+
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("search_text");
+
+                    b.HasKey("RxCui");
+
+                    b.HasIndex("SearchText")
+                        .HasDatabaseName("ix_rxterms_search_trgm")
+                        .HasFilter("is_active");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchText"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("SearchText"), new[] { "gin_trgm_ops" });
+
+                    b.ToTable("rxterms_products", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.SosAlert", b =>
                 {
                     b.Property<Guid>("Id")
@@ -12363,6 +12408,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.RxTermsProduct", null)
+                        .WithMany()
+                        .HasForeignKey("RxCui")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationTreatmentStatusEvent", b =>

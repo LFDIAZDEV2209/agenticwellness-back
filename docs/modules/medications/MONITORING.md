@@ -135,3 +135,25 @@ de APIs ni envíos externos. El reloj/refresh de QA no existe en producto.
 Evidencia local `/tmp/copp-medication-monitoring`: rojo, verde, regresiones,
 rollback, builds, lint/i18n, pantallas ES/EN y modo oscuro. Las fixtures, backup y
 credenciales quedan fuera de Git con permisos privados.
+
+## Catálogo de medicamentos de EE. UU.
+
+`GET /api/v1/medications/catalog/us?search=...` exige acceso ERP y
+`Medications.Manage`. Busca marca, principio activo, sinónimos, presentación o
+RxCUI en `app.rxterms_products`. Cada tratamiento seleccionado guarda su RxCUI y
+una copia del nombre oficial. Los tratamientos anteriores y la entrada manual
+conservan sus contratos. El catálogo no modifica la pauta ni las existencias.
+
+Con Medicamentos habilitado, `RxTermsSyncWorker` revisa la edición pública de
+[NLM RxTerms](https://lhncbc.nlm.nih.gov/MOR/RxTerms/) al iniciar y cada 24 horas.
+Se puede pausar con `Medications__RxTermsSyncEnabled=false`. Solo descarga el
+archivo oficial. Las búsquedas se ejecutan en PostgreSQL y el proveedor nunca
+recibe términos buscados, datos clínicos ni identificadores de pacientes. Si
+falla la descarga o validación, se conserva la última edición aplicada. La
+primera sincronización se confirma con el mensaje de registro
+`RxTerms <edición>: <cantidad> presentaciones activas`.
+
+Se excluyen las filas suprimidas o retiradas. La carga usa una tabla temporal,
+`COPY` y un bloqueo transaccional entre réplicas. Se publica completa o se
+revierte. Las presentaciones retiradas permanecen referenciables en los
+tratamientos previos y dejan de aparecer en nuevas búsquedas.

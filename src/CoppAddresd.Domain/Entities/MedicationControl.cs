@@ -6,6 +6,7 @@ public sealed class MedicationTreatment
     public Guid Id { get; set; }
     public Guid PatientId { get; set; }
     public Guid? MedicationId { get; set; }
+    public string? RxCui { get; set; }
     public string Name { get; set; } = "";
     public string ProductType { get; set; } = "medication";
     public string Origin { get; set; } = "patient_reported";

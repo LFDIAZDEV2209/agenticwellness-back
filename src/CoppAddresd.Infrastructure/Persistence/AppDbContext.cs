@@ -201,6 +201,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SosAlertRecipient> SosAlertRecipients => Set<SosAlertRecipient>();
     public DbSet<AssessmentProfileInsight> AssessmentProfileInsights => Set<AssessmentProfileInsight>();
 
+    public DbSet<RxTermsProduct> RxTermsProducts => Set<RxTermsProduct>();
     public DbSet<MedicationTreatment> MedicationTreatments => Set<MedicationTreatment>();
     public DbSet<MedicationRegimen> MedicationRegimens => Set<MedicationRegimen>();
     public DbSet<MedicationScheduleSlot> MedicationScheduleSlots => Set<MedicationScheduleSlot>();

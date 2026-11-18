@@ -123,13 +123,17 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 return new MedicationCreateResult(await TreatmentDtoAsync(existing, ct), false);
             }
             var name = request.Name;
-            if (request.MedicationId is { } catalogId)
+            if (request.RxCui is { } rxCui)
+                name = await db.RxTermsProducts.Where(x => x.RxCui == rxCui && x.IsActive)
+                    .Select(x => x.Name).SingleOrDefaultAsync(ct)
+                    ?? throw new UnprocessableEntityException("El medicamento de RxTerms ya no está disponible.");
+            else if (request.MedicationId is { } catalogId)
                 name = await db.Medications.Where(m => m.Id == catalogId).Select(m => m.Name).SingleOrDefaultAsync(ct)
                     ?? throw new UnprocessableEntityException("El medicamento seleccionado no existe.");
             var treatment = new MedicationTreatment
             {
                 Id = Guid.NewGuid(), PatientId = patientId, MedicationId = request.MedicationId,
-                Name = name, ProductType = request.ProductType, Origin = origin, CreatedBy = actorId,
+                Name = name, RxCui = request.RxCui, ProductType = request.ProductType, Origin = origin, CreatedBy = actorId,
                 ClientRequestId = request.ClientRequestId, RequestHash = hash, CreatedAt = Now, UpdatedAt = Now,
             };
             var regimen = new MedicationRegimen
@@ -411,7 +415,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
 
     private static MedicationTreatmentDto ToTreatment(MedicationTreatment t, MedicationRegimen r, IReadOnlyList<string> times)
         => new(t.Id, t.MedicationId, t.Name, t.ProductType, t.Status, t.Origin, t.Revision, t.CreatedAt,
-            r.Dosage, r.Unit, r.Route, r.Instructions, times, r.TimeZone, r.StartDate, r.EndDate);
+            r.Dosage, r.Unit, r.Route, r.Instructions, times, r.TimeZone, r.StartDate, r.EndDate, t.RxCui);
 
     private IQueryable<MedicationDoseDto> DoseQuery(Guid patientId, Guid? doseId = null, DateTime? start = null, DateTime? end = null)
     {

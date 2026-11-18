@@ -26,7 +26,9 @@ public sealed class MedicationControlConfiguration :
     public void Configure(EntityTypeBuilder<MedicationTreatment> b)
     {
         Common(b, "medication_treatments");
-        b.Property(x => x.Name).HasMaxLength(200);
+        b.Property(x => x.Name).HasColumnType("text");
+        b.Property(x => x.RxCui).HasMaxLength(18);
+        b.HasOne<RxTermsProduct>().WithMany().HasForeignKey(x => x.RxCui).OnDelete(DeleteBehavior.Restrict);
         b.Property(x => x.ProductType).HasMaxLength(20);
         b.Property(x => x.Origin).HasMaxLength(30);
         b.Property(x => x.Status).HasMaxLength(20);

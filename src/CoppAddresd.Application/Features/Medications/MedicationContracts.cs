@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace CoppAddresd.Application.Features.Medications;
 
 public sealed class MedicationControlSettings
@@ -16,7 +18,8 @@ public sealed record MedicationOverviewDto(int TotalPatients, int EnabledPatient
 public sealed record MedicationSummaryDto(int ActiveTreatments, int ScheduledDoses, int TakenDoses, int PendingDoses);
 public sealed record MedicationTreatmentDto(Guid Id, Guid? MedicationId, string Name, string ProductType,
     string Status, string Origin, int Revision, DateTime CreatedAt, decimal Dosage, string Unit,
-    string Route, string Instructions, IReadOnlyList<string> Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate)
+    string Route, string Instructions, IReadOnlyList<string> Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? RxCui = null)
 {
     // El origen lo fija el endpoint, nunca un campo enviado por el paciente.
     // Nutracéuticos permanecen adicionales al plan obligatorio.
@@ -36,7 +39,9 @@ public sealed record MedicationCurrentDayDto(IReadOnlyList<MedicationTreatmentDt
 
 public sealed record CreateMedicationTreatmentRequest(Guid ClientRequestId, Guid? MedicationId, string Name,
     string ProductType, decimal Dosage, string Unit, string? Route, string? Instructions,
-    IReadOnlyList<string>? Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate);
+    IReadOnlyList<string>? Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate,
+    // Omitir null conserva la huella de idempotencia de solicitudes antiguas.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? RxCui = null);
 public sealed record RecordMedicationDoseRequest(Guid ClientRequestId, string Status,
     DateTimeOffset? OccurredAt = null, string? Reason = null, int? ExpectedRevision = null, DateTimeOffset? ScheduledAt = null);
 public sealed record ChangeMedicationStatusRequest(string Status, int ExpectedRevision);

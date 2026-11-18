@@ -87,3 +87,19 @@ COP_E2E_ERP_DIR=/ruta/local/al/erp \
 COP_WELCOME_FIXTURE=/tmp/copp-medication-e2e/fixture.private.json \
 node tests/CoppAddresd.Medications.E2EHost/patient-welcome.mjs
 ```
+
+## Catálogo RxTerms de EE. UU.
+
+Para la prueba de catálogo, crear la base aislada
+`copp_review_medications_rxterms` en el mismo contenedor PostgreSQL y usarla
+como `COP_MEDICATION_DATABASE`. El host importa la edición pública de NLM
+después de migrar la base. Iniciar el ERP en 3160 con el gateway local de 5160.
+Desde el ERP, ejecutar con la ruta del fixture generado por el host:
+
+```sh
+COP_MEDICATION_FIXTURE=/tmp/copp-medication-e2e/fixture.private.json \
+  node e2e/medications-rxterms-real.mjs
+```
+
+Verifica búsqueda por principio activo y marca, ausencia de resultados,
+guardado y lectura del RxCUI e ingreso manual usando servicios reales.

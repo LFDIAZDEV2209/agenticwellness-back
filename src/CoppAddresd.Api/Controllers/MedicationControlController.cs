@@ -90,6 +90,15 @@ public sealed class MedicationControlController(MedicationControlService medicat
         return Ok(await medications.ChangeStatusAsync(patient, id, request, true, ct));
     }
 
+    [HttpGet("medications/catalog/us")]
+    [RequireContextPermission("Medications.Manage")]
+    public async Task<ActionResult<IReadOnlyList<RxTermsOption>>> SearchUsCatalog(
+        string? search, [FromServices] IRxTermsCatalog catalog, CancellationToken ct)
+    {
+        EnsureErp();
+        return Ok(await catalog.SearchAsync(search, ct));
+    }
+
     [HttpGet("medications/overview")]
     [RequireContextPermission("Medications.View")]
     public async Task<ActionResult<MedicationOverviewDto>> Overview(string? timeZone, CancellationToken ct)
