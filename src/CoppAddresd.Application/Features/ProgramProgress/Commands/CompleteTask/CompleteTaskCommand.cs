@@ -1,4 +1,5 @@
 using CoppAddresd.Application.DTOs.ProgramProgress;
+using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Enums.ProgramProgress;
 using FluentValidation;
 using MediatR;
@@ -108,19 +109,19 @@ public sealed class CompleteTaskCommandValidator : AbstractValidator<CompleteTas
         When(x => x.Vitals is not null, () =>
         {
             RuleFor(x => x.Vitals!.HeartRate)
-                .InclusiveBetween(20, 250)
+                .InclusiveBetween(VitalCaptureLimits.HeartRateMin, VitalCaptureLimits.HeartRateMax)
                 .When(x => x.Vitals!.HeartRate.HasValue)
                 .WithMessage("heartRate debe estar entre 20 y 250.");
             RuleFor(x => x.Vitals!.Systolic)
-                .InclusiveBetween(50, 260)
+                .InclusiveBetween(VitalCaptureLimits.SystolicMin, VitalCaptureLimits.SystolicMax)
                 .When(x => x.Vitals!.Systolic.HasValue)
                 .WithMessage("systolic debe estar entre 50 y 260.");
             RuleFor(x => x.Vitals!.Diastolic)
-                .InclusiveBetween(20, 180)
+                .InclusiveBetween(VitalCaptureLimits.DiastolicMin, VitalCaptureLimits.DiastolicMax)
                 .When(x => x.Vitals!.Diastolic.HasValue)
                 .WithMessage("diastolic debe estar entre 20 y 180.");
             RuleFor(x => x.Vitals!.O2Saturation)
-                .InclusiveBetween(30, 100)
+                .InclusiveBetween(VitalCaptureLimits.OxygenMin, VitalCaptureLimits.OxygenMax)
                 .When(x => x.Vitals!.O2Saturation.HasValue)
                 .WithMessage("o2Saturation debe estar entre 30 y 100.");
             RuleFor(x => x.Vitals!.Glucose)
@@ -132,7 +133,7 @@ public sealed class CompleteTaskCommandValidator : AbstractValidator<CompleteTas
                 .When(x => x.Vitals!.WeightKg.HasValue)
                 .WithMessage("weightKg debe estar entre 1 y 500.");
             RuleFor(x => x.Vitals!.TemperatureC)
-                .InclusiveBetween(30, 45)
+                .InclusiveBetween(VitalCaptureLimits.TemperatureMin, VitalCaptureLimits.TemperatureMax)
                 .When(x => x.Vitals!.TemperatureC.HasValue)
                 .WithMessage("temperatureC debe estar entre 30 y 45.");
             RuleFor(x => x.Vitals!.Steps)

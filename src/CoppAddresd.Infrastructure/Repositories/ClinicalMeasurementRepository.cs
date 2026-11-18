@@ -243,14 +243,9 @@ public sealed class ClinicalMeasurementRepository(AppDbContext dbContext)
 
         // Q2: filas del paciente en una proyección (joins con métrica y unidad),
         // ordenadas por observación desc y registro desc. AsNoTracking.
-        var query = dbContext
-            .ClinicalMeasurements.AsNoTracking()
-            .Where(m => m.PatientId == patientId);
-
-        if (batchId is { } labBatchId)
-        {
-            query = query.Where(m => m.BatchId == labBatchId);
-        }
+        var query = batchId is { } labBatchId
+            ? dbContext.ClinicalMeasurements.AsNoTracking().Where(m => m.PatientId == patientId && m.BatchId == labBatchId)
+            : dbContext.EffectiveClinicalMeasurements(patientId);
 
         var rows = await query
             .OrderByDescending(m => m.ObservedAt)

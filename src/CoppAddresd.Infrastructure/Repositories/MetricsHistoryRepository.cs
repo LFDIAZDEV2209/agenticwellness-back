@@ -113,7 +113,7 @@ public sealed class MetricsHistoryRepository(AppDbContext dbContext) : IMetricsH
         // unidades (solo la unidad por defecto del catálogo) vive en el
         // ensamblado (fallback de IMC asume kg por esta misma razón).
         var measurements = await dbContext
-            .ClinicalMeasurements.AsNoTracking()
+            .EffectiveClinicalMeasurements(patientId)
             .Join(
                 dbContext.MeasurementMetrics.AsNoTracking(),
                 x => x.MetricId,
@@ -147,8 +147,7 @@ public sealed class MetricsHistoryRepository(AppDbContext dbContext) : IMetricsH
                     }
             )
             .Where(x =>
-                x.PatientId == patientId
-                && metricIds.Contains(x.MetricId)
+                metricIds.Contains(x.MetricId)
                 && x.ObservedAt >= fromUtc
                 && x.ObservedAt < toExclusiveUtc
             )

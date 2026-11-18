@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CoppAddresd.Api.Internal;
 
-/// <summary>Lecturas mínimas para el runtime de confianza; ninguna escritura disponible por clave interna.</summary>
+/// <summary>Lecturas y capturas de Vita para el runtime de confianza.</summary>
 [ApiController]
 [Route("api/v1/internal/vita")]
 [AllowAnonymous]
@@ -54,4 +54,23 @@ public sealed class InternalVitaController(ISender sender, IConfiguration config
         if (!configuration.GetValue<bool>("Vita:InternalEnabled")) return NotFound();
         return Ok(await sender.Send(new GetVitaMedicationsQuery(userId), ct));
     }
+
+    [HttpPost("capture/propose")]
+    public async Task<ActionResult<VitaCaptureProposalDto>> ProposeCapture([FromQuery, BindRequired] Guid userId,
+        [FromBody] ProposeVitaCaptureRequest input, CancellationToken ct)
+    {
+        if (!CaptureEnabled) return NotFound();
+        return Ok(await sender.Send(new ProposeVitaCaptureCommand(userId, input), ct));
+    }
+
+    [HttpPost("capture/confirm")]
+    public async Task<ActionResult<VitaCaptureReceiptDto>> ConfirmCapture([FromQuery, BindRequired] Guid userId,
+        [FromBody] ConfirmVitaCaptureRequest input, CancellationToken ct)
+    {
+        if (!CaptureEnabled) return NotFound();
+        return Ok(await sender.Send(new ConfirmVitaCaptureCommand(userId, input), ct));
+    }
+
+    private bool CaptureEnabled => configuration.GetValue<bool>("Vita:InternalEnabled")
+        && configuration.GetValue<bool>("Vita:CaptureEnabled");
 }

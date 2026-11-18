@@ -346,6 +346,22 @@ reintentar HTTP tras reinicios. No hay transacción distribuida. El lease se
 reclama por UPDATE condicional y el envío ocurre después. Una caída entre SMTP
 y `Sent` admite duplicado excepcional; ver [operación y pruebas](../modules/auth/welcome-emails.md).
 
+## Captura confirmada de Vita
+
+La confirmación usa PostgreSQL `Read Committed` con la estrategia de reintento
+de EF. Adquiere primero el bloqueo de consentimiento del usuario y luego
+`FOR UPDATE` sobre su perfil. Dentro de la transacción revalida el perfil,
+el consentimiento, la vigencia del token y el acceso a medicamentos. La
+transacción solo realiza operaciones de BD y abarca una captura.
+
+La escritura utiliza el repositorio canónico de mediciones o el registrador de
+tomas con la transacción del paciente ya abierta. El recibo se guarda antes del
+commit. En caso de cancelación o fallo, se revierten la captura y el recibo.
+Confirmaciones concurrentes del mismo paciente se serializan. Un turno con los
+mismos datos reutiliza el recibo y con datos distintos devuelve 409. La
+invalidación de caché se ejecuta después del commit y puede repetirse al
+reproducir un recibo.
+
 ## Medicamentos: existencias, alertas y seguimiento
 
 `InPatientTransactionAsync` usa READ COMMITTED, execution strategy y lock FOR

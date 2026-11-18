@@ -15,6 +15,8 @@ tokens de voz y persistencia del hilo.
 | GET | `/api/v1/internal/vita/profile?userId=<uuid>` | Igual, perfil activo y consentimiento de chat |
 | GET | `/api/v1/internal/vita/vitals?userId=<uuid>&from=&to=` | Igual, ventana local de hasta 31 días |
 | GET | `/api/v1/internal/vita/medications?userId=<uuid>` | Igual y acceso del paciente al módulo de medicamentos |
+| POST | `/api/v1/internal/vita/capture/propose?userId=<uuid>` | Clave interna, consentimiento y `Vita:CaptureEnabled=true` |
+| POST | `/api/v1/internal/vita/capture/confirm?userId=<uuid>` | Igual, con token vigente y confirmación explícita |
 | POST | `/api/v1/vita/me/task-completion-proposals` | JWT app y `Vita:TaskCompletionEnabled=true` |
 | POST | `/api/v1/vita/me/task-completion-confirmations` | Igual; confirmación explícita |
 | POST | `/api/v1/chat/voice/session` | Ruta existente, JWT y consentimiento de voz |
@@ -44,8 +46,25 @@ métrica y el historial acotado, con unidades y origen de cada lectura.
 tomas del día local con el mismo cálculo de horarios y estados del módulo.
 
 Las lecturas envían la fecha del paciente y los instantes en UTC según el DTO.
-El esquema de procedencia de Ola A prepara futuros recibos de escritura
-idempotentes. [Migración de mediciones clínicas](../clinical-measurements/README.md#procedencia-y-recibos-de-vita-ola-a)
+Las lecturas incluyen el identificador canónico de una medición o toma para que
+el runtime pueda proponer una captura sobre el recurso correcto.
+
+## Captura confirmada
+
+Las rutas de captura están apagadas por defecto. Al habilitarlas, todas las
+réplicas requieren el mismo `Vita__CaptureProposalSecret` de 32 bytes aleatorios
+en Base64. Debe ser distinto de las claves de JWT, AI, voz y propuestas de tareas.
+El token AES-GCM usa el propósito `CoppAddresd.Vita.Capture.v1` y vence a los
+cinco minutos. Vincula la identidad, el canal, el turno de la captura y los datos
+validados. La confirmación llega por una petición posterior con la afirmación
+explícita del paciente. El runtime conserva el identificador de la captura
+original cuando la conversación avanza.
+
+La propuesta solo lee. La confirmación inserta la medición o registra una
+toma/omisión con el módulo de medicamentos y guarda el recibo en la misma
+transacción. Un replay devuelve los identificadores originales. El backend
+rechaza una clave de turno reutilizada con datos diferentes. Las correcciones
+de mediciones guardan una fila nueva y mantienen la original. [Contrato de API](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
 
 ## Envelope y fuentes
 

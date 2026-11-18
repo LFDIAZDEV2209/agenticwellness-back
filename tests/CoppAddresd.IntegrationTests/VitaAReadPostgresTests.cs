@@ -264,12 +264,15 @@ public sealed partial class NutritionPlanWorkflowTests
     }
 
     private async Task<WebApplication> VitaAHostAsync(bool internalEnabled = true, bool medicationEnabled = true,
-        Guid? deniedUser = null)
+        Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null)
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders();
         builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
         builder.Configuration["Vita:InternalEnabled"] = internalEnabled.ToString();
+        builder.Configuration["Vita:CaptureEnabled"] = captureEnabled.ToString();
+        if (captureEnabled) builder.Configuration["Vita:CaptureProposalSecret"] = Convert.ToBase64String(
+            System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         builder.Services.AddControllers().AddApplicationPart(typeof(InternalVitaController).Assembly);
         builder.Services.AddAuthorization();
         builder.Services.Configure<AiServiceSettings>(o => o.InternalApiKey = VitaAInternalKey);
@@ -285,7 +288,9 @@ public sealed partial class NutritionPlanWorkflowTests
         builder.Services.AddVita(builder.Configuration);
         builder.Services.AddScoped<IMedicationControlStore, MedicationControlStore>();
         builder.Services.AddScoped<MedicationControlService>();
-        builder.Services.AddSingleton<TimeProvider, VitaAClock>();
+        builder.Services.AddScoped<IClinicalMeasurementRepository, ClinicalMeasurementRepository>();
+        builder.Services.AddSingleton(clock ?? new VitaAClock());
+        builder.Services.AddSingleton(Substitute.For<ICacheService>());
         builder.Services.AddSingleton(Substitute.For<IPatientScopeGuard>());
         var consent = Substitute.For<ILegalConsentService>();
         consent.EnsureUserAsync(Arg.Any<Guid>(), "chat", Arg.Any<CancellationToken>())

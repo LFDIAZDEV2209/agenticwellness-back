@@ -114,18 +114,20 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
 
     public Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
         RecordMedicationDoseRequest request, CancellationToken ct)
+        => store.RecordAsync(patientId, actorId, origin, doseId, ValidateRecord(request, clock.GetUtcNow()), ct);
+
+    public static RecordMedicationDoseRequest ValidateRecord(RecordMedicationDoseRequest request, DateTimeOffset now)
     {
         if (request.ClientRequestId == Guid.Empty || request.Status is not ("taken" or "omitted")
             || (request.Reason?.Length ?? 0) > 500 || request.ExpectedRevision < 0)
             throw Invalid("dose", "Revisa el estado, la operación y el motivo de la toma.");
-        var now = clock.GetUtcNow();
         if (request.ScheduledAt is { } scheduled
             && Math.Abs(DateOnly.FromDateTime(scheduled.UtcDateTime).DayNumber
                 - DateOnly.FromDateTime(now.UtcDateTime).DayNumber) > 366)
             throw Invalid("scheduledAt", "Selecciona una fecha dentro del último o próximo año.");
         var occurred = request.OccurredAt ?? now;
         if (occurred > now.AddMinutes(1)) throw Invalid("occurredAt", "La toma no puede tener una fecha futura.");
-        return store.RecordAsync(patientId, actorId, origin, doseId, request with { Reason = request.Reason?.Trim() }, ct);
+        return request with { Reason = request.Reason?.Trim() };
     }
 
     public Task<MedicationTreatmentDto> ChangeStatusAsync(Guid patientId, Guid treatmentId,

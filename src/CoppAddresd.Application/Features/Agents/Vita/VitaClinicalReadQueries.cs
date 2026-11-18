@@ -72,7 +72,7 @@ public sealed class VitaClinicalReadQueries(VitaPatientAccess access, IVitaClini
         var today = LocalDate(asOf, zone);
         var day = await medications.ReadCurrentDayAsync(patient.Id, today, zone, asOf, ct);
         var doses = day.Doses.ToLookup(d => d.TreatmentId,
-            d => new VitaMedicationDoseDto(d.ScheduledAt, d.Status, d.OccurredAt));
+            d => new VitaMedicationDoseDto(d.ScheduledAt, d.Status, d.OccurredAt, d.Id));
         var treatments = day.Treatments.Select(t => new VitaMedicationTreatmentDto(t.Id, t.Name, t.ProductType,
             t.Dosage, t.Unit, t.Route, t.TimeZone, t.Times, t.StartDate, t.EndDate, doses[t.Id].ToArray())).ToArray();
         return new(asOf.UtcDateTime, patient.Timezone, today, treatments);

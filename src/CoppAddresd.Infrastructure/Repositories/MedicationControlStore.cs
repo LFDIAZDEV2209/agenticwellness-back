@@ -191,72 +191,79 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
 
     public Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
         RecordMedicationDoseRequest request, CancellationToken ct)
-        => InPatientTransactionAsync(patientId, async () =>
+        => InPatientTransactionAsync(patientId, () => RecordWithinPatientTransactionAsync(
+            patientId, actorId, origin, doseId, request, ct), ct);
+
+    internal async Task<MedicationDoseDto> RecordWithinPatientTransactionAsync(Guid patientId, Guid actorId,
+        string origin, Guid doseId, RecordMedicationDoseRequest request, CancellationToken ct)
+    {
+        // El llamador ya bloqueó el perfil y comparte esta transacción con el recibo de Vita.
+        if (db.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("El registro de la toma requiere una transacción del paciente.");
+        await EnsurePatientOriginAsync(patientId, origin, ct);
+        var hash = Hash(new { actorId, origin, doseId, request });
+        var existing = await db.MedicationDoseOperations.AsNoTracking()
+            .SingleOrDefaultAsync(e => e.PatientId == patientId && e.ClientRequestId == request.ClientRequestId, ct);
+        if (existing is not null)
         {
-            await EnsurePatientOriginAsync(patientId, origin, ct);
-            var hash = Hash(new { actorId, origin, doseId, request });
-            var existing = await db.MedicationDoseOperations.AsNoTracking()
-                .SingleOrDefaultAsync(e => e.PatientId == patientId && e.ClientRequestId == request.ClientRequestId, ct);
-            if (existing is not null)
-            {
-                if (existing.DoseId != doseId || existing.RequestHash != hash) throw Conflict("La operación ya fue utilizada con otros datos.");
-                return await DoseQuery(patientId, doseId).SingleAsync(ct);
-            }
-            var dose = await db.MedicationDoses.SingleOrDefaultAsync(d => d.Id == doseId && d.PatientId == patientId, ct);
-            var scheduled = dose?.ScheduledAt ?? request.ScheduledAt?.UtcDateTime ?? throw Missing();
-            var day = DateOnly.FromDateTime(scheduled);
-            var occurrence = (await ProjectDosesAsync(patientId, day, TimeZoneInfo.Utc, ct))
-                .SingleOrDefault(d => d.Dto.Id == doseId) ?? throw Missing();
-            if (occurrence.Dto.Status == "cancelled" || scheduled > Now)
-                throw Conflict("Esta dosis todavía no está disponible para registrar.");
-            if (dose is null)
-            {
-                dose = new MedicationDose
-                {
-                    Id = doseId, PatientId = patientId, TreatmentId = occurrence.Dto.TreatmentId,
-                    RegimenId = occurrence.RegimenId, SlotId = occurrence.SlotId, ScheduledAt = scheduled,
-                    TimeZone = occurrence.Dto.TimeZone, CreatedAt = Now,
-                };
-                db.MedicationDoses.Add(dose);
-            }
-            if (dose.Status is "pending" or "cancelled") dose.Status = occurrence.Dto.Status;
-            db.MedicationDoseOperations.Add(new MedicationDoseOperation
-            {
-                Id = Guid.NewGuid(), PatientId = patientId, DoseId = doseId,
-                ClientRequestId = request.ClientRequestId, RequestHash = hash, AcceptedAt = Now,
-            });
-            if (dose.Status == request.Status)
-            {
-                await db.SaveChangesAsync(ct);
-                return await DoseQuery(patientId, doseId).SingleAsync(ct);
-            }
-            if (request.ExpectedRevision is { } expected && expected != dose.Revision)
-                throw Conflict("La toma cambió. Actualiza el seguimiento.");
-            if (dose.Status != "pending" && (request.ExpectedRevision is null || string.IsNullOrWhiteSpace(request.Reason)))
-                throw Conflict("Para corregir una toma, actualiza la ficha y escribe el motivo.");
-            var occurred = (request.OccurredAt ?? clock.GetUtcNow()).UtcDateTime;
-            var regimen = await db.MedicationRegimens.AsNoTracking().SingleAsync(r => r.Id == dose.RegimenId, ct);
-            var earliest = Bounds(regimen.StartDate, MedicationControlService.Zone(regimen.TimeZone)).Start;
-            if (occurred < earliest) throw new UnprocessableEntityException("La fecha de toma es anterior al tratamiento.");
-            var previousEvent = await db.MedicationIntakeEvents.AsNoTracking().Where(e => e.DoseId == doseId)
-                .OrderByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).Select(e => (Guid?)e.Id).FirstOrDefaultAsync(ct);
-            var intakeEvent = new MedicationIntakeEvent
-            {
-                Id = Guid.NewGuid(), PatientId = patientId, TreatmentId = dose.TreatmentId, DoseId = doseId,
-                ClientRequestId = request.ClientRequestId, RequestHash = hash, Status = request.Status,
-                OccurredAt = occurred, RecordedAt = Now, ActorId = actorId, Origin = origin,
-                Reason = request.Reason, CorrectsEventId = previousEvent,
-            };
-            db.MedicationIntakeEvents.Add(intakeEvent);
-            await ApplyIntakeStockAsync(patientId, actorId, origin, dose, intakeEvent, regimen.Dosage, ct);
-            AddMedicationAudit(patientId, actorId, origin, previousEvent is null ? "dose_recorded" : "dose_corrected", "dose", dose.Id);
-            dose.Status = request.Status;
-            dose.OccurredAt = occurred;
-            dose.Revision++;
-            await db.SaveChangesAsync(ct);
-            await RefreshAlertsCoreAsync(patientId, ct);
+            if (existing.DoseId != doseId || existing.RequestHash != hash) throw Conflict("La operación ya fue utilizada con otros datos.");
             return await DoseQuery(patientId, doseId).SingleAsync(ct);
-        }, ct);
+        }
+        var dose = await db.MedicationDoses.SingleOrDefaultAsync(d => d.Id == doseId && d.PatientId == patientId, ct);
+        var scheduled = dose?.ScheduledAt ?? request.ScheduledAt?.UtcDateTime ?? throw Missing();
+        var day = DateOnly.FromDateTime(scheduled);
+        var occurrence = (await ProjectDosesAsync(patientId, day, TimeZoneInfo.Utc, ct))
+            .SingleOrDefault(d => d.Dto.Id == doseId) ?? throw Missing();
+        if (occurrence.Dto.Status == "cancelled" || scheduled > Now)
+            throw Conflict("Esta dosis todavía no está disponible para registrar.");
+        if (dose is null)
+        {
+            dose = new MedicationDose
+            {
+                Id = doseId, PatientId = patientId, TreatmentId = occurrence.Dto.TreatmentId,
+                RegimenId = occurrence.RegimenId, SlotId = occurrence.SlotId, ScheduledAt = scheduled,
+                TimeZone = occurrence.Dto.TimeZone, CreatedAt = Now,
+            };
+            db.MedicationDoses.Add(dose);
+        }
+        if (dose.Status is "pending" or "cancelled") dose.Status = occurrence.Dto.Status;
+        db.MedicationDoseOperations.Add(new MedicationDoseOperation
+        {
+            Id = Guid.NewGuid(), PatientId = patientId, DoseId = doseId,
+            ClientRequestId = request.ClientRequestId, RequestHash = hash, AcceptedAt = Now,
+        });
+        if (dose.Status == request.Status)
+        {
+            await db.SaveChangesAsync(ct);
+            return await DoseQuery(patientId, doseId).SingleAsync(ct);
+        }
+        if (request.ExpectedRevision is { } expected && expected != dose.Revision)
+            throw Conflict("La toma cambió. Actualiza el seguimiento.");
+        if (dose.Status != "pending" && (request.ExpectedRevision is null || string.IsNullOrWhiteSpace(request.Reason)))
+            throw Conflict("Para corregir una toma, actualiza la ficha y escribe el motivo.");
+        var occurred = (request.OccurredAt ?? clock.GetUtcNow()).UtcDateTime;
+        var regimen = await db.MedicationRegimens.AsNoTracking().SingleAsync(r => r.Id == dose.RegimenId, ct);
+        var earliest = Bounds(regimen.StartDate, MedicationControlService.Zone(regimen.TimeZone)).Start;
+        if (occurred < earliest) throw new UnprocessableEntityException("La fecha de toma es anterior al tratamiento.");
+        var previousEvent = await db.MedicationIntakeEvents.AsNoTracking().Where(e => e.DoseId == doseId)
+            .OrderByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).Select(e => (Guid?)e.Id).FirstOrDefaultAsync(ct);
+        var intakeEvent = new MedicationIntakeEvent
+        {
+            Id = Guid.NewGuid(), PatientId = patientId, TreatmentId = dose.TreatmentId, DoseId = doseId,
+            ClientRequestId = request.ClientRequestId, RequestHash = hash, Status = request.Status,
+            OccurredAt = occurred, RecordedAt = Now, ActorId = actorId, Origin = origin,
+            Reason = request.Reason, CorrectsEventId = previousEvent,
+        };
+        db.MedicationIntakeEvents.Add(intakeEvent);
+        await ApplyIntakeStockAsync(patientId, actorId, origin, dose, intakeEvent, regimen.Dosage, ct);
+        AddMedicationAudit(patientId, actorId, origin, previousEvent is null ? "dose_recorded" : "dose_corrected", "dose", dose.Id);
+        dose.Status = request.Status;
+        dose.OccurredAt = occurred;
+        dose.Revision++;
+        await db.SaveChangesAsync(ct);
+        await RefreshAlertsCoreAsync(patientId, ct);
+        return await DoseQuery(patientId, doseId).SingleAsync(ct);
+    }
 
     public Task<MedicationTreatmentDto> ChangeStatusAsync(Guid patientId, Guid treatmentId,
         ChangeMedicationStatusRequest request, bool selfService, CancellationToken ct)

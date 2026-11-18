@@ -172,8 +172,15 @@ El `Down` conserva las filas y valores de mediciones y retira las columnas
 nuevas y la tabla de recibos. Antes de usar `Down` tras habilitar capturas,
 respaldar los metadatos y recibos que se necesiten conservar.
 
-La recepción de confirmaciones, la consolidación de `vital_signs` y la
-emisión de eventos a los dashboards corresponden a tareas posteriores.
+Vita escribe en esta tabla tras la confirmación explícita. Las correcciones
+crean una fila con `supersedes_id` y conservan la medición previa. Vita, el
+historial de métricas de la app y la vista general del ERP leen las filas
+vigentes. Las lecturas por lote de laboratorio conservan sus registros.
+Se invalidan las dos claves de historial de métricas después del commit.
+
+La captura habilita peso, frecuencia cardíaca, presión, saturación y temperatura.
+La consolidación de `vital_signs` y la ampliación del procesamiento analítico
+corresponden a las tareas 4.6 y 4.8. [Contrato de captura](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
 
 ## Cambio en módulo tele
 

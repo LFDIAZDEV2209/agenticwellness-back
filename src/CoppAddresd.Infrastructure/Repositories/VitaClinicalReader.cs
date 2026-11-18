@@ -49,11 +49,8 @@ public sealed class VitaClinicalReader(AppDbContext db) : IVitaClinicalReader
             .Where(m => m.ObservedAt >= fromUtc && m.ObservedAt < endUtc), 200, ct);
 
     private IQueryable<MeasurementRow> Measurements(Guid patientId, string[] metrics, DateTime asOf) =>
-        db.ClinicalMeasurements.AsNoTracking()
-            .Where(m => m.PatientId == patientId && m.ObservedAt <= asOf && m.Status == "confirmed"
-                && metrics.Contains(m.Metric!.Code) && ClinicalSources.Contains(m.Source)
-                && !db.ClinicalMeasurements.Any(replacement => replacement.SupersedesId == m.Id
-                    && replacement.PatientId == patientId && replacement.Status != "pending_confirmation"))
+        db.EffectiveClinicalMeasurements(patientId)
+            .Where(m => m.ObservedAt <= asOf && metrics.Contains(m.Metric!.Code) && ClinicalSources.Contains(m.Source))
             .Select(m => new MeasurementRow
             {
                 Id = m.Id, Code = m.Metric!.Code, Value = m.Value, UnitCode = m.Unit!.Code, UnitSymbol = m.Unit.Symbol,
@@ -122,6 +119,6 @@ public sealed class VitaClinicalReader(AppDbContext db) : IVitaClinicalReader
         public DateTime RecordedAt { get; init; }
         public string? Source { get; init; }
 
-        public VitaMeasurementDto ToDto() => new(Code, Value, UnitCode, UnitSymbol, ObservedAt, Source);
+        public VitaMeasurementDto ToDto() => new(Code, Value, UnitCode, UnitSymbol, ObservedAt, Source, Source is null ? null : Id);
     }
 }

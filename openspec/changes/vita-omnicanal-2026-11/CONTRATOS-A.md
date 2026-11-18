@@ -18,7 +18,8 @@ resuelto y es de solo lectura. Las respuestas con datos llevan
   observación descendente. En empate se usa fecha de registro descendente e ID
   descendente. Se excluyen las observaciones posteriores a `asOf`.
   Cada punto tiene `metricCode`, `value`, `unitCode`,
-  `unitSymbol`, `observedAt` y `source`. La unidad se toma de la lectura.
+  `unitSymbol`, `observedAt`, `source` y `measurementId`. La unidad se toma de la
+  lectura. Las mediciones heredadas sin registro canónico llevan `measurementId: null`.
 - **200** con el DTO del recurso, incluso si sus secciones están vacías.
 - **400** para `userId` ausente, inválido o vacío, fechas inválidas o intervalo
   fuera del rango admitido. La validación HTTP responde con Problem Details.
@@ -93,12 +94,12 @@ porque el registro anterior carece de procedencia individual.
   "allergies":["Alérgeno de prueba"],
   "restrictions":[],
   "anthropometry": {
-    "weight":{"metricCode":"weight","value":74.5,"unitCode":"kg","unitSymbol":"kg","observedAt":"2026-11-18T12:00:00Z","source":"patient"},
-    "height":{"metricCode":"height","value":168,"unitCode":"cm","unitSymbol":"cm","observedAt":"2026-10-30T14:00:00Z","source":null},
+    "weight":{"metricCode":"weight","value":74.5,"unitCode":"kg","unitSymbol":"kg","observedAt":"2026-11-18T12:00:00Z","source":"patient","measurementId":"07686a2d-c782-4e7b-b410-e4a74d99e720"},
+    "height":{"metricCode":"height","value":168,"unitCode":"cm","unitSymbol":"cm","observedAt":"2026-10-30T14:00:00Z","source":null,"measurementId":null},
     "bmi":null,
     "history":[
-      {"metricCode":"weight","value":74.5,"unitCode":"kg","unitSymbol":"kg","observedAt":"2026-11-18T12:00:00Z","source":"patient"},
-      {"metricCode":"height","value":168,"unitCode":"cm","unitSymbol":"cm","observedAt":"2026-10-30T14:00:00Z","source":null}
+      {"metricCode":"weight","value":74.5,"unitCode":"kg","unitSymbol":"kg","observedAt":"2026-11-18T12:00:00Z","source":"patient","measurementId":"07686a2d-c782-4e7b-b410-e4a74d99e720"},
+      {"metricCode":"height","value":168,"unitCode":"cm","unitSymbol":"cm","observedAt":"2026-10-30T14:00:00Z","source":null,"measurementId":null}
     ],
     "hasMore":false
   }
@@ -138,10 +139,10 @@ tarea 4.6.
   "from":"2026-11-12",
   "to":"2026-11-18",
   "latest":[
-    {"metricCode":"heart_rate","value":68,"unitCode":"bpm","unitSymbol":"bpm","observedAt":"2026-11-18T12:00:00Z","source":"device"}
+    {"metricCode":"heart_rate","value":68,"unitCode":"bpm","unitSymbol":"bpm","observedAt":"2026-11-18T12:00:00Z","source":"device","measurementId":"67c9101e-f14d-4004-9a67-090f27cb22c7"}
   ],
   "history":[
-    {"metricCode":"heart_rate","value":68,"unitCode":"bpm","unitSymbol":"bpm","observedAt":"2026-11-18T12:00:00Z","source":"device"}
+    {"metricCode":"heart_rate","value":68,"unitCode":"bpm","unitSymbol":"bpm","observedAt":"2026-11-18T12:00:00Z","source":"device","measurementId":"67c9101e-f14d-4004-9a67-090f27cb22c7"}
   ],
   "hasMore":false
 }
@@ -157,6 +158,7 @@ identifica el día del paciente en `timeZone`. `times` son horarios
 tratamiento dentro del día del paciente. Se reutilizan los estados del módulo
 `pending`, `taken`, `omitted` y `cancelled`. `occurredAt` puede ser
 nulo. `productType` es `medication`, `vitamin` o `supplement`. `endDate` puede ser nulo.
+`doseId` identifica la ocurrencia exacta para una captura de Vita.
 `route` puede ser una cadena vacía. Se omiten las anotaciones libres y el
 historial de otros días.
 
@@ -177,9 +179,96 @@ historial de otros días.
     "startDate":"2026-11-12",
     "endDate":null,
     "doses":[
-      {"scheduledAt":"2026-11-18T13:00:00Z","status":"taken","occurredAt":"2026-11-18T13:05:00Z"},
-      {"scheduledAt":"2026-11-19T01:00:00Z","status":"pending","occurredAt":null}
+      {"doseId":"c0718fec-43eb-4fe6-a9cb-973a33a69547","scheduledAt":"2026-11-18T13:00:00Z","status":"taken","occurredAt":"2026-11-18T13:05:00Z"},
+      {"doseId":"742b25d3-3d44-40e3-84bb-08a5f5d52227","scheduledAt":"2026-11-19T01:00:00Z","status":"pending","occurredAt":null}
     ]
   }]
 }
 ```
+
+## Captura confirmada · 4.2, 4.3 y 4.5
+
+Las dos rutas exigen `Vita:InternalEnabled`, `Vita:CaptureEnabled`, la clave
+interna y el consentimiento de chat. El runtime agrega `userId` en la consulta.
+El runtime mantiene el `channel` y el `turnId` de la captura original cuando
+recibe la confirmación en otro turno de conversación. `channel` es
+`vita_chat`, `vita_voice` o `vita_whatsapp`. `turnId` tiene de 1 a 256
+caracteres sin espacios al inicio ni al final.
+
+### Proponer
+
+`POST /capture/propose?userId={uuid}` devuelve 200 y un token opaco de cinco
+minutos. Valida los datos y la pertenencia del recurso sin modificar la BD.
+Usa instantes ISO 8601 con offset y devuelve los instantes en UTC. `observedAt`
+es requerido y debe corresponder a un instante ya ocurrido.
+
+Ejemplo para `record_measurement`. `supersedesId` es opcional y, cuando se
+envía, debe apuntar a una medición confirmada del propio paciente, de la misma
+métrica y unidad, reportada por el paciente y todavía vigente.
+
+```json
+{"tool":"record_measurement","channel":"vita_voice","turnId":"turno-17","metricCode":"weight","value":74.5,"unitCode":"kg","observedAt":"2026-11-18T08:00:00-05:00"}
+```
+
+| `metricCode` | `unitCode` | Rango de entrada inclusivo |
+| --- | --- | --- |
+| `weight` | `kg` | 1–500, hasta dos decimales |
+| `heart_rate` | `bpm` | 20–250, entero |
+| `systolic_bp` | `mmhg` | 50–260, entero |
+| `diastolic_bp` | `mmhg` | 20–180, entero |
+| `o2_saturation` | `pct` | 30–100, entero |
+| `temperature_c` | `celsius` | 30–45, hasta dos decimales |
+
+Una temperatura de 45 requiere confirmación adicional y queda marcada para
+revisión. Los valores fuera del rango de entrada se rechazan.
+
+Para `record_medication_dose`, `doseId` y `scheduledAt` provienen de
+`GET /medications`. `status` debe ser `taken` u `omitted`.
+`observedAt` es el instante reportado de la toma u omisión. La captura
+respeta el acceso al módulo y las reglas de disponibilidad de la ocurrencia.
+Una toma ya registrada con un estado distinto se corrige desde el módulo.
+
+```json
+{"tool":"record_medication_dose","channel":"vita_chat","turnId":"turno-24","doseId":"c0718fec-43eb-4fe6-a9cb-973a33a69547","scheduledAt":"2026-11-18T13:00:00Z","status":"taken","observedAt":"2026-11-18T13:05:00Z"}
+```
+
+Respuesta de propuesta. Los campos opcionales de `data` ajenos al tipo de
+captura son nulos.
+
+```json
+{
+  "token":"v1.token.opaco.ejemplo",
+  "expiresAt":"2026-11-18T13:10:00Z",
+  "requiresAdditionalConfirmation":false,
+  "data":{"tool":"record_measurement","metricCode":"weight","value":74.5,"unitCode":"kg","observedAt":"2026-11-18T13:00:00Z","supersedesId":null,"doseId":null,"scheduledAt":null,"status":null}
+}
+```
+
+### Confirmar
+
+`POST /capture/confirm?userId={uuid}` se invoca tras una confirmación explícita
+del paciente. Si `requiresAdditionalConfirmation` es verdadero, el runtime
+solicita otra confirmación y envía también `confirmedUnusual: true`. Una
+cancelación o un cambio de tema no llama a esta ruta.
+
+```json
+{"token":"v1.token.opaco.ejemplo","channel":"vita_voice","turnId":"turno-17","confirmed":true}
+```
+
+La respuesta 200 contiene identificadores estables. Un replay válido de la misma
+captura devuelve el mismo resultado. `entityType` es `clinical_measurement` o
+`medication_dose`.
+
+```json
+{"receiptId":"02eb1189-cc15-4001-b1de-5784dc6179b8","entityType":"clinical_measurement","entityId":"07686a2d-c782-4e7b-b410-e4a74d99e720"}
+```
+
+| HTTP | Motivo |
+| --- | --- |
+| 400 | Payload, rango, unidad o fecha inválidos, confirmación ausente o token alterado/expirado. |
+| 401 | Clave interna ausente o inválida. |
+| 403 | Paciente distinto, identidad inactiva, consentimiento ausente, módulo de medicamentos deshabilitado para el paciente o intento de corregir una medición ajena o de otro origen. |
+| 404 | Rutas de captura apagadas, módulo de medicamentos apagado u ocurrencia no disponible para el paciente. |
+| 409 | La clave se usó con otros datos, el canal o turno no coinciden, falta la confirmación adicional, la ocurrencia cambió o la medición ya tiene un reemplazo. |
+| 422 | Regla de negocio de medicamentos que invalida la fecha de toma. |
+| 503 | No se puede verificar el consentimiento. |

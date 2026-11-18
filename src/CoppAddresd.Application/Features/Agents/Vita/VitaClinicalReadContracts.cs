@@ -1,7 +1,7 @@
 namespace CoppAddresd.Application.Features.Agents.Vita;
 
 public sealed record VitaMeasurementDto(string MetricCode, decimal Value, string UnitCode, string UnitSymbol,
-    DateTime ObservedAt, string? Source);
+    DateTime ObservedAt, string? Source, Guid? MeasurementId = null);
 
 public sealed record VitaAnthropometryDto(VitaMeasurementDto? Weight, VitaMeasurementDto? Height, VitaMeasurementDto? Bmi,
     IReadOnlyList<VitaMeasurementDto> History, bool HasMore);
@@ -17,7 +17,7 @@ public sealed record VitaProfileDto(DateTime AsOf, VitaProfileIdentityDto Profil
 public sealed record VitaVitalsDto(DateTime AsOf, string TimeZone, DateOnly From, DateOnly To,
     IReadOnlyList<VitaMeasurementDto> Latest, IReadOnlyList<VitaMeasurementDto> History, bool HasMore);
 
-public sealed record VitaMedicationDoseDto(DateTime ScheduledAt, string Status, DateTime? OccurredAt);
+public sealed record VitaMedicationDoseDto(DateTime ScheduledAt, string Status, DateTime? OccurredAt, Guid DoseId);
 
 public sealed record VitaMedicationTreatmentDto(Guid Id, string Name, string ProductType, decimal Dosage, string Unit,
     string Route, string TimeZone, IReadOnlyList<string> Times, DateOnly StartDate, DateOnly? EndDate,
