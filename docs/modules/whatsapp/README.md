@@ -109,7 +109,10 @@ La primera búsqueda normalizada recorre perfiles; ocurre una vez por vínculo y
 no añade índices ni funciones en schemas ajenos. Luego `patient_links.wa_id`
 es la fuente del canal (D3). V1 admite un número por paciente y una conversación.
 El vínculo conserva user_id para reutilizar la identidad y consentimiento del chat.
-Un teléfono desconocido recibe guía de registro sin crear conversación de agente.
+Un teléfono desconocido recibe la guía de vinculación por OTP cuando el flujo
+está habilitado, o instrucciones para continuar en la app ANTARES cuando no está
+disponible. En ambos casos se omite el agente, se protege el contenido de
+vinculación y no se expone información clínica.
 `ON CONFLICT` y unicidad evitan vínculos/hilos duplicados en primeras entradas
 concurrentes. No hay FK desde `whatsapp` a `app` ni a `auth`.
 
@@ -117,27 +120,35 @@ concurrentes. No hay FK desde `whatsapp` a `app` ni a `auth`.
 
 El worker sondea la BD cada segundo además de drenar señales de cola. Reclama un
 evento con `FOR UPDATE SKIP LOCKED` y lease de cinco minutos en una sola sentencia,
-libera el lock y procesa con límite de dos minutos. Ordena por recepción por número;
-un turno anterior pendiente impide que otro worker adelante el mismo hilo.
-Invoca `ChatCommand` por MediatR (el mismo handler de ChatController), agente `base`
-por defecto, user_id real cuando existe y patient_id; sin control_context en v1.
-Los campos nuevos son opcionales: clientes existentes conservan su comportamiento.
+libera el lock y procesa con límite de dos minutos. Ordena por recepción por número.
+Un turno anterior pendiente impide que otro worker adelante el mismo hilo.
+Invoca `ChatCommand` por MediatR (el mismo handler de ChatController) con el agente
+`whatsapp`, el `user_id` cuando existe y el `patient_id`. Omite `control_context`.
 El cliente de IA mantiene su validación de consentimiento, también en background.
 
 Idioma inicial es; cambia a en solo con señal clara y se conserva entre turnos.
 SALIR/STOP e INICIAR/START son insensibles a caso y acentos; confirman y cambian
 opt_out sin consultar al agente. Opt-out no bloquea conversaciones iniciadas por
-el paciente. Si la IA falla (límite 90 s), se guarda la causa técnica tipada y se
-envía un texto seguro. No se guardan excepciones ni cuerpos del proveedor en logs.
+el paciente. Los mensajes sin texto reciben instrucciones para continuar por texto.
+Si el agente falla, excede su límite de 90 s o devuelve una respuesta vacía tras
+aplicar el formato de WhatsApp, se guarda un mensaje seguro en ES/EN y el código
+de causa. La preparación del turno tiene un límite de 100 s para reservar tiempo
+al envío del respaldo. Los fallos de preparación también producen un respaldo
+cuando se puede guardar y enviar. Los logs registran el identificador del evento,
+el código y el tipo de excepción cuando aplica, sin cuerpos del proveedor.
 
-La respuesta se persiste antes del envío, y cada fragmento aceptado avanza un
-cursor durable. Un fallo transitorio del sender reintenta el fragmento pendiente
-con backoff de 5–60 s (máximo cinco intentos), sin repetir el LLM. Permanente o
-ventana cerrada termina el evento con código de error. Un reinicio recupera leases
-vencidos. Existe una ventana inevitable si el proceso muere después de que Meta
-acepte y antes del commit del cursor: Cloud API no ofrece una clave idempotente
-del cliente para garantizar exactly-once en ese punto. El dedupe de webhooks y el
-cursor evitan duplicados ordinarios; no se promete atomicidad entre Meta y la BD.
+La respuesta se persiste antes del envío y cada fragmento aceptado avanza un
+cursor durable. Si Meta acepta el respaldo, el evento se cierra y conserva el
+código del agente. Un fallo transitorio de envío guarda su propio código en el
+evento, registra un reintento del fragmento pendiente a los 5, 10, 20 o 40 s y
+utiliza la respuesta guardada. El rechazo permanente, la ventana cerrada o el
+agotamiento de cinco intentos cierran el evento y permiten procesar el siguiente
+mensaje del número. Si el quinto intento fue interrumpido, al vencer el lease se
+cierra con `attempts_exhausted` sin volver a llamar al agente ni a Meta.
+
+La aceptación de Meta acredita el envío al proveedor. La entrega al dispositivo
+requiere confirmación de Meta. Si el proceso cae entre la aceptación del fragmento
+y la persistencia de su cursor, al recuperar el evento puede reenviar ese fragmento.
 
 ## Acompañamiento (D9 actualizado por Luis)
 

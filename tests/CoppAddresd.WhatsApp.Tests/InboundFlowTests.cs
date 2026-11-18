@@ -99,17 +99,106 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         Assert.Single(harness.Sent);
     }
 
-    [Fact]
-    public async Task AgentFailure_SendsSafeMessage_AndRetainsCause()
+    [Theory]
+    [InlineData(503, "Hola", "no está disponible", "agent_AiServiceException")]
+    [InlineData(503, "Hello", "temporarily unavailable", "agent_AiServiceException")]
+    [InlineData(0, "Hello", "temporarily unavailable", "agent_timeout")]
+    public async Task AgentFailure_SendsSafeMessage_AndRetainsCause(
+        int agentStatus, string message, string expected, string code)
     {
-        await using var harness = await CreateAsync(failAgent: true);
+        await using var harness = await CreateAsync(agentStatus: agentStatus);
+        var wamid = Guid.NewGuid().ToString();
+        await harness.EnqueueAsync(wamid, message);
+        Assert.True(await harness.ProcessAsync());
+        Assert.Contains(expected, Assert.Single(harness.Sent));
+        await harness.EnqueueAsync(wamid, message);
+        Assert.False(await harness.ProcessAsync());
+        Assert.Single(harness.Requests);
+        await using var db = fixture.CreateDb();
+        var input = await db.RawEvents.SingleAsync();
+        Assert.Equal(code, input.ErrorCode);
+        Assert.NotNull(input.ProcessedAt);
+        Assert.Equal(1, input.Attempts);
+        Assert.Equal(1, input.SentFragments);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  \t")]
+    [InlineData("---\n***")]
+    public async Task EmptyAgentReplyAfterFormatting_SendsSafeMessage(string? reply)
+    {
+        await using var harness = await CreateAsync(agentReply: reply);
         await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola");
-        await harness.ProcessAsync();
+
+        Assert.True(await harness.ProcessAsync());
         Assert.Contains("no está disponible", Assert.Single(harness.Sent));
         await using var db = fixture.CreateDb();
         var input = await db.RawEvents.SingleAsync();
-        Assert.StartsWith("agent_", input.ErrorCode);
+        Assert.Equal("agent_empty_reply", input.ErrorCode);
+        Assert.Equal(1, input.SentFragments);
         Assert.NotNull(input.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task UnlinkedWithoutBinding_SendsAppGuide_WithoutCallingAgent()
+    {
+        await using var harness = await CreateAsync(linked: false);
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "hola");
+
+        Assert.True(await harness.ProcessAsync());
+        var reply = Assert.Single(harness.Sent);
+        Assert.Contains("app ANTARES", reply);
+        Assert.DoesNotContain("SMS", reply);
+        Assert.Empty(harness.Requests);
+        await using var db = fixture.CreateDb();
+        Assert.Empty(await db.PatientLinks.ToListAsync());
+        Assert.Empty(await db.Conversations.ToListAsync());
+        var input = await db.RawEvents.SingleAsync();
+        Assert.Equal("{}", input.Payload);
+        Assert.NotNull(input.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task IdentityLookupThrows_SendsSafeReply_WithoutCallingAgent()
+    {
+        await using var harness = await CreateAsync(linked: false, failLookup: true);
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hello");
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.Contains("temporarily unavailable", Assert.Single(harness.Sent));
+        Assert.Empty(harness.Requests);
+        await using var db = fixture.CreateDb();
+        var input = await db.RawEvents.SingleAsync();
+        Assert.Equal("preparation_failed", input.ErrorCode);
+        Assert.Equal(1, input.SentFragments);
+        Assert.NotNull(input.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task NonTextInbound_ReceivesInstructions_WithoutCallingAgent()
+    {
+        await using var harness = await CreateAsync();
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "", type: "image");
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.Contains("Envía un mensaje de texto", Assert.Single(harness.Sent));
+        Assert.Empty(harness.Requests);
+    }
+
+    [Fact]
+    public async Task SavedBlankReply_ReceivesFallback_WithoutCallingAgentAgain()
+    {
+        await using var harness = await CreateAsync();
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hello");
+        await using var db = fixture.CreateDb();
+        await db.RawEvents.ExecuteUpdateAsync(update => update.SetProperty(x => x.Reply, "---"));
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.Contains("temporarily unavailable", Assert.Single(harness.Sent));
+        Assert.Empty(harness.Requests);
+        Assert.Equal("reply_empty", (await db.RawEvents.SingleAsync()).ErrorCode);
     }
 
     [Fact]
@@ -140,24 +229,114 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
     [Fact]
     public async Task TransientSendFailure_ReplaysSavedReply_WithoutAnotherAgentCall()
     {
-        await using var harness = await CreateAsync();
-        harness.FailNextSend = true;
+        await using var harness = await CreateAsync(agentStatus: 503);
+        harness.SendFailure = WhatsAppSendResult.Failed("429", WhatsAppFailureKind.Transient);
         await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola");
-        await harness.ProcessAsync();
+        Assert.True(await harness.ProcessAsync());
         await using (var db = fixture.CreateDb())
         {
             var input = await db.RawEvents.SingleAsync();
             Assert.Null(input.ProcessedAt);
-            input.NextAttemptAt = DateTimeOffset.UtcNow.AddSeconds(-1);
-            await db.SaveChangesAsync();
+            Assert.Contains("no está disponible", input.Reply);
+            Assert.Equal(harness.Clock.Now.AddSeconds(5), input.NextAttemptAt);
         }
-        await harness.ProcessAsync();
+        Assert.False(await harness.ProcessAsync());
+        harness.Clock.Now = harness.Clock.Now.AddSeconds(5);
+        harness.SendFailure = null;
+        Assert.True(await harness.ProcessAsync());
+        Assert.Contains("no está disponible", Assert.Single(harness.Sent));
         Assert.Single(harness.Requests);
         await using var final = fixture.CreateDb();
         Assert.NotNull((await final.RawEvents.SingleAsync()).ProcessedAt);
     }
 
-    private async Task<Harness> CreateAsync(bool failAgent = false)
+    [Fact]
+    public async Task PermanentSendFailure_ClosesEvent_AndUnblocksNextMessage()
+    {
+        await using var harness = await CreateAsync();
+        harness.SendFailure = WhatsAppSendResult.Failed("190", WhatsAppFailureKind.Permanent);
+        var firstId = Guid.NewGuid().ToString();
+        await harness.EnqueueAsync(firstId, "Hola");
+        harness.Clock.Now = harness.Clock.Now.AddSeconds(1);
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola de nuevo");
+
+        Assert.True(await harness.ProcessAsync());
+        await using var db = fixture.CreateDb();
+        var failed = await db.RawEvents.SingleAsync(x => x.Wamid == firstId);
+        Assert.Equal("190", failed.ErrorCode);
+        Assert.NotNull(failed.ProcessedAt);
+        Assert.Null(failed.LeaseUntil);
+        Assert.Equal(1, failed.Attempts);
+        Assert.Equal(0, failed.SentFragments);
+        harness.SendFailure = null;
+        Assert.True(await harness.ProcessAsync());
+        Assert.False(await harness.ProcessAsync());
+        Assert.Single(harness.Sent);
+    }
+
+    [Fact]
+    public async Task RepeatedTransientFailures_UseBackoff_AndStopAtFiveAttempts()
+    {
+        await using var harness = await CreateAsync();
+        harness.SendFailure = WhatsAppSendResult.Failed("network", WhatsAppFailureKind.Transient);
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola");
+
+        foreach (var seconds in new[] { 5, 10, 20, 40 })
+        {
+            Assert.True(await harness.ProcessAsync());
+            await using var db = fixture.CreateDb();
+            var input = await db.RawEvents.SingleAsync();
+            Assert.Equal(harness.Clock.Now.AddSeconds(seconds), input.NextAttemptAt);
+            Assert.Null(input.ProcessedAt);
+            Assert.False(await harness.ProcessAsync());
+            harness.Clock.Now = input.NextAttemptAt;
+        }
+
+        Assert.True(await harness.ProcessAsync());
+        harness.Clock.Now = harness.Clock.Now.AddHours(1);
+        Assert.False(await harness.ProcessAsync());
+        await using var final = fixture.CreateDb();
+        var exhausted = await final.RawEvents.SingleAsync();
+        Assert.Equal(5, exhausted.Attempts);
+        Assert.NotNull(exhausted.ProcessedAt);
+        Assert.Equal("network", exhausted.ErrorCode);
+        Assert.Single(harness.Requests);
+        Assert.Equal(5, harness.SendAttempts);
+    }
+
+    [Fact]
+    public async Task ExpiredFifthLease_ClosesWithoutASixthAttempt_AndUnblocksNextMessage()
+    {
+        await using var harness = await CreateAsync();
+        var exhaustedId = Guid.NewGuid().ToString();
+        await harness.EnqueueAsync(exhaustedId, "Hola");
+        var lease = harness.Clock.Now.AddMinutes(5);
+        await using var db = fixture.CreateDb();
+        await db.RawEvents.Where(x => x.Wamid == exhaustedId).ExecuteUpdateAsync(update => update
+            .SetProperty(x => x.Attempts, 5)
+            .SetProperty(x => x.LeaseUntil, lease));
+        harness.Clock.Now = harness.Clock.Now.AddSeconds(1);
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola de nuevo");
+        Assert.False(await harness.ProcessAsync());
+
+        harness.Clock.Now = lease;
+        Assert.True(await harness.ProcessAsync());
+        Assert.Empty(harness.Requests);
+        Assert.Equal(0, harness.SendAttempts);
+        var exhausted = await db.RawEvents.SingleAsync(x => x.Wamid == exhaustedId);
+        Assert.Equal(5, exhausted.Attempts);
+        Assert.Equal("attempts_exhausted", exhausted.ErrorCode);
+        Assert.Equal(lease, exhausted.ProcessedAt);
+        Assert.Null(exhausted.LeaseUntil);
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.False(await harness.ProcessAsync());
+        Assert.Single(harness.Sent);
+    }
+
+    private async Task<Harness> CreateAsync(
+        int agentStatus = 200, string? agentReply = "Respuesta del agente",
+        bool linked = true, bool failLookup = false)
     {
         await using var db = fixture.CreateDb();
         await db.Database.ExecuteSqlRawAsync(
@@ -165,7 +344,7 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
             CancellationToken.None
         );
         var harness = new Harness();
-        db.PatientLinks.Add(
+        if (linked) db.PatientLinks.Add(
             new PatientLink
             {
                 PatientId = harness.PatientId,
@@ -190,16 +369,21 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
                             );
                             using var payload = await JsonDocument.ParseAsync(context.Request.Body);
                             harness.Requests.Add(payload.RootElement.Clone());
-                            if (failAgent)
+                            if (agentStatus == 0)
                             {
-                                context.Response.StatusCode = 503;
+                                await Task.Delay(Timeout.InfiniteTimeSpan, context.RequestAborted);
+                                return;
+                            }
+                            if (agentStatus != 200)
+                            {
+                                context.Response.StatusCode = agentStatus;
                                 await context.Response.WriteAsync("{\"detail\":\"offline\"}");
                                 return;
                             }
                             await context.Response.WriteAsJsonAsync(
                                 new
                                 {
-                                    answer = "Respuesta del agente",
+                                    answer = agentReply,
                                     thread_id = payload
                                         .RootElement.GetProperty("thread_id")
                                         .GetString(),
@@ -213,13 +397,17 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ChatCommand>());
-        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<TimeProvider>(harness.Clock);
         services.AddSingleton(WebhookTests.Options);
         services.AddSingleton<WhatsAppQueue>();
         services.AddSingleton(Substitute.For<IAgentCatalogRepository>());
         services.AddSingleton(Substitute.For<IAgentRuntimeSyncService>());
         services.AddSingleton(Substitute.For<IProgramControlRepository>());
-        services.AddSingleton(Substitute.For<IPatientChannelQuery>());
+        var patients = Substitute.For<IPatientChannelQuery>();
+        if (failLookup)
+            patients.FindActiveByPhoneAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromException<PatientChannelIdentity?>(new InvalidOperationException("detalle interno")));
+        services.AddSingleton(patients);
         services.AddSingleton<IOptions<ProgramControlSettings>>(
             Options.Create(new ProgramControlSettings())
         );
@@ -229,6 +417,7 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
                 {
                     BaseUrl = "http://localhost",
                     InternalApiKey = "test-internal",
+                    TimeoutSeconds = agentStatus == 0 ? 1 : 30,
                 }
             )
         );
@@ -247,11 +436,9 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
             )
             .Returns(call =>
             {
-                if (harness.FailNextSend)
-                {
-                    harness.FailNextSend = false;
-                    return WhatsAppSendResult.Failed("429", WhatsAppFailureKind.Transient);
-                }
+                harness.SendAttempts++;
+                if (harness.SendFailure is { } failure)
+                    return failure;
                 harness.Sent.Add(call.ArgAt<string>(1));
                 return new WhatsAppSendResult("wamid.reply");
             });
@@ -274,16 +461,21 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
     {
         public Guid PatientId { get; } = Guid.NewGuid();
         public Guid UserId { get; } = Guid.NewGuid();
+        public ManualClock Clock { get; } = new()
+        {
+            Now = DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+        };
         public IHost AiHost { get; set; } = null!;
         public ServiceProvider Services { get; set; } = null!;
         public List<JsonElement> Requests { get; } = [];
         public List<string> Sent { get; } = [];
-        public bool FailNextSend { get; set; }
+        public WhatsAppSendResult? SendFailure { get; set; }
+        public int SendAttempts { get; set; }
 
-        public async Task EnqueueAsync(string wamid, string text)
+        public async Task EnqueueAsync(string wamid, string text, string type = "text")
         {
             using var scope = Services.CreateScope();
-            var body = Encoding.UTF8.GetBytes(WebhookTests.Payload(wamid, text));
+            var body = Encoding.UTF8.GetBytes(WebhookTests.Payload(wamid, text, type: type));
             var signature =
                 "sha256="
                 + Convert.ToHexStringLower(

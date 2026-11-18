@@ -80,6 +80,6 @@ public sealed class WebhookTests(PostgresFixture fixture) : IClassFixture<Postgr
         return request;
     }
 
-    public static string Payload(string wamid, string text = "hola", string from = "573053924819") =>
-        System.Text.Json.JsonSerializer.Serialize(new { @object = "whatsapp_business_account", entry = new[] { new { changes = new[] { new { field = "messages", value = new { metadata = new { phone_number_id = "test-phone" }, messages = new[] { new { id = wamid, from, timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), type = "text", text = new { body = text } } } } } } } } });
+    public static string Payload(string wamid, string text = "hola", string from = "573053924819", string type = "text") =>
+        System.Text.Json.JsonSerializer.Serialize(new { @object = "whatsapp_business_account", entry = new[] { new { changes = new[] { new { field = "messages", value = new { metadata = new { phone_number_id = "test-phone" }, messages = new[] { new { id = wamid, from, timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), type, text = new { body = text } } } } } } } } });
 }
