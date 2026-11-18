@@ -53,8 +53,9 @@ public sealed class WelcomeEmailTests
         if (!app)
             Assert.DoesNotContain("Android", mail.HtmlBody);
         Assert.DoesNotContain("apps.apple.com", mail.HtmlBody);
-        Assert.Single(mail.InlineImages!);
-        Assert.True(mail.InlineImages![0].Content.Length > 100);
+        Assert.Contains($"src=\"{Settings.WelcomeLogoUrl}\"", mail.HtmlBody);
+        Assert.Contains("COPP-ADRESD", mail.HtmlBody);
+        Assert.Empty(mail.InlineImages ?? []);
     }
 
     [Fact]
@@ -72,6 +73,7 @@ public sealed class WelcomeEmailTests
             ),
             new EmailSettings
             {
+                WelcomeLogoUrl = "http://localhost/logo.png",
                 IosDownloadUrl = "javascript:alert(1)",
                 AndroidDownloadUrl = "https://play.google.com/store/apps/details?id=example",
             }
@@ -80,6 +82,7 @@ public sealed class WelcomeEmailTests
         Assert.DoesNotContain("<script>", mail.HtmlBody);
         Assert.Contains("&lt;script&gt;", mail.HtmlBody);
         Assert.DoesNotContain("javascript:", mail.HtmlBody);
+        Assert.DoesNotContain("localhost/logo.png", mail.HtmlBody);
         Assert.Contains("Download for Android", mail.HtmlBody);
         Assert.Contains("iOS · Coming soon", mail.PlainTextBody);
     }

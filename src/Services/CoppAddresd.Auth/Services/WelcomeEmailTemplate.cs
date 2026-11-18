@@ -19,20 +19,9 @@ public sealed record WelcomeEmailContent(
     DateTime? InvitationExpiresAt = null
 );
 
-/// <summary>HTML compatible con correo: tablas, estilos inline, logo CID y alternativa de texto.</summary>
+/// <summary>HTML compatible con correo: tablas, estilos inline, logo HTTPS y alternativa de texto.</summary>
 public static class WelcomeEmailTemplate
 {
-    public const string LogoContentId = "copp-adresd-logo";
-    private static readonly Lazy<byte[]> Logo = new(() =>
-    {
-        using var stream = typeof(WelcomeEmailTemplate).Assembly.GetManifestResourceStream(
-            "CoppAddresd.Auth.Email.Assets.copp-adresd.png"
-        )!;
-        using var buffer = new MemoryStream();
-        stream.CopyTo(buffer);
-        return buffer.ToArray();
-    });
-
     public static EmailMessage Build(WelcomeEmailContent content, EmailSettings settings)
     {
         var en = content.Language?.StartsWith("en", StringComparison.OrdinalIgnoreCase) == true;
@@ -181,27 +170,30 @@ public static class WelcomeEmailTemplate
         var greetingName = string.IsNullOrWhiteSpace(content.FirstName)
             ? ""
             : content.FirstName.Trim();
+        var logoUrl = ValidUrl(settings.WelcomeLogoUrl);
+        var logoCell = logoUrl is not null && logoUrl.StartsWith("https://", StringComparison.Ordinal)
+            ? $"""<td width="48" valign="middle"><img class="mail-logo" src="{E(logoUrl)}" alt="" width="36" height="36" style="display:block;border:0;border-radius:8px;background:#ffffff"></td>"""
+            : "";
         var html = $$"""
             <!DOCTYPE html><html lang="{{(
                 en ? "en" : "es"
             )}}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>{{subject}}</title>
-            <style>@media only screen and (max-width:600px){.mail-pad{padding:28px 24px!important}.hero-pad{padding:30px 26px 38px!important}.mail-heading{font-size:44px!important}.brand-name{font-size:17px!important;letter-spacing:1px!important}.activation-pad{padding:22px 20px!important}.mail-logo{width:50px!important;height:50px!important}.mail-footer{padding:26px 24px!important} }</style></head>
+            <style>@media only screen and (max-width:600px){.mail-pad{padding:28px 24px!important}.hero-pad{padding:34px 24px 38px!important}.mail-heading{font-size:38px!important}.activation-pad{padding:22px 20px!important}.mail-footer{padding:26px 24px!important} }</style></head>
             <body style="margin:0;padding:0;background:#e9efef;font-family:Arial,Helvetica,sans-serif;color:#142855">
             <div style="display:none;max-height:0;overflow:hidden;mso-hide:all">{{E(intro)}}</div>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:30px 10px">
             <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;table-layout:fixed;background:#ffffff;border-radius:22px;overflow:hidden">
-            <tr><td class="hero-pad" bgcolor="#142855" style="padding:34px 42px 44px;background:#142855;background-image:linear-gradient(125deg,#142855 15%,#103c55 65%,#146557 100%);color:#ffffff">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
-            <td width="84" style="vertical-align:middle"><table role="presentation" cellspacing="0" cellpadding="0"><tr><td bgcolor="#ffffff" style="padding:10px;background:#ffffff;border-radius:18px"><img class="mail-logo" src="cid:{{LogoContentId}}" alt="Copp Adresd" width="54" height="54" style="display:block;border:0"></td></tr></table></td>
-            <td class="brand-name" style="font-size:20px;font-weight:700;letter-spacing:1.5px;color:#ffffff;vertical-align:middle">COPP-ADRESD</td>
-            </tr></table>
-            <h1 class="mail-heading" style="margin:36px 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:54px;line-height:1.06;font-weight:400;letter-spacing:-1.4px;color:#ffffff;overflow-wrap:anywhere;word-break:break-word">{{E(
-                T("Bienvenido", "Welcome")
-            )}}{{(greetingName.Length > 0 ? ",<br>" + E(greetingName) + "." : ".")}}</h1>
-            <table role="presentation" cellspacing="0" cellpadding="0"><tr><td width="52" height="4" bgcolor="#8fd2b2" style="background:#8fd2b2;font-size:0;line-height:0">&nbsp;</td><td width="18" height="4" bgcolor="#4c9c9c" style="background:#4c9c9c;font-size:0;line-height:0">&nbsp;</td></tr></table>
-            <p style="margin:22px 0 0;max-width:420px;font-size:16px;line-height:1.75;color:#dcece9">{{E(
-                intro
-            )}}</p></td></tr>
+            <tr><td bgcolor="#142855" style="padding:16px 24px;background:#142855">
+            <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+            {{logoCell}}
+            <td class="brand-name" style="font-size:16px;font-weight:700;letter-spacing:1.2px;color:#ffffff;vertical-align:middle">COPP-ADRESD</td>
+            </tr></table></td></tr>
+            <tr><td class="hero-pad" align="center" bgcolor="#edf6f3" style="padding:42px 38px;background:#edf6f3;color:#142855">
+            <h1 class="mail-heading" style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:46px;line-height:1.12;font-weight:700;letter-spacing:-1.3px;color:#142855;overflow-wrap:anywhere;word-break:break-word">{{E(
+                T("Hola", "Hello")
+            )}}{{(greetingName.Length > 0 ? ", " + E(greetingName) + "." : ".")}}</h1>
+            <p style="margin:0;font-size:16px;line-height:1.65;color:#415b6d">{{E(intro)}}</p>
+            </td></tr>
             <tr><td class="mail-pad" style="padding:30px 42px 40px;font-size:15px;line-height:1.65">{{sections}}</td></tr>
             <tr><td class="mail-footer" bgcolor="#142855" style="padding:30px 42px;background:#142855;color:#ffffff">
             <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:25px;line-height:1.3;color:#ffffff">{{E(
@@ -219,8 +211,7 @@ public static class WelcomeEmailTemplate
             content.Email,
             subject,
             html,
-            plain.ToString(),
-            [new EmailInlineImage(LogoContentId, Logo.Value, "image/png")]
+            plain.ToString()
         );
     }
 
@@ -240,5 +231,5 @@ public static class WelcomeEmailTemplate
         $"<p style=\"margin:0 0 18px;font-size:15px;line-height:1.7;color:#52677b\">{E(value)}</p>";
 
     private static string Button(string url, string label) =>
-        $"<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:16px 0\"><tr><td bgcolor=\"#035d4d\" style=\"border-radius:28px;background-image:linear-gradient(100deg,#035d4d,#0c4c6b);mso-padding-alt:16px 26px\"><a href=\"{E(url)}\" style=\"display:inline-block;padding:16px 26px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border:1px solid #035d4d;border-radius:28px\">{E(label)}</a></td></tr></table>";
+        $"<table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin:16px 0\"><tr><td bgcolor=\"#035d4d\" style=\"border-radius:28px;background:#035d4d;mso-padding-alt:16px 26px\"><a href=\"{E(url)}\" style=\"display:inline-block;padding:16px 26px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border:1px solid #035d4d;border-radius:28px\">{E(label)}</a></td></tr></table>";
 }

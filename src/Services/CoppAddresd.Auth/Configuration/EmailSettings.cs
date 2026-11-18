@@ -24,6 +24,10 @@ public class EmailSettings
     /// <summary>Sin publicar: el correo muestra Próximamente, sin enlaces ficticios.</summary>
     public string? IosDownloadUrl { get; set; }
     public string? AndroidDownloadUrl { get; set; }
+    /// <summary>URL HTTPS pública del logo, accesible sin iniciar sesión.</summary>
+    public string WelcomeLogoUrl { get; set; } =
+        "https://cdn.jsdelivr.net/gh/FontalvoB/antares-paciente@7e375e812ef94685485ee666389da2a1a00636cb/public/LogoIndividual.png";
+
     public bool WelcomeEnabled { get; set; } = true;
     public int WelcomeMaxAttempts { get; set; } = 5;
 

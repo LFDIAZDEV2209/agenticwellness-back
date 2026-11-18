@@ -31,7 +31,7 @@ para cambiar el enlace se usa **Reenviar invitación**.
 - Sin contraseña e invitación vigente: el mismo mensaje incluye la creación
   de contraseña. No se envía un segundo correo de primer acceso ni una contraseña.
 - `UserPreferences.Lang` selecciona español o inglés; el valor inicial es español.
-- Logo original del ERP embebido por CID, paleta azul/verde, HTML con tablas y
+- Logo oficial servido por HTTPS desde un CDN público, paleta azul/verde, HTML con tablas y
   estilos inline, alternativa de texto y adaptación a pantallas pequeñas.
 - Los enlaces de tiendas están pendientes de publicación por decisión del
   producto: **iOS · Próximamente** / **Android · Próximamente**, sin enlaces ficticios.
@@ -48,6 +48,7 @@ Todos los valores pertenecen a `Email` y admiten variables `Email__...`.
 | `FrontendUrl` | Base oficial del ERP para `/invitaciones?token=...` |
 | `ErpLoginUrl` | Opcional; por defecto `FrontendUrl` + `/login` |
 | `IosDownloadUrl`, `AndroidDownloadUrl` | URL oficial HTTPS cuando exista; vacío muestra Próximamente |
+| `WelcomeLogoUrl` | Logo PNG público por HTTPS; por defecto usa el logo oficial del repositorio público de la app, con versión fija en jsDelivr |
 | `WelcomeEnabled` | `true` por defecto; `false` pausa el worker sin borrar la cola |
 | `WelcomeMaxAttempts` | 5 por defecto (acotado a 1–20) |
 | `SmtpHost`, `SmtpPort`, `SmtpUseSsl`, `SmtpUsername`, `SmtpPassword`, `From`, `FromName` | Transporte SMTP existente; secretos fuera del repositorio |
@@ -128,7 +129,7 @@ placeholders, reintentos, revocación, suspensión y confirmaciones tras reinici
    `Pending`/`Failed`, restaurar transporte y reintentar la entrega. Comprobar
    que no cambian ID, roles ni contraseña. Repetir con una interrupción API→Auth
    y verificar la recuperación automática de la confirmación.
-7. Revisar en Apple Mail/iPhone y Gmail u Outlook: logo CID, texto alternativo
+7. Revisar en Apple Mail/iPhone y Gmail u Outlook: logo remoto y nombre de marca en texto
    si se bloquean imágenes, botones, texto plano, responsive, carpeta spam y
    remitente. Validar SPF/DKIM/DMARC y reglas de Microsoft 365 en el entorno real.
    La vista HTML local no certifica entregabilidad ni todos los motores de correo.
