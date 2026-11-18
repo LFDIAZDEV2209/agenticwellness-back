@@ -57,7 +57,7 @@ public sealed class VitaCaptureStore(AppDbContext db, IClinicalMeasurementReposi
             {
                 if (receipt.RequestHash != hash) throw new BusinessRuleViolationException("VITA_CAPTURE_IDEMPOTENCY_CONFLICT");
                 await transaction.CommitAsync(token);
-                return new VitaCaptureCommit(ToResult(receipt));
+                return new VitaCaptureCommit(ToResult(receipt), Created: false);
             }
 
             var (entityType, entityId, effects) = await WriteEntityAsync(proposal, now, token);
@@ -70,7 +70,7 @@ public sealed class VitaCaptureStore(AppDbContext db, IClinicalMeasurementReposi
             db.VitaWriteReceipts.Add(receipt);
             await db.SaveChangesAsync(token);
             await transaction.CommitAsync(token);
-            return new VitaCaptureCommit(ToResult(receipt), effects);
+            return new VitaCaptureCommit(ToResult(receipt), Created: true, effects);
         }, ct);
     }
 

@@ -58,10 +58,10 @@ In `ProgramRepository.cs`, dashboard aggregation queries query `app.program_dail
 ## 6. Biometría — rollup diario `app.biometria_daily_metrics`
 
 Tabla de pre-agregación del dashboard comunitario de Biometría (SPEC §06),
-alimentada por `BiometriaMetricsProcessorHostedService` (cola
-`IBiometriaMetricsQueue`, evento `BiometriaMeasuredEvent` emitido por
-`CompleteTaskCommandHandler` al completar la tarea `vitals`). Clave primaria:
-`(metric_date, metric_key, dimension_key)`.
+alimentada por `BiometriaMetricsProcessorHostedService` y la cola
+`IBiometriaMetricsQueue`. El evento `BiometriaMeasuredEvent` se emite
+al completar la tarea `vitals` o al confirmar por primera vez una medición
+de Vita. La clave primaria combina `metric_date`, `metric_key` y `dimension_key`.
 
 ### 6.1 Semántica por métrica (espejo del processor)
 
@@ -88,10 +88,10 @@ cualquier otro valor o `null` → `female`.
 ### 6.2 Claves SOLO de evento (no reconstruibles desde OLTP)
 
 - `glucosa_distribution` dimensión **`"Sin dato"`**: el processor la emite por
-  cada tarea `vitals` completada SIN glucosa. Las mediciones no registran ese
-  "sin dato" (no hay fila), así que el backfill NO la recalcula ni la borra.
+  cada evento sin glucosa. Esto incluye las capturas actuales de Vita.
+  El backfill conserva este conteo porque no hay una fila de glucosa que lo represente.
 - `city_patient_count` (dimensión = `city_id`, heat map): se emite con la ciudad
-  del perfil al completar vitals. El backfill tampoco la toca.
+  del perfil si está disponible. Cuenta eventos por ciudad y el backfill la conserva.
 
 ### 6.3 Backfill (idempotente)
 

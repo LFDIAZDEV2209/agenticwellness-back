@@ -179,8 +179,68 @@ vigentes. Las lecturas por lote de laboratorio conservan sus registros.
 Se invalidan las dos claves de historial de métricas después del commit.
 
 La captura habilita peso, frecuencia cardíaca, presión, saturación y temperatura.
-La consolidación de `vital_signs` y la ampliación del procesamiento analítico
-corresponden a las tareas 4.6 y 4.8. [Contrato de captura](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
+[Contrato de captura](../../../openspec/changes/vita-omnicanal-2026-11/CONTRATOS-A.md)
+
+### 4.6 Consolidación de signos vitales
+
+| Consumidor inventariado en backend | Acceso antes de la consolidación | Compatibilidad |
+| --- | --- | --- |
+| Expediente ERP, `PatientsController` y `PatientRepository` | GET incluye `PatientProfile.VitalSigns`. POST crea tomas y PUT las reemplaza mediante `ExecuteDeleteAsync` e inserción EF. | Mismo nombre y columnas para lectura, inserción y reemplazo. |
+| App, `/api/v1/me` y `MetricsHistoryRepository` | El historial de métricas de la app y de Programa toma la talla de `VitalSigns`. La serie y las mediciones móviles usan la tabla canónica. La edición del perfil móvil solo toca escalares. | Se preserva la talla del perfil y se incorpora el histórico a la serie canónica. |
+| Programa, `ProgramRepository.PersistVitalsAsync` | La tarea `vitals` ya escribe en `clinical_measurements`. Desde `20260901193540` la FK de `task_completions.vital_signs_batch_id` apunta a esa tabla. | Los lotes y anclas mantienen su origen y su FK. |
+| SOS, `SosVitalsSnapshot` | Toma las últimas mediciones canónicas de origen permitido y puede complementar con el reporte explícito de la app. | El filtro de procedencia se ejecuta antes de elegir la última lectura para que una toma heredada no desplace a una lectura aceptada por SOS. |
+| Reportes y reglas clínicas | `ClinicalContextService` lee la serie canónica y conserva un fallback al perfil. El detalle ERP, la biometría comunitaria y el backfill usan mediciones y preagregaciones canónicas. | El acceso por perfil continúa por la vista. Los reportes canónicos reciben el histórico consolidado. |
+| Vita, `VitaClinicalReader` | El perfil combinaba peso y talla de ambas relaciones. El endpoint de signos vitales leía el modelo canónico. | Ambos leen una sola fuente. Vita muestra origen e ID de captura nulos para observaciones heredadas. |
+| Importación y datos demo | `scripts/import_patients_from_excel.py` escribe por `COPY`. `seed_engagement_demo_data.py`, `seed_engagement_remaining.py` y `generated/rich_dataset_seed.sql` cuentan e insertan. `generate_rich_dataset_seed.py` genera ese SQL. | La vista acepta `COPY FROM` y `INSERT` con su trigger `INSTEAD OF`. |
+
+La migración `20261118214000_ConsolidateLegacyVitalSigns` copia un valor por
+campo no nulo y preserva la fecha observada (`measured_at`) y la fecha de
+registro (`created_at`). El esquema anterior solo tenía paciente, valores y
+fechas. Además, el importador y los seeds escribían en la misma relación.
+Por eso se usa `source='legacy'`, `reported_by=NULL`, `source_channel=NULL`
+y `status='confirmed'`. La clave de archivo `source_key` queda nula. El mismo
+criterio aplica a las altas que entran por compatibilidad.
+
+La clave `legacy-vitals:{id}:{metric}` hace idempotente la copia. El ID canónico
+también es determinista y `batch_id` conserva el ID de la toma. La migración
+comprueba las unidades del catálogo y verifica en SQL que cada valor original
+tenga su equivalente exacto antes del renombre. La vista reconstruye los
+valores desde `clinical_measurements` y usa `vital_signs_legacy` para la
+identidad y fechas, incluidas las tomas con todos sus valores nulos. Las
+escrituras compatibles guardan valores en el modelo canónico y solo
+identidad y fechas en las cabeceras nuevas de la tabla renombrada. Se mantiene
+el mapeo EF con el nombre original para que funcione el mismo DML.
+
+El `Down` materializa en la tabla las filas vigentes de la vista, incluidas las
+altas y ediciones hechas después del `Up`. Después elimina exclusivamente las
+filas con la procedencia y clave reservadas para el puente y restaura el nombre
+y permisos originales. La copia bloquea temporalmente escrituras legacy y el
+corte de nombres requiere un bloqueo exclusivo. La ventana de producción
+depende del volumen real. El índice del paciente y fecha en la tabla
+renombrada y el índice de `batch_id` en la canónica sirven la proyección
+por paciente. El plan de ejecución de QA cubre ambos.
+
+En PostgreSQL 16 desechable, la prueba sembró 3.843 tomas y reconcilió
+5.769 valores, todos con diferencia cero. Comparó la forma completa de la
+vista con la tabla anterior, incluidas las fechas y tomas vacías, y repitió
+`Down` y `Up` después de altas y ediciones por compatibilidad.
+La migración se verifica con el filtro `FullyQualifiedName~VitaFinal_` de
+`CoppAddresd.IntegrationTests` y `COP_TEST_DB_CONNECTION` aislada.
+
+### 4.8 Analítica de la captura
+
+Una confirmación de medición que crea el recibo publica
+`BiometriaMeasuredEvent` en `IBiometriaMetricsQueue` después del commit,
+igual que la tarea `vitals` de la app. La fecha usa la zona del paciente; el
+evento lleva los campos demográficos que espera el procesador. La captura
+no suministra IMC, grasa, glucosa, cintura o cadera. El rollup existente
+registra `glucosa_distribution / Sin dato` y el conteo por ciudad cuando
+está disponible. El replay solo recupera el recibo y no publica otro
+evento. Comida y check-in usan los eventos del programa.
+
+La cola de biometría es en memoria. El recibo evita duplicados en
+reintentos HTTP, pero una caída del proceso entre el commit y el consumo
+puede perder la actualización analítica.
 
 ## Cambio en módulo tele
 

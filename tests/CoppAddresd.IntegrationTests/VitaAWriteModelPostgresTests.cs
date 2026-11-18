@@ -92,7 +92,7 @@ public sealed partial class NutritionPlanWorkflowTests
             """SELECT count(*)::int AS "Value" FROM app.clinical_measurements""").SingleAsync());
 
         await migrator.MigrateAsync(migration);
-        Assert.Empty(await db.Database.GetPendingMigrationsAsync());
+        Assert.Equal(migration, (await db.Database.GetAppliedMigrationsAsync()).Last());
         Assert.Equal(74.50m, (await db.ClinicalMeasurements.SingleAsync(m => m.Id == oldId)).Value);
         Assert.Equal(baselineCount + 2, await db.ClinicalMeasurements.CountAsync(m => m.Status == "confirmed"));
         Assert.Empty(await db.VitaWriteReceipts.ToListAsync());

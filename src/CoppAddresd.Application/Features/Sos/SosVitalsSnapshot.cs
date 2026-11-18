@@ -14,6 +14,7 @@ public static class SosVitalsSnapshot
     private static readonly string[] OxygenCodes = ["SPO2", "O2_SATURATION", "OXYGEN_SATURATION"];
     private static readonly string[] SystolicCodes = ["SBP", "SYSTOLIC_BP", "BLOOD_PRESSURE_SYSTOLIC", "BP_SYS"];
     private static readonly string[] DiastolicCodes = ["DBP", "DIASTOLIC_BP", "BLOOD_PRESSURE_DIASTOLIC", "BP_DIA"];
+    private static readonly string[] TrustedSources = ["device", "patient", "professional", "lab"];
 
     public static string Serialize(IReadOnlyList<SosVitalReading> readings) => JsonSerializer.Serialize(readings, Json);
 
@@ -29,13 +30,12 @@ public static class SosVitalsSnapshot
     {
         var aliases = PulseCodes.Concat(OxygenCodes).Concat(SystolicCodes).Concat(DiastolicCodes);
         var stored = measurements is null ? new Dictionary<string, LabExamMetricSnapshot>()
-            : await measurements.GetLastPerMetricAsync(patientId, aliases, Guid.Empty, ct);
+            : await measurements.GetLastPerMetricAsync(patientId, aliases, Guid.Empty, TrustedSources, ct);
         var result = new List<SosVitalReading>();
         bool ValidTime(DateTime? time) => time.HasValue && time <= now && time >= now.AddHours(-24);
-        static bool RealSource(string? source) => source is "device" or "patient" or "professional" or "lab";
         void Add(string code, string[] names, string unit, decimal? reported, DateTime? observed, decimal min, decimal max)
         {
-            var row = stored.Values.Where(x => names.Contains(x.MetricCode.ToUpperInvariant()) && RealSource(x.Source) && ValidTime(x.ObservedAt)
+            var row = stored.Values.Where(x => names.Contains(x.MetricCode.ToUpperInvariant()) && TrustedSources.Contains(x.Source) && ValidTime(x.ObservedAt)
                 && x.Value >= min && x.Value <= max && (string.Equals(x.UnitSymbol, unit, StringComparison.OrdinalIgnoreCase)
                     || code == "HR" && string.Equals(x.UnitSymbol, "bpm", StringComparison.OrdinalIgnoreCase)))
                 .OrderByDescending(x => x.ObservedAt).FirstOrDefault();

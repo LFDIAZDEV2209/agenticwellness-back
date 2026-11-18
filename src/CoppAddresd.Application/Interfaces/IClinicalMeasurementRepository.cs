@@ -107,4 +107,9 @@ public interface IClinicalMeasurementRepository
         Guid excludeBatchId,
         CancellationToken ct = default
     );
+
+    /// <summary>Filtra los orígenes antes de elegir la lectura más reciente de cada métrica.</summary>
+    Task<IReadOnlyDictionary<string, LabExamMetricSnapshot>> GetLastPerMetricAsync(
+        Guid patientId, IEnumerable<string> metricNames, Guid excludeBatchId, string[] sources, CancellationToken ct
+    );
 }

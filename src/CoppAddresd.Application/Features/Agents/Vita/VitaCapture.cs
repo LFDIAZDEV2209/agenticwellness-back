@@ -39,7 +39,7 @@ public sealed record VitaCaptureProposalDto(string Token, DateTimeOffset Expires
 
 public sealed record VitaCaptureReceiptDto(Guid ReceiptId, string EntityType, Guid EntityId);
 public sealed record VitaProgramCaptureEffects(DateOnly LocalDate, string? CompletedTask, string XpReason, int XpAwarded);
-public sealed record VitaCaptureCommit(VitaCaptureReceiptDto Receipt, VitaProgramCaptureEffects? Effects = null);
+public sealed record VitaCaptureCommit(VitaCaptureReceiptDto Receipt, bool Created, VitaProgramCaptureEffects? Effects = null);
 
 public interface IVitaCaptureProposalTokens
 {
@@ -172,7 +172,7 @@ public static class VitaCaptureRules
 
 public sealed class VitaCaptureHandlers(VitaPatientAccess access, IVitaCaptureProposalTokens tokens,
     IVitaCaptureStore store, MedicationControlService medications, ICacheService cache, TimeProvider clock,
-    IProgramRepository programs, IProgramMetricsQueue? metrics = null)
+    IProgramRepository programs, IProgramMetricsQueue? metrics = null, IBiometriaMetricsQueue? biometria = null)
     : IRequestHandler<ProposeVitaCaptureCommand, VitaCaptureProposalDto>,
       IRequestHandler<ConfirmVitaCaptureCommand, VitaCaptureReceiptDto>
 {
@@ -244,6 +244,12 @@ public sealed class VitaCaptureHandlers(VitaPatientAccess access, IVitaCapturePr
         var result = await store.ConfirmAsync(proposal, ct);
         if (proposal.Data.Tool == VitaCaptureRules.Measurement)
         {
+            if (result.Created && biometria is not null)
+            {
+                var observed = TimeZoneInfo.ConvertTime(proposal.Data.ObservedAt, MedicationControlService.Zone(patient.Timezone));
+                await biometria.EnqueueAsync(new BiometriaMeasuredEvent(patient.Id, patient.Gender, patient.CityId?.ToString(),
+                    DateOnly.FromDateTime(observed.DateTime), null, null, null, null, null), ct);
+            }
             await cache.RemoveAsync(CacheKeys.MetricsHistory(patient.Id), ct);
             await cache.RemoveAsync(CacheKeys.MyMetricsHistory(patient.Id), ct);
         }

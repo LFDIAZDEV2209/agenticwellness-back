@@ -24,21 +24,7 @@ public sealed class VitaClinicalReader(AppDbContext db) : IVitaClinicalReader
             .OrderBy(a => a.Allergen!.Name).ThenBy(a => a.Id)
             .Select(a => a.Allergen!.Name).ToArrayAsync(ct);
         var (goals, restrictions) = await GetNutritionAsync(patientId, today, ct);
-        var legacy = db.VitalSigns.AsNoTracking().Where(v => v.PatientId == patientId && v.MeasuredAt <= asOf);
-        // Las tomas heredadas no registran un actor ni un dispositivo por lectura.
-        var historicWeights = legacy.Where(v => v.WeightKg != null).Select(v => new MeasurementRow
-        {
-            Id = v.Id, Code = "weight", Value = v.WeightKg!.Value, UnitCode = "kg", UnitSymbol = "kg",
-            ObservedAt = v.MeasuredAt, RecordedAt = v.CreatedAt, Source = null,
-        });
-        var historicHeights = legacy.Where(v => v.HeightCm != null).Select(v => new MeasurementRow
-        {
-            Id = v.Id, Code = "height", Value = v.HeightCm!.Value, UnitCode = "cm", UnitSymbol = "cm",
-            ObservedAt = v.MeasuredAt, RecordedAt = v.CreatedAt, Source = null,
-        });
-        var measurements = Measurements(patientId, AnthropometryMetrics, asOf)
-            .Concat(historicWeights).Concat(historicHeights);
-        var readings = await ReadSeriesAsync(measurements, 100, ct);
+        var readings = await ReadSeriesAsync(Measurements(patientId, AnthropometryMetrics, asOf), 100, ct);
         var latest = readings.Latest.ToDictionary(m => m.MetricCode);
         return new(goals, allergies, restrictions, new(latest.GetValueOrDefault("weight"),
             latest.GetValueOrDefault("height"), latest.GetValueOrDefault("bmi"), readings.History, readings.HasMore));
@@ -50,11 +36,13 @@ public sealed class VitaClinicalReader(AppDbContext db) : IVitaClinicalReader
 
     private IQueryable<MeasurementRow> Measurements(Guid patientId, string[] metrics, DateTime asOf) =>
         db.EffectiveClinicalMeasurements(patientId)
-            .Where(m => m.ObservedAt <= asOf && metrics.Contains(m.Metric!.Code) && ClinicalSources.Contains(m.Source))
+            .Where(m => m.ObservedAt <= asOf && metrics.Contains(m.Metric!.Code)
+                && (ClinicalSources.Contains(m.Source)
+                    || (m.Source == "legacy" && m.IdempotencyKey != null && m.IdempotencyKey.StartsWith("legacy-vitals:"))))
             .Select(m => new MeasurementRow
             {
                 Id = m.Id, Code = m.Metric!.Code, Value = m.Value, UnitCode = m.Unit!.Code, UnitSymbol = m.Unit.Symbol,
-                ObservedAt = m.ObservedAt, RecordedAt = m.RecordedAt, Source = m.Source,
+                ObservedAt = m.ObservedAt, RecordedAt = m.RecordedAt, Source = m.Source == "legacy" ? null : m.Source,
             });
 
     private static async Task<VitaVitalsDetails> ReadSeriesAsync(IQueryable<MeasurementRow> measurements, int limit,

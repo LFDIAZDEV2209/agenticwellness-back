@@ -266,7 +266,8 @@ public sealed partial class NutritionPlanWorkflowTests
     }
 
     private async Task<WebApplication> VitaAHostAsync(bool internalEnabled = true, bool medicationEnabled = true,
-        Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null, IProgramMetricsQueue? metrics = null)
+        Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null, IProgramMetricsQueue? metrics = null,
+        IBiometriaMetricsQueue? biometria = null)
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders();
@@ -294,6 +295,11 @@ public sealed partial class NutritionPlanWorkflowTests
         builder.Services.AddSingleton(Substitute.For<IObjectStorageService>());
         builder.Services.AddSingleton(new StorageSignatureService("synthetic-vita-document-signature-for-tests"));
         if (metrics is not null) builder.Services.AddSingleton(metrics);
+        if (biometria is not null)
+        {
+            builder.Services.AddSingleton(biometria);
+            builder.Services.AddHostedService<CoppAddresd.Infrastructure.Metrics.BiometriaMetricsProcessorHostedService>();
+        }
         builder.Services.AddVita(builder.Configuration);
         builder.Services.AddScoped<IMedicationControlStore, MedicationControlStore>();
         builder.Services.AddScoped<MedicationControlService>();

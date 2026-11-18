@@ -437,7 +437,7 @@ public sealed class SosActivateTests
 
         var capturedAt = DateTime.UtcNow.AddHours(-1);
         var measurements = Substitute.For<IClinicalMeasurementRepository>();
-        measurements.GetLastPerMetricAsync(patientId, Arg.Any<IEnumerable<string>>(), Guid.Empty, Arg.Any<CancellationToken>())
+        measurements.GetLastPerMetricAsync(patientId, Arg.Any<IEnumerable<string>>(), Guid.Empty, Arg.Any<string[]>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<string, CoppAddresd.Application.DTOs.LabExam.LabExamMetricSnapshot>
             {
                 ["heart_rate"] = new("heart_rate", 82, "bpm", capturedAt, "device"),

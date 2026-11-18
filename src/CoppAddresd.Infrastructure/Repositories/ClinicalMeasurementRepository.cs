@@ -152,12 +152,15 @@ public sealed class ClinicalMeasurementRepository(AppDbContext dbContext)
     /// <c>m.BatchId == null</c> conserva ese historial cross-source (spec
     /// "History found across sources").
     /// </remarks>
-    public async Task<IReadOnlyDictionary<string, LabExamMetricSnapshot>> GetLastPerMetricAsync(
+    public Task<IReadOnlyDictionary<string, LabExamMetricSnapshot>> GetLastPerMetricAsync(
         Guid patientId,
         IEnumerable<string> metricNames,
         Guid excludeBatchId,
         CancellationToken ct = default
-    )
+    ) => GetLastPerMetricAsync(patientId, metricNames, excludeBatchId, [], ct);
+
+    public async Task<IReadOnlyDictionary<string, LabExamMetricSnapshot>> GetLastPerMetricAsync(
+        Guid patientId, IEnumerable<string> metricNames, Guid excludeBatchId, string[] sources, CancellationToken ct)
     {
         var names = metricNames
             .Where(n => !string.IsNullOrWhiteSpace(n))
@@ -170,8 +173,11 @@ public sealed class ClinicalMeasurementRepository(AppDbContext dbContext)
             return new Dictionary<string, LabExamMetricSnapshot>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var rows = await dbContext
-            .ClinicalMeasurements.AsNoTracking()
+        var query = dbContext.ClinicalMeasurements.AsNoTracking();
+        if (sources.Length != 0)
+            query = query.Where(m => sources.Contains(m.Source));
+
+        var rows = await query
             .Where(m =>
                 m.PatientId == patientId
                 && (m.BatchId == null || m.BatchId != excludeBatchId)

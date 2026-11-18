@@ -33,7 +33,7 @@ public sealed class ClinicalMeasurement
     /// <summary>Cuándo se registró en el sistema. Default now().</summary>
     public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
 
-    /// <summary>Origen: <c>device</c> | <c>patient</c> | <c>professional</c> | <c>lab</c>.</summary>
+    /// <summary>Origen. <c>legacy</c> identifica históricos que no registraron procedencia.</summary>
     public string Source { get; set; } = default!;
 
     /// <summary>Canal de captura si quedó registrado. Null para procedencia histórica desconocida.</summary>
@@ -49,7 +49,7 @@ public sealed class ClinicalMeasurement
 
     public string? IdempotencyKey { get; set; }
 
-    /// <summary>Lote de examen que originó la medición. Null si no proviene de lab upload.</summary>
+    /// <summary>Identificador de lote de origen, por ejemplo un examen o una toma heredada.</summary>
     public Guid? BatchId { get; set; }
 
     /// <summary>
