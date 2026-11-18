@@ -47,6 +47,11 @@ public static class DependencyInjection
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationMonitoringStore, MedicationControlStore>();
         services.AddScoped<CoppAddresd.Application.Features.Medications.MedicationMonitoringService>();
         services.AddHostedService<MedicationMonitoringWorker>();
+        services.AddScoped<MedicationControlStore>();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderScheduler>(
+            provider => provider.GetRequiredService<MedicationControlStore>());
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderChannel, MedicationAppReminderChannel>();
+        services.AddHostedService<MedicationReminderWorker>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.PatientSummary.IPatientSummaryStore, PatientSummaryStore>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.WeeklySuggestions.IWeeklySuggestionsStore, WeeklySuggestionsStore>();
         services.AddScoped<IAppointmentReferenceSearchRepository, AppointmentReferenceSearchRepository>();
