@@ -10,7 +10,7 @@ Entrega local en desarrollo. Global `Medications:Enabled` tiene default `false`;
 {"policyVersion":"medications-v1:1","modules":{"medications":{"enabled":true,"canView":true,"canManage":true,"canManageAccess":false}}}
 ```
 
-Para pacientes se combina el flag global con una habilitación persistida por paciente (`app.patient_module_access`, módulo `medications`). Default sin habilitación: desactivado. La identidad se resuelve por JWT (`aud=app`) y `patient_profiles.user_id`. El cliente nuevo muestra Medicamentos en la tarjeta de Inicio y conserva Perfil en la barra inferior; si el módulo no está habilitado o el servidor responde 404, presenta un estado no disponible sin acceder a datos ni permitir escrituras. Perfil sigue accesible desde el menú de Inicio y la barra inferior. El cliente antiguo no necesita consultar capacidades.
+Para pacientes se combina el flag global con el estado activo del paciente y las excepciones persistidas (`app.patient_module_access`, módulo `medications`). Sin excepción, el acceso está habilitado (`enabled=true`, `revision=0`); una excepción explícita `enabled=false` lo restringe y conserva su revisión. Un paciente inactivo o eliminado no obtiene acceso aunque tenga una excepción habilitada. No se crean filas de acceso durante las lecturas ni se requiere activación manual inicial. Un paciente habilitado sin tratamientos ve el estado vacío y puede registrar uno. La identidad se resuelve por JWT (`aud=app`) y `patient_profiles.user_id`. El cliente nuevo muestra Medicamentos en la tarjeta de Inicio y conserva Perfil en la barra inferior; si el módulo no está habilitado o el servidor responde 404, presenta un estado no disponible sin acceder a datos ni permitir escrituras. Perfil sigue accesible desde el menú de Inicio y la barra inferior. El cliente antiguo no necesita consultar capacidades.
 
 Para el ERP, permisos `Medications.View`, `Medications.Manage` y `Medications.ManageAccess` más ámbito de paciente/clínica/profesional existente. El flag global desactiva todo el módulo sin cambiar permisos de otros endpoints.
 
@@ -89,7 +89,7 @@ Validación: nombre 1–200, cantidad positiva, unidad 1–40, vía hasta 80, in
 
 Nuevas entidades de tratamiento, pauta versionada, ocurrencia y eventos tienen identidad propia; no dependen de los UUID reemplazables de `patient_medications`. El guardado antiguo del perfil debe conservar su lista y los nuevos tratamientos/tomas. Migraciones solo aditivas. La infraestructura E2E usa PostgreSQL local aislado, identidad de pruebas y transportes externos desactivados.
 
-El primer recorrido funcional es habilitar un paciente desde ERP, registrar tratamiento en app, confirmar dosis, consultar el mismo registro persistido en ERP, reintentar y guardar el perfil con el contrato del build 67 sin perder historial. Se cubren accesos a otro paciente, otra clínica y lectura sin gestión. Existencias, síntomas, recordatorios, foto e interacciones siguen como entregas posteriores del plan.
+El primer recorrido funcional es entrar con un paciente activo sin excepción de acceso, registrar tratamiento en app, confirmar dosis, consultar el mismo registro persistido en ERP, reintentar y guardar el perfil con el contrato del build 67 sin perder historial. Se cubren accesos a otro paciente, otra clínica y lectura sin gestión. Existencias, síntomas, recordatorios, foto e interacciones siguen como entregas posteriores del plan.
 
 
 ## Inicio del ERP
@@ -109,6 +109,8 @@ no dependen de la página o búsqueda del directorio. No hay registros de otros
 pacientes o clínicas en la respuesta. El ERP distingue un error de datos de un
 resumen vacío y muestra accesos reales a alta, seguimiento e historial.
 
-### Protocolo diario opt-in
+### Protocolo diario según acceso efectivo
 
-El snapshot añade `optionalTaskCodes: ["nutraceutico"]` únicamente con `Medications:Enabled=true` y acceso de medicamentos habilitado para el paciente. Sin acceso se omite el campo y se conserva el comportamiento anterior. El contrato y el enum de tareas no cambian. Para cuentas opt-in el bonus diario y el umbral de racha se calculan con las misiones requeridas, excluyendo nutracéutico; las completaciones/XP anteriores y el endpoint legado se conservan. Registrar una dosis de medicamentos no concede XP ni crea una completación de programa. El cliente actual representa los suplementos como un adicional del mismo workspace de dosis, sin doble registro.
+El snapshot añade `optionalTaskCodes: ["nutraceutico"]` con `Medications:Enabled=true` y acceso efectivo habilitado para el paciente, incluido el default sin excepción. Sin acceso se omite el campo y se conserva el comportamiento anterior. El contrato y el enum de tareas no cambian. Para cuentas habilitadas el bonus diario y el umbral de racha se calculan con las misiones requeridas, excluyendo nutracéutico; las completaciones/XP anteriores y el endpoint legado se conservan. Registrar una dosis de medicamentos no concede XP ni crea una completación de programa. El cliente actual representa los suplementos como un adicional del mismo workspace de dosis, sin doble registro.
+
+El contador `enabledPatients` incluye pacientes activos del ámbito sin restricción explícita, aunque no tengan fila de acceso ni tratamientos. Los pacientes inactivos no cuentan como habilitados. Cambiar el acceso no pausa tratamientos ni elimina historial. No se requiere migración o backfill para el nuevo default.

@@ -2,7 +2,7 @@
 
 Infraestructura local de prueba; no despliega producto ni envía mensajes. Ejecuta Auth e Identity reales en 5163, la API real en 5162 y un relay HTTP de transporte en 5160. PostgreSQL está aislado en 55437 y solo admite bases cuyo nombre empiece por `copp_review_medications_`.
 
-El host genera claves y contraseñas efímeras, migra Auth y AppDbContext, y crea seis cuentas sintéticas (incluye permisos limitados a una clínica) y dos pacientes en clínicas distintas. Guarda credenciales solo en `/tmp/copp-medication-e2e/fixture.private.json` con permisos privados. No imprimir ni versionar ese archivo. No carga archivos de configuración privada del desarrollador.
+El host genera claves y contraseñas efímeras, migra Auth y AppDbContext, y crea seis cuentas sintéticas (incluye permisos limitados a una clínica) y dos pacientes en clínicas distintas, con un programa mínimo para el primero. Guarda credenciales solo en `/tmp/copp-medication-e2e/fixture.private.json` con permisos privados. No imprimir ni versionar ese archivo. No carga archivos de configuración privada del desarrollador.
 
 ## Inicio
 
@@ -70,3 +70,7 @@ Evidencia local, fuera de Git:
 - `/tmp/copp-medication-e2e/playwright/`: contrato congelado del perfil67, reporte JSON sin tokens y screenshots app/ERP con pacientes sintéticos.
 
 La suite comprueba siete recorridos: preflight de contrato; habilitación ERP/alta y toma app/consulta ERP; persistencia e idempotencia con guardados de perfil y retirada de acceso; permisos scoped; GET sin escrituras; reserva de operaciones aceptadas sin cambio; y pausa nocturna/reanudación. El reloj de QA siempre se restablece al terminar. Los procesos permanecen limitados a loopback; estos puertos no indican despliegue ni habilitación del módulo publicado.
+
+## Acceso habilitado por defecto
+
+`medications-default-access-real.spec.ts` en ERP usa esta misma infraestructura para comprobar acceso sin override, estado vacío en la app, creación/toma sin activación, restricción/restauración desde ERP, permisos de solo lectura, consistencia del programa y exclusión de pacientes inactivos. Usa una base sintética dedicada (por ejemplo `COP_MEDICATION_DATABASE=copp_review_medications_defaults_20261118`) y nunca datos del desarrollador o producción. Los resets de excepciones/estado solo afectan al paciente sintético fijo de esa base.

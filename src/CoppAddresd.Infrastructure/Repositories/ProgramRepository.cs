@@ -2630,7 +2630,7 @@ public sealed partial class ProgramRepository(
 
     private Task<bool> HasMedicationProtocolAsync(Guid patientId, CancellationToken ct) =>
         configuration.GetValue<bool>("Medications:Enabled")
-            ? dbContext.PatientModuleAccess.AsNoTracking().AnyAsync(a => a.PatientId == patientId && a.ModuleCode == "medications" && a.Enabled, ct)
+            ? MedicationAccessQuery.Resolve(dbContext).AnyAsync(a => a.PatientId == patientId && a.Enabled, ct)
             : Task.FromResult(false);
 
     public async Task<DateOnly?> GetPatientLocalTodayAsync(
