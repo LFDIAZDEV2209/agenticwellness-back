@@ -58,6 +58,11 @@ public class UsersController : ControllerBase
         CancellationToken ct
     )
     {
+        // El contexto autorizado ERP, no el rol elegido ni el body, determina
+        // la aplicación destino. El registro anónimo no concede acceso ERP.
+        var grantErpAccess = User.Identity?.IsAuthenticated == true;
+        if (grantErpAccess && !await CanProvisionErpAsync()) return Forbid();
+
         var wantsAssignments =
             request.RoleIds is { Length: > 0 } || request.PermissionIds is { Length: > 0 };
         if (wantsAssignments)
@@ -86,12 +91,19 @@ public class UsersController : ControllerBase
             }
         }
 
-        var (success, error, user) = await _userService.CreateAsync(request, ct);
+        var (success, error, user) = await _userService.CreateAsync(request, ct, grantErpAccess);
         if (!success)
             return BadRequest(new { message = error });
 
         return CreatedAtAction(nameof(GetById), new { id = user!.Id }, user);
     }
+
+    /// <summary>Alta ERP explícita: una sesión ausente/expirada nunca cae en registro público.</summary>
+    [HttpPost("platform")]
+    [RequirePermission(PermissionCodes.UsersCreate)]
+    [RequirePermission(PermissionCodes.SystemAdminSettings)]
+    public Task<ActionResult<UserResponse>> CreatePlatform(
+        [FromBody] CreateUserRequest request, CancellationToken ct) => Create(request, ct);
 
     /// <summary>
     /// Preflight del alta: informa si el correo ya tiene cuenta (y si está
@@ -120,6 +132,8 @@ public class UsersController : ControllerBase
         CancellationToken ct
     )
     {
+        if (!await CanProvisionErpAsync()) return Forbid();
+
         var wantsAssignments =
             request.RoleIds is { Length: > 0 } || request.PermissionIds is { Length: > 0 };
         if (wantsAssignments)
@@ -184,8 +198,36 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = "Máximo 500 filas por solicitud." });
         }
 
-        var result = await _userService.CreateBulkAsync(request, ct);
+        var grantErpAccess = User.Identity?.IsAuthenticated == true;
+        if (grantErpAccess && !await CanProvisionErpAsync()) return Forbid();
+        var wantsAssignments = request.Rows.Any(row =>
+            !string.IsNullOrWhiteSpace(row.RoleName)
+            || !string.IsNullOrWhiteSpace(row.ClinicCode)
+            || !string.IsNullOrWhiteSpace(row.ClinicName));
+        if (wantsAssignments && (!grantErpAccess || !await HasAssignPermissionsAsync()))
+            return Forbid();
+
+        var result = await _userService.CreateBulkAsync(request, ct, grantErpAccess);
         return Ok(result);
+    }
+
+    /// <summary>Importación ERP explícita, sin fallback anónimo cuando caduca la sesión.</summary>
+    [HttpPost("platform/bulk")]
+    [RequirePermission(PermissionCodes.UsersCreate)]
+    [RequirePermission(PermissionCodes.SystemAdminSettings)]
+    public Task<ActionResult<BulkCreateUsersResult>> BulkCreatePlatform(
+        [FromBody] BulkCreateUsersRequest request, CancellationToken ct) => BulkCreate(request, ct);
+
+    /// <summary>Repara una cuenta existente sin restablecer password, roles ni acceso suspendido.</summary>
+    [HttpPost("{id:guid}/erp-access")]
+    [RequirePermission(PermissionCodes.UsersUpdate)]
+    [RequirePermission(PermissionCodes.SystemAdminSettings)]
+    public async Task<IActionResult> GrantErpAccess(Guid id, CancellationToken ct)
+    {
+        var (success, error, notFound) = await _userService.GrantErpAccessAsync(id, ct);
+        if (notFound) return NotFound(new { message = error });
+        if (!success) return Conflict(new { message = error });
+        return NoContent();
     }
 
     /// <summary>
@@ -293,6 +335,15 @@ public class UsersController : ControllerBase
             PermissionCodes.PermissionsAssign
         );
         return permissionsResult.Succeeded;
+    }
+
+    /// <summary>Autoridad explícita para altas/vinculación ERP, incluso sin roles seleccionados.</summary>
+    private async Task<bool> CanProvisionErpAsync()
+    {
+        if (User.Identity?.IsAuthenticated != true) return false;
+        var audience = await _authorizationService.AuthorizeAsync(User, ErpAudienceRequirement.PolicyName);
+        var create = await _authorizationService.AuthorizeAsync(User, PermissionCodes.UsersCreate);
+        return audience.Succeeded && create.Succeeded && await HasSystemAdminSettingsAsync();
     }
 
     /// <summary>¿El caller tiene System.AdminSettings (configuración crítica)?</summary>

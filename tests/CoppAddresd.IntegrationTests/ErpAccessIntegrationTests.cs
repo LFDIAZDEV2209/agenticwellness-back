@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CoppAddresd.Auth.Configuration;
+using CoppAddresd.Auth.Controllers;
 using CoppAddresd.Auth.Data;
 using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Interfaces;
@@ -9,6 +10,9 @@ using CoppAddresd.Auth.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using NSubstitute;
 
@@ -78,6 +82,8 @@ public sealed class ErpAccessIntegrationTests : IAsyncLifetime
         services.AddSingleton(Substitute.For<IPatientAccessGuard>());
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<AuthService>();
+        services.AddSingleton(Substitute.For<ITokenInvalidationService>());
+        services.AddScoped<UserService>();
         services.AddScoped<ErpAccessService>();
         services.AddScoped<CoppAddresd.Auth.Security.SecurityStampValidator>();
         _provider = services.BuildServiceProvider();
@@ -135,6 +141,95 @@ public sealed class ErpAccessIntegrationTests : IAsyncLifetime
             admin
         );
         await drop.ExecuteNonQueryAsync();
+    }
+
+    [Fact]
+    public async Task PlatformCreation_GrantsErp_AndCanLoginFromFreshScopeWithoutAppAccess()
+    {
+        const string email = "new-platform@example.test";
+        using (var scope = _provider.CreateScope())
+        {
+            var created = await scope.ServiceProvider.GetRequiredService<UserService>().CreateAsync(
+                new CreateUserRequest { Email = email, Password = Password, FirstName = "Alta", LastName = "Prueba" }, grantErpAccess: true);
+            Assert.True(created.Success, created.Error);
+        }
+        using var check = _provider.CreateScope();
+        var auth = check.ServiceProvider.GetRequiredService<AuthService>();
+        var token = await auth.LoginAsync(new LoginRequest { Email = email, Password = Password, Application = "erp" });
+        Assert.NotNull(token);
+        Assert.Equal("erp", Assert.Single(new JwtSecurityTokenHandler().ReadJwtToken(token.AccessToken).Audiences));
+        Assert.Null(await auth.LoginAsync(new LoginRequest { Email = email, Password = Password, Application = "app" }));
+    }
+
+    [Fact]
+    public async Task PublicCreation_NoErpAccess_ExplicitRepairAllowsLoginWithoutChangingPassword()
+    {
+        const string email = "repair-platform@example.test";
+        Guid userId;
+        using (var scope = _provider.CreateScope())
+        {
+            var created = await scope.ServiceProvider.GetRequiredService<UserService>().CreateAsync(
+                new CreateUserRequest { Email = email, Password = Password, FirstName = "Alta", LastName = "Prueba" });
+            Assert.True(created.Success, created.Error);
+            userId = Guid.Parse(created.User!.Id);
+            Assert.Null(await scope.ServiceProvider.GetRequiredService<AuthService>().LoginAsync(
+                new LoginRequest { Email = email, Password = Password, Application = "erp" }));
+        }
+        using (var repair = _provider.CreateScope())
+            Assert.True((await repair.ServiceProvider.GetRequiredService<UserService>().GrantErpAccessAsync(userId)).Success);
+        using var check = _provider.CreateScope();
+        Assert.NotNull(await check.ServiceProvider.GetRequiredService<AuthService>().LoginAsync(
+            new LoginRequest { Email = email, Password = Password, Application = "erp" }));
+    }
+
+    [Fact]
+    public async Task ProvisioningFailure_RollsBackIdentityAndRoleAssignmentsInPostgres()
+    {
+        const string email = "rollback-platform@example.test";
+        using (var scope = _provider.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+            var role = new ApplicationRole { Name = "ProvisioningReviewer", IsActive = true };
+            Assert.True((await scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>().CreateAsync(role)).Succeeded);
+            (await db.Applications.SingleAsync(a => a.Code == "erp")).IsActive = false;
+            await db.SaveChangesAsync();
+            var created = await scope.ServiceProvider.GetRequiredService<UserService>().CreateAsync(
+                new CreateUserRequest { Email = email, Password = Password, FirstName = "Alta", LastName = "Prueba", RoleIds = [role.Id] }, grantErpAccess: true);
+            Assert.False(created.Success);
+        }
+        using var check = _provider.CreateScope();
+        Assert.False(await check.ServiceProvider.GetRequiredService<AuthDbContext>().Users.AnyAsync(u => u.Email == email));
+        Assert.Empty(await check.ServiceProvider.GetRequiredService<AuthDbContext>().UserRoles.ToListAsync());
+    }
+
+    [Fact]
+    public async Task StaffInvitation_AcceptanceCreatesWorkingErpLogin()
+    {
+        const string email = "invited-staff@example.test";
+        using (var scope = _provider.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+            var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var invitations = new InvitationService(db, manager, NullLogger<InvitationService>.Instance);
+            var sender = Substitute.For<IEmailSender>();
+            var controller = new InvitationsController(invitations, sender, manager, db,
+                Options.Create(new EmailSettings { FrontendUrl = "https://example.test", Provider = "Log" }),
+                NullLogger<InvitationsController>.Instance);
+            var response = await controller.CreateInvitation(new CreateInvitationInternalRequest(email, "Staff", "Prueba"), CancellationToken.None);
+            Assert.IsType<OkObjectResult>(response.Result);
+            var message = Assert.Single(sender.ReceivedCalls(), c => c.GetMethodInfo().Name == nameof(IEmailSender.SendAsync));
+            var emailMessage = (EmailMessage)message.GetArguments()[0]!;
+            var link = System.Text.RegularExpressions.Regex.Match(emailMessage.HtmlBody, @"token=([A-Za-z0-9_-]+)").Groups[1].Value;
+            Assert.NotEmpty(link);
+            var accepted = await invitations.AcceptAsync(link, Password);
+            Assert.True(accepted.Success, accepted.Error);
+            var user = await manager.FindByEmailAsync(email);
+            Assert.NotNull(user);
+            Assert.Equal(_erpId, (await db.UserApplications.SingleAsync(a => a.UserId == user.Id)).ApplicationId);
+        }
+        using var check = _provider.CreateScope();
+        Assert.NotNull(await check.ServiceProvider.GetRequiredService<AuthService>().LoginAsync(
+            new LoginRequest { Email = email, Password = Password, Application = "erp" }));
     }
 
     private async Task<TokenResult?> Login(string application)

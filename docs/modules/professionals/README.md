@@ -14,7 +14,7 @@ Los endpoints internos bajo `/api/auth/internal/erp-access` requieren la clave i
 
 ## Sesiones y disponibilidad
 
-JWT incluye `application_session_version`; tokens anteriores sin claim equivalen a versión cero. Login, refresh y OTP ERP verifican la asignación no suspendida. Reactivar incrementa otra vez la versión: no revive JWT ni refresh antiguos. Las sesiones app no cambian.
+JWT incluye `application_session_version`; tokens anteriores sin claim equivalen a versión cero. Login y refresh ERP verifican la asignación no suspendida. El OTP de paciente solo aprovisiona `app`, nunca ERP. Reactivar incrementa otra vez la versión: no revive JWT ni refresh antiguos. Las sesiones app no cambian.
 
 API, Telemedicina y Community consultan Auth por cada petición ERP; sin caché positiva. Auth devuelve 204 o 401. Un fallo de autoridad HTTP produce 503 y Retry-After en consumidores REST, sin convertir una interrupción de servicio en cierre de sesión. La validación de Community WS ocurre al conectar, iniciar operación y antes de cada resultado; una conexión inactiva no se cierra inmediatamente por TCP, pero no entrega nuevos resultados autorizados con una sesión revocada.
 

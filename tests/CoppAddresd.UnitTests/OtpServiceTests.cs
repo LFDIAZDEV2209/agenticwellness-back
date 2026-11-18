@@ -142,6 +142,54 @@ public sealed class OtpServiceTests
     // VERIFY PHONE
     // =====================================================================
 
+    [Theory]
+    [InlineData("erp")]
+    [InlineData("unknown")]
+    public async Task VerifyOtp_NuncaAprovisionaAplicacionesDistintasDeApp(string application)
+    {
+        using var harness = new OtpTestHarness(Patient(phoneCountryCode: "1", phoneNumber: "5765550100"));
+        await harness.SeedApplicationAsync();
+        harness.Db.Applications.Add(new CoppAddresd.Auth.Entities.Application { Id = Guid.NewGuid(), Code = "erp", Name = "ERP", IsActive = true });
+        await harness.Db.SaveChangesAsync();
+        var result = await harness.Otp.VerifyOtpAsync(new VerifyOtpRequest { DocumentNumber = Document, Otp = "123456", Application = application });
+        Assert.Null(result);
+        Assert.Empty(harness.Db.UserApplications);
+        Assert.Equal(0, harness.Twilio.CheckCount);
+        Assert.Equal(0, harness.Tokens.AccessTokenCalls);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task VerifyOtp_AppNoDisponible_NoConsumeOtpNiAprovisiona(bool inactive)
+    {
+        using var harness = new OtpTestHarness(Patient(phoneCountryCode: "1", phoneNumber: "5765550100"));
+        if (inactive)
+        {
+            await harness.SeedApplicationAsync();
+            (await harness.Db.Applications.SingleAsync()).IsActive = false;
+            await harness.Db.SaveChangesAsync();
+        }
+        Assert.Null(await harness.Otp.VerifyOtpAsync(new VerifyOtpRequest { DocumentNumber = Document, Otp = "123456", Application = "app" }));
+        Assert.Empty(harness.Db.Users);
+        Assert.Empty(harness.Db.UserApplications);
+        Assert.Equal(0, harness.Twilio.CheckCount);
+    }
+
+    [Fact]
+    public async Task VerifyOtp_AppSuspendida_NoReactivaNiEmiteTokens()
+    {
+        using var harness = new OtpTestHarness(Patient(phoneCountryCode: "1", phoneNumber: "5765550100"));
+        var userId = await harness.SeedUserAsync();
+        await harness.SeedApplicationAsync();
+        harness.PatientLookup.Result = harness.PatientLookup.Result! with { UserId = userId };
+        harness.Db.UserApplications.Add(new UserApplication { UserId = userId, ApplicationId = (await harness.Db.Applications.SingleAsync()).Id, IsSuspended = true, SessionVersion = 3 });
+        await harness.Db.SaveChangesAsync();
+        Assert.Null(await harness.Otp.VerifyOtpAsync(new VerifyOtpRequest { DocumentNumber = Document, Otp = "123456", Application = "app" }));
+        Assert.True((await harness.Db.UserApplications.SingleAsync()).IsSuspended);
+        Assert.Equal(0, harness.Tokens.AccessTokenCalls);
+    }
+
     [Fact]
     public async Task VerifyOtp_Phone_Approved_ProvisionsAndIssuesTokens()
     {
@@ -167,6 +215,9 @@ public sealed class OtpServiceTests
         Assert.Equal("123456", harness.Twilio.LastCheckCode);
         Assert.Equal(1, harness.Tokens.AccessTokenCalls);
         Assert.Equal(1, harness.Tokens.RefreshTokenCalls);
+        var access = Assert.Single(harness.Db.UserApplications);
+        Assert.Equal(userId, access.UserId);
+        Assert.Equal("app", (await harness.Db.Applications.SingleAsync(a => a.Id == access.ApplicationId)).Code);
     }
 
     [Fact]
@@ -196,6 +247,7 @@ public sealed class OtpServiceTests
     public async Task VerifyOtp_Phone_WhenRateLimited_PropagatesControlledError()
     {
         using var harness = new OtpTestHarness(Patient(phoneCountryCode: "1", phoneNumber: "5765550100"));
+        await harness.SeedApplicationAsync();
         harness.Twilio.OnCheck = (_, _, _) =>
             throw new TwilioOtpException(TwilioOtpErrorKind.RateLimited, "límite", 429, 20429);
 
@@ -215,6 +267,7 @@ public sealed class OtpServiceTests
     public async Task VerifyOtp_Phone_WhenProviderUnavailable_PropagatesControlledError()
     {
         using var harness = new OtpTestHarness(Patient(phoneCountryCode: "1", phoneNumber: "5765550100"));
+        await harness.SeedApplicationAsync();
         harness.Twilio.OnCheck = (_, _, _) =>
             throw new TwilioOtpException(TwilioOtpErrorKind.ProviderUnavailable, "sin conexión");
 
@@ -460,6 +513,7 @@ public sealed class OtpServiceTests
     public async Task VerifyOtp_Phone_Rejected_RegistersFailed()
     {
         using var harness = new OtpTestHarness(Patient(phoneCountryCode: "1", phoneNumber: "5765550100"));
+        await harness.SeedApplicationAsync();
         harness.Twilio.OnCheck = (phone, code, _) =>
             Task.FromResult(new TwilioCheckOtpResult(false, "pending"));
         var protection = Assert.IsType<FakeOtpProtectionService>(harness.Protection);
@@ -485,6 +539,7 @@ public sealed class OtpServiceTests
             {
                 VerifyResult = OtpProtectionResult.Block(OtpProtectionReason.VerifyPhoneLocked, 120),
             });
+        await harness.SeedApplicationAsync();
 
         var ex = await Assert.ThrowsAsync<OtpProtectionException>(() =>
             harness.Otp.VerifyOtpAsync(new VerifyOtpRequest

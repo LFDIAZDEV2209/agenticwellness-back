@@ -1,4 +1,5 @@
 using CoppAddresd.Auth.Data;
+using CoppAddresd.Auth.Constants;
 using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Interfaces;
 using CoppAddresd.Auth.Models;
@@ -268,9 +269,15 @@ public class UserService : IUserService
     /// también sus escrituras. Rollback explícito en cada ruta de error
     /// (el `await using` del encabezado es la red de seguridad final).
     /// </summary>
-    public async Task<(bool Success, string? Error, UserResponse? User)> CreateAsync(
+    public Task<(bool Success, string? Error, UserResponse? User)> CreateAsync(
         CreateUserRequest request,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool grantErpAccess = false)
+        => CreateCoreAsync(request, ct, grantErpAccess);
+
+    private async Task<(bool Success, string? Error, UserResponse? User)> CreateCoreAsync(
+        CreateUserRequest request, CancellationToken ct, bool grantErpAccess,
+        bool isActive = true, Guid? clinicId = null, Guid? scopedRoleId = null)
     {
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser is not null)
@@ -287,6 +294,7 @@ public class UserService : IUserService
                 // Rollback explícito con CancellationToken.None: no debe abortarse
                 // por la cancelación del request (el await using deshace igual).
                 await tx.RollbackAsync(CancellationToken.None);
+                _dbContext.ChangeTracker.Clear();
                 return (false, error, null);
             }
 
@@ -296,7 +304,7 @@ public class UserService : IUserService
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                IsActive = true,
+                IsActive = isActive,
                 EmailConfirmed = true
             };
 
@@ -328,6 +336,23 @@ public class UserService : IUserService
                 }
             }
 
+            if (grantErpAccess)
+            {
+                var accessError = await ApplicationAccessProvisioning.EnsureAsync(
+                    _dbContext, user.Id, ApplicationCodes.Erp, ct);
+                if (accessError is not null) return await FailAsync(accessError);
+            }
+
+            if (clinicId.HasValue && scopedRoleId.HasValue)
+            {
+                _dbContext.ScopedRoleAssignments.Add(new ScopedRoleAssignment
+                {
+                    Id = Guid.NewGuid(), UserId = user.Id, RoleId = scopedRoleId.Value,
+                    ScopeType = "Clinic", ScopeId = clinicId.Value, CreatedAt = DateTime.UtcNow,
+                });
+                await _dbContext.SaveChangesAsync(ct);
+            }
+
             await tx.CommitAsync(ct);
 
             _logger.LogInformation("User {UserId} created successfully", user.Id);
@@ -340,11 +365,13 @@ public class UserService : IUserService
             // Carrera de dos POST concurrentes con el mismo email: el pre-chequeo
             // no es atómico y el unique index de Identity lo resuelve acá.
             await tx.RollbackAsync(CancellationToken.None);
+            _dbContext.ChangeTracker.Clear();
             return (false, "Email ya está registrado", null);
         }
         catch
         {
             await tx.RollbackAsync(CancellationToken.None);
+            _dbContext.ChangeTracker.Clear();
             throw;
         }
     }
@@ -417,6 +444,10 @@ public class UserService : IUserService
                 await tx.RollbackAsync(CancellationToken.None);
                 return (false, error, null, false);
             }
+
+            var accessError = await ApplicationAccessProvisioning.EnsureAsync(
+                _dbContext, user.Id, ApplicationCodes.Erp, ct);
+            if (accessError is not null) return await FailAsync(accessError);
 
             if (request.RoleIds is { Length: > 0 })
             {
@@ -491,7 +522,8 @@ public class UserService : IUserService
     /// </summary>
     public async Task<BulkCreateUsersResult> CreateBulkAsync(
         BulkCreateUsersRequest request,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool grantErpAccess = false)
     {
         var results = new List<BulkCreateUserRowResult>();
 
@@ -661,9 +693,10 @@ public class UserService : IUserService
                 PermissionIds = null
             };
 
-            // Override IsActive: CreateAsync siempre pone IsActive=true,
-            // así que post-creación ajustamos si es inactivo.
-            var (success, error, user) = await CreateAsync(createRequest, ct);
+            // Cuenta, estado inicial, acceso ERP y rol scoped se guardan en
+            // la misma transacción por fila: no hay altas activas a medias.
+            var (success, error, user) = await CreateCoreAsync(createRequest, ct, grantErpAccess,
+                isActive, clinicId, hasClinic ? resolvedRoleId : null);
 
             if (!success)
             {
@@ -675,55 +708,6 @@ public class UserService : IUserService
                     Error = error
                 });
                 continue;
-            }
-
-            // --- Asignación scoped (si hay clínica + rol) ---
-            if (hasClinic && resolvedRoleId.HasValue && clinicId.HasValue)
-            {
-                var userGuid = Guid.Parse(user!.Id);
-
-                // Verificar si ya existe una asignación scoped idéntica.
-                var alreadyExists = await _dbContext.ScopedRoleAssignments
-                    .AnyAsync(s =>
-                        s.UserId == userGuid &&
-                        s.RoleId == resolvedRoleId.Value &&
-                        s.ScopeType == "Clinic" &&
-                        s.ScopeId == clinicId.Value, ct);
-
-                if (!alreadyExists)
-                {
-                    _dbContext.ScopedRoleAssignments.Add(new ScopedRoleAssignment
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userGuid,
-                        RoleId = resolvedRoleId.Value,
-                        ScopeType = "Clinic",
-                        ScopeId = clinicId.Value,
-                        CreatedAt = DateTime.UtcNow,
-                    });
-                    await _dbContext.SaveChangesAsync(ct);
-                }
-            }
-
-            // Si el status es "inactivo", desactivar después de crear.
-            if (!isActive)
-            {
-                var targetUser = await _userManager.FindByIdAsync(user!.Id);
-                if (targetUser is not null)
-                {
-                    targetUser.IsActive = false;
-                    targetUser.UpdatedAt = DateTime.UtcNow;
-                    await _userManager.UpdateAsync(targetUser);
-                    // Reflejar en la respuesta.
-                    user = new UserResponse(
-                        user.Id,
-                        user.Email,
-                        user.FirstName,
-                        user.LastName,
-                        IsActive: false,
-                        user.CreatedAt,
-                        user.Roles);
-                }
             }
 
             results.Add(new BulkCreateUserRowResult
@@ -742,6 +726,18 @@ public class UserService : IUserService
             Created = results.Count(r => r.Success),
             Failed = results.Count(r => !r.Success)
         };
+    }
+
+    /// <summary>Repara solo una asignación ERP ausente; conserva credenciales, roles y suspensiones.</summary>
+    public async Task<(bool Success, string? Error, bool NotFound)> GrantErpAccessAsync(
+        Guid id, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user is null) return (false, "Usuario no encontrado", true);
+        if (!user.IsActive) return (false, "La cuenta está inactiva. Reactívala antes de otorgar acceso.", false);
+        var error = await ApplicationAccessProvisioning.EnsureAsync(_dbContext, id, ApplicationCodes.Erp, ct);
+        if (error is null) _logger.LogInformation("ERP access ensured for user {UserId}", id);
+        return (error is null, error, false);
     }
 
     /// <summary>

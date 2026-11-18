@@ -158,3 +158,14 @@ explícitos de archivo y las lecturas autorizan dueño/clínica antes de emitir 
 capacidad temporal. Proteger solo StorageController deja otros firmadores de
 metadata (programa/ERP/Community) como posibles vías alternativas. Las claves
 planas legacy conservan su contrato y requieren una auditoría independiente.
+
+## 2026-11-17 — Altas de usuarios requieren acceso explícito por aplicación
+
+El alta de Identity y el rol Admin no crean `UserApplications`. El ERP usa
+`/api/auth/users/platform` y `/platform/bulk`, protegidos incluso sin roles:
+una sesión caducada no debe caer en el registro anónimo. Los endpoints anteriores
+conservan compatibilidad para ERP autorizado; público no concede ERP ni roles.
+Invitaciones, vinculación y reparación dirigida comparten provisión idempotente
+sin levantar suspensiones; OTP paciente solo concede `app`. Desplegar Auth antes
+del frontend. Build, 1937 tests unitarios (105 skips), 9 pruebas PostgreSQL
+aisladas y lint/TypeScript frontend pasan; no se desplegó ni reparó producción.

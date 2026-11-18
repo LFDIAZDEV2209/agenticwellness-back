@@ -101,6 +101,34 @@ auth.UserTokens               → Tokens 2FA (Identity)
 
 ## Flujo de autenticación
 
+### Altas y acceso por aplicación (corrección 2026-11-17)
+
+El contexto del flujo determina el acceso; no se deduce del rol ni de un campo
+de aplicación enviado por el cliente:
+
+| Flujo | Aprovisionamiento |
+| --- | --- |
+| Usuario de plataforma, individual o CSV, desde ERP | El frontend usa `POST /api/auth/users/platform` y `/platform/bulk`: requieren sesión ERP, `Users.Create` y `System.AdminSettings`, sin fallback a registro público si caduca la sesión. Crean cuenta y acceso ERP en la misma transacción. Asignar roles/permisos exige además `Roles.Assign` y `Permissions.Assign`. También funciona sin rol seleccionado. Los endpoints anteriores conservan esta conducta para llamadores ERP autorizados. |
+| Registro público individual o masivo | Conserva compatibilidad sin conceder ERP. El registro masivo anónimo rechaza roles o scopes, igual que el individual. Campos adicionales como `application` o `grantErpAccess` no autorizan nada. |
+| Vincular cuenta existente | `/api/auth/users/link` exige la misma autoridad ERP; suma roles/permisos y garantiza acceso ERP sin cambiar contraseña ni acceso móvil. Rechaza cuentas inactivas o acceso ERP suspendido. |
+| Empleado o profesional, individual o importado | Sus flujos de invitación/adopción reutilizan `/api/auth/internal/invitations`. Si ERP no existe/está inactivo o el acceso existente está suspendido, devuelven conflicto antes de prometer acceso. Cuenta nueva, acceso e invitación se guardan juntos; correo después del commit. |
+| Perfil de paciente, individual o CSV | Crear el perfil clínico no crea credenciales. El primer acceso por OTP verificado aprovisiona/vincula la cuenta y acceso `app`. `VerifyOtp` rechaza destinos distintos de `app`, comprueba disponibilidad antes de consumir el OTP y no reactiva cuentas/accesos suspendidos. |
+| Seeders de desarrollo y admin inicial | Mantienen sus asignaciones explícitas `app`/`erp`; no se amplía acceso por pertenecer a un rol. |
+
+**Reparación dirigida de altas anteriores:**
+`POST /api/auth/users/{id}/erp-access` exige JWT ERP, `Users.Update` y
+`System.AdminSettings`. Retorna 204 si garantiza una asignación ERP no
+suspendida, 404 si no existe la cuenta y 409 si está inactiva, ERP no está
+disponible o el acceso está suspendido. Repetir secuencialmente no duplica
+asignaciones; no cambia contraseña, roles, permisos ni sesiones móviles.
+La vinculación explícita desde el wizard también repara una asignación ausente.
+No se ejecuta un backfill global: una cuenta paciente no se convierte en staff.
+
+La respuesta pública de login permanece genérica. Los logs de Auth distinguen
+password inválido de falta de aplicación; no registrar contraseñas ni tokens.
+Desplegar Auth antes del frontend: los endpoints `/platform` son aditivos y
+el frontend anterior sigue funcionando con la creación autorizada original.
+
 ### Login
 
 ```

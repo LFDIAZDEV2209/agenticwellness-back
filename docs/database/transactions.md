@@ -12,6 +12,22 @@ Reglas del proyecto (skill `transactions`). Toda operación con transacción exp
 | Nutrición `ApproveAsync` (individual/masiva) | Alcance por profesional, revisión exacta, baterías requeridas completas bajo lock de pacientes, menú completo y ciclo vigente | Plan aprobado, asignación de 30 días, cierre de asignaciones previas, evento con actor y snapshot | Read Committed + `FOR UPDATE` de pacientes en orden UUID | Una operación SQL por grupo de datos; lote máximo 100 pacientes, sin red externa | Cualquier conflicto/validación revierte todo el lote; la estrategia recarga entidades nuevas en cada reintento | Token propagado a locks, queries, SaveChanges y commit; dispose revierte | Revisión optimista y exclusión de ciclo vigente: la segunda aprobación no duplica el ciclo |
 | Nutrición `UpdateNutritionPlan` | Plan existente y revisión cargada por el editor | Reemplazo opcional de comidas, cambio a pending_review, revocación de aprobación y evento de modificación | Read Committed + revisión optimista | Solo base de datos; sin proveedor IA | Rollback de comidas y metadatos juntos ante error/409 | Token propagado en toda la unidad | El request con revisión anterior obtiene409 |
 
+## Aprovisionamiento Auth (2026-11-17)
+
+`UserService.CreateCoreAsync` guarda cuenta Identity, estado inicial, roles
+globales/directos, acceso ERP explícito y eventual rol scoped en una transacción
+Read Committed. El CSV reutiliza esa unidad por fila; una fila inactiva nunca
+se publica temporalmente activa. Falta de aplicación o asignaciones inválidas
+revierte todo y limpia el tracking antes de la siguiente fila.
+
+`UserService.LinkAsync` guarda unión de roles/permisos y acceso ERP juntos;
+conserva credenciales y accesos móviles. Una suspensión devuelve conflicto.
+Las invitaciones internas guardan usuario nuevo o adopción, acceso ERP e
+invitación en una transacción; el correo se envía después del commit.
+Cancelación/error revierte por dispose; no hay red externa dentro de la tx.
+Repetir una creación produce conflicto de email; repetir una vinculación
+converge sin duplicar acceso. No se modifican suspensiones ni SessionVersion.
+
 ## Reglas permanentes
 
 `LegalConsentService` uses a short explicit transaction within Npgsql's execution

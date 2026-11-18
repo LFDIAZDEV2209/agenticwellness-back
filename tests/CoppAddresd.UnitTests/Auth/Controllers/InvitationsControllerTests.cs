@@ -39,6 +39,11 @@ public class InvitationsControllerTests
     {
         _userManager = CreateFakeUserManager();
         _dbContext = IdentityTestDoubles.CreateInMemoryDbContext();
+        _dbContext.Applications.Add(new CoppAddresd.Auth.Entities.Application
+        {
+            Id = Guid.NewGuid(), Code = "erp", Name = "ERP", IsActive = true,
+        });
+        _dbContext.SaveChanges();
     }
 
     private InvitationsController CreateController()
@@ -158,6 +163,7 @@ public class InvitationsControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         Assert.NotNull(ok.Value);
+        Assert.Equal(user.Id, (await _dbContext.UserApplications.SingleAsync()).UserId);
 
         // No se creó invitación ni se envió correo.
         await _invitations.DidNotReceive().CreateAsync(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
@@ -193,10 +199,42 @@ public class InvitationsControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         Assert.NotNull(ok.Value);
+        Assert.Equal(Assert.Single(_userStore).Key, (await _dbContext.UserApplications.SingleAsync()).UserId);
 
         // Se creó invitación y se envió correo.
         await _invitations.Received(1).CreateAsync(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
         await _emailSender.Received(1).SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateInvitation_ErpNoDisponible_NoCreaCuentaNiInvitacion(bool inactive)
+    {
+        var erp = await _dbContext.Applications.SingleAsync();
+        if (inactive) erp.IsActive = false;
+        else _dbContext.Applications.Remove(erp);
+        await _dbContext.SaveChangesAsync();
+        var result = await CreateController().CreateInvitation(
+            new CreateInvitationInternalRequest("unavailable@example.test", "Alta", "Prueba"), CancellationToken.None);
+        Assert.IsType<ConflictObjectResult>(result.Result);
+        Assert.Empty(_userStore);
+        await _invitations.DidNotReceive().CreateAsync(Arg.Any<Guid>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>());
+        await _emailSender.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateInvitation_AdoptExistingSuspendido_NoReactivaNiEnviaCorreo()
+    {
+        var user = await SeedUserAsync(hasPassword: true);
+        var erp = await _dbContext.Applications.SingleAsync();
+        _dbContext.UserApplications.Add(new UserApplication { UserId = user.Id, ApplicationId = erp.Id, IsSuspended = true, SessionVersion = 4 });
+        await _dbContext.SaveChangesAsync();
+        var result = await CreateController().CreateInvitation(
+            new CreateInvitationInternalRequest(user.Email!, "Alta", "Prueba", AdoptExisting: true), CancellationToken.None);
+        Assert.IsType<ConflictObjectResult>(result.Result);
+        Assert.True((await _dbContext.UserApplications.SingleAsync()).IsSuspended);
+        await _emailSender.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────
@@ -239,6 +277,9 @@ public class InvitationsControllerTests
         manager.CreateAsync(Arg.Any<ApplicationUser>()).Returns(callInfo =>
         {
             var user = callInfo.Arg<ApplicationUser>();
+            if (user.Id == Guid.Empty) user.Id = Guid.NewGuid();
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
             _userStore[user.Id] = user;
             if (user.Email is not null)
                 _emailIndex[user.Email] = user.Id;

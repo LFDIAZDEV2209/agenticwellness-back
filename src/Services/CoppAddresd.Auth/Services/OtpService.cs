@@ -258,6 +258,12 @@ public class OtpService : IOtpService
         CancellationToken ct = default
     )
     {
+        // Un OTP de paciente prueba identidad para la app, nunca autoriza
+        // aprovisionamiento ERP aunque el cliente altere Application.
+        if (request.Application != CoppAddresd.Auth.Constants.ApplicationCodes.App
+            || !await _dbContext.Applications.AnyAsync(a => a.Code == request.Application && a.IsActive, ct))
+            return null;
+
         var patient = await _patientLookup.FindByDocumentNumberAsync(request.DocumentNumber, ct);
         if (patient is null)
         {
@@ -380,6 +386,7 @@ public class OtpService : IOtpService
 
         // Aprovisionamiento: usuario + vínculo con el perfil + acceso a la app.
         var user = await FindOrCreateUserAsync(patient, verifiedPhone, ct);
+        if (!user.IsActive) return null;
         var application = await EnsureApplicationAccessAsync(user.Id, request.Application, ct);
         if (application is null)
         {

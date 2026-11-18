@@ -56,6 +56,11 @@ public class UserServiceLinkTests
 
             _provider = services.BuildServiceProvider();
             Db.Database.EnsureCreated();
+            Db.Applications.Add(new CoppAddresd.Auth.Entities.Application
+            {
+                Id = Guid.NewGuid(), Code = "erp", Name = "ERP", IsActive = true,
+            });
+            Db.SaveChanges();
 
             Users = new UserService(
                 UserManager,
@@ -223,6 +228,105 @@ public class UserServiceLinkTests
         Assert.False(result.IsActive);
         Assert.False(result.HasPassword);
         Assert.Null(result.UserId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateAsync_ConcedeErpSoloCuandoElFlujoLoAutoriza(bool grantErpAccess)
+    {
+        using var h = new Harness();
+        var result = await h.Users.CreateAsync(new CreateUserRequest
+        {
+            Email = "alta@example.test", Password = "Synthetic!Pass2026",
+            FirstName = "Alta", LastName = "Prueba",
+        }, grantErpAccess: grantErpAccess);
+
+        Assert.True(result.Success, result.Error);
+        Assert.Equal(grantErpAccess, await h.Db.UserApplications.AnyAsync());
+        if (grantErpAccess)
+            Assert.Equal(Guid.Parse(result.User!.Id), (await h.Db.UserApplications.SingleAsync()).UserId);
+    }
+
+    [Fact]
+    public async Task CreateAsync_SinErp_NoDejaCuentaHuerfana()
+    {
+        using var h = new Harness();
+        h.Db.Applications.RemoveRange(h.Db.Applications);
+        await h.Db.SaveChangesAsync();
+        var result = await h.Users.CreateAsync(new CreateUserRequest
+        {
+            Email = "sin-acceso@example.test", Password = "Synthetic!Pass2026",
+            FirstName = "Alta", LastName = "Prueba",
+        }, grantErpAccess: true);
+        Assert.False(result.Success);
+        h.Db.ChangeTracker.Clear();
+        Assert.False(await h.Db.Users.AnyAsync());
+        Assert.False(await h.Db.UserApplications.AnyAsync());
+    }
+
+    [Fact]
+    public async Task LinkAsync_ReparaErpSinCambiarPasswordNiAccesoApp_YEsIdempotente()
+    {
+        using var h = new Harness();
+        var user = await h.CreateUserAsync("existente@example.test");
+        var passwordHash = user.PasswordHash;
+        var app = new CoppAddresd.Auth.Entities.Application { Id = Guid.NewGuid(), Code = "app", Name = "App", IsActive = true };
+        h.Db.Applications.Add(app);
+        h.Db.UserApplications.Add(new UserApplication { UserId = user.Id, ApplicationId = app.Id, SessionVersion = 7 });
+        await h.Db.SaveChangesAsync();
+
+        for (var i = 0; i < 2; i++)
+        {
+            var result = await h.Users.LinkAsync(new LinkUserAccountRequest { Email = user.Email! });
+            Assert.True(result.Success, result.Error);
+        }
+        Assert.Equal(2, await h.Db.UserApplications.CountAsync());
+        Assert.Equal(7, (await h.Db.UserApplications.SingleAsync(a => a.ApplicationId == app.Id)).SessionVersion);
+        Assert.Equal(passwordHash, (await h.UserManager.FindByIdAsync(user.Id.ToString()))!.PasswordHash);
+    }
+
+    [Fact]
+    public async Task LinkAsync_ErrorDeAsignacion_RevierteElAccesoErp()
+    {
+        using var h = new Harness();
+        var user = await h.CreateUserAsync("rollback@example.test");
+        var result = await h.Users.LinkAsync(new LinkUserAccountRequest { Email = user.Email!, RoleIds = [Guid.NewGuid()] });
+        Assert.False(result.Success);
+        h.Db.ChangeTracker.Clear();
+        Assert.False(await h.Db.UserApplications.AnyAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepairAndLink_NuncaReactivanErpSuspendido(bool link)
+    {
+        using var h = new Harness();
+        var user = await h.CreateUserAsync("suspendido@example.test");
+        var erp = await h.Db.Applications.SingleAsync();
+        h.Db.UserApplications.Add(new UserApplication { UserId = user.Id, ApplicationId = erp.Id, IsSuspended = true, SessionVersion = 9 });
+        await h.Db.SaveChangesAsync();
+        var success = link
+            ? (await h.Users.LinkAsync(new LinkUserAccountRequest { Email = user.Email! })).Success
+            : (await h.Users.GrantErpAccessAsync(user.Id)).Success;
+        Assert.False(success);
+        var access = await h.Db.UserApplications.SingleAsync();
+        Assert.True(access.IsSuspended);
+        Assert.Equal(9, access.SessionVersion);
+    }
+
+    [Fact]
+    public async Task GrantErpAccessAsync_ReparaCuentaActivaSinCambiarRolesNiPassword()
+    {
+        using var h = new Harness();
+        var user = await h.CreateUserAsync("reparar@example.test");
+        var passwordHash = user.PasswordHash;
+        Assert.True((await h.Users.GrantErpAccessAsync(user.Id)).Success);
+        Assert.True((await h.Users.GrantErpAccessAsync(user.Id)).Success);
+        Assert.Single(await h.Db.UserApplications.ToListAsync());
+        Assert.Equal(passwordHash, (await h.UserManager.FindByIdAsync(user.Id.ToString()))!.PasswordHash);
+        Assert.Empty(await h.UserManager.GetRolesAsync(user));
     }
 
     [Fact]
