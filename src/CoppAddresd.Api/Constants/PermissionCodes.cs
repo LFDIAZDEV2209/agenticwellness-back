@@ -6,6 +6,9 @@ namespace CoppAddresd.Api.Constants;
 /// </summary>
 public static class PermissionCodes
 {
+    public const string MedicationsView = "Medications.View";
+    public const string MedicationsManage = "Medications.Manage";
+    public const string MedicationsManageAccess = "Medications.ManageAccess";
     public const string OrganizationsView = "Organizations.View";
     public const string OrganizationsCreate = "Organizations.Create";
     public const string OrganizationsUpdate = "Organizations.Update";
@@ -98,6 +101,9 @@ public static class PermissionCodes
     /// <summary>Nombres conocidos (para el policy provider que resuelve políticas por código).</summary>
     public static IReadOnlyList<string> All { get; } =
     [
+        MedicationsView,
+        MedicationsManage,
+        MedicationsManageAccess,
         OrganizationsView,
         OrganizationsCreate,
         OrganizationsUpdate,

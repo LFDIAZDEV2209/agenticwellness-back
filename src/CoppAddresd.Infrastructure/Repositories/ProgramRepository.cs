@@ -1085,9 +1085,13 @@ public sealed partial class ProgramRepository(
             .Select(t => t.TaskCode.ToString())
             .ToListAsync(ct);
 
-        var isPerfect =
-            scheduledForDay.Count > 0
-            && scheduledForDay.All(t => completedForDay.Contains(t.TaskCode));
+        // El seguimiento de medicamentos no concede XP por dosis. En cuentas opt-in,
+        // nutracéutico es adicional; sus registros históricos y XP se conservan.
+        var requiredForDay = await HasMedicationProtocolAsync(enrollment.PatientId, ct)
+            ? scheduledForDay.Where(t => t.TaskCode != "nutraceutico").ToArray()
+            : scheduledForDay.ToArray();
+        var isPerfect = requiredForDay.Length > 0
+            && requiredForDay.All(t => completedForDay.Contains(t.TaskCode));
 
         // Umbral de racha configurable (SPEC §17, B): un día "cumple el umbral"
         // si completó al menos <c>template.StreakMinTasks</c> tareas (default 1
@@ -1095,8 +1099,8 @@ public sealed partial class ProgramRepository(
         // de 2 tareas no la mantiene). El día perfecto sigue siendo "todas las
         // tareas programadas" y se usa sin cambios para el bonus y la concesión
         // de congelamientos (SPEC §6.3/§6.6).
-        var requiredCompleted = scheduledForDay.Count(t => completedForDay.Contains(t.TaskCode));
-        var meetsThreshold = ProgramDayMissionPolicy.QualifiesForStreak(requiredCompleted, scheduledForDay.Count, template.StreakMinTasks);
+        var requiredCompleted = requiredForDay.Count(t => completedForDay.Contains(t.TaskCode));
+        var meetsThreshold = ProgramDayMissionPolicy.QualifiesForStreak(requiredCompleted, requiredForDay.Length, template.StreakMinTasks);
 
         checkin.TotalPoints += taskPoints;
         checkin.UpdatedAt = now;
@@ -2619,9 +2623,15 @@ public sealed partial class ProgramRepository(
             streakChests,
             dayBonusBase,
             await BuildUpcomingAsync(enrollmentId, todayLocalDate, ct),
-            contentResolution?.Rest == true || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true) ? true : null
+            contentResolution?.Rest == true || snapshotTasks.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true) ? true : null,
+            await HasMedicationProtocolAsync(row.PatientId, ct) ? new[] { "nutraceutico" } : null
         );
     }
+
+    private Task<bool> HasMedicationProtocolAsync(Guid patientId, CancellationToken ct) =>
+        configuration.GetValue<bool>("Medications:Enabled")
+            ? dbContext.PatientModuleAccess.AsNoTracking().AnyAsync(a => a.PatientId == patientId && a.ModuleCode == "medications" && a.Enabled, ct)
+            : Task.FromResult(false);
 
     public async Task<DateOnly?> GetPatientLocalTodayAsync(
         Guid enrollmentId,

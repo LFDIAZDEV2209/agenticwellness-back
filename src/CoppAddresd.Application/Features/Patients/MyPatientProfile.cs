@@ -147,7 +147,7 @@ public sealed class UpdateMyPatientProfileCommandHandler(
 
         try
         {
-            await patients.UpdateAsync(patient, ct);
+            await patients.UpdateProfileAsync(patient, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception ex)

@@ -254,6 +254,7 @@ if (!builder.Configuration.GetValue<bool>("SkipDatabaseInitialization"))
         // admin). Idem: antes de AdminSeeder para que el rol Admin reciba el
         // conjunto completo Media.* por convención.
         await MediaPermissionsSeeder.SeedAsync(dbContext, logger);
+        await MedicationPermissionsSeeder.SeedAsync(dbContext, logger);
 
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();

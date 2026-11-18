@@ -1,8 +1,8 @@
-# Plan de medicamentos e integración entre ERP y app
+# Plan de Control de medicamentos e integración entre ERP y app
 
-Fecha: 17 de noviembre de 2026. Estado: propuesta de implementación; este documento no acredita funcionalidades entregadas.
+Fecha: 17 de noviembre de 2026. Estado: circuito manual app/ERP implementado localmente y en verificación E2E. Sin publicación ni despliegue. El resto de este documento conserva la hoja de ruta; no todas sus fases están implementadas.
 
-Referencia: `erp-medicamentos.html`, adjunto del usuario. Revisión de código local: backend `852d75c8`, ERP `c0abb8f` y app `bf1f401`. El ERP también contiene cambios locales de presentación todavía sin publicar.
+Referencia: `erp-medicamentos.html`, adjunto del usuario. Referencias de la revisión original: backend `852d75c8`, ERP `c0abb8f` y app `bf1f401`. La ubicación del módulo y las implicaciones de base de datos se actualizan con la corrección posterior del usuario.
 
 ## Resultado esperado
 
@@ -12,7 +12,7 @@ Conservar el alcance del adjunto: la plataforma registra tratamientos existentes
 
 Un mismo producto permite habilitar módulos y entregar contenido distinto a cada usuario. La disponibilidad del módulo, los permisos de acción y las asignaciones de contenido son controles separados.
 
-## Situación verificada
+## Base anterior a esta implementación
 
 | Área | Base reutilizable | Trabajo faltante |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ El HTML tiene datos generados, permisos visuales sin control efectivo, exportaci
 
 ## Acceso y contenido por usuario
 
-Crear una resolución de capacidades en el backend, compartida por ERP y app, con versión de política. Contrato propuesto: `GET /api/v1/me/capabilities`. La respuesta entrega módulos habilitados y acciones permitidas para la aplicación y el contexto actuales. Los contratos se cerrarán antes de escribir las pantallas.
+Crear una resolución de capacidades en el backend, compartida por ERP y app, con versión de política. Contrato propuesto: `GET /api/v1/me/capabilities`. La respuesta entrega módulos habilitados y acciones permitidas para la aplicación y el contexto actuales. El contrato del circuito manual está cerrado en `docs/modules/medications/contracts.md`; su implementación y límites se describen en `docs/modules/medications/README.md`.
 
 La decisión combina:
 
@@ -82,18 +82,16 @@ No mostrar porcentajes de adherencia si todavía no hay dosis evaluables. Manten
 
 ## Experiencia de la app
 
-Decisión del usuario: el nuevo módulo visible es **Nutracéutico** y **Medicamentos queda dentro de él**. Nutracéutico reemplaza la entrada de **Mi perfil** en los módulos de Inicio y el destino **Perfil** de la navegación inferior. La disponibilidad del nuevo módulo se resuelve con las capacidades del usuario.
+Decisión vigente del usuario: **Control de medicamentos** reemplaza únicamente la tarjeta **Mi perfil** de Inicio. La navegación inferior conserva **Inicio · Nutrición · SOS · Chat · Perfil**. El módulo principal abre el seguimiento de medicamentos y, con acceso habilitado, reemplaza la misión obligatoria Nutracéutico en el protocolo diario. Nutracéutico pasa a una sección adicional del mismo workspace, con un único registro por dosis.
 
-Navegación inferior prevista: **Inicio · Nutrición · SOS · Chat · Nutracéutico**. Si el usuario no tiene acceso a Nutracéutico, no se ofrece ese destino; la navegación se ajusta sin exponer una pantalla no autorizada.
+El perfil personal conserva sus pantallas, funciones de cuenta y acceso desde la barra inferior y el menú de usuario.
 
-El perfil personal conserva sus pantallas y funciones de cuenta, accesibles desde el avatar/menú de usuario. El cambio reemplaza su posición de módulo principal; no elimina el código ni el acceso a datos personales, contactos y configuración.
+Dentro de **Control de medicamentos**, la vista principal es **Hoy**. Desde ella se accede a **Mis medicamentos**, **Historial**, **Existencias** y **Reportar síntoma**. Integrar estos destinos al patrón de pantallas actual de la app, sin sustituir todo su sistema de navegación.
 
-Dentro de **Nutracéutico → Medicamentos**, la vista principal es **Hoy**. Desde ella se accede a **Mis medicamentos**, **Historial**, **Existencias** y **Reportar síntoma**. Integrar estos destinos al patrón de pantallas actual de la app, sin sustituir todo su sistema de navegación.
-
-La lección actual `program-nutraceutico` puede enlazar al nuevo módulo, manteniendo separado su registro de actividad del programa: completar una lección no confirma una dosis ni modifica la adherencia de medicamentos.
+Los enlaces antiguos `program-nutraceutico` redirigen al workspace en cuentas habilitadas. Las cuentas sin habilitación y el cliente antiguo conservan la lección y sus contratos. Registrar una dosis no genera XP ni una segunda completación de programa.
 
 1. **Mis medicamentos:** registrar por búsqueda/manual desde una prescripción existente; tipo, presentación, cantidad por toma, unidad, vía, indicaciones, horarios y vigencia.
-2. **Hoy (inicio de Medicamentos dentro de Nutracéutico):** próximas tomas y acciones claras de registrar toma u omisión. La app muestra el resultado guardado por el servidor.
+2. **Hoy (inicio de Control de medicamentos):** próximas tomas y acciones claras de registrar toma u omisión. La app muestra el resultado guardado por el servidor.
 3. **Detalle e historial:** pauta registrada, registros y correcciones, con fecha real de toma y fecha de registro diferenciadas.
 4. **Existencias:** carga inicial, reposición, ajustes y vencimiento del suministro propio.
 5. **Reportar síntoma:** descripción, fecha, intensidad reportada y asociación opcional a un medicamento; el reporte no afirma causalidad.
@@ -127,6 +125,74 @@ Reutilizar los guards y la resolución de permisos existentes. El guard actual d
 
 Mantener una proyección compatible en la ficha actual del paciente. Migrar las filas antiguas conservando procedencia; una frecuencia libre no se convierte automáticamente en una pauta ejecutable. Índices únicos de ocurrencia y claves de operación, transacciones y control de versión protegen contra duplicados y actualizaciones concurrentes.
 
+## Implicaciones de base de datos
+
+Cambiar el acceso de Mi perfil por Control de medicamentos es un cambio de navegación y no exige migrar ni borrar cuentas o perfiles. El seguimiento de medicamentos sí requiere nuevas entidades y migraciones. Propuesta: utilizar el PostgreSQL existente, con el dominio clínico bajo `app` y administrado por `AppDbContext`; ERP y app consultan la misma fuente, sin bases independientes para cada interfaz.
+
+### Base existente y riesgo de compatibilidad
+
+- `app.medications` es el catálogo reutilizable, con nombre e identificadores NDC/RxNorm cuando existen. Vitaminas y suplementos pueden no tener esos identificadores; no convertirlos en campos obligatorios para todos los productos.
+- `app.patient_medications` relaciona paciente y medicamento con frecuencia libre, orden y fecha de creación. Tiene UUID, pero el guardado actual del paciente no conserva esas filas.
+- `UpdatePatientCommand.ReplaceChildren` vacía la colección y `CreatePatientCommand.ApplyChildren` genera UUID nuevos. Además, `PatientRepository.UpdateAsync` elimina explícitamente los medicamentos anteriores y agrega los entrantes. Conectar nuevas tomas a esas filas sin cambiar ese flujo rompería las referencias o borraría el historial.
+
+Antes de activar dosis e historial, introducir una identidad estable de tratamiento y adaptar todas las escrituras del formulario general del paciente para que no la reemplacen. Mantener la ficha anterior como lectura/proyección compatible del tratamiento canónico; evitar dos listas clínicas editables que puedan divergir.
+
+### Datos nuevos por entrega
+
+La tabla siguiente conserva el diseño de todas las fases. El circuito inicial implementa ocho tablas nuevas bajo `app`: tratamientos, pautas, horarios, dosis confirmadas, eventos de toma, historial de estados, operaciones aceptadas y habilitación por paciente. No incluye tablas de existencias, síntomas o recordatorios.
+
+| Entrega | Familia de datos | Propósito |
+| --- | --- | --- |
+| Circuito inicial | Tratamientos (`app.medication_treatments`) | Identidad estable, paciente, producto del catálogo o descripción reportada, tipo, procedencia, actor, vigencia y estado |
+| Circuito inicial | Versiones de pauta y horarios | Cantidad/unidad, vía, indicaciones, zona horaria y horarios estructurados; cada modificación tiene fechas efectivas y conserva la versión anterior |
+| Circuito inicial | Ocurrencias de dosis | Instancias concretas de una pauta versionada, con vencimiento y estado; permiten distinguir lo pendiente de una omisión explícita |
+| Circuito inicial | Eventos de toma y corrección | Confirmación u omisión reportada, hora del hecho y de recepción, actor, clave de operación y corrección relacionada |
+| Seguimiento | Suministros/lotes y movimientos | Existencias propias por paciente, reposiciones, consumos, ajustes y vencimientos; separados de `erp.inventory_*` |
+| Seguimiento | Reportes de síntomas, alertas y entregas | Reporte y seguimiento del caso separados de cada intento de notificación; no afirmar causalidad ni entrega confirmada por aceptar el envío |
+| Accesos | Habilitación de módulos por aplicación/usuario | Reutilizar identidad y permisos de Auth; persistir defaults/excepciones del módulo y una revisión de política donde haga falta, sin crear roles por paciente |
+| Contenido | Asignaciones existentes y vínculos necesarios | Reutilizar publicación, medios y asignaciones de nutrición/ejercicios/programa; añadir vínculos específicos solo cuando el contenido de medicamentos lo requiera |
+
+El catálogo y la ficha del paciente no se duplican. La fotografía se guarda como objeto privado; la base conserva metadatos y una referencia autorizada, no la imagen en Base64. La auditoría reutiliza la infraestructura existente y añade los eventos explícitos de lectura/exportación pendientes.
+
+### Integridad, crecimiento y acceso
+
+- FK e índices para paciente, tratamiento, versión de pauta y ocurrencia. Definir borrado/restricción de cada relación y conservar el comportamiento de baja del paciente sin eliminar historial por una edición ordinaria.
+- Restricción única para cada ocurrencia generada y cada operación idempotente dentro de su ámbito. Los eventos permiten correcciones trazables: una restricción no debe impedir corregir una toma ni permitir aplicar dos veces su consumo.
+- Registro de toma, cambio de estado y movimiento de existencias dentro de una transacción, con control de versión/concurrencia. Cantidades con precisión decimal y unidad explícita; no inferir conversiones desconocidas.
+- Instantes en UTC/`timestamptz` y zona horaria de la pauta guardada por separado. Conservar la fecha efectiva de la toma, la de recepción y la versión de horario aplicada.
+- Las ocurrencias, eventos y entregas crecerán más que el catálogo. Generar un horizonte acotado de dosis futuras, paginar por paciente/fecha y definir retención de eventos, archivos e intentos; no materializar años de dosis por adelantado.
+- Para adherencia y KPIs repetidos del ERP, evaluar los rollups CQRS existentes. Un resumen es reconstruible desde eventos y dosis, conserva sus filtros de ámbito y no se convierte en una segunda fuente editable.
+- Filtrar por propiedad y ámbito profesional/clínica desde el servidor antes de contar, paginar o exportar. Habilitar un menú no concede acceso a filas de otros pacientes. Las retiradas de acceso invalidan caché y trabajos pendientes.
+
+### Migración y publicación
+
+1. Crear tablas/índices y permisos nuevos mediante migraciones aditivas, sin borrar `app.medications` ni `app.patient_medications`. Las modificaciones que pertenezcan a Auth van en su servicio/contexto e historial de migración, no en `AppDbContext`.
+2. Copiar o vincular los registros actuales de forma idempotente, conservando el identificador/procedencia del registro de origen. Importar la frecuencia libre como dato histórico pendiente de estructurar; no inventar dosis pasadas, tomas, adherencia ni existencias.
+3. Adaptar el guardado general del paciente y centralizar las modificaciones en el tratamiento canónico antes de activar el módulo. Conservar respuestas compatibles para clientes anteriores durante la transición.
+4. Probar la migración y su reejecución sobre una base aislada con datos representativos. Revisar SQL, bloqueos, integridad, compatibilidad con la versión anterior y recuperación desde respaldo. No retirar columnas/tablas anteriores en el mismo despliegue.
+5. Habilitar primero para usuarios de prueba. Ninguna migración de esta planificación se ejecuta en producción; cualquier retirada posterior del modelo antiguo necesita una entrega separada y una política de conservación definida.
+
+Incluir en los recorridos test-first de app/ERP: importar datos existentes sin fabricar pauta; guardar datos generales del paciente sin cambiar IDs ni perder tomas; confirmar/reintentar/corregir con un solo efecto en existencias; cambiar de pauta sin reinterpretar el pasado; denegar lectura y exportación fuera del ámbito. Verificar estos escenarios con PostgreSQL real aislado, además de las comprobaciones de navegación.
+
+### Compatibilidad obligatoria con el build 67 enviado a Apple
+
+El build 67 que el usuario identifica como enviado a revisión es un cliente que debe seguir funcionando después de cualquier cambio compartido. La planificación no autoriza sustituir ese build, cambiar su selección en App Store Connect ni desplegar el módulo en producción. La corrección de navegación actual es documentación; no se ha implementado código ni aplicado migraciones de medicamentos.
+
+Base identificada en el registro de CI: versión **1.0**, build **67**, commit **`c542af2e0aa60644b833496debfbe8918f93d603`**, [ejecución 43295056878](https://github.com/FontalvoB/antares-paciente/actions/runs/43295056878), job de firma/subida **131453553246**. El log verifica `CFBundleVersion` del IPA como 67 y registra la subida de ese build a TestFlight. La ejecución de GitHub es la número 92: el número de ejecución por sí solo no equivale al número de build de Apple. Esto identifica el cliente subido; no verifica su ejecución en un dispositivo ni consulta la selección/estado actual de revisión de App Store Connect.
+
+El código de ese commit conserva el destino Perfil y consume `GET`/`PUT /api/v1/me/patient-profile`; el PUT envía datos de contacto, aseguradora y contactos de emergencia. Usar esa referencia congelada para la regresión, no el HEAD actual de `dev`.
+
+Condiciones para publicar el nuevo backend:
+
+1. Conservar rutas, campos, tipos y comportamiento de login/refresh, perfil, nutrición, baterías, chat y demás flujos existentes del cliente congelado. Los nuevos endpoints de medicamentos son aditivos. La consulta nueva de capacidades no se vuelve obligatoria para clientes anteriores ni retira sus permisos actuales.
+2. Mantener Mi perfil accesible en el cliente anterior. El nuevo acceso Control de medicamentos pertenece a una versión nueva de la app; una política del backend no debe exigir que el build anterior tenga esa pantalla para funcionar.
+3. Preparar migraciones aditivas y probarlas contra PostgreSQL aislado con datos anteriores. No renombrar/eliminar columnas o cambiar restricciones de forma que rompan consultas o escrituras del cliente antiguo.
+4. Cubrir expresamente `PUT /api/v1/me/patient-profile`: aunque el cliente móvil envía campos de contacto y no una lista de medicamentos, su handler utiliza `PatientRepository.UpdateAsync`, que hoy elimina/reinserta esa colección. Probar primero la creación de tratamiento/tomas con el módulo nuevo y luego guardar el perfil desde el cliente anterior, verificando que no cambian IDs ni se pierde historial. Repetir con la edición general del ERP.
+5. Ejecutar el cliente congelado contra el backend candidato con el módulo nuevo deshabilitado y habilitado para otros usuarios. Un flag de navegación no protege frente a cambios de repositorio, restricciones, permisos o filas compartidas.
+6. Verificar el build 67 real en TestFlight/dispositivo contra el entorno candidato antes de declarar aprobado el gate. Si no puede dirigirse con seguridad a un entorno aislado, preparar un equivalente desde su commit con la misma lógica de cliente y validar aparte el binario real; documentar expresamente el límite de evidencia.
+
+Estado del gate: base del build 67 identificada. El backend/migraciones están implementados localmente; se prueba el contrato GET/PUT congelado y la conservación de datos en PostgreSQL aislado. Sigue pendiente ejecutar el binario real de TestFlight en un dispositivo contra el entorno candidato. Una prueba sobre el código actual, una compilación nueva o el hecho de no cambiar el binario no acreditan por sí solos compatibilidad futura con sus servicios compartidos. Mientras el build siga en revisión, mantener los cambios nuevos aislados de producción hasta completar estas comprobaciones.
+
 ## Reglas de datos y recordatorios
 
 - Futuro/pendiente, tomado, tomado fuera de ventana, omitido por el paciente y sin registro son estados distintos. La falta de respuesta no demuestra una omisión.
@@ -151,7 +217,7 @@ Mantener procedencia de las pautas y materiales publicados. Los valores clínico
 | Entrega | Trabajo | Evidencia para terminar |
 | --- | --- | --- |
 | 1. Accesos y contratos | Capacidades compartidas, habilitación por usuario, permisos, ámbito y contratos de medicamentos | Pruebas de acceso permitido/denegado, otro paciente/otra clínica, enlaces directos y retirada de acceso |
-| 2. Circuito app y ERP | Módulo Nutracéutico en lugar de Mi perfil, Medicamentos dentro de él, alta manual de tratamiento/pauta, Hoy, registro de toma/omisión, historial ERP y resumen en Perfil 360 | Paciente registra tratamiento y toma; el ERP autorizado ve el mismo dato persistido; reintento no duplica |
+| 2. Circuito app y ERP | Control de medicamentos en lugar de Mi perfil, conservando Nutracéutico separado; alta manual de tratamiento/pauta, Hoy, registro de toma/omisión, historial ERP y resumen en Perfil 360 | Paciente registra tratamiento y toma; el ERP autorizado ve el mismo dato persistido; reintento no duplica |
 | 3. Seguimiento operativo | Suministros, síntomas, alertas, recordatorios FCM, auditoría de lectura/exportación e informes | Inventario consistente, alertas trazables, cancelación/deduplicación de avisos, exportación limitada al ámbito |
 | 4. Contenido por usuario | Extensión de capacidades y asignaciones a nutrición, ejercicios, podcasts y contexto de chat, empezando sus controles de entrada desde la entrega 1 | Mismo usuario recibe solo lo publicado/asignado; cambios de disponibilidad afectan app, ERP, enlaces, APIs y caché |
 | 5. Foto y fuentes | Captura asistida con confirmación, fuente de interacciones cuando esté definida, canal WhatsApp si se incorpora | Fallos de extracción no activan pautas; cobertura desconocida se declara; transportes y acceso comprobados |
@@ -160,7 +226,7 @@ Las entregas 4 y 5 son independientes: una fuente de interacciones pendiente no 
 
 ## Verificación antes de implementar y publicar
 
-Aplicar test-first: escribir primero recorridos Playwright del comportamiento esperado, comprobar que fallan por ausencia de funcionalidad, implementar y obtener el resultado correcto. En esta tarea de planificación no se ejecutaron pruebas de funcionalidades nuevas ni se modificó código de producto.
+Aplicar test-first: escribir primero recorridos Playwright del comportamiento esperado, comprobar que fallan por ausencia de funcionalidad, implementar y obtener el resultado correcto. La implementación local utiliza pruebas UI escritas en rojo antes del código y una prueba independiente con API/Auth/PostgreSQL reales. La evidencia y sus límites se registran en `docs/modules/medications/README.md`.
 
 Recorridos mínimos:
 
@@ -172,7 +238,8 @@ Recorridos mínimos:
 - Cambios de pauta, pausas, correcciones, medianoche y cambio de hora sin alterar el historial.
 - Recordatorios cancelados al registrar una toma, estados fallidos/desconocidos y retirada de consentimiento.
 - Solo contenido publicado/asignado en app y chat; notas internas y borradores ausentes de las respuestas.
-- Nutracéutico reemplaza Mi perfil en Inicio y Perfil en la barra inferior; Medicamentos se abre dentro de Nutracéutico y la cuenta sigue accesible desde el avatar. La lección del programa no se contabiliza como toma.
+- Control de medicamentos reemplaza Mi perfil en Inicio y Perfil en la barra inferior; abre directamente Hoy y la cuenta sigue accesible desde el avatar. Nutracéutico conserva su lugar/contenido y su lección no se contabiliza como toma.
+- El guardado general del paciente conserva los IDs estables del nuevo tratamiento y su historial. La migración de frecuencia libre no fabrica horarios, dosis, existencias ni porcentajes de adherencia.
 - ES/EN, claro/oscuro, móvil/escritorio, teclado, nombres de una línea y estados sin datos.
 
 Usar transportes simulados para los recorridos de CI. La entrega real de notificaciones en segundo plano se comprueba aparte en iOS y Android físicos; un navegador no acredita ese comportamiento.
