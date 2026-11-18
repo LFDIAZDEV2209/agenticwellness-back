@@ -267,7 +267,7 @@ public sealed partial class NutritionPlanWorkflowTests
 
     private async Task<WebApplication> VitaAHostAsync(bool internalEnabled = true, bool medicationEnabled = true,
         Guid? deniedUser = null, bool captureEnabled = false, TimeProvider? clock = null, IProgramMetricsQueue? metrics = null,
-        IBiometriaMetricsQueue? biometria = null)
+        IBiometriaMetricsQueue? biometria = null, Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders();
@@ -313,6 +313,7 @@ public sealed partial class NutritionPlanWorkflowTests
                 ? Task.FromException(new AiConsentException("CONSENT_REQUIRED", "chat", 403))
                 : Task.CompletedTask);
         builder.Services.AddSingleton(consent);
+        configureServices?.Invoke(builder.Services);
         var app = builder.Build();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.MapControllers();

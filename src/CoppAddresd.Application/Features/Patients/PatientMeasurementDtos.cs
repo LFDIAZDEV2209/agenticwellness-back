@@ -22,4 +22,7 @@ public record PatientMeasurementDto(
     DateTime ObservedAt,
     string Source,
     Guid? BatchId,
-    string? SourceKey);
+    string? SourceKey,
+    string? SourceChannel = null,
+    string? ReportedBy = null,
+    string? Status = null);

@@ -84,7 +84,10 @@ public sealed class PatientMeasurementRepository(AppDbContext dbContext)
                 m.Unit!.Code,
                 m.Unit!.Symbol,
                 new DateTimeOffset(DateTime.SpecifyKind(m.ObservedAt, DateTimeKind.Utc)),
-                m.Source
+                m.Source,
+                m.SourceChannel,
+                m.ReportedBy,
+                m.Status
             ))
             .ToListAsync(ct);
 

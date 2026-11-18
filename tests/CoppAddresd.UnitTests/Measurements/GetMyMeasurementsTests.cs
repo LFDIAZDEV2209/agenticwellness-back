@@ -200,8 +200,8 @@ public sealed class GetMyMeasurementsTests
     [Fact]
     public void Dto_NoExponeCamposSensibles()
     {
-        // El contrato móvil reducido no debe incluir notas clínicas, createdBy
-        // ni encounterId (minimización de PHI): solo los 8 campos del spec.
+        // La procedencia forma parte del contrato de lectura. Los campos
+        // sensibles de la medición siguen fuera de la lista permitida.
         var names = typeof(MeasurementItemDto)
             .GetProperties()
             .Select(p => p.Name)
@@ -216,6 +216,9 @@ public sealed class GetMyMeasurementsTests
             "UnitSymbol",
             "ObservedAt",
             "Source",
+            "SourceChannel",
+            "ReportedBy",
+            "Status",
         };
 
         Assert.Equal(esperados.Length, names.Count);

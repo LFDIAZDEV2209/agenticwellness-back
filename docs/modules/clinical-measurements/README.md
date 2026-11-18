@@ -227,6 +227,25 @@ vista con la tabla anterior, incluidas las fechas y tomas vacías, y repitió
 La migración se verifica con el filtro `FullyQualifiedName~VitaFinal_` de
 `CoppAddresd.IntegrationTests` y `COP_TEST_DB_CONNECTION` aislada.
 
+### 4.7 Procedencia en app y ERP
+
+`GET /api/v1/me/measurements` incluye los campos por elemento de `items`.
+`GET /api/v1/patients/{id}/measurements` los incluye por elemento de la
+lista plana. Se mantienen autenticación, alcance del paciente, orden y
+paginación. Los campos son aditivos y aceptan `null`.
+
+| Campo JSON | Contenido |
+| --- | --- |
+| `sourceChannel` | Canal registrado, como `vita_voice`, `vita_whatsapp`, `vita_chat` o `professional`. |
+| `reportedBy` | Actor registrado, como `patient`, `professional` o `device`. |
+| `status` | Estado persistido, como `confirmed`, `pending_confirmation` o `superseded`, según las filas visibles en cada ruta. |
+
+Una captura de voz confirmada lleva `source: "patient"`,
+`sourceChannel: "vita_voice"`, `reportedBy: "patient"` y
+`status: "confirmed"`. Un registro profesional conserva
+`source: "professional"` y su actor registrado. Los registros históricos
+sin canal o actor devuelven esos campos como `null`.
+
 ### 4.8 Analítica de la captura
 
 Una confirmación de medición que crea el recibo publica

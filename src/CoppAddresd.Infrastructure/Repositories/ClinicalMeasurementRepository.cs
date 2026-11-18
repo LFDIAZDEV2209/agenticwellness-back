@@ -266,7 +266,10 @@ public sealed class ClinicalMeasurementRepository(AppDbContext dbContext)
                 m.ObservedAt,
                 m.Source,
                 m.BatchId ?? m.EncounterId,
-                m.SourceKey
+                m.SourceKey,
+                m.SourceChannel,
+                m.ReportedBy,
+                m.Status
             ))
             .ToListAsync(ct);
 
@@ -324,7 +327,10 @@ public sealed class ClinicalMeasurementRepository(AppDbContext dbContext)
                 m.ObservedAt,
                 m.Source,
                 m.BatchId,
-                m.SourceKey
+                m.SourceKey,
+                m.SourceChannel,
+                m.ReportedBy,
+                m.Status
             ))
             .ToListAsync(ct);
     }
