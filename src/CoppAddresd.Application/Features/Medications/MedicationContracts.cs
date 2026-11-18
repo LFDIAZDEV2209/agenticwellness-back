@@ -16,14 +16,21 @@ public sealed record MedicationOverviewDto(int TotalPatients, int EnabledPatient
 public sealed record MedicationSummaryDto(int ActiveTreatments, int ScheduledDoses, int TakenDoses, int PendingDoses);
 public sealed record MedicationTreatmentDto(Guid Id, Guid? MedicationId, string Name, string ProductType,
     string Status, string Origin, int Revision, DateTime CreatedAt, decimal Dosage, string Unit,
-    string Route, string Instructions, IReadOnlyList<string> Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate);
+    string Route, string Instructions, IReadOnlyList<string> Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate)
+{
+    // El origen lo fija el endpoint, nunca un campo enviado por el paciente.
+    // Nutracéuticos permanecen adicionales al plan obligatorio.
+    public bool IsRequired => Origin == "staff_recorded" && ProductType != "supplement";
+};
 public sealed record MedicationDoseDto(Guid Id, Guid TreatmentId, string Name, decimal Dosage, string Unit,
     DateTime ScheduledAt, string TimeZone, string Status, DateTime? OccurredAt, int Revision);
 public sealed record MedicationEventDto(Guid Id, Guid DoseId, Guid TreatmentId, string Name, string Status,
     DateTime OccurredAt, DateTime RecordedAt, string? Reason, string Origin);
+public sealed record MedicationAdherenceDto(int ScheduledDoses, int DueDoses, int TakenDoses,
+    int OmittedDoses, int UnrecordedDoses, int? Percent, int OffPlanTakenDoses);
 public sealed record MedicationWorkspaceDto(MedicationPatientDto Patient, MedicationAccessDto Access,
     IReadOnlyList<MedicationTreatmentDto> Treatments, IReadOnlyList<MedicationDoseDto> Doses,
-    IReadOnlyList<MedicationEventDto> History, MedicationSummaryDto Summary);
+    IReadOnlyList<MedicationEventDto> History, MedicationSummaryDto Summary, MedicationAdherenceDto? Adherence = null);
 
 public sealed record CreateMedicationTreatmentRequest(Guid ClientRequestId, Guid? MedicationId, string Name,
     string ProductType, decimal Dosage, string Unit, string? Route, string? Instructions,

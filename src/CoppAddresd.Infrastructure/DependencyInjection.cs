@@ -44,6 +44,9 @@ public static class DependencyInjection
             configuration.GetSection(CoppAddresd.Application.Features.Medications.MedicationControlSettings.SectionName));
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationControlStore, MedicationControlStore>();
         services.AddScoped<CoppAddresd.Application.Features.Medications.MedicationControlService>();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationMonitoringStore, MedicationControlStore>();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.MedicationMonitoringService>();
+        services.AddHostedService<MedicationMonitoringWorker>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.PatientSummary.IPatientSummaryStore, PatientSummaryStore>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.WeeklySuggestions.IWeeklySuggestionsStore, WeeklySuggestionsStore>();
         services.AddScoped<IAppointmentReferenceSearchRepository, AppointmentReferenceSearchRepository>();

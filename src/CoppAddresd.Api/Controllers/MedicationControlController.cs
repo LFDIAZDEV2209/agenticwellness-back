@@ -11,7 +11,7 @@ namespace CoppAddresd.Api.Controllers;
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("api/v1")]
-public sealed class MedicationControlController(MedicationControlService medications, ICurrentContext current) : ControllerBase
+public sealed class MedicationControlController(MedicationControlService medications, ICurrentContext current, MedicationMonitoringService? monitoring = null) : ControllerBase
 {
     [HttpGet("me/capabilities")]
     public async Task<IActionResult> Capabilities(CancellationToken ct)
@@ -20,6 +20,8 @@ public sealed class MedicationControlController(MedicationControlService medicat
         var view = false;
         var manage = false;
         var manageAccess = false;
+        var canViewAudit = false;
+        var canExport = false;
         var revision = 0;
         if (medications.Enabled && IsApplication("app"))
         {
@@ -32,12 +34,14 @@ public sealed class MedicationControlController(MedicationControlService medicat
             enabled = view = await current.HasPermissionAsync("Medications.View", ct);
             manage = view && await current.HasPermissionAsync("Medications.Manage", ct);
             manageAccess = view && await current.HasPermissionAsync("Medications.ManageAccess", ct);
+            canViewAudit = view && await current.HasPermissionAsync("Audit.View", ct);
+            canExport = view && await current.HasPermissionAsync("Medications.Export", ct);
         }
         Response.Headers.CacheControl = "no-store";
         return Ok(new
         {
             policyVersion = $"medications-v1:{(medications.Enabled ? revision.ToString() : "off")}",
-            modules = new { medications = new { enabled, canView = view, canManage = manage, canManageAccess = manageAccess } },
+            modules = new { medications = new { enabled, canView = view, canManage = manage, canManageAccess = manageAccess, canViewAudit, canExport } },
         });
     }
 
@@ -45,7 +49,9 @@ public sealed class MedicationControlController(MedicationControlService medicat
     public async Task<ActionResult<MedicationWorkspaceDto>> SelfWorkspace(DateOnly? date, string? timeZone, CancellationToken ct)
     {
         var patient = await SelfAsync(ct);
-        return Ok(await medications.WorkspaceAsync(patient, date, timeZone, true, ct));
+        var result = await medications.WorkspaceAsync(patient, date, timeZone, true, ct);
+        if (monitoring is not null) await monitoring.Store.AuditAccessAsync([patient], ActorId, "patient_reported", "read", "workspace", null, ct);
+        return Ok(result);
     }
 
     [HttpPost("me/medications/treatments")]
@@ -91,7 +97,9 @@ public sealed class MedicationControlController(MedicationControlService medicat
     public async Task<ActionResult<MedicationWorkspaceDto>> Patient(Guid patientId, DateOnly? date, string? timeZone, CancellationToken ct)
     {
         await StaffAsync(patientId, "Medications.View", ct);
-        return Ok(await medications.WorkspaceAsync(patientId, date, timeZone, false, ct));
+        var result = await medications.WorkspaceAsync(patientId, date, timeZone, false, ct);
+        if (monitoring is not null) await monitoring.Store.AuditAccessAsync([patientId], ActorId, "staff_recorded", "read", "workspace", null, ct);
+        return Ok(result);
     }
 
     [HttpPut("medications/patients/{patientId:guid}/access")]

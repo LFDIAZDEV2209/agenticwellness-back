@@ -6,7 +6,7 @@ namespace CoppAddresd.Auth.Seeders;
 
 public static class MedicationPermissionsSeeder
 {
-    public static readonly string[] Codes = ["Medications.View", "Medications.Manage", "Medications.ManageAccess"];
+    public static readonly string[] Codes = ["Medications.View", "Medications.Manage", "Medications.ManageAccess", "Medications.Export"];
 
     public static async Task SeedAsync(AuthDbContext db, ILogger logger, CancellationToken ct = default)
     {
