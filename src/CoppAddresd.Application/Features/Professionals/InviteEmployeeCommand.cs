@@ -97,9 +97,24 @@ public sealed class InviteEmployeeCommandHandler(
             catch (Exception ex)
             {
                 logger.LogWarning(ex,
-                    "Empleado {EmployeeId}: no se pudieron fusionar los roles scoped al usuario {UserId}",
+                    "Empleado {EmployeeId}: scopes incompletos; la bienvenida permanece bloqueada para {UserId}",
                     employee.Id, userId);
+                if (invitation.InvitationId != Guid.Empty)
+                    await auth.RevokeAsync(invitation.InvitationId, CancellationToken.None);
+                throw;
             }
+        }
+
+        // La entrega se habilita únicamente después del perfil y las asignaciones definitivas.
+        // Un fallo de notificación no compensa ni vuelve a crear una cuenta ya persistida.
+
+        try
+        {
+            await auth.CompleteWelcomeAsync(invitation.UserId, invitation.InvitationId, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Bienvenida pendiente de confirmar para el usuario {UserId}", invitation.UserId);
         }
 
         return new InviteEmployeeResult(

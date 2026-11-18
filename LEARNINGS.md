@@ -169,3 +169,12 @@ Invitaciones, vinculación y reparación dirigida comparten provisión idempoten
 sin levantar suspensiones; OTP paciente solo concede `app`. Desplegar Auth antes
 del frontend. Build, 1937 tests unitarios (105 skips), 9 pruebas PostgreSQL
 aisladas y lint/TypeScript frontend pasan; no se desplegó ni reparó producción.
+
+## 2026-11-18 — Bienvenida depende de la finalización del alta
+
+La invitación Auth se generaba antes de aplicar scopes en API. KAN-86 separa
+crear de habilitar entrega con dos registros durables: confirmación ERP y correo
+Auth. No usar el gating laxo de /me para describir permisos: omite Deny. Un login
+OTP repetido no debe limpiar InvitationId/ReadyAt de una bienvenida ERP pendiente.
+Una bienvenida app ya enviada tampoco puede bloquear la primera invitación ERP.
+Logo CID y muestras .eml permiten comprobar el correo sin credenciales ni SMTP.

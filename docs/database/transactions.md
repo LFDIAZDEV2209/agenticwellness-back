@@ -335,3 +335,13 @@ no altera el historial ni la cantidad de filas persistidas.
 antiguo guarda escalares sin reemplazar colecciones; el PUT general del ERP
 reconcilia los medicamentos por catálogo y conserva IDs/fechas de los existentes.
 Las migraciones del circuito son aditivas y registran auditoría en ocho tablas.
+
+## Bienvenidas ERP (KAN-86)
+
+La transacción de alta Auth incluye la fila de `WelcomeEmailDeliveries` tras
+roles/permisos/acceso; el worker SMTP lee solo datos confirmados y nunca envía
+dentro de la transacción. Invitaciones de API quedan bloqueadas hasta confirmar
+perfil y scopes; `erp.welcome_email_finalizations` persiste esa confirmación para
+reintentar HTTP tras reinicios. No hay transacción distribuida. El lease se
+reclama por UPDATE condicional y el envío ocurre después. Una caída entre SMTP
+y `Sent` admite duplicado excepcional; ver [operación y pruebas](../modules/auth/welcome-emails.md).

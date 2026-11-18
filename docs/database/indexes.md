@@ -335,3 +335,15 @@ Tabla nueva `app.sos_whatsapp_deliveries`; sin índices sobre tablas existentes.
 | IX_sos_whatsapp_deliveries_alert_id_destination | alert_id, destination / único B-tree | Un envío por alerta/teléfono; cubre FK y consulta de alerta | Una inserción por contacto distinto |
 | IX_sos_whatsapp_deliveries_state_next_attempt_at | state, next_attempt_at / B-tree | Worker encuentra pendientes vencidos sin recorrer historial | Se actualiza al reintentar/finalizar |
 | IX_sos_whatsapp_deliveries_lease_until | lease_until / B-tree parcial Processing | Recuperar reservas huérfanas como Unknown | Solo reservas activas |
+
+## Bienvenidas (KAN-86)
+
+Solo tablas nuevas vacías: B-tree normales, sin bloqueo de tablas con datos.
+
+| Tabla / índice | Columnas | Uso / costo |
+|---|---|---|
+| auth.WelcomeEmailDeliveries / único DeduplicationKey | DeduplicationKey | Bienvenida por cuenta o reenvío por invitación; una entrada por entrega |
+| auth.WelcomeEmailDeliveries / Status_NextAttemptAt | Status, NextAttemptAt | Lotes de pendientes vencidos y recuperación de leases; cambia al reintentar |
+| auth.WelcomeEmailDeliveries / UserId, InvitationId | Cada FK | Estado por usuario y búsqueda/revocación de invitación; entradas por entrega |
+| erp.welcome_email_finalizations / PK | UserId | Confirmación idempotente por usuario (`user_id`) |
+| erp.welcome_email_finalizations / NextAttemptAt parcial | next_attempt_at WHERE completed_at IS NULL | Reintentos API→Auth; solo pendientes |

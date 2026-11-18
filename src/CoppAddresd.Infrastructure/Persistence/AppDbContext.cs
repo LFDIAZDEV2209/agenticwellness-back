@@ -24,6 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<NutritionPrescriptionMeal> NutritionPrescriptionMeals => Set<NutritionPrescriptionMeal>();
     public DbSet<NutritionPrescriptionItem> NutritionPrescriptionItems => Set<NutritionPrescriptionItem>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+    public DbSet<WelcomeEmailFinalization> WelcomeEmailFinalizations => Set<WelcomeEmailFinalization>();
     public DbSet<PatientProfile> PatientProfiles => Set<PatientProfile>();
     public DbSet<PatientAiBrief> PatientAiBriefs => Set<PatientAiBrief>();
     public DbSet<PatientDailyMetric> PatientDailyMetrics => Set<PatientDailyMetric>();
@@ -212,5 +213,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<WelcomeEmailFinalization>(b =>
+        {
+            b.ToTable("welcome_email_finalizations", "erp");
+            b.HasKey(x => x.UserId);
+            b.Property(x => x.UserId).HasColumnName("user_id");
+            b.Property(x => x.InvitationId).HasColumnName("invitation_id").IsConcurrencyToken();
+            b.Property(x => x.CreatedAt).HasColumnName("created_at");
+            b.Property(x => x.CompletedAt).HasColumnName("completed_at");
+            b.Property(x => x.NextAttemptAt).HasColumnName("next_attempt_at");
+            b.Property(x => x.Attempts).HasColumnName("attempts");
+            b.HasIndex(x => x.NextAttemptAt).HasFilter("completed_at IS NULL");
+        });
     }
 }

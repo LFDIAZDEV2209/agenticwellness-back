@@ -22,24 +22,22 @@ namespace CoppAddresd.Auth.Controllers;
 [ApiController]
 public class InvitationsController(
     IInvitationService invitations,
-    IEmailSender emailSender,
     UserManager<ApplicationUser> userManager,
     AuthDbContext dbContext,
-    IOptions<EmailSettings> emailSettings,
-    ILogger<InvitationsController> logger) : ControllerBase
+    IOptions<EmailSettings> emailSettings) : ControllerBase
 {
     private readonly EmailSettings _emailSettings = emailSettings.Value;
 
     /// <summary>
-    /// Crea el usuario (sin password) + acceso ERP + invitación y envía el
-    /// correo. Lo invoca el ERP con <c>X-Internal-Key</c>. El token se
+    /// Crea el usuario (sin password) + acceso ERP + invitación y encola el
+    /// correo. DeferWelcome espera la confirmación del ERP tras aplicar sus scopes. Lo invoca el ERP con <c>X-Internal-Key</c>. El token se
     /// devuelve SOLO con el provider "Log" (dev); en producción la única vía
     /// es el correo.
     ///
     /// Si <c>adoptExisting</c> es true y el usuario ya existe:
     ///   - Si está inactivo → 409 (reactivar antes de usar).
-    ///   - Si está activo sin password (estado invitado) → se crea nueva
-    ///     invitación y se envía el correo.
+    ///   - Si está activo sin password (estado invitado) → se reutiliza la invitación pendiente
+    ///     o crea otra; la entrega usa el outbox.
     ///   - Si está activo con password → se vincula directamente sin nueva
     ///     invitación.
     /// </summary>
@@ -80,6 +78,17 @@ public class InvitationsController(
 
             if (!await userManager.HasPasswordAsync(existingUser))
             {
+                // Un reintento HTTP/adopción no revoca un enlace ya entregado ni duplica su correo.
+                // Para emitir otro enlace existe la acción explícita Resend.
+                var pending = await dbContext.Invitations.AsNoTracking().Where(i => i.UserId == existingUser.Id &&
+                    i.UsedAt == null && i.RevokedAt == null && i.ExpiresAt > DateTime.UtcNow)
+                    .OrderByDescending(i => i.CreatedAt).FirstOrDefaultAsync(ct);
+                if (pending is not null && await dbContext.WelcomeEmailDeliveries.AnyAsync(x => x.InvitationId == pending.Id, ct))
+                {
+                    await existingTransaction.CommitAsync(ct);
+                    return Ok(new { userId = existingUser.Id, adopted = true, hasPassword = false,
+                        invitationId = pending.Id, expiresAt = pending.ExpiresAt, link = (string?)null });
+                }
                 // Estado invitado (sin password): crear nueva invitación y enviar correo.
                 var (success, error, invitation, token) = await invitations.CreateAsync(existingUser.Id, request.CreatedBy, ct);
                 if (!success || invitation is null || token is null)
@@ -88,8 +97,8 @@ public class InvitationsController(
                 }
 
                 var link = $"{_emailSettings.FrontendUrl}/invitaciones?token={token}";
+                await WelcomeEmailQueue.EnqueueAsync(dbContext, existingUser.Id, invitation.Id, !request.DeferWelcome, ct: ct);
                 await existingTransaction.CommitAsync(ct);
-                await SendInvitationEmailAsync(existingUser, link, ct);
 
                 return Ok(new
                 {
@@ -102,7 +111,8 @@ public class InvitationsController(
                 });
             }
 
-            // Ya tiene password — vincular directamente sin nueva invitación.
+            // Ya tiene password: bienvenida sin enlace para crear otra contraseña.
+            await WelcomeEmailQueue.EnqueueAsync(dbContext, existingUser.Id, ready: !request.DeferWelcome, ct: ct);
             await existingTransaction.CommitAsync(ct);
             return Ok(new
             {
@@ -145,10 +155,10 @@ public class InvitationsController(
             return BadRequest(new { message = newError ?? "No se pudo crear la invitación." });
         }
 
+        await WelcomeEmailQueue.EnqueueAsync(dbContext, user.Id, newInvitation.Id, !request.DeferWelcome, ct: ct);
         await transaction.CommitAsync(ct);
 
         var newLink = $"{_emailSettings.FrontendUrl}/invitaciones?token={newToken}";
-        await SendInvitationEmailAsync(user, newLink, ct);
 
         return Ok(new
         {
@@ -222,6 +232,7 @@ public class InvitationsController(
     [RequirePermission(PermissionCodes.UsersUpdate)]
     public async Task<ActionResult<object>> Resend(Guid id, CancellationToken ct)
     {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
         var (success, error, invitation, token) = await invitations.ResendAsync(id, GetCallerId(), ct);
         if (!success || invitation is null || token is null)
         {
@@ -232,9 +243,10 @@ public class InvitationsController(
         var link = $"{_emailSettings.FrontendUrl}/invitaciones?token={token}";
         if (user is not null)
         {
-            await SendInvitationEmailAsync(user, link, ct);
+            await WelcomeEmailQueue.EnqueueAsync(dbContext, user.Id, invitation.Id, resend: true, ct: ct);
         }
 
+        await transaction.CommitAsync(ct);
         return Ok(new
         {
             invitationId = invitation.Id,
@@ -258,31 +270,6 @@ public class InvitationsController(
         return NoContent();
     }
 
-    private async Task SendInvitationEmailAsync(ApplicationUser user, string link, CancellationToken ct)
-    {
-        var message = new EmailMessage(
-            To: user.Email!,
-            Subject: "Te invitamos a CoppAddresd — completa tu acceso",
-            HtmlBody: $"""
-                <h2>¡Hola {user.FirstName} {user.LastName}!</h2>
-                <p>Has sido invitado/a a la plataforma CoppAddresd.</p>
-                <p>Para completar tu primer acceso y establecer tu contraseña, abre este enlace
-                (válido por 72 horas):</p>
-                <p><a href="{link}">{link}</a></p>
-                <p>Si no esperabas esta invitación, ignora este correo.</p>
-                """);
-
-        try
-        {
-            await emailSender.SendAsync(message, ct);
-        }
-        catch (Exception ex)
-        {
-            // El correo no bloquea la creación: se loguea y el ERP puede reenviar.
-            logger.LogError(ex, "Fallo al enviar invitación a {To}", message.To);
-        }
-    }
-
     private bool IsLogProvider()
         => _emailSettings.Provider.Equals("Log", StringComparison.OrdinalIgnoreCase);
 
@@ -298,6 +285,7 @@ public record CreateInvitationInternalRequest(
     string FirstName,
     string LastName,
     Guid? CreatedBy = null,
-    bool AdoptExisting = false);
+    bool AdoptExisting = false,
+    bool DeferWelcome = false);
 
 public record AcceptInvitationRequest(string Token, string Password);

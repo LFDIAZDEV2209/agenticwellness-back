@@ -3,6 +3,9 @@ using System.Text.Json;
 using CoppAddresd.Api.Configuration;
 using CoppAddresd.Application.Interfaces;
 using Microsoft.Extensions.Options;
+using CoppAddresd.Domain.Entities;
+using CoppAddresd.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoppAddresd.Api.Security;
 
@@ -14,6 +17,7 @@ namespace CoppAddresd.Api.Security;
 public class AuthInvitationsClient(
     HttpClient httpClient,
     IOptions<AuthServiceSettings> settings,
+    AppDbContext db,
     ILogger<AuthInvitationsClient> logger) : IAuthInvitationsClient
 {
     private readonly AuthServiceSettings _settings = settings.Value;
@@ -25,7 +29,7 @@ public class AuthInvitationsClient(
         bool adoptExisting = false,
         CancellationToken ct = default)
     {
-        var payload = new { email, firstName, lastName, adoptExisting };
+        var payload = new { email, firstName, lastName, adoptExisting, deferWelcome = true };
 
         var response = await httpClient.PostAsJsonAsync(
             "/api/auth/internal/invitations", payload, JsonSerializerOptions.Default, ct);
@@ -71,6 +75,59 @@ public class AuthInvitationsClient(
             link,
             adopted,
             hasPassword);
+    }
+
+    public async Task CompleteWelcomeAsync(Guid userId, Guid invitationId, CancellationToken ct = default)
+    {
+        // El registro se guarda DESPUÉS del perfil y los scopes definitivos. Sobrevive a reinicios y fallos HTTP.
+        var pending = await db.WelcomeEmailFinalizations.FindAsync([userId], ct);
+        if (pending is null)
+        {
+            pending = new WelcomeEmailFinalization { UserId = userId, InvitationId = invitationId == Guid.Empty ? null : invitationId };
+            if (db.Database.IsNpgsql())
+            {
+                await db.Database.ExecuteSqlInterpolatedAsync($"""
+                    INSERT INTO erp.welcome_email_finalizations
+                    (user_id, invitation_id, created_at, next_attempt_at, attempts)
+                    VALUES ({pending.UserId}, {pending.InvitationId}, {pending.CreatedAt}, {pending.NextAttemptAt}, 0)
+                    ON CONFLICT (user_id) DO NOTHING
+                    """, ct);
+            }
+            else
+            {
+                db.WelcomeEmailFinalizations.Add(pending);
+                await db.SaveChangesAsync(ct);
+            }
+        }
+        else if (pending.InvitationId != (invitationId == Guid.Empty ? (Guid?)null : invitationId))
+        {
+            pending.InvitationId = invitationId == Guid.Empty ? null : invitationId;
+            pending.CompletedAt = null;
+            db.Entry(pending).Property(x => x.CompletedAt).IsModified = true;
+            pending.NextAttemptAt = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
+        await FlushWelcomeAsync(userId, ct);
+    }
+
+    public async Task FlushWelcomeAsync(Guid userId, CancellationToken ct)
+    {
+        var pending = await db.WelcomeEmailFinalizations.SingleAsync(x => x.UserId == userId, ct);
+        if (pending.CompletedAt != null) return;
+        try
+        {
+            using var response = await httpClient.PostAsJsonAsync(
+                $"/api/auth/internal/users/{userId}/welcome/complete", new { pending.InvitationId }, ct);
+            response.EnsureSuccessStatusCode();
+            pending.CompletedAt = DateTime.UtcNow;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            pending.Attempts++;
+            pending.NextAttemptAt = DateTime.UtcNow.AddSeconds(Math.Min(3600, 15 * Math.Pow(2, Math.Min(pending.Attempts, 8))));
+            logger.LogWarning("Confirmación de bienvenida pendiente para {UserId}: {ErrorType}", userId, ex.GetType().Name);
+        }
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task RevokeAsync(Guid invitationId, CancellationToken ct = default)

@@ -22,6 +22,7 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
     public DbSet<ScopedPermissionAssignment> ScopedPermissionAssignments =>
         Set<ScopedPermissionAssignment>();
     public DbSet<Invitation> Invitations => Set<Invitation>();
+    public DbSet<WelcomeEmailDelivery> WelcomeEmailDeliveries => Set<WelcomeEmailDelivery>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<UserPreference> UserPreferences => Set<UserPreference>();
     public DbSet<AccountDeletionHandoff> AccountDeletionHandoffs => Set<AccountDeletionHandoff>();
@@ -30,6 +31,19 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<WelcomeEmailDelivery>(b =>
+        {
+            b.ToTable("WelcomeEmailDeliveries", "auth");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.DeduplicationKey).HasMaxLength(100).IsRequired();
+            b.Property(x => x.Status).HasMaxLength(16).IsRequired();
+            b.Property(x => x.LastErrorCode).HasMaxLength(64);
+            b.HasIndex(x => x.DeduplicationKey).IsUnique();
+            b.HasIndex(x => new { x.Status, x.NextAttemptAt });
+            b.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<Invitation>().WithMany().HasForeignKey(x => x.InvitationId).OnDelete(DeleteBehavior.SetNull);
+        });
 
         builder.Entity<UserApplication>().Property(x => x.IsSuspended).HasDefaultValue(false);
         builder.Entity<UserApplication>().Property(x => x.SessionVersion).HasDefaultValue(0L).IsConcurrencyToken();

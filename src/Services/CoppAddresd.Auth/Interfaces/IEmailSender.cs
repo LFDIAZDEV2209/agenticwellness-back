@@ -5,11 +5,13 @@ public sealed record EmailMessage(
     string To,
     string Subject,
     string HtmlBody,
-    string? PlainTextBody = null);
+    string? PlainTextBody = null,
+    IReadOnlyList<EmailInlineImage>? InlineImages = null);
+
+public sealed record EmailInlineImage(string ContentId, byte[] Content, string ContentType);
 
 /// <summary>
-/// Envío de correos transaccionales. Implementaciones: "Log" (dev, imprime en
-/// el logger) y "Smtp" (producción). En producción (AWS) migrar a SES detrás
+/// Envío de correos transaccionales. Implementaciones: "Log" (dev, registra solo metadatos) y "Smtp" (producción). En producción (AWS) migrar a SES detrás
 /// de esta misma interfaz — sin tocar los consumidores.
 /// </summary>
 public interface IEmailSender

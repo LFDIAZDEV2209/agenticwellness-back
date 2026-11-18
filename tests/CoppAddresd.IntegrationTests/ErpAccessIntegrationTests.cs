@@ -212,11 +212,17 @@ public sealed class ErpAccessIntegrationTests : IAsyncLifetime
             var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var invitations = new InvitationService(db, manager, NullLogger<InvitationService>.Instance);
             var sender = Substitute.For<IEmailSender>();
-            var controller = new InvitationsController(invitations, sender, manager, db,
-                Options.Create(new EmailSettings { FrontendUrl = "https://example.test", Provider = "Log" }),
-                NullLogger<InvitationsController>.Instance);
+            var controller = new InvitationsController(invitations, manager, db,
+                Options.Create(new EmailSettings { FrontendUrl = "https://example.test", Provider = "Smtp" }));
             var response = await controller.CreateInvitation(new CreateInvitationInternalRequest(email, "Staff", "Prueba"), CancellationToken.None);
             Assert.IsType<OkObjectResult>(response.Result);
+            var delivery = await db.WelcomeEmailDeliveries.SingleAsync(x => x.UserId ==
+                db.Users.Where(u => u.Email == email).Select(u => u.Id).Single());
+            var dispatcher = new WelcomeEmailDispatcher(db,
+                new ScopedPermissionService(db, new CoppAddresd.Auth.Services.Cache.NoCacheService()), sender,
+                Options.Create(new EmailSettings { FrontendUrl = "https://example.test", Provider = "Smtp" }),
+                NullLogger<WelcomeEmailDispatcher>.Instance);
+            await dispatcher.DispatchAsync(delivery.Id, default);
             var message = Assert.Single(sender.ReceivedCalls(), c => c.GetMethodInfo().Name == nameof(IEmailSender.SendAsync));
             var emailMessage = (EmailMessage)message.GetArguments()[0]!;
             var link = System.Text.RegularExpressions.Regex.Match(emailMessage.HtmlBody, @"token=([A-Za-z0-9_-]+)").Groups[1].Value;

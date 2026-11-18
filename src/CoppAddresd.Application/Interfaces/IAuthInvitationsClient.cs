@@ -24,6 +24,11 @@ public interface IAuthInvitationsClient
         bool adoptExisting = false,
         CancellationToken ct = default);
 
+    /// <summary>Confirma que el perfil y todos los scopes quedaron guardados; habilita la bienvenida idempotente.</summary>
+    Task CompleteWelcomeAsync(Guid userId, Guid invitationId, CancellationToken ct = default);
+    /// <summary>Reintenta una confirmación ya persistida; operación idempotente.</summary>
+    Task FlushWelcomeAsync(Guid userId, CancellationToken ct = default);
+
     /// <summary>Revoca la invitación pendiente (compensación del flujo de creación).</summary>
     Task RevokeAsync(Guid invitationId, CancellationToken ct = default);
 }

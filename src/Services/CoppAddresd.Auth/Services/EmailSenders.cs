@@ -3,6 +3,8 @@ using CoppAddresd.Auth.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
+using System.Text;
 
 namespace CoppAddresd.Auth.Services;
 
@@ -31,15 +33,25 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
             From = new MailAddress(_settings.From, _settings.FromName),
             To = { message.To },
             Subject = message.Subject,
-            Body = message.HtmlBody,
-            IsBodyHtml = true,
+            BodyEncoding = Encoding.UTF8,
+            SubjectEncoding = Encoding.UTF8,
         };
 
         if (!string.IsNullOrWhiteSpace(message.PlainTextBody))
         {
-            var view = AlternateView.CreateAlternateViewFromString(message.PlainTextBody, null, "text/plain");
+            var view = AlternateView.CreateAlternateViewFromString(message.PlainTextBody, Encoding.UTF8, "text/plain");
             mail.AlternateViews.Add(view);
         }
+
+        var html = AlternateView.CreateAlternateViewFromString(message.HtmlBody, Encoding.UTF8, "text/html");
+        foreach (var image in message.InlineImages ?? [])
+        {
+            html.LinkedResources.Add(new LinkedResource(new MemoryStream(image.Content), image.ContentType)
+            {
+                ContentId = image.ContentId, TransferEncoding = TransferEncoding.Base64,
+            });
+        }
+        mail.AlternateViews.Add(html);
 
         await smtp.SendMailAsync(mail, ct);
         logger.LogInformation("Correo enviado a {To} (asunto: {Subject})", message.To, message.Subject);
@@ -47,16 +59,16 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
 }
 
 /// <summary>
-/// Provider "Log" (dev): no envía el correo, lo imprime en el logger con el
-/// enlace completo. Permite probar el flujo de invitación sin infraestructura.
+/// Provider "Log" (dev): registra metadatos sin cuerpo ni enlaces sensibles.
+/// Para revisar el cuerpo usar el generador local de vistas o un capturador SMTP.
 /// </summary>
 public class LogEmailSender(ILogger<LogEmailSender> logger) : IEmailSender
 {
     public Task SendAsync(EmailMessage message, CancellationToken ct = default)
     {
         logger.LogInformation(
-            "[EMAIL {Provider}] Para: {To} | Asunto: {Subject}\n{Body}",
-            "LOG", message.To, message.Subject, message.HtmlBody);
+            "[EMAIL {Provider}] Para: {To} | Asunto: {Subject} (cuerpo omitido: puede contener enlaces de acceso)",
+            "LOG", message.To, message.Subject);
         return Task.CompletedTask;
     }
 }

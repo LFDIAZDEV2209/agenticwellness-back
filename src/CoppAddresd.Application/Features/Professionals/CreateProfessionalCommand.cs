@@ -149,6 +149,20 @@ public sealed class CreateProfessionalCommandHandler(
             throw;
         }
 
+        // La entrega se habilita únicamente después del perfil y las asignaciones definitivas.
+        // Un fallo de notificación no compensa ni vuelve a crear una cuenta ya persistida.
+        if (invitation is not null)
+        {
+            try
+            {
+                await auth.CompleteWelcomeAsync(invitation.UserId, invitation.InvitationId, ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                logger.LogWarning(ex, "Bienvenida pendiente de confirmar para el usuario {UserId}", invitation.UserId);
+            }
+        }
+
         logger.LogInformation(
             "Profesional creado e invitado: {EmployeeId} (usuario {UserId}, scopes aplicados: {Scopes})",
             created.Id, invitation?.UserId, wantsScopes);
