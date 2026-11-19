@@ -17,5 +17,7 @@ public sealed class WhatsAppRawEvent
     public int DuplicateCount { get; set; }
     public string? ErrorCode { get; set; }
     public string? Reply { get; set; }
+    public string[]? ReplyFragments { get; set; }
+    public bool AgentStarted { get; set; }
     public int SentFragments { get; set; }
 }

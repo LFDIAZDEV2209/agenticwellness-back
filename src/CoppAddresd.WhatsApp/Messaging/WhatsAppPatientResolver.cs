@@ -1,3 +1,4 @@
+using CoppAddresd.Application.Features.Chat;
 using CoppAddresd.Application.Features.Patients;
 using CoppAddresd.Application.WhatsApp.Messaging;
 using CoppAddresd.Domain.Entities.WhatsApp;
@@ -30,7 +31,9 @@ public sealed class WhatsAppPatientResolver(WhatsAppDbContext db, ISender mediat
             if (link is null) return null;
         }
         var conversationId = Guid.NewGuid();
-        var threadId = "whatsapp-" + conversationId.ToString("N");
+        var threadId = link.UserId is { } userId && userId != Guid.Empty
+            ? PatientChatThread.ForUser(userId)
+            : "whatsapp-" + conversationId.ToString("N");
         await db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO whatsapp.conversations (id, patient_id, thread_id, language, last_inbound_at)
             VALUES ({conversationId}, {link.PatientId}, {threadId}, {link.Language}, {inboundAt})

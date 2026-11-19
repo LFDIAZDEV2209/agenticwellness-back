@@ -13,6 +13,7 @@ using CoppAddresd.Application.Features.Chat;
 using CoppAddresd.Application.Features.Threads;
 using CoppAddresd.Application.Features.Wellness;
 using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -63,6 +64,8 @@ public class AiServiceClient : IAiServiceClient
             // cuando es null (comportamiento byte-idéntico para clientes viejos).
             language = request.Language,
             supports_vita = request.SupportsVita,
+            channel = request.Channel,
+            channel_message_id = request.ChannelMessageId,
         };
 
     /// <summary>
@@ -111,6 +114,8 @@ public class AiServiceClient : IAiServiceClient
         httpRequest.Options.Set(AiConsentSubject.Key, new("chat",
             PatientId: Guid.TryParse(request.PatientId, out var consentPatientId) ? consentPatientId : null,
             UserId: Guid.TryParse(request.UserId, out var consentUserId) ? consentUserId : null));
+        if (request.ChannelMessageId is not null)
+            httpRequest.Options.Set(HttpClientResilienceExtensions.SingleAttempt, true);
         AddInternalKeyHeader(httpRequest);
 
         // JsonOpts (snake_case + case-insensitive + WhenWritingNull): el

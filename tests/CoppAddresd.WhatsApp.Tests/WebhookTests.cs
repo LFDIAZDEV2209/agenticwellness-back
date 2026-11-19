@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using CoppAddresd.Domain.Entities.WhatsApp;
 using CoppAddresd.WhatsApp.Persistence;
 using CoppAddresd.WhatsApp.Webhook;
 using Microsoft.AspNetCore.Builder;
@@ -71,6 +72,53 @@ public sealed class WebhookTests(PostgresFixture fixture) : IClassFixture<Postgr
         Assert.Null(row.ProcessedAt);
         using var actual = System.Text.Json.JsonDocument.Parse(row.Payload);
         Assert.Equal(wamid, actual.RootElement.GetProperty("entry")[0].GetProperty("changes")[0].GetProperty("value").GetProperty("messages")[0].GetProperty("id").GetString());
+    }
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("{\"object\":15}")]
+    [InlineData("{\"object\":\"whatsapp_business_account\",\"entry\":[false,{\"changes\":[null,{\"value\":true},{\"value\":{\"metadata\":{\"phone_number_id\":42}}}]}]}")]
+    public async Task SignedUnsupportedShapes_AcknowledgeWithoutServerError(string body)
+    {
+        using var host = await StartHost();
+        using var request = Request(body);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetTestClient().SendAsync(request)).StatusCode);
+    }
+
+    [Fact]
+    public async Task BlockedReminderUpdate_ReturnsRetryableResponseAndPreservesTheInteraction()
+    {
+        using var host = await StartHost();
+        await using var db = fixture.CreateDb();
+        const string from = "573053924822";
+        var patientId = Guid.NewGuid();
+        var reminder = new Reminder { PatientId = patientId, ScheduledAt = DateTimeOffset.UtcNow.AddMinutes(-1) };
+        db.PatientLinks.Add(new PatientLink { PatientId = patientId, WaId = "+" + from });
+        db.Reminders.Add(reminder);
+        await db.SaveChangesAsync();
+
+        var wamid = $"wamid.{Guid.NewGuid():N}";
+        var body = Payload(wamid, from: from);
+        var client = host.GetTestClient();
+        await using (var transaction = await db.Database.BeginTransactionAsync())
+        {
+            await db.Database.ExecuteSqlRawAsync("LOCK TABLE whatsapp.reminders IN ACCESS EXCLUSIVE MODE");
+            using var request = Request(body);
+            var timer = Stopwatch.StartNew();
+            using var response = await client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+            Assert.True(timer.Elapsed < TimeSpan.FromSeconds(5), timer.Elapsed.ToString());
+            Assert.False(await db.RawEvents.AnyAsync(x => x.Wamid == wamid));
+            await transaction.CommitAsync();
+        }
+
+        using var retry = Request(body);
+        using var accepted = await client.SendAsync(retry);
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        Assert.Equal(0, (await db.RawEvents.SingleAsync(x => x.Wamid == wamid)).DuplicateCount);
+        var saved = await db.Reminders.AsNoTracking().SingleAsync(x => x.Id == reminder.Id);
+        Assert.Equal(ReminderState.Cancelled, saved.State);
+        Assert.Equal("patient_interaction", saved.CancellationReason);
     }
 
     public static HttpRequestMessage Request(string body, string? signature = null)

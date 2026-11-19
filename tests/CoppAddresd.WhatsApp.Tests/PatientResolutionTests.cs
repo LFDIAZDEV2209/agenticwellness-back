@@ -56,6 +56,27 @@ public sealed class PatientResolutionTests(PostgresFixture fixture) : IClassFixt
         Assert.False(await db.PatientLinks.AnyAsync(x => x.WaId == "+573000000000"));
     }
 
+    [Fact]
+    public async Task AgentIdentity_RequiresTheCurrentActivePatientAndOwner()
+    {
+        await using var provider = Services().BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+        await using var db = fixture.CreateDb();
+        await CreatePatientTableAsync(db);
+        var patientId = Guid.NewGuid();
+        var owner = Guid.NewGuid();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO app.patient_profiles (id, user_id, first_name, status)
+            VALUES ({patientId}, {owner}, 'Paciente', 'Activo')
+            """);
+
+        Assert.True(await mediator.Send(new VerifyPatientChannelLinkQuery(patientId, owner)));
+        Assert.False(await mediator.Send(new VerifyPatientChannelLinkQuery(patientId, Guid.NewGuid())));
+        await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE app.patient_profiles SET status = 'Inactivo' WHERE id = {patientId}");
+        Assert.False(await mediator.Send(new VerifyPatientChannelLinkQuery(patientId, owner)));
+    }
+
     private ServiceCollection Services(IWhatsAppMessageSender? sender = null)
     {
         var services = new ServiceCollection();

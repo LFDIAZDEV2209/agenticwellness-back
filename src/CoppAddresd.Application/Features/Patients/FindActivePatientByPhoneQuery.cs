@@ -8,6 +8,7 @@ public sealed record PatientChannelIdentity(Guid PatientId, Guid? UserId, string
 public interface IPatientChannelQuery
 {
     Task<PatientChannelIdentity?> FindActiveByPhoneAsync(string e164, CancellationToken ct);
+    Task<bool> IsActiveLinkAsync(Guid patientId, Guid userId, CancellationToken ct);
 }
 
 public sealed record FindActivePatientByPhoneQuery(string Phone) : IRequest<PatientChannelIdentity?>;
@@ -20,6 +21,15 @@ public sealed class FindActivePatientByPhoneQueryHandler(IPatientChannelQuery pa
         var normalized = PatientPhone.Normalize(request.Phone);
         return normalized is null ? Task.FromResult<PatientChannelIdentity?>(null) : patients.FindActiveByPhoneAsync(normalized, ct);
     }
+}
+
+public sealed record VerifyPatientChannelLinkQuery(Guid PatientId, Guid UserId) : IRequest<bool>;
+
+public sealed class VerifyPatientChannelLinkQueryHandler(IPatientChannelQuery patients)
+    : IRequestHandler<VerifyPatientChannelLinkQuery, bool>
+{
+    public Task<bool> Handle(VerifyPatientChannelLinkQuery request, CancellationToken ct) =>
+        patients.IsActiveLinkAsync(request.PatientId, request.UserId, ct);
 }
 
 public static class PatientPhone

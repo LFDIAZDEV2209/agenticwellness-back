@@ -56,7 +56,9 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             // conversación). Null ⇒ el AI Service mantiene su espejo.
             request.Language,
             request.PatientId,
-            request.SupportsVita);
+            request.SupportsVita,
+            request.Channel,
+            request.ChannelMessageId);
 
         try
         {

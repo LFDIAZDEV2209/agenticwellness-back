@@ -157,8 +157,10 @@ public sealed partial class NutritionPlanWorkflowTests
         }
     }
 
-    [NutritionPostgresFact]
-    public async Task VitaRead2_ProgramCapture_CancelsAndReplaysWithoutDuplicatingRowsOrEvents()
+    [NutritionPostgresTheory]
+    [InlineData("vita_chat")]
+    [InlineData("vita_whatsapp")]
+    public async Task VitaRead2_ProgramCapture_CancelsAndReplaysWithoutDuplicatingRowsOrEvents(string checkInChannel)
     {
         await using var db = Context();
         var seed = await EffectiveSeedAsync(db);
@@ -176,7 +178,7 @@ public sealed partial class NutritionPlanWorkflowTests
         var observedAt = new DateTimeOffset(day.ToDateTime(new TimeOnly(14, 0), DateTimeKind.Utc));
         var meal = new ProposeVitaCaptureRequest("record_meal", "vita_whatsapp", "comida-1", observedAt,
             Meal: new VitaMealCapture("des", 420m, 22m));
-        var checkin = new ProposeVitaCaptureRequest("record_checkin", "vita_chat", "checkin-1", observedAt, MoodScore: 4);
+        var checkin = new ProposeVitaCaptureRequest("record_checkin", checkInChannel, "checkin-1", observedAt, MoodScore: 4);
         var mealProposal = await ProposeCaptureAsync(client, patient.UserId!.Value, meal);
         var checkInProposal = await ProposeCaptureAsync(client, patient.UserId.Value, checkin);
         Assert.Equal(day, mealProposal.Data.Program!.LocalDate);
@@ -216,7 +218,7 @@ public sealed partial class NutritionPlanWorkflowTests
         var check = await db.DailyCheckIns.AsNoTracking().SingleAsync();
         Assert.Equal(checkInSaved.EntityId, check.Id);
         Assert.Equal((short)4, check.MoodScore);
-        Assert.Equal("vita_chat", (await db.TaskCompletions.AsNoTracking().SingleAsync()).SourceRefType);
+        Assert.Equal(checkInChannel, (await db.TaskCompletions.AsNoTracking().SingleAsync()).SourceRefType);
         Assert.Equal(2, await db.VitaWriteReceipts.CountAsync());
         await metrics.Received(1).EnqueueAsync(Arg.Is<TaskCompletedMetricEvent>(e => e.TaskCode == "emocional"), Arg.Any<CancellationToken>());
         await metrics.Received(1).EnqueueAsync(Arg.Is<XpAwardedMetricEvent>(e => e.Reason == "NUTRITION_des"), Arg.Any<CancellationToken>());

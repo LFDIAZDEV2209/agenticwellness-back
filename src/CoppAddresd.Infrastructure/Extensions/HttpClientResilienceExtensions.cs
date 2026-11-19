@@ -7,9 +7,11 @@ namespace CoppAddresd.Infrastructure.Extensions;
 
 public static class HttpClientResilienceExtensions
 {
+    internal static readonly HttpRequestOptionsKey<bool> SingleAttempt = new("CoppAddresd.SingleAttempt");
+
     public static IHttpClientBuilder AddResiliencePolicy(this IHttpClientBuilder builder)
     {
-        return builder.AddPolicyHandler((services, _) =>
+        return builder.AddPolicyHandler((services, request) =>
         {
             var logger = services.GetRequiredService<ILogger<AiServiceResilience>>();
             
@@ -42,7 +44,10 @@ public static class HttpClientResilienceExtensions
                     onReset: () => logger.LogInformation("Circuit reset"),
                     onHalfOpen: () => logger.LogInformation("Circuit half-open"));
 
-            return Policy.WrapAsync(retryPolicy, circuitBreakerPolicy);
+            // Un turno de canal puede haber escrito datos aunque se pierda la respuesta.
+            return request.Options.TryGetValue(SingleAttempt, out var singleAttempt) && singleAttempt
+                ? circuitBreakerPolicy
+                : Policy.WrapAsync(retryPolicy, circuitBreakerPolicy);
         });
     }
 }

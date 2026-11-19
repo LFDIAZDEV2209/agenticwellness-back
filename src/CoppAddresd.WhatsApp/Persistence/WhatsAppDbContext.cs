@@ -32,6 +32,7 @@ public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> option
         raw.Property(x => x.Payload).HasColumnType("jsonb");
         raw.Property(x => x.WaId).HasMaxLength(16);
         raw.Property(x => x.ErrorCode).HasMaxLength(80);
+        raw.Property(x => x.AgentStarted).HasDefaultValue(false);
         raw.HasIndex(x => x.Wamid).IsUnique();
         raw.HasIndex(x => x.NextAttemptAt).HasFilter("processed_at IS NULL");
         var link = model.Entity<PatientLink>();

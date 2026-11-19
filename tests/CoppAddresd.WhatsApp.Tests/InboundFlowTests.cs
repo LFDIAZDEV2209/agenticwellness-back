@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using CoppAddresd.Api.Controllers;
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.Features.Chat;
 using CoppAddresd.Application.Features.Patients;
@@ -10,6 +12,7 @@ using CoppAddresd.Application.WhatsApp;
 using CoppAddresd.Application.WhatsApp.Messaging;
 using CoppAddresd.Domain.Entities.WhatsApp;
 using CoppAddresd.Infrastructure.Services;
+using CoppAddresd.Infrastructure.Extensions;
 using CoppAddresd.WhatsApp.Messaging;
 using CoppAddresd.WhatsApp.Persistence;
 using CoppAddresd.WhatsApp.Reminders;
@@ -17,12 +20,15 @@ using CoppAddresd.WhatsApp.Webhook;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using MediatR;
 
 namespace CoppAddresd.WhatsApp.Tests;
 
@@ -34,8 +40,9 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
     {
         await using var harness = await CreateAsync();
         var firstId = Guid.NewGuid().ToString();
-        await harness.EnqueueAsync(firstId, "Hello, how are you?");
-        await harness.EnqueueAsync(firstId, "Hello, how are you?");
+        var prompt = $"Hello, how are you? patient_id={Guid.NewGuid():D}";
+        await harness.EnqueueAsync(firstId, prompt);
+        await harness.EnqueueAsync(firstId, prompt);
         Assert.True(await harness.ProcessAsync());
         Assert.False(await harness.ProcessAsync());
         await harness.EnqueueAsync(Guid.NewGuid().ToString(), "I feel better today");
@@ -49,13 +56,17 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         );
         Assert.Equal(harness.PatientId.ToString(), first.GetProperty("patient_id").GetString());
         Assert.Equal(harness.UserId.ToString(), first.GetProperty("user_id").GetString());
-        // El canal WhatsApp usa su propio perfil de agente en el ai-service.
+        Assert.Equal($"proactive-{harness.UserId:D}", first.GetProperty("thread_id").GetString());
+        Assert.Equal(prompt, first.GetProperty("message").GetString());
+        Assert.Equal(firstId, first.GetProperty("channel_message_id").GetString());
         Assert.Equal("whatsapp", first.GetProperty("agent").GetString());
         Assert.All(
             harness.Requests,
             request =>
             {
                 Assert.Equal("en", request.GetProperty("language").GetString());
+                Assert.Equal("whatsapp", request.GetProperty("channel").GetString());
+                Assert.True(request.GetProperty("supports_vita").GetBoolean());
                 Assert.False(request.TryGetProperty("control_context", out _));
             }
         );
@@ -64,6 +75,138 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         Assert.Equal(2, harness.Sent.Count);
         Assert.All(await db.RawEvents.ToListAsync(), x => Assert.NotNull(x.ProcessedAt));
         Assert.Equal(1, (await db.RawEvents.SingleAsync(x => x.Wamid == firstId)).DuplicateCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WhatsAppAndApp_ReadAndContinueTheSameOwnedThread(bool stream)
+    {
+        await using var harness = await CreateAsync();
+        await using var db = fixture.CreateDb();
+        db.Conversations.Add(new Conversation { PatientId = harness.PatientId, ThreadId = "whatsapp-original" });
+        await db.SaveChangesAsync();
+        const string report = "Hoy amanecí en 74.5 kg";
+        var wamid = $"wamid.{Guid.NewGuid():N}";
+        await harness.EnqueueAsync(wamid, report);
+        Assert.True(await harness.ProcessAsync());
+        await harness.EnqueueAsync(wamid, report);
+        Assert.False(await harness.ProcessAsync());
+
+        using var scope = harness.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        var app = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity([
+                    new Claim(ClaimTypes.NameIdentifier, harness.UserId.ToString()),
+                    new Claim("aud", "app"),
+                ], "test")),
+            },
+        };
+        var thread = $"proactive-{harness.UserId:D}";
+        var history = new ThreadsController(sp.GetRequiredService<IAiServiceClient>(),
+            sp.GetRequiredService<ILogger<ThreadsController>>()) { ControllerContext = app };
+        var response = await history.GetMessages(thread, userId: Guid.NewGuid().ToString(),
+            limit: null, before: null, CancellationToken.None);
+        var state = Assert.IsType<CoppAddresd.Application.Features.Threads.ThreadStateResult>(
+            Assert.IsType<OkObjectResult>(response.Result).Value);
+        Assert.Equal(thread, state.ThreadId);
+        Assert.NotNull(state.Messages);
+        var visible = Assert.Single(state.Messages);
+        Assert.Equal(report, visible.Text);
+        Assert.Equal(wamid, visible.ProviderMessageId);
+
+        var chat = new ChatController(sp.GetRequiredService<IMediator>(),
+            sp.GetRequiredService<ILogger<ChatController>>()) { ControllerContext = app };
+        const string confirmationText = "Sí, confirmo";
+        var confirmation = new ChatRequestDto(confirmationText, SupportsVita: true);
+        if (stream)
+        {
+            await using var sse = new MemoryStream();
+            app.HttpContext.Response.Body = sse;
+            await chat.Stream(confirmation, CancellationToken.None);
+            var events = Encoding.UTF8.GetString(sse.ToArray()).Split('\n');
+            Assert.Contains("event: done", events);
+            var data = Assert.Single(events, line => line.StartsWith("data: ", StringComparison.Ordinal));
+            using var done = JsonDocument.Parse(data["data: ".Length..]);
+            Assert.Equal(thread, done.RootElement.GetProperty("thread_id").GetString());
+            Assert.Equal($"Conservé el contexto: {report}", done.RootElement.GetProperty("answer").GetString());
+        }
+        else
+        {
+            var appReply = await chat.Chat(confirmation, CancellationToken.None);
+            var turn = Assert.IsType<ChatResult>(Assert.IsType<OkObjectResult>(appReply.Result).Value);
+            Assert.Equal(thread, turn.ThreadId);
+            Assert.Equal($"Conservé el contexto: {report}", turn.Reply);
+        }
+        await harness.EnqueueAsync($"wamid.{Guid.NewGuid():N}", "¿Se guardó el dato?");
+        Assert.True(await harness.ProcessAsync());
+        Assert.Equal($"Conservé el contexto: {confirmationText}", harness.Sent.Last());
+        Assert.Equal(3, harness.Requests.Count);
+        Assert.Equal(thread, await db.Conversations.Select(x => x.ThreadId).SingleAsync());
+    }
+
+    [Fact]
+    public async Task InvalidatedLink_GuidesWithoutSendingPatientDataToAgent()
+    {
+        await using var harness = await CreateAsync(activeLink: false);
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola");
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.Empty(harness.Requests);
+        Assert.Contains("app ANTARES", Assert.Single(harness.Sent));
+        await using var db = fixture.CreateDb();
+        Assert.Equal("agent_identity_unavailable", (await db.RawEvents.SingleAsync()).ErrorCode);
+    }
+
+    [Fact]
+    public async Task LostAgentResult_RespondsSafely_WithoutReexecutingTheTurn()
+    {
+        await using var harness = await CreateAsync();
+        await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola");
+        await using var db = fixture.CreateDb();
+        await db.RawEvents.ExecuteUpdateAsync(update => update.SetProperty(x => x.AgentStarted, true));
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.Contains("no está disponible", Assert.Single(harness.Sent));
+        Assert.Empty(harness.Requests);
+        Assert.Equal("agent_result_unknown", (await db.RawEvents.SingleAsync()).ErrorCode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PartialDelivery_ResumesTheExactSequence(bool alreadySentWithPreviousVersion)
+    {
+        var reply = new string('a', 2800) + "\n\n" + new string('b', 2198);
+        await using var harness = await CreateAsync(agentReply: reply);
+        var wamid = Guid.NewGuid().ToString();
+        await harness.EnqueueAsync(wamid, "Hola");
+        await using var db = fixture.CreateDb();
+        if (alreadySentWithPreviousVersion)
+        {
+            await db.RawEvents.ExecuteUpdateAsync(update => update.SetProperty(x => x.Reply, reply)
+                .SetProperty(x => x.SentFragments, 1));
+            harness.Sent.Add(reply[..MessagePolicy.MaxTextLength]);
+        }
+        else
+        {
+            harness.FailOnSendAttempt = 2;
+            harness.SendFailure = WhatsAppSendResult.Failed("429", WhatsAppFailureKind.Transient);
+            Assert.True(await harness.ProcessAsync());
+            var checkpoint = await db.RawEvents.AsNoTracking().SingleAsync();
+            Assert.Equal(1, checkpoint.SentFragments);
+            Assert.Equal(2802, Assert.Single(harness.Sent).Length);
+            Assert.Equal(2, checkpoint.ReplyFragments!.Length);
+            harness.Clock.Now = checkpoint.NextAttemptAt;
+        }
+
+        Assert.True(await harness.ProcessAsync());
+        Assert.Equal(reply, string.Concat(harness.Sent));
+        Assert.Equal(2, harness.Sent.Count);
+        Assert.Equal(alreadySentWithPreviousVersion ? 0 : 1, harness.Requests.Count);
     }
 
     [Theory]
@@ -79,6 +222,11 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
     )
     {
         await using var harness = await CreateAsync();
+        if (!optOut)
+        {
+            await using var previous = fixture.CreateDb();
+            await previous.PatientLinks.ExecuteUpdateAsync(update => update.SetProperty(x => x.OptOut, true));
+        }
         await harness.EnqueueAsync(Guid.NewGuid().ToString(), command);
         await harness.ProcessAsync();
         Assert.Empty(harness.Requests);
@@ -87,6 +235,12 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         var link = await db.PatientLinks.SingleAsync();
         Assert.Equal(optOut, link.OptOut);
         Assert.Equal(language, link.Language);
+        if (optOut)
+        {
+            await harness.EnqueueAsync(Guid.NewGuid().ToString(), "Hola");
+            Assert.True(await harness.ProcessAsync());
+            Assert.Single(harness.Requests);
+        }
     }
 
     [Fact]
@@ -336,7 +490,7 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
 
     private async Task<Harness> CreateAsync(
         int agentStatus = 200, string? agentReply = "Respuesta del agente",
-        bool linked = true, bool failLookup = false)
+        bool linked = true, bool failLookup = false, bool activeLink = true)
     {
         await using var db = fixture.CreateDb();
         await db.Database.ExecuteSqlRawAsync(
@@ -362,13 +516,33 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
                     .Configure(app =>
                         app.Run(async context =>
                         {
-                            Assert.Equal("/api/v1/chat", context.Request.Path.Value);
                             Assert.Equal(
                                 "test-internal",
                                 context.Request.Headers["X-Internal-Key"]
                             );
+                            if (context.Request.Method == "GET")
+                            {
+                                var owner = context.Request.Query["user_id"].ToString();
+                                Assert.Equal("true", context.Request.Query["supports_vita"].ToString());
+                                var previous = Assert.Single(harness.Requests);
+                                var previousThread = previous.GetProperty("thread_id").GetString();
+                                Assert.Equal(previous.GetProperty("user_id").GetString(), owner);
+                                Assert.Equal($"/api/v1/threads/{previousThread}/state", context.Request.Path.Value);
+                                await context.Response.WriteAsJsonAsync(new
+                                {
+                                    thread_id = previousThread,
+                                    message_count = 1,
+                                    messages = new[] { new { role = "user", text = previous.GetProperty("message").GetString(),
+                                        channel = "whatsapp", provider_message_id = previous.GetProperty("channel_message_id").GetString() } },
+                                });
+                                return;
+                            }
+                            var streaming = context.Request.Path == "/api/v1/chat/stream";
+                            Assert.Equal(streaming ? "/api/v1/chat/stream" : "/api/v1/chat", context.Request.Path.Value);
                             using var payload = await JsonDocument.ParseAsync(context.Request.Body);
-                            harness.Requests.Add(payload.RootElement.Clone());
+                            var turn = payload.RootElement.Clone();
+                            var prior = harness.Requests.LastOrDefault();
+                            harness.Requests.Add(turn);
                             if (agentStatus == 0)
                             {
                                 await Task.Delay(Timeout.InfiniteTimeSpan, context.RequestAborted);
@@ -380,16 +554,27 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
                                 await context.Response.WriteAsync("{\"detail\":\"offline\"}");
                                 return;
                             }
-                            await context.Response.WriteAsJsonAsync(
-                                new
-                                {
-                                    answer = agentReply,
-                                    thread_id = payload
-                                        .RootElement.GetProperty("thread_id")
-                                        .GetString(),
-                                    execution_id = "test",
-                                }
-                            );
+                            string? answer = agentReply;
+                            if (prior.ValueKind == JsonValueKind.Object
+                                && prior.TryGetProperty("channel", out _) != turn.TryGetProperty("channel", out _))
+                            {
+                                Assert.Equal(prior.GetProperty("thread_id").GetString(), turn.GetProperty("thread_id").GetString());
+                                Assert.Equal(prior.GetProperty("user_id").GetString(), turn.GetProperty("user_id").GetString());
+                                answer = $"Conservé el contexto: {prior.GetProperty("message").GetString()}";
+                            }
+                            var response = new
+                            {
+                                answer,
+                                thread_id = turn.GetProperty("thread_id").GetString(),
+                                execution_id = "test",
+                            };
+                            if (streaming)
+                            {
+                                context.Response.ContentType = "text/event-stream";
+                                await context.Response.WriteAsync($"event: done\ndata: {JsonSerializer.Serialize(response)}\n\n");
+                            }
+                            else
+                                await context.Response.WriteAsJsonAsync(response);
                         })
                     )
             )
@@ -404,6 +589,8 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         services.AddSingleton(Substitute.For<IAgentRuntimeSyncService>());
         services.AddSingleton(Substitute.For<IProgramControlRepository>());
         var patients = Substitute.For<IPatientChannelQuery>();
+        patients.IsActiveLinkAsync(harness.PatientId, harness.UserId, Arg.Any<CancellationToken>())
+            .Returns(activeLink);
         if (failLookup)
             patients.FindActiveByPhoneAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromException<PatientChannelIdentity?>(new InvalidOperationException("detalle interno")));
@@ -421,11 +608,9 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
                 }
             )
         );
-        services.AddScoped<IAiServiceClient>(sp => new AiServiceClient(
-            harness.AiHost.GetTestClient(),
-            sp.GetRequiredService<IOptions<AiServiceSettings>>(),
-            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<AiServiceClient>>()
-        ));
+        services.AddHttpClient<IAiServiceClient, AiServiceClient>()
+            .ConfigurePrimaryHttpMessageHandler(() => harness.AiHost.GetTestServer().CreateHandler())
+            .AddResiliencePolicy();
         var sender = Substitute.For<IWhatsAppMessageSender>();
         sender
             .SendTextAsync(
@@ -437,7 +622,8 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
             .Returns(call =>
             {
                 harness.SendAttempts++;
-                if (harness.SendFailure is { } failure)
+                if (harness.SendFailure is { } failure
+                    && (harness.FailOnSendAttempt is null || harness.FailOnSendAttempt == harness.SendAttempts))
                     return failure;
                 harness.Sent.Add(call.ArgAt<string>(1));
                 return new WhatsAppSendResult("wamid.reply");
@@ -470,6 +656,7 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
         public List<JsonElement> Requests { get; } = [];
         public List<string> Sent { get; } = [];
         public WhatsAppSendResult? SendFailure { get; set; }
+        public int? FailOnSendAttempt { get; set; }
         public int SendAttempts { get; set; }
 
         public async Task EnqueueAsync(string wamid, string text, string type = "text")

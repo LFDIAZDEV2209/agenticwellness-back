@@ -12,7 +12,9 @@ public record ChatCommand(
     string? Language = null,
     bool IncludeControlContext = true,
     string? PatientId = null,
-    bool SupportsVita = false)
+    bool SupportsVita = false,
+    string? Channel = null,
+    string? ChannelMessageId = null)
     : IRequest<ChatResult>;
 
 /// <summary>

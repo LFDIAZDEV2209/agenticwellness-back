@@ -29,6 +29,12 @@ public class ChatController : ControllerBase
     /// </summary>
     private string? AuthenticatedUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+    private string? ResolvePatientThread(ChatRequestDto request) =>
+        string.IsNullOrWhiteSpace(request.ThreadId) && request.SupportsVita && User.HasClaim("aud", "app")
+            && Guid.TryParse(AuthenticatedUserId, out var owner) && owner != Guid.Empty
+            ? PatientChatThread.ForUser(owner)
+            : request.ThreadId;
+
     [HttpPost]
     [CoppAddresd.Api.Authorization.RequireAiConsent("chat")]
     public async Task<ActionResult<ChatResult>> Chat(
@@ -41,7 +47,7 @@ public class ChatController : ControllerBase
             var command = new ChatCommand(
                 request.Message,
                 request.Agent,
-                request.ThreadId,
+                ResolvePatientThread(request),
                 request.AgentTypeId,
                 AuthenticatedUserId,
                 request.Language,
@@ -81,7 +87,7 @@ public class ChatController : ControllerBase
             var command = new StreamChatCommand(
                 request.Message,
                 request.Agent,
-                request.ThreadId,
+                ResolvePatientThread(request),
                 request.AgentTypeId,
                 AuthenticatedUserId,
                 request.Language,

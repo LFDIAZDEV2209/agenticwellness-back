@@ -33,7 +33,7 @@ public sealed class MetaCloudWhatsAppSender(
                 WhatsAppSendResult.Failed("window_closed", WhatsAppFailureKind.Permanent)
             );
         }
-        if (string.IsNullOrEmpty(text) || text.Length > 4096)
+        if (string.IsNullOrEmpty(text) || text.Length > MessagePolicy.MaxTextLength)
             return Task.FromResult(
                 WhatsAppSendResult.Failed("invalid_text", WhatsAppFailureKind.Permanent)
             );

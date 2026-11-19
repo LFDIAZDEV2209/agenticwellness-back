@@ -33,8 +33,12 @@ public sealed class VoiceSessionCommandHandlerTests
             new VitaPatientAccess(patients, Substitute.For<ILegalConsentService>(), TimeProvider.System));
     }
 
-    [Fact]
-    public async Task Handle_InvocaAlClienteConDtoYUserIdYPropagaCt()
+    [Theory]
+    [InlineData("proactive-paciente-123", false)]
+    [InlineData("proactive-paciente-123", true)]
+    [InlineData(null, false)]
+    [InlineData(null, true)]
+    public async Task Handle_InvocaAlClienteConDtoYUserIdYPropagaCt(string? threadId, bool supportsVita)
     {
         // Arrange.
         var client = Substitute.For<IAiServiceClient>();
@@ -61,7 +65,7 @@ public sealed class VoiceSessionCommandHandlerTests
 
         // Act.
         var result = await handler.Handle(
-            new VoiceSessionCommand(UserId.ToString(), "p-1", "proactive-paciente-123"),
+            new VoiceSessionCommand(UserId.ToString(), "p-1", threadId, SupportsVitaVoice: supportsVita),
             cts.Token
         );
 
@@ -70,7 +74,7 @@ public sealed class VoiceSessionCommandHandlerTests
         Assert.NotNull(capturedDto);
         Assert.Equal(UserId.ToString(), capturedDto!.UserId);
         Assert.Equal(PatientId.ToString(), capturedDto.PatientId);
-        Assert.Equal("proactive-paciente-123", capturedDto.ThreadId);
+        Assert.Equal(threadId ?? (supportsVita ? $"proactive-{UserId:D}" : null), capturedDto.ThreadId);
         Assert.Equal(cts.Token, capturedCt);
         await client
             .Received(1)

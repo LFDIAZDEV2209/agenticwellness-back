@@ -28,9 +28,12 @@ public sealed class VoiceSessionCommandHandler(
         ct.ThrowIfCancellationRequested();
         if (!Guid.TryParse(request.UserId, out var userId)) throw new ForbiddenException("VITA_PATIENT_UNAVAILABLE");
         var patient = await access.RequireAsync(userId, "voice", ct);
+        var threadId = request.SupportsVitaVoice && string.IsNullOrWhiteSpace(request.ThreadId)
+            ? PatientChatThread.ForUser(userId)
+            : request.ThreadId;
 
         var result = await aiService.CreateVoiceSessionAsync(
-            new VoiceSessionInternalRequest(userId.ToString(), patient.Id.ToString(), request.ThreadId,
+            new VoiceSessionInternalRequest(userId.ToString(), patient.Id.ToString(), threadId,
                 request.Language, request.SupportsVitaVoice),
             ct
         );

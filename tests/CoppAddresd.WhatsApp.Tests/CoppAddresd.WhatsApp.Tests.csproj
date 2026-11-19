@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/CoppAddresd.Api/CoppAddresd.Api.csproj" />
     <ProjectReference Include="../../src/CoppAddresd.WhatsApp/CoppAddresd.WhatsApp.csproj" />
     <ProjectReference Include="../../src/CoppAddresd.Infrastructure/CoppAddresd.Infrastructure.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.11" />

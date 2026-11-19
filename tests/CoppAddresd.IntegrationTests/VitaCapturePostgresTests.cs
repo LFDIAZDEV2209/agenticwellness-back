@@ -163,7 +163,7 @@ public sealed partial class NutritionPlanWorkflowTests
         var read = await client.GetFromJsonAsync<VitaMedicationsDto>($"{VitaARoute}/medications?userId={patient.UserId}");
         var doses = Assert.Single(read!.Treatments).Doses;
         Assert.Equal(2, doses.Count);
-        var first = DoseCapture(doses[0], "taken", "taken-turn");
+        var first = DoseCapture(doses[0], "taken", "taken-turn") with { Channel = "vita_whatsapp" };
         var second = DoseCapture(doses[1], "omitted", "omitted-turn");
         var firstProposal = await ProposeCaptureAsync(client, patient.UserId.Value, first);
         var secondProposal = await ProposeCaptureAsync(client, patient.UserId.Value, second);
@@ -173,6 +173,7 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Equal("medication_dose", taken.EntityType);
         Assert.Equal(doses[0].DoseId, taken.EntityId);
         Assert.Equal(taken, await ConfirmCaptureAsync(client, patient.UserId.Value, first, firstProposal.Token));
+        Assert.Equal("vita_whatsapp", (await db.VitaWriteReceipts.SingleAsync()).Channel);
 
         // Hace fallar el último paso después de que el módulo haya guardado la toma en la transacción.
         await db.Database.ExecuteSqlRawAsync("""

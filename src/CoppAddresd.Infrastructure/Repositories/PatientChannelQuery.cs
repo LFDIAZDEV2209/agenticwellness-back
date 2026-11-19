@@ -7,6 +7,10 @@ namespace CoppAddresd.Infrastructure.Repositories;
 /// <summary>Primera identificación únicamente; rechaza teléfonos compartidos por varios pacientes activos.</summary>
 public sealed class PatientChannelQuery(AppDbContext db) : IPatientChannelQuery
 {
+    public Task<bool> IsActiveLinkAsync(Guid patientId, Guid userId, CancellationToken ct) =>
+        db.PatientProfiles.AnyAsync(patient => patient.Id == patientId && patient.UserId == userId
+            && patient.Status == "Activo" && patient.DeletedAt == null, ct);
+
     public async Task<PatientChannelIdentity?> FindActiveByPhoneAsync(string e164, CancellationToken ct)
     {
         var digits = e164.TrimStart('+');

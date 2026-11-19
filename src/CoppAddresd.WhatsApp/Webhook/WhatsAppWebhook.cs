@@ -1,4 +1,5 @@
 using CoppAddresd.Application.Interfaces;
+using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -51,6 +52,20 @@ public sealed class WhatsAppWebhook(
 
     public async Task<int> AcceptAsync(byte[] body, string? signature, CancellationToken ct)
     {
+        try
+        {
+            return await PersistAsync(body, signature, ct);
+        }
+        catch (Exception ex) when (ex is DbException or DbUpdateException or TimeoutException)
+        {
+            // No confirmar una entrega que PostgreSQL no pudo recibir. Un reenvío conserva el wamid.
+            logger.LogWarning("Webhook WhatsApp no pudo persistir la entrega: {Cause}", ex.GetType().Name);
+            return 429;
+        }
+    }
+
+    private async Task<int> PersistAsync(byte[] body, string? signature, CancellationToken ct)
+    {
         if (!ValidSignature(body, signature, options.AppSecret))
         {
             logger.LogWarning("Webhook WhatsApp rechazado: firma ausente o inválida");
@@ -68,8 +83,7 @@ public sealed class WhatsAppWebhook(
         using (json)
         {
             if (
-                !json.RootElement.TryGetProperty("object", out var obj)
-                || obj.GetString() != "whatsapp_business_account"
+                String(json.RootElement, "object") != "whatsapp_business_account"
             )
                 return 200;
             if (
@@ -79,23 +93,24 @@ public sealed class WhatsAppWebhook(
                 return 200;
             var payload = Encoding.UTF8.GetString(body);
             var now = clock.GetUtcNow();
-            List<Guid> inserted = [];
             foreach (var entry in entries.EnumerateArray())
             {
                 if (
-                    !entry.TryGetProperty("changes", out var changes)
+                    entry.ValueKind != JsonValueKind.Object
+                    || !entry.TryGetProperty("changes", out var changes)
                     || changes.ValueKind != JsonValueKind.Array
                 )
                     continue;
                 foreach (var change in changes.EnumerateArray())
                 {
                     if (
-                        !change.TryGetProperty("value", out var value)
+                        change.ValueKind != JsonValueKind.Object
+                        || !change.TryGetProperty("value", out var value)
+                        || value.ValueKind != JsonValueKind.Object
                         || !value.TryGetProperty("metadata", out var metadata)
-                        || !metadata.TryGetProperty("phone_number_id", out var number)
                     )
                         continue;
-                    var receiver = number.GetString();
+                    var receiver = String(metadata, "phone_number_id");
                     // Un mensaje destinado a otro número de esta app (p.ej. el número de prueba
                     // reemplazado) se descarta; sin este log el caso queda sin rastro en prod
                     // y se percibe como "el bot no responde".
@@ -116,7 +131,8 @@ public sealed class WhatsAppWebhook(
                                 || !long.TryParse(String(status,"timestamp"),out var seconds) || seconds<0 || seconds>253402300799) continue;
                             string? errorCode=null;
                             if(status.TryGetProperty("errors",out var errors) && errors.ValueKind==JsonValueKind.Array && errors.GetArrayLength()>0
-                                && errors[0].TryGetProperty("code",out var code) && code.TryGetInt32(out var n)) errorCode="meta:"+n;
+                                && errors[0].ValueKind==JsonValueKind.Object && errors[0].TryGetProperty("code",out var code)
+                                && code.ValueKind==JsonValueKind.Number && code.TryGetInt32(out var n)) errorCode="meta:"+n;
                             await sosStatuses.ReceiveAsync(correlation,statusId,recipient,state,DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime,errorCode,ct);
                         }
                     if(!value.TryGetProperty("messages",out var messages) || messages.ValueKind!=JsonValueKind.Array)continue;
@@ -148,43 +164,36 @@ public sealed class WhatsAppWebhook(
                                 : "";
                         var id = Guid.NewGuid();
                         var waId = "+" + from;
-                        // El conflicto incrementa la evidencia del duplicado sin reabrir trabajo ya procesado.
+                        // El evento y la interacción se guardan juntos. En conflicto solo avanza el contador.
                         await db.Database.ExecuteSqlInterpolatedAsync(
                             $"""
-                            INSERT INTO whatsapp.raw_events
-                            (id, wamid, payload, wa_id, text, received_at, message_at, next_attempt_at, attempts, duplicate_count, sent_fragments)
-                            VALUES ({id}, {wamid}, CAST({payload} AS jsonb), {waId}, {text}, {now}, {messageAt}, {now}, 0, 0, 0)
-                            ON CONFLICT (wamid) DO UPDATE SET duplicate_count = whatsapp.raw_events.duplicate_count + 1
+                            WITH accepted AS (
+                                INSERT INTO whatsapp.raw_events
+                                (id, wamid, payload, wa_id, text, received_at, message_at, next_attempt_at, attempts, duplicate_count, sent_fragments)
+                                VALUES ({id}, {wamid}, CAST({payload} AS jsonb), {waId}, {text}, {now}, {messageAt}, {now}, 0, 0, 0)
+                                ON CONFLICT (wamid) DO UPDATE SET duplicate_count = whatsapp.raw_events.duplicate_count + 1
+                                RETURNING id, wa_id, message_at
+                            ), interaction AS (
+                                SELECT l.patient_id, a.message_at FROM accepted a
+                                JOIN whatsapp.patient_links l ON l.wa_id = a.wa_id
+                                WHERE a.id = {id}
+                            ), updated_conversation AS (
+                                UPDATE whatsapp.conversations c SET last_inbound_at = GREATEST(c.last_inbound_at, i.message_at)
+                                FROM interaction i WHERE c.patient_id = i.patient_id
+                            )
+                            UPDATE whatsapp.reminders r SET state = 'Cancelled', cancellation_reason = 'patient_interaction', lease_until = NULL
+                            FROM interaction i
+                            WHERE r.patient_id = i.patient_id AND r.state = 'Pending' AND i.message_at >= r.scheduled_at
                             """,
                             ct
                         );
                         queue.Enqueue(id);
-                        inserted.Add(id);
                         logger.LogInformation(
                             "Evento WhatsApp persistido para {Phone}",
                             MessagePolicy.MaskPhone(waId)
                         );
                     }
                 }
-            }
-            if (inserted.Count > 0)
-            {
-                var ids = inserted.ToArray();
-                // La interacción se hace visible antes del ACK, sin esperar al LLM.
-                // IDs generados que no se insertaron por dedupe no participan en la cancelación.
-                await db.Database.ExecuteSqlInterpolatedAsync(
-                    $"""
-                    UPDATE whatsapp.conversations c SET last_inbound_at = GREATEST(c.last_inbound_at, incoming.at)
-                    FROM (SELECT l.patient_id, MAX(e.message_at) AS at FROM whatsapp.raw_events e
-                        JOIN whatsapp.patient_links l ON l.wa_id = e.wa_id WHERE e.id = ANY({ids}) GROUP BY l.patient_id) incoming
-                    WHERE c.patient_id = incoming.patient_id;
-                    UPDATE whatsapp.reminders r SET state = 'Cancelled', cancellation_reason = 'patient_interaction', lease_until = NULL
-                    WHERE r.state = 'Pending' AND EXISTS (SELECT 1 FROM whatsapp.raw_events e
-                        JOIN whatsapp.patient_links l ON l.wa_id = e.wa_id
-                        WHERE e.id = ANY({ids}) AND l.patient_id = r.patient_id AND e.message_at >= r.scheduled_at)
-                    """,
-                    ct
-                );
             }
         }
         return 200;

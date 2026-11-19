@@ -7,6 +7,7 @@ namespace CoppAddresd.WhatsApp.Tests;
 /// simples, sin separadores Markdown que el canal muestra literales y
 /// encabezados convertidos a negrita.
 /// </summary>
+[Trait("Category", "Unit")]
 public sealed class MessagePolicyTests
 {
     [Theory]
@@ -45,4 +46,47 @@ public sealed class MessagePolicyTests
                 "Saludo\r\n\r\n**Item uno**\r\nDetalle\r\n\r\n**Item dos**"
             )
         );
+
+    [Fact]
+    public void AdaptaVinculosTablasTachadoYBloquesDeCodigo() =>
+        Assert.Equal(
+            "Guía (https://example.invalid/guia)\nNombre · Dosis\n\nÁcido · ~10~ *20*\n\n# conservar **código**\n",
+            MessagePolicy.NormalizeForWhatsApp(
+                "[Guía](https://example.invalid/guia)\n| Nombre | Dosis |\n| --- | :---: |\n| Ácido | ~~10~~ __20__ |\n```text\n# conservar **código**\n```"));
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(4095, 1)]
+    [InlineData(4096, 1)]
+    [InlineData(4097, 2)]
+    [InlineData(5000, 2)]
+    public void RespetaLimiteYConservaContenido(int length, int expectedParts)
+    {
+        var original = new string('a', length);
+        var parts = MessagePolicy.Split(original);
+        Assert.Equal(expectedParts, parts.Length);
+        Assert.All(parts, part => Assert.InRange(part.Length, 1, 4096));
+        Assert.Equal(original, string.Concat(parts));
+    }
+
+    [Theory]
+    [InlineData("👩🏽‍⚕️")]
+    [InlineData("🇨🇴")]
+    [InlineData("e\u0301")]
+    [InlineData("😀")]
+    public void ConservaGrafemasEnLaFrontera(string grapheme)
+    {
+        var beginning = new string('a', 4095);
+        var original = beginning + grapheme + "fin";
+        Assert.Equal(new[] { beginning, grapheme + "fin" }, MessagePolicy.Split(original));
+    }
+
+    [Fact]
+    public void GrafemaMayorAlLimiteConservaEscalaresYNoPierdeTexto()
+    {
+        var original = "😀" + new string('\u0301', 4998);
+        var parts = MessagePolicy.Split(original);
+        Assert.Equal(4096, parts[0].Length);
+        Assert.Equal(original, string.Concat(parts));
+    }
 }

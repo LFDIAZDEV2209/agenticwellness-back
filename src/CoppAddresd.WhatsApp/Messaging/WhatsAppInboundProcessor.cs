@@ -1,5 +1,6 @@
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.Features.Chat;
+using CoppAddresd.Application.Features.Patients;
 using CoppAddresd.Application.WhatsApp.Messaging;
 using CoppAddresd.Domain.Entities.WhatsApp;
 using CoppAddresd.WhatsApp.Persistence;
@@ -77,16 +78,26 @@ public sealed class WhatsAppInboundProcessor(
                 preparation.CancelAfter(TimeSpan.FromSeconds(100));
                 await PrepareReplyAsync(input, preparation.Token, deadline.Token);
             }
-            var text = MessagePolicy.NormalizeForWhatsApp(input.Reply ?? "");
-            if (input.SentFragments == 0 && string.IsNullOrWhiteSpace(text))
+            if (input.ReplyFragments is null)
             {
-                SetSafeReply(input, TurnLanguage.Detect(input.Text), "reply_empty");
-                text = input.Reply!;
+                // Los eventos ya enviados en parte conservan los límites de la versión anterior.
+                if (input.SentFragments > 0)
+                    input.ReplyFragments = MessagePolicy.ResumeLegacyReply(input.Reply!);
+                else
+                {
+                    var text = MessagePolicy.NormalizeForWhatsApp(input.Reply ?? "");
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        SetSafeReply(input, TurnLanguage.Detect(input.Text), "reply_empty");
+                        text = input.Reply!;
+                    }
+                    input.ReplyFragments = MessagePolicy.Split(text);
+                }
             }
-            // Guardar antes del envío permite reintentar sin volver a invocar el agente.
+            // Se fija la secuencia antes del primer envío para que su cursor sobreviva cualquier reintento.
             await db.SaveChangesAsync(deadline.Token);
-            var fragments = MessagePolicy.Split(text);
-            for (var i = input.SentFragments; i < fragments.Count; i++)
+            var fragments = input.ReplyFragments;
+            for (var i = input.SentFragments; i < fragments.Length; i++)
             {
                 var result = await sender.SendTextAsync(
                     input.WaId,
@@ -209,6 +220,23 @@ public sealed class WhatsAppInboundProcessor(
                 : "Envía un mensaje de texto para conversar con tu asistente.";
         else
         {
+            if (input.AgentStarted)
+            {
+                SetSafeReply(input, language, "agent_result_unknown");
+                return;
+            }
+
+            if (link.UserId is not { } userId || userId == Guid.Empty
+                || !await mediator.Send(new VerifyPatientChannelLinkQuery(link.PatientId, userId), ct))
+            {
+                input.Reply = Binding.WhatsAppBindingFlow.GuideInApp(language);
+                input.ErrorCode = "agent_identity_unavailable";
+                return;
+            }
+
+            conversation.ThreadId = PatientChatThread.ForUser(userId);
+            // Una ejecución cuyo resultado se perdió puede haber llamado tools de escritura.
+            input.AgentStarted = true;
             await db.SaveChangesAsync(ct);
             await PrepareAgentReplyAsync(input, conversation, link, language, ct);
         }
@@ -234,10 +262,18 @@ public sealed class WhatsAppInboundProcessor(
                     UserId: link.UserId?.ToString(),
                     Language: language,
                     IncludeControlContext: false,
-                    PatientId: link.PatientId.ToString()
+                    PatientId: link.PatientId.ToString(),
+                    SupportsVita: true,
+                    Channel: "whatsapp",
+                    ChannelMessageId: input.Wamid
                 ),
                 agentDeadline.Token
             );
+            if (!string.Equals(result.ThreadId, conversation.ThreadId, StringComparison.Ordinal))
+            {
+                SetSafeReply(input, language, "agent_thread_mismatch");
+                return;
+            }
             if (string.IsNullOrWhiteSpace(MessagePolicy.NormalizeForWhatsApp(result.Reply)))
             {
                 SetSafeReply(input, language, "agent_empty_reply");
@@ -245,9 +281,6 @@ public sealed class WhatsAppInboundProcessor(
             }
 
             input.Reply = result.Reply;
-            // Una respuesta sin identificador de hilo conserva el hilo local.
-            if (!string.IsNullOrWhiteSpace(result.ThreadId) && result.ThreadId.Length <= 160)
-                conversation.ThreadId = result.ThreadId;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

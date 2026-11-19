@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,8 +25,21 @@ public sealed class WhatsAppWebhookController(IServiceProvider services) : Contr
     {
         var webhook = services.GetService<WhatsAppWebhook>();
         if (webhook is null) return NotFound();
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(TimeSpan.FromSeconds(4));
         using var body = new MemoryStream();
-        await Request.Body.CopyToAsync(body, ct);
-        return StatusCode(await webhook.AcceptAsync(body.ToArray(), Request.Headers["X-Hub-Signature-256"].ToString(), ct));
+        try
+        {
+            await Request.Body.CopyToAsync(body, deadline.Token);
+            return StatusCode(await webhook.AcceptAsync(body.ToArray(), Request.Headers["X-Hub-Signature-256"].ToString(), deadline.Token));
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested && deadline.IsCancellationRequested)
+        {
+            return StatusCode(StatusCodes.Status429TooManyRequests);
+        }
+        catch (BadHttpRequestException ex)
+        {
+            return StatusCode(ex.StatusCode);
+        }
     }
 }
