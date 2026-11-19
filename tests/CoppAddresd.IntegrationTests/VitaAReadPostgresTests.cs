@@ -187,6 +187,29 @@ public sealed partial class NutritionPlanWorkflowTests
     }
 
     [NutritionPostgresFact]
+    public async Task VitaA_Vitals_IncluyePesoYTallaDeLaBateriaInicial()
+    {
+        await using var db = Context();
+        var patient = await PatientAsync(db);
+        var (metric, unit) = await VitaAMetricAsync(db, "weight", "kg", "kg", "body_comp");
+        var now = VitaANow.UtcDateTime;
+        db.ClinicalMeasurements.Add(
+            VitaAReading(patient.Id, metric, unit, now, 80.5m, "health_test")
+        );
+        await db.SaveChangesAsync();
+
+        await using var host = await VitaAHostAsync();
+        using var client = VitaAClient(host);
+        var vitals = await client.GetFromJsonAsync<VitaVitalsDto>(
+            $"{VitaARoute}/vitals?userId={patient.UserId}"
+        );
+
+        var weight = Assert.Single(vitals!.Latest, m => m.MetricCode == "weight");
+        Assert.Equal(80.5m, weight.Value);
+        Assert.Equal("health_test", weight.Source);
+    }
+
+    [NutritionPostgresFact]
     public async Task VitaA_Vitals_RespetaDiaLocalUnidadOrigenYCorreccionesConfirmadas()
     {
         await using var db = Context();

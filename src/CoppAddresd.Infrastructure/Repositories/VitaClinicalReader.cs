@@ -22,6 +22,9 @@ public sealed class VitaClinicalReader(AppDbContext db) : IVitaClinicalReader
         "distance_m",
         "glucose_fasting",
         "body_fat",
+        "weight",
+        "height",
+        "bmi",
     ];
     private static readonly string[] ClinicalSources =
     [
