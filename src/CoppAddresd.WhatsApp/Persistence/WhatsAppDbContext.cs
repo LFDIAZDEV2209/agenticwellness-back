@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoppAddresd.WhatsApp.Persistence;
 
-public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> options) : DbContext(options)
+public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> options)
+    : DbContext(options)
 {
     public DbSet<WhatsAppRawEvent> RawEvents => Set<WhatsAppRawEvent>();
     public DbSet<PatientLink> PatientLinks => Set<PatientLink>();
@@ -11,13 +12,21 @@ public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> option
     public DbSet<Reminder> Reminders => Set<Reminder>();
     public DbSet<ReminderDelivery> ReminderDeliveries => Set<ReminderDelivery>();
     public DbSet<BindingSession> BindingSessions => Set<BindingSession>();
+    public DbSet<MessageReceipt> MessageReceipts => Set<MessageReceipt>();
+    public DbSet<OutboundMessage> OutboundMessages => Set<OutboundMessage>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
         model.HasDefaultSchema("whatsapp");
         var binding = model.Entity<BindingSession>();
-        binding.ToTable("binding_sessions", t => t.HasCheckConstraint("ck_binding_limits",
-            "attempts BETWEEN 0 AND 3 AND otp_sends BETWEEN 0 AND 2 AND cardinality(otp_sent_at) <= 2"));
+        binding.ToTable(
+            "binding_sessions",
+            t =>
+                t.HasCheckConstraint(
+                    "ck_binding_limits",
+                    "attempts BETWEEN 0 AND 3 AND otp_sends BETWEEN 0 AND 2 AND cardinality(otp_sent_at) <= 2"
+                )
+        );
         binding.HasKey(x => x.Id);
         binding.Property(x => x.WaId).HasMaxLength(16);
         binding.Property(x => x.ContactId).HasMaxLength(20);
@@ -50,9 +59,16 @@ public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> option
         conversation.Property(x => x.Language).HasMaxLength(2);
         conversation.HasIndex(x => x.PatientId).IsUnique();
         var reminder = model.Entity<Reminder>();
-        reminder.ToTable("reminders", t => {
-            t.HasCheckConstraint("ck_reminders_attempts", "attempts >= 0 AND max_attempts BETWEEN 1 AND 5 AND attempts <= max_attempts AND repeat_every_minutes >= 120");
-        });
+        reminder.ToTable(
+            "reminders",
+            t =>
+            {
+                t.HasCheckConstraint(
+                    "ck_reminders_attempts",
+                    "attempts >= 0 AND max_attempts BETWEEN 1 AND 5 AND attempts <= max_attempts AND repeat_every_minutes >= 120"
+                );
+            }
+        );
         reminder.HasKey(x => x.Id);
         reminder.Property(x => x.Kind).HasConversion<string>().HasMaxLength(20);
         reminder.Property(x => x.State).HasConversion<string>().HasMaxLength(20);
@@ -60,7 +76,10 @@ public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> option
         reminder.Property(x => x.Detail).HasMaxLength(500);
         reminder.Property(x => x.CancellationReason).HasMaxLength(80);
         reminder.HasIndex(x => x.SourceKey).IsUnique();
-        reminder.HasIndex(x => new { x.PatientId, x.Kind }).IsUnique().HasFilter("state = 'Pending'");
+        reminder
+            .HasIndex(x => new { x.PatientId, x.Kind })
+            .IsUnique()
+            .HasFilter("state = 'Pending'");
         reminder.HasIndex(x => x.NextAttemptAt).HasFilter("state = 'Pending'");
         reminder.HasIndex(x => x.AssignmentId).HasFilter("assignment_id IS NOT NULL");
         var delivery = model.Entity<ReminderDelivery>();
@@ -70,11 +89,57 @@ public sealed class WhatsAppDbContext(DbContextOptions<WhatsAppDbContext> option
         delivery.Property(x => x.State).HasConversion<string>().HasMaxLength(20);
         delivery.Property(x => x.Wamid).HasMaxLength(512);
         delivery.Property(x => x.ErrorCode).HasMaxLength(80);
-        delivery.HasOne<Reminder>().WithMany().HasForeignKey(x => x.ReminderId).OnDelete(DeleteBehavior.Cascade);
+        delivery
+            .HasOne<Reminder>()
+            .WithMany()
+            .HasForeignKey(x => x.ReminderId)
+            .OnDelete(DeleteBehavior.Cascade);
         delivery.HasIndex(x => new { x.ReminderId, x.Attempt }).IsUnique();
-        delivery.HasIndex(x => new { x.PatientId, x.Kind, x.AcceptedAt }).HasFilter("accepted_at IS NOT NULL");
+        delivery
+            .HasIndex(x => new
+            {
+                x.PatientId,
+                x.Kind,
+                x.AcceptedAt,
+            })
+            .HasFilter("accepted_at IS NOT NULL");
+        delivery.Property(x => x.ReceiptStatus).HasConversion<string>().HasMaxLength(20);
+        delivery.Property(x => x.ReceiptErrorCode).HasMaxLength(80);
+        // Los recibos de Meta localizan la entrega por wamid.
+        delivery.HasIndex(x => x.Wamid).HasFilter("wamid IS NOT NULL");
+        var receipt = model.Entity<MessageReceipt>();
+        receipt.ToTable("message_receipts");
+        receipt.HasKey(x => x.Id);
+        receipt.Property(x => x.Wamid).HasMaxLength(512);
+        receipt.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+        receipt.Property(x => x.RecipientId).HasMaxLength(20);
+        receipt.Property(x => x.ErrorCode).HasMaxLength(80);
+        // Idempotencia ante reenvíos de Meta: un recibo por (wamid, estado).
+        receipt.HasIndex(x => new { x.Wamid, x.Status }).IsUnique();
+        receipt.HasIndex(x => x.OccurredAt);
+        var outbound = model.Entity<OutboundMessage>();
+        outbound.ToTable("outbound_messages");
+        outbound.HasKey(x => x.Id);
+        outbound.Property(x => x.Wamid).HasMaxLength(512);
+        outbound.Property(x => x.WaId).HasMaxLength(16);
+        outbound
+            .Property(x => x.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(MessageStatus.sent);
+        outbound.Property(x => x.ErrorCode).HasMaxLength(80);
+        outbound.HasIndex(x => x.Wamid).IsUnique();
+        outbound
+            .HasOne<WhatsAppRawEvent>()
+            .WithMany()
+            .HasForeignKey(x => x.RawEventId)
+            .OnDelete(DeleteBehavior.Cascade);
         foreach (var entity in model.Model.GetEntityTypes())
-            foreach (var property in entity.GetProperties())
-                property.SetColumnName(System.Text.RegularExpressions.Regex.Replace(property.Name, "(?<!^)([A-Z])", "_$1").ToLowerInvariant());
+        foreach (var property in entity.GetProperties())
+            property.SetColumnName(
+                System
+                    .Text.RegularExpressions.Regex.Replace(property.Name, "(?<!^)([A-Z])", "_$1")
+                    .ToLowerInvariant()
+            );
     }
 }

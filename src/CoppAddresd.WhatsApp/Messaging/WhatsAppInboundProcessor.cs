@@ -109,10 +109,10 @@ public sealed class WhatsAppInboundProcessor(
                 {
                     failureCode = result.ErrorCode ?? "send_failed";
                     retry = result.Failure == WhatsAppFailureKind.Transient;
+                    await RecordFailedFragmentAsync(input, i, failureCode, deadline.Token);
                     break;
                 }
-                input.SentFragments = i + 1;
-                await db.SaveChangesAsync(deadline.Token);
+                await RecordAcceptedFragmentAsync(input, i, result.Wamid!, deadline.Token);
             }
             if (failureCode is null)
             {
@@ -295,6 +295,82 @@ public sealed class WhatsAppInboundProcessor(
                 _ => "agent_unexpected_error",
             };
             SetSafeReply(input, language, code, ex);
+        }
+    }
+
+    /// <summary>
+    /// Registra el fragmento aceptado por Meta y avanza el cursor en una sola sentencia, de modo
+    /// que el ledger y <c>sent_fragments</c> nunca divergen. Un wamid repetido no rompe la entrega
+    /// (ON CONFLICT DO NOTHING). Tras confirmar, concilia recibos que llegaron antes del ACK.
+    /// </summary>
+    private async Task RecordAcceptedFragmentAsync(
+        WhatsAppRawEvent input,
+        int index,
+        string wamid,
+        CancellationToken ct
+    )
+    {
+        var acceptedAt = clock.GetUtcNow();
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            WITH ledger AS (
+                INSERT INTO whatsapp.outbound_messages (id, wamid, wa_id, raw_event_id, fragment_index, accepted_at, status, status_at)
+                VALUES ({Guid.NewGuid()}, {wamid}, {input.WaId}, {input.Id}, {index}, {acceptedAt}, 'sent', {acceptedAt})
+                ON CONFLICT (wamid) DO NOTHING
+            )
+            UPDATE whatsapp.raw_events SET sent_fragments = {index + 1} WHERE id = {input.Id}
+            """,
+            ct
+        );
+        // El cursor ya está persistido: se sincroniza el tracker sin marcarlo como modificado.
+        var cursor = db.Entry(input).Property(x => x.SentFragments);
+        cursor.CurrentValue = index + 1;
+        cursor.OriginalValue = index + 1;
+        try
+        {
+            await MessageReceiptLedger.ReconcileOutboundAsync(db, wamid, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // El fragmento ya se entregó y su cursor está persistido: un fallo de conciliación no
+            // debe marcar el evento como fallido. El recibo sigue en message_receipts.
+            logger.LogWarning(
+                "Conciliación de recibo del fragmento {Wamid} fallida: {Cause}",
+                MessageReceiptLedger.MaskWamid(wamid),
+                ex.GetType().Name
+            );
+        }
+    }
+
+    /// <summary>
+    /// Deja constancia del intento rechazado (wamid nulo, <c>failed</c>). Es diagnóstico: si su
+    /// INSERT falla se registra y no altera la política de reintento del evento.
+    /// </summary>
+    private async Task RecordFailedFragmentAsync(
+        WhatsAppRawEvent input,
+        int index,
+        string errorCode,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            var error = MessageReceiptLedger.Truncate(errorCode);
+            await db.Database.ExecuteSqlInterpolatedAsync(
+                $"""
+                INSERT INTO whatsapp.outbound_messages (id, wamid, wa_id, raw_event_id, fragment_index, accepted_at, status, status_at, error_code)
+                VALUES ({Guid.NewGuid()}, NULL, {input.WaId}, {input.Id}, {index}, NULL, 'failed', {clock.GetUtcNow()}, {error})
+                """,
+                ct
+            );
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(
+                "No se pudo registrar el fragmento fallido del evento {EventId}: {Cause}",
+                input.Id,
+                ex.GetType().Name
+            );
         }
     }
 

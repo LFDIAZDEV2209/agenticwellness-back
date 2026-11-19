@@ -2,8 +2,10 @@ using System.Globalization;
 using CoppAddresd.Application.Features.ProgramProgress.Queries;
 using CoppAddresd.Application.WhatsApp.Messaging;
 using CoppAddresd.Domain.Entities.WhatsApp;
+using CoppAddresd.WhatsApp.Messaging;
 using CoppAddresd.WhatsApp.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CoppAddresd.WhatsApp.Reminders;
 
@@ -12,7 +14,8 @@ public sealed class WhatsAppReminderProcessor(
     IProgramAccompanimentQuery programs,
     IWhatsAppMessageSender sender,
     ReminderSettings settings,
-    TimeProvider clock
+    TimeProvider clock,
+    ILogger<WhatsAppReminderProcessor>? logger = null
 )
 {
     public async Task<bool> ProcessNextAsync(CancellationToken ct)
@@ -182,6 +185,7 @@ public sealed class WhatsAppReminderProcessor(
             delivery.AcceptedAt = clock.GetUtcNow();
             await db.SaveChangesAsync(ct);
             await FinishAsync(reminder, ReminderState.Completed, null, now, ct);
+            await ReconcileReceiptAsync(result.Wamid!, ct);
         }
         else
         {
@@ -213,6 +217,27 @@ public sealed class WhatsAppReminderProcessor(
                 );
         }
         return true;
+    }
+
+    /// <summary>
+    /// Meta puede notificar el recibo antes de que el wamid quede guardado: se concilia después de
+    /// cerrar el recordatorio. Es best-effort a propósito: un fallo aquí nunca debe dejar el
+    /// recordatorio Pending (provocaría reenviar la plantilla); el recibo sigue en message_receipts.
+    /// </summary>
+    private async Task ReconcileReceiptAsync(string wamid, CancellationToken ct)
+    {
+        try
+        {
+            await MessageReceiptLedger.ReconcileReminderAsync(db, wamid, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger?.LogWarning(
+                "Conciliación de recibo del recordatorio {Wamid} fallida: {Cause}",
+                MessageReceiptLedger.MaskWamid(wamid),
+                ex.GetType().Name
+            );
+        }
     }
 
     private Task DeferAsync(Reminder reminder, DateTimeOffset next, CancellationToken ct) =>

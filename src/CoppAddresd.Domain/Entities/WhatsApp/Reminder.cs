@@ -1,8 +1,29 @@
 namespace CoppAddresd.Domain.Entities.WhatsApp;
 
-public enum ReminderKind { checkin, evaluacion, racha, podcast }
-public enum ReminderState { Pending, Completed, Cancelled, Exhausted }
-public enum DeliveryState { Dispatching, Accepted, Retryable, Permanent, Unknown }
+public enum ReminderKind
+{
+    checkin,
+    evaluacion,
+    racha,
+    podcast,
+}
+
+public enum ReminderState
+{
+    Pending,
+    Completed,
+    Cancelled,
+    Exhausted,
+}
+
+public enum DeliveryState
+{
+    Dispatching,
+    Accepted,
+    Retryable,
+    Permanent,
+    Unknown,
+}
 
 public sealed class Reminder
 {
@@ -35,4 +56,9 @@ public sealed class ReminderDelivery
     public DateTimeOffset AttemptedAt { get; set; }
     public DateTimeOffset? AcceptedAt { get; set; }
     public DateTimeOffset? NextAttemptAt { get; set; }
+
+    /// <summary>Último estado de entrega notificado por Meta (monótono, ver <see cref="MessageStatusOrder"/>).</summary>
+    public MessageStatus? ReceiptStatus { get; set; }
+    public DateTimeOffset? ReceiptAt { get; set; }
+    public string? ReceiptErrorCode { get; set; }
 }

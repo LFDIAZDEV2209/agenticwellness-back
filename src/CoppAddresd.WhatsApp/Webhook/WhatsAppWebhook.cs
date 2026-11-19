@@ -1,4 +1,5 @@
 using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Domain.Entities.WhatsApp;
 using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text;
@@ -122,19 +123,12 @@ public sealed class WhatsAppWebhook(
                         );
                         continue;
                     }
-                    if (sosStatuses is not null && value.TryGetProperty("statuses", out var statuses) && statuses.ValueKind == JsonValueKind.Array)
-                        foreach (var status in statuses.EnumerateArray()) {
-                            var correlation=String(status,"biz_opaque_callback_data");
-                            var statusId=String(status,"id"); var recipient=String(status,"recipient_id");
-                            var state=String(status,"status");
-                            if(correlation is null || statusId is null || recipient is null || state is null
-                                || !long.TryParse(String(status,"timestamp"),out var seconds) || seconds<0 || seconds>253402300799) continue;
-                            string? errorCode=null;
-                            if(status.TryGetProperty("errors",out var errors) && errors.ValueKind==JsonValueKind.Array && errors.GetArrayLength()>0
-                                && errors[0].ValueKind==JsonValueKind.Object && errors[0].TryGetProperty("code",out var code)
-                                && code.ValueKind==JsonValueKind.Number && code.TryGetInt32(out var n)) errorCode="meta:"+n;
-                            await sosStatuses.ReceiveAsync(correlation,statusId,recipient,state,DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime,errorCode,ct);
-                        }
+                    if (
+                        value.TryGetProperty("statuses", out var statuses)
+                        && statuses.ValueKind == JsonValueKind.Array
+                    )
+                        foreach (var status in statuses.EnumerateArray())
+                            await AcceptStatusAsync(status, now, ct);
                     if(!value.TryGetProperty("messages",out var messages) || messages.ValueKind!=JsonValueKind.Array)continue;
                     foreach (var message in messages.EnumerateArray())
                     {
@@ -197,6 +191,83 @@ public sealed class WhatsAppWebhook(
             }
         }
         return 200;
+    }
+
+    /// <summary>
+    /// Persiste el recibo localmente (siempre primero) y después lo reenvía a SOS con la misma
+    /// semántica previa. Un wamid desconocido solo deja el recibo en <c>message_receipts</c>.
+    /// </summary>
+    private async Task AcceptStatusAsync(JsonElement status, DateTimeOffset now, CancellationToken ct)
+    {
+        var statusId = String(status, "id");
+        var recipient = String(status, "recipient_id");
+        var state = String(status, "status");
+        if (
+            statusId is null
+            || state is null
+            || !long.TryParse(String(status, "timestamp"), out var seconds)
+            || seconds < 0
+            || seconds > 253402300799
+        )
+            return;
+        string? errorCode = null;
+        if (
+            status.TryGetProperty("errors", out var errors)
+            && errors.ValueKind == JsonValueKind.Array
+            && errors.GetArrayLength() > 0
+            && errors[0].ValueKind == JsonValueKind.Object
+            && errors[0].TryGetProperty("code", out var code)
+            && code.ValueKind == JsonValueKind.Number
+            && code.TryGetInt32(out var n)
+        )
+            errorCode = "meta:" + n;
+        var occurredAt = DateTimeOffset.FromUnixTimeSeconds(seconds);
+
+        var parsed = MessageStatusOrder.Parse(state);
+        if (parsed is null)
+            logger.LogInformation(
+                "Recibo WhatsApp ignorado: estado {Status} no soportado para {Wamid}",
+                state.Length > 20 ? state[..20] : state,
+                MessageReceiptLedger.MaskWamid(statusId)
+            );
+        else if (statusId.Length > MessageReceiptLedger.MaxWamidLength)
+            logger.LogWarning("Recibo WhatsApp ignorado: wamid excede {Max} caracteres", MessageReceiptLedger.MaxWamidLength);
+        else
+        {
+            // recipient_id es el número del destinatario: solo se guarda si tiene forma de MSISDN.
+            var recipientId =
+                recipient is { Length: >= 8 and <= 20 } && recipient.All(char.IsAsciiDigit) ? recipient : null;
+            var inserted = await MessageReceiptLedger.RecordAsync(
+                db, statusId, parsed.Value, recipientId, occurredAt, errorCode, now, ct);
+            logger.LogInformation(
+                "Recibo WhatsApp {Status} para {Wamid}: {Result}",
+                parsed.Value,
+                MessageReceiptLedger.MaskWamid(statusId),
+                inserted ? "persistido" : "duplicado"
+            );
+        }
+
+        var correlation = String(status, "biz_opaque_callback_data");
+        if (sosStatuses is null || correlation is null || recipient is null)
+            return;
+        try
+        {
+            await sosStatuses.ReceiveAsync(correlation, statusId, recipient, state, occurredAt.UtcDateTime, errorCode, ct);
+        }
+        catch (Exception ex) when (ex is DbException or DbUpdateException or TimeoutException)
+        {
+            // Mismo comportamiento previo: 429 para que Meta reenvíe. El recibo local ya quedó
+            // persistido y es idempotente, así que el reenvío no lo duplica.
+            throw;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogError(
+                "Receptor SOS falló procesando el recibo {Wamid}: {Cause}",
+                MessageReceiptLedger.MaskWamid(statusId),
+                ex.GetType().Name
+            );
+        }
     }
 
     private static string? String(JsonElement element, string key) =>

@@ -131,6 +131,110 @@ namespace CoppAddresd.WhatsApp.Persistence.Migrations
                     b.ToTable("conversations", "whatsapp");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.WhatsApp.MessageReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("error_code");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("RecipientId")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("recipient_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Wamid")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("wamid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("Wamid", "Status")
+                        .IsUnique();
+
+                    b.ToTable("message_receipts", "whatsapp");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.WhatsApp.OutboundMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("error_code");
+
+                    b.Property<int>("FragmentIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("fragment_index");
+
+                    b.Property<Guid>("RawEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("raw_event_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("sent")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("StatusAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("status_at");
+
+                    b.Property<string>("WaId")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("wa_id");
+
+                    b.Property<string>("Wamid")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("wamid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RawEventId");
+
+                    b.HasIndex("Wamid")
+                        .IsUnique();
+
+                    b.ToTable("outbound_messages", "whatsapp");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.WhatsApp.PatientLink", b =>
                 {
                     b.Property<Guid>("Id")
@@ -314,6 +418,20 @@ namespace CoppAddresd.WhatsApp.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("patient_id");
 
+                    b.Property<DateTimeOffset?>("ReceiptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("receipt_at");
+
+                    b.Property<string>("ReceiptErrorCode")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("receipt_error_code");
+
+                    b.Property<string>("ReceiptStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("receipt_status");
+
                     b.Property<Guid>("ReminderId")
                         .HasColumnType("uuid")
                         .HasColumnName("reminder_id");
@@ -330,6 +448,9 @@ namespace CoppAddresd.WhatsApp.Persistence.Migrations
                         .HasColumnName("wamid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Wamid")
+                        .HasFilter("wamid IS NOT NULL");
 
                     b.HasIndex("ReminderId", "Attempt")
                         .IsUnique();
@@ -429,6 +550,15 @@ namespace CoppAddresd.WhatsApp.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("raw_events", "whatsapp");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.WhatsApp.OutboundMessage", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.WhatsApp.WhatsAppRawEvent", null)
+                        .WithMany()
+                        .HasForeignKey("RawEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.WhatsApp.ReminderDelivery", b =>
