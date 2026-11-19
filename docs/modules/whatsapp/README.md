@@ -79,8 +79,10 @@ dotnet test tests/CoppAddresd.WhatsApp.Tests
 propagar cuerpos de Meta. `MetaCloudWhatsAppSender` usa Graph v23.0, Bearer por
 petición y timeout de 15 s. HTTP 429/5xx y códigos 1/2/4/80007/130429 son
 transitorios; 190 tiene prioridad permanente. No hay retry HTTP automático.
-El worker divide la respuesta en fragmentos de hasta 4096 unidades UTF-16 sin
-romper pares sustitutos. El sender rechaza texto si la última entrada tiene 24 h
+El worker adapta encabezados, énfasis, enlaces, tablas y bloques de código.
+Divide el texto resultante en fragmentos de hasta 4096 unidades UTF-16 y
+prefiere cortes de párrafo, línea o palabra. Mantiene los grafemas completos
+cuando caben en un mensaje. El sender rechaza texto si la última entrada tiene 24 h
 o más; los recordatorios usan siempre plantillas deterministas (D9).
 HttpClient no registra cuerpos, URLs ni headers del proveedor. Los logs propios
 solo contienen teléfono enmascarado y códigos de error numéricos/internos.
@@ -95,7 +97,13 @@ del challenge, 200; cualquier otro caso → 403. Flag apagado → 404.
 `POST`: HMAC-SHA256 sobre bytes originales, comparación de tiempo constante;
 401 sin persistencia ante firma ausente/inválida. Máximo 1 MiB por request.
 El endpoint persiste cada mensaje antes del 200 (índice único wamid), cuenta
-duplicados y emite una señal de cola en proceso. No ejecuta el agente en HTTP.
+duplicados y emite una señal de cola en proceso. La primera persistencia
+actualiza la última interacción y cancela los recordatorios pendientes
+programados hasta ese momento en una sola sentencia. El agente se ejecuta en
+el worker.
+El cuerpo y la persistencia tienen un presupuesto de cuatro segundos. Los fallos
+de persistencia y el vencimiento del presupuesto devuelven 429 para admitir
+reentrega. Un JSON válido con estructuras desconocidas se ignora.
 Solo acepta el phone_number_id configurado. Recibos de estado no abren ventana.
 El payload completo es información sensible: no se imprime en logs.
 
@@ -109,6 +117,9 @@ La primera búsqueda normalizada recorre perfiles; ocurre una vez por vínculo y
 no añade índices ni funciones en schemas ajenos. Luego `patient_links.wa_id`
 es la fuente del canal (D3). V1 admite un número por paciente y una conversación.
 El vínculo conserva user_id para reutilizar la identidad y consentimiento del chat.
+Antes de cada turno del agente se comprueba por ID que el perfil sigue activo y
+pertenece al usuario vinculado. Un vínculo sin propietario válido recibe guía
+segura. El texto entrante viaja únicamente en el campo `message`.
 Un teléfono desconocido recibe la guía de vinculación por OTP cuando el flujo
 está habilitado, o instrucciones para continuar en la app ANTARES cuando no está
 disponible. En ambos casos se omite el agente, se protege el contenido de
@@ -123,8 +134,13 @@ evento con `FOR UPDATE SKIP LOCKED` y lease de cinco minutos en una sola sentenc
 libera el lock y procesa con límite de dos minutos. Ordena por recepción por número.
 Un turno anterior pendiente impide que otro worker adelante el mismo hilo.
 Invoca `ChatCommand` por MediatR (el mismo handler de ChatController) con el agente
-`whatsapp`, el `user_id` cuando existe y el `patient_id`. Omite `control_context`.
+`whatsapp`, `channel=whatsapp`, `channel_message_id` igual al `wamid`,
+`supports_vita=true`, `user_id` y `patient_id` verificados. El control de
+exámenes de la app conserva su política de canal.
 El cliente de IA mantiene su validación de consentimiento, también en background.
+App, voz Vita y WhatsApp usan `proactive-{userId}` como hilo predeterminado.
+El [contrato de sincronización y matriz de KAN-74](KAN-74-PARIDAD.md)
+detalla la continuidad, la transición de hilos y los bloqueos de paridad.
 
 Idioma inicial es; cambia a en solo con señal clara y se conserva entre turnos.
 SALIR/STOP e INICIAR/START son insensibles a caso y acentos; confirman y cambian
@@ -137,10 +153,15 @@ al envío del respaldo. Los fallos de preparación también producen un respaldo
 cuando se puede guardar y enviar. Los logs registran el identificador del evento,
 el código y el tipo de excepción cuando aplica, sin cuerpos del proveedor.
 
-La respuesta se persiste antes del envío y cada fragmento aceptado avanza un
-cursor durable. Si Meta acepta el respaldo, el evento se cierra y conserva el
-código del agente. Un fallo transitorio de envío guarda su propio código en el
-evento, registra un reintento del fragmento pendiente a los 5, 10, 20 o 40 s y
+La ejecución se marca en la BD antes de llamar a AI. Un resultado perdido
+genera una respuesta segura al recuperar el evento. El POST de WhatsApp a AI
+se intenta una sola vez para proteger las escrituras de las tools.
+La secuencia exacta de fragmentos se persiste antes del envío y cada fragmento
+aceptado avanza un cursor durable. Los eventos enviados parcialmente en la
+versión anterior se completan con sus cortes originales. Si Meta acepta el
+respaldo, el evento se cierra y conserva el código del agente. Un fallo
+transitorio de envío guarda su propio código en el evento, registra un
+reintento del fragmento pendiente a los 5, 10, 20 o 40 s y
 utiliza la respuesta guardada. El rechazo permanente, la ventana cerrada o el
 agotamiento de cinco intentos cierran el evento y permiten procesar el siguiente
 mensaje del número. Si el quinto intento fue interrumpido, al vencer el lease se
@@ -182,6 +203,9 @@ de las ocho plantillas en Meta. Configuración no secreta: StartHour=9, EndHour=
 (fin exclusivo), DailyHour=10 y ActiveConversationMinutes=120. Zona America/Bogota,
 lunes a viernes. Fuera de franja se difiere al siguiente día hábil. Una aceptación
 impone 24 h sin otro toque del mismo tipo; el diferimiento no consume intento.
+La [verificación de KAN-74](KAN-74-PARIDAD.md#84-consentimiento-y-meta) encontró
+que un vínculo nuevo es elegible sin opt-in explícito. Este punto queda abierto
+para el flujo de consentimiento antes de habilitar plantillas.
 
 Estados de Reminder: Pending, Completed, Cancelled, Exhausted. Cada intento tiene
 fila ReminderDelivery (paciente, tipo, número, fecha, wamid, estado y error).
