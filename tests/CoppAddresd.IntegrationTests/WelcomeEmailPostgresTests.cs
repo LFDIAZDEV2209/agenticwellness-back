@@ -134,8 +134,9 @@ public sealed class WelcomeEmailPostgresTests : IAsyncLifetime
         db.Users.Add(user);
         await db.SaveChangesAsync();
         var migrations = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.EndsWith("AddWelcomeEmailOutbox", migrations[^1]);
-        await db.GetService<IMigrator>().MigrateAsync(migrations[^2]);
+        var welcomeMigration = Array.FindIndex(migrations, id => id.EndsWith("AddWelcomeEmailOutbox", StringComparison.Ordinal));
+        Assert.True(welcomeMigration > 0);
+        await db.GetService<IMigrator>().MigrateAsync(migrations[welcomeMigration - 1]);
         Assert.True(await db.Users.AnyAsync(x => x.Id == user.Id));
         await db.Database.MigrateAsync();
         await WelcomeEmailQueue.EnqueueAsync(db, user.Id);

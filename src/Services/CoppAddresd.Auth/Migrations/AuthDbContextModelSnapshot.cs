@@ -695,6 +695,9 @@ namespace CoppAddresd.Auth.Migrations
                     b.Property<DateTime>("NextAttemptAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("PatientId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("ReadyAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -706,7 +709,7 @@ namespace CoppAddresd.Auth.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -716,11 +719,18 @@ namespace CoppAddresd.Auth.Migrations
 
                     b.HasIndex("InvitationId");
 
+                    b.HasIndex("PatientId")
+                        .IsUnique()
+                        .HasFilter("\"PatientId\" IS NOT NULL");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("Status", "NextAttemptAt");
 
-                    b.ToTable("WelcomeEmailDeliveries", "auth");
+                    b.ToTable("WelcomeEmailDeliveries", "auth", t =>
+                        {
+                            t.HasCheckConstraint("ck_welcome_delivery_subject", "(\"UserId\" IS NOT NULL AND \"PatientId\" IS NULL)\n    OR (\"UserId\" IS NULL AND \"PatientId\" IS NOT NULL AND \"InvitationId\" IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1036,8 +1046,7 @@ namespace CoppAddresd.Auth.Migrations
                     b.HasOne("CoppAddresd.Auth.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

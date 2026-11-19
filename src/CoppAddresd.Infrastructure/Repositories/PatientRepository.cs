@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using CoppAddresd.Application.Features.Patients;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
@@ -207,6 +208,19 @@ public sealed class PatientRepository(AppDbContext dbContext) : IPatientReposito
     )
     {
         dbContext.PatientProfiles.Add(patient);
+        // El perfil y la solicitud se guardan juntos; un alta fallida no dispara correo.
+        if (patient.CreatedBy is not null
+            && patient.Status != "Inactivo"
+            && !string.IsNullOrWhiteSpace(patient.DocumentNumber)
+            && MailAddress.TryCreate(patient.Email, out var address)
+            && address.Address == patient.Email)
+        {
+            dbContext.Set<PatientWelcomeRequest>().Add(new()
+            {
+                PatientId = patient.Id,
+                RequestedAt = DateTime.UtcNow,
+            });
+        }
         await dbContext.SaveChangesAsync(ct);
         return patient;
     }

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using CoppAddresd.Auth.Configuration;
 using CoppAddresd.Auth.Data;
+using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Interfaces;
 using CoppAddresd.Auth.Models;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,23 @@ public sealed class WelcomeEmailDispatcher(
         var delivery = await db.WelcomeEmailDeliveries.SingleAsync(x => x.Id == id, ct);
         try
         {
+            if (delivery.PatientId is Guid patientId)
+            {
+                var content = await PatientWelcomeQueue.ResolveAsync(db, patientId, ct);
+                if (content is null)
+                {
+                    delivery.Status = "Skipped";
+                    delivery.LastErrorCode = "PatientUnavailable";
+                    delivery.LeaseUntil = null;
+                    await db.SaveChangesAsync(ct);
+                }
+                else
+                {
+                    await SendAsync(delivery, content, settings, ct);
+                }
+                return;
+            }
+
             var user = await db
                 .Users.AsNoTracking()
                 .SingleOrDefaultAsync(x => x.Id == delivery.UserId, ct);
@@ -169,7 +187,8 @@ public sealed class WelcomeEmailDispatcher(
                 expiresAt = invitation.ExpiresAt;
                 await db.SaveChangesAsync(ct);
             }
-            var message = WelcomeEmailTemplate.Build(
+            await SendAsync(
+                delivery,
                 new WelcomeEmailContent(
                     user.Email,
                     user.FirstName,
@@ -181,21 +200,8 @@ public sealed class WelcomeEmailDispatcher(
                     invitationUrl,
                     expiresAt
                 ),
-                settings
-            );
-            await sender.SendAsync(message, ct);
-            delivery.Status = settings.Provider.Equals("Log", StringComparison.OrdinalIgnoreCase)
-                ? "Logged"
-                : "Sent";
-            delivery.SentAt = delivery.Status == "Sent" ? DateTime.UtcNow : null;
-            delivery.LastErrorCode = null;
-            delivery.LeaseUntil = null;
-            await db.SaveChangesAsync(ct);
-            logger.LogInformation(
-                "Bienvenida {DeliveryId}: {Status}, intento {Attempt}",
-                delivery.Id,
-                delivery.Status,
-                delivery.Attempts
+                settings,
+                ct
             );
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -222,6 +228,28 @@ public sealed class WelcomeEmailDispatcher(
             );
         }
     }
+
+    private async Task SendAsync(
+        WelcomeEmailDelivery delivery,
+        WelcomeEmailContent content,
+        EmailSettings settings,
+        CancellationToken ct)
+    {
+        await sender.SendAsync(WelcomeEmailTemplate.Build(content, settings), ct);
+        delivery.Status = settings.Provider.Equals("Log", StringComparison.OrdinalIgnoreCase)
+            ? "Logged"
+            : "Sent";
+        delivery.SentAt = delivery.Status == "Sent" ? DateTime.UtcNow : null;
+        delivery.LastErrorCode = null;
+        delivery.LeaseUntil = null;
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation(
+            "Bienvenida {DeliveryId}: {Status}, intento {Attempt}",
+            delivery.Id,
+            delivery.Status,
+            delivery.Attempts
+        );
+    }
 }
 
 public sealed class WelcomeEmailWorker(
@@ -243,6 +271,14 @@ public sealed class WelcomeEmailWorker(
                 if (!settings.WelcomeEnabled)
                     continue;
                 var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+                try
+                {
+                    await PatientWelcomeQueue.TransferPendingAsync(db, stoppingToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    logger.LogWarning("Transferencia de bienvenidas de paciente pendiente: {ErrorType}", ex.GetType().Name);
+                }
                 var now = DateTime.UtcNow;
                 var max = Math.Clamp(settings.WelcomeMaxAttempts, 1, 20);
                 await db

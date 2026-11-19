@@ -1,10 +1,13 @@
 extern alias ApiEntry;
 
+using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using CoppAddresd.Auth.Data;
 using CoppAddresd.Auth.Entities;
+using CoppAddresd.Auth.Interfaces;
+using CoppAddresd.Auth.Services;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Entities.ProgramProgress;
 using CoppAddresd.Domain.Enums.ProgramProgress;
@@ -30,6 +33,8 @@ var connection = new NpgsqlConnectionStringBuilder
 };
 if (!dbName.StartsWith("copp_review_medications_", StringComparison.Ordinal))
     throw new InvalidOperationException("Solo se admiten bases locales copp_review_medications_.");
+var welcomeInbox = dbName.StartsWith("copp_review_medications_welcome_", StringComparison.Ordinal)
+    ? new QaWelcomeInbox() : null;
 var output = Path.GetFullPath(Environment.GetEnvironmentVariable("COP_E2E_OUTPUT") ?? "/tmp/copp-medication-e2e");
 if (!output.StartsWith(Path.GetTempPath(), StringComparison.Ordinal))
     throw new InvalidOperationException("La evidencia debe estar fuera de los repositorios.");
@@ -54,7 +59,7 @@ var settings = new Dictionary<string, string?>
     ["SkipDatabaseInitialization"] = "true",
     ["Sms:Provider"] = "Noop", ["Sms:IsEnabled"] = "false",
     ["Voice:Provider"] = "Noop", ["Voice:IsEnabled"] = "false",
-    ["Twilio:IsEnabled"] = "false", ["Email:Provider"] = "Log", ["Fcm:Enabled"] = "false",
+    ["Twilio:IsEnabled"] = "false", ["Email:Provider"] = welcomeInbox is null ? "Log" : "Smtp", ["Fcm:Enabled"] = "false",
     ["AiService:BaseUrl"] = "http://127.0.0.1:5199",
     ["FoodAi:BaseUrl"] = "http://127.0.0.1:5199",
     ["Community:BaseUrl"] = "http://127.0.0.1:5199",
@@ -69,7 +74,7 @@ Environment.SetEnvironmentVariable("SosWhatsApp__Enabled", "false");
 foreach (var setting in settings)
     Environment.SetEnvironmentVariable(setting.Key.Replace(":", "__", StringComparison.Ordinal), setting.Value);
 
-await using var auth = new AuthFactory(settings);
+await using var auth = new AuthFactory(settings, welcomeInbox);
 auth.UseKestrel(options => options.ListenLocalhost(5163));
 using var authClient = auth.CreateClient();
 await using (var scope = auth.Services.CreateAsyncScope())
@@ -79,7 +84,7 @@ await using (var scope = auth.Services.CreateAsyncScope())
 }
 
 var clock = new QaClock();
-await using var api = new ApiFactory(settings, clock);
+await using var api = new ApiFactory(settings, clock, welcomeInbox is not null);
 api.UseKestrel(options => options.ListenLocalhost(5162));
 using var apiClient = api.CreateClient();
 await using (var scope = api.Services.CreateAsyncScope())
@@ -128,6 +133,29 @@ relay.Run(async context =>
         if (patients.Count > 0) await store.MonitoredPatientsAsync(patients[^1], 50, context.RequestAborted);
         await context.Response.WriteAsJsonAsync(new { refreshed = true, count = patients.Count }); return;
     }
+    if (welcomeInbox is not null && context.Request.Method == "GET" && context.Request.Path == "/__qa/welcome-inbox")
+    {
+        await context.Response.WriteAsJsonAsync(welcomeInbox.Messages.ToArray());
+        return;
+    }
+    if (welcomeInbox is not null && context.Request.Method == "GET"
+        && context.Request.Path.StartsWithSegments("/__qa/welcome-status", out var target)
+        && Guid.TryParse(target.Value?.TrimStart('/'), out var patientId))
+    {
+        await using var scope = auth.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+        var patientKey = $"patient-welcome:{patientId:D}";
+        var accountKey = await db.Database.SqlQuery<string?>($"""
+            SELECT 'welcome:' || user_id::text AS "Value"
+            FROM app.patient_profiles WHERE id = {patientId}
+            """).SingleAsync(context.RequestAborted);
+        await context.Response.WriteAsJsonAsync(new
+        {
+            patientDeliveries = await db.WelcomeEmailDeliveries.CountAsync(x => x.DeduplicationKey == patientKey, context.RequestAborted),
+            accountDeliveries = accountKey is null ? 0 : await db.WelcomeEmailDeliveries.CountAsync(x => x.DeduplicationKey == accountKey, context.RequestAborted),
+        });
+        return;
+    }
     var port = context.Request.Path.StartsWithSegments("/api/auth") ? 5163 : 5162;
     using var request = new HttpRequestMessage(new HttpMethod(context.Request.Method),
         $"http://127.0.0.1:{port}{context.Request.Path}{context.Request.QueryString}");
@@ -156,7 +184,7 @@ static async Task<Dictionary<string, object>> SeedAsync(IServiceProvider authSer
 {
     var scopedClinicId = Id("201");
     var scopedProfessionalId = Id("303");
-    string[] permissionCodes = ["Medications.View", "Medications.Manage", "Medications.ManageAccess", "Medications.Export", "Audit.View", "Patients.View", "Patients.ViewOwn", "Patients.ViewAll", "Patients.Update", "Program.Profile360View", "Nutrition.View", "System.AdminSettings", "Organizations.View", "Clinics.View"];
+    string[] permissionCodes = ["Medications.View", "Medications.Manage", "Medications.ManageAccess", "Medications.Export", "Audit.View", "Patients.View", "Patients.ViewOwn", "Patients.ViewAll", "Patients.Update", "Patients.Create", "Program.Profile360View", "Nutrition.View", "System.AdminSettings", "Organizations.View", "Clinics.View"];
     var specs = new[]
     {
         new { Code = "patient", Id = Id("1"), Email = "medication.patient@copp.test", Document = "900000067" },
@@ -276,7 +304,7 @@ static async Task<Dictionary<string, object>> SeedAsync(IServiceProvider authSer
     return specs.ToDictionary(x => x.Code, x => (object)new { userId = x.Id, login = x.Email, documentNumber = x.Document, password });
 }
 
-sealed class AuthFactory(IReadOnlyDictionary<string, string?> settings) : WebApplicationFactory<AuthDbContext>
+sealed class AuthFactory(IReadOnlyDictionary<string, string?> settings, QaWelcomeInbox? welcomeInbox) : WebApplicationFactory<AuthDbContext>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -284,7 +312,16 @@ sealed class AuthFactory(IReadOnlyDictionary<string, string?> settings) : WebApp
         builder.UseContentRoot(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/Services/CoppAddresd.Auth")));
         builder.ConfigureAppConfiguration((_, config) => { config.Sources.Clear(); config.AddInMemoryCollection(settings); });
         builder.ConfigureLogging(log => log.ClearProviders());
-        builder.ConfigureTestServices(RemoveBackgroundServices);
+        builder.ConfigureTestServices(services =>
+        {
+            RemoveBackgroundServices(services);
+            if (welcomeInbox is not null)
+            {
+                services.RemoveAll<IEmailSender>();
+                services.AddSingleton<IEmailSender>(welcomeInbox);
+                services.AddHostedService<WelcomeEmailWorker>();
+            }
+        });
     }
     internal static void RemoveBackgroundServices(IServiceCollection services)
     {
@@ -292,7 +329,7 @@ sealed class AuthFactory(IReadOnlyDictionary<string, string?> settings) : WebApp
     }
 }
 
-sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock clock) : WebApplicationFactory<ApiEntry::Program>
+sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock clock, bool welcomeEmails) : WebApplicationFactory<ApiEntry::Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -302,6 +339,8 @@ sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock c
         builder.ConfigureLogging(log => log.ClearProviders());
         builder.ConfigureTestServices(services => {
             AuthFactory.RemoveBackgroundServices(services);
+            if (welcomeEmails)
+                services.AddHostedService<CoppAddresd.Api.Security.WelcomeEmailFinalizationWorker>();
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(clock);
         });
@@ -318,4 +357,16 @@ sealed class QaClock : TimeProvider
         return ticks == 0 ? DateTimeOffset.UtcNow : new DateTimeOffset(ticks, TimeSpan.Zero);
     }
     public void Set(DateTimeOffset? value) => Interlocked.Exchange(ref utcTicks, value?.UtcTicks ?? 0);
+}
+
+sealed class QaWelcomeInbox : IEmailSender
+{
+    public ConcurrentQueue<EmailMessage> Messages { get; } = new();
+
+    public Task SendAsync(EmailMessage message, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        Messages.Enqueue(message);
+        return Task.CompletedTask;
+    }
 }

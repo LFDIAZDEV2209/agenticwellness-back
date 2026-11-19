@@ -16,7 +16,8 @@ public sealed record WelcomeEmailContent(
     IReadOnlyList<string> Roles,
     IReadOnlyList<WelcomeCapability> Capabilities,
     string? InvitationUrl = null,
-    DateTime? InvitationExpiresAt = null
+    DateTime? InvitationExpiresAt = null,
+    bool IsPatientOnboarding = false
 );
 
 /// <summary>HTML compatible con correo: tablas, estilos inline, logo HTTPS y alternativa de texto.</summary>
@@ -30,10 +31,15 @@ public static class WelcomeEmailTemplate
         var name = string.IsNullOrWhiteSpace(content.FirstName)
             ? ""
             : ", " + content.FirstName.Trim();
-        var intro = T(
-            "Tu cuenta está lista. Aquí tienes tus accesos y los pasos para comenzar.",
-            "Your account is ready. Here are your enabled services and how to get started."
-        );
+        var intro = content.IsPatientOnboarding
+            ? T(
+                "Tu registro en Copp Adresd está listo. Sigue estos pasos para entrar a la app.",
+                "Your Copp Adresd registration is ready. Follow these steps to sign in to the app."
+            )
+            : T(
+                "Tu cuenta está lista. Aquí tienes tus accesos y los pasos para comenzar.",
+                "Your account is ready. Here are your enabled services and how to get started."
+            );
         var plain = new StringBuilder($"{subject}{name}\n\n{intro}\n");
         var sections = new StringBuilder();
 

@@ -4,7 +4,8 @@ namespace CoppAddresd.Auth.Entities;
 public sealed class WelcomeEmailDelivery
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
+    public Guid? PatientId { get; set; }
     public string DeduplicationKey { get; set; } = string.Empty;
     public Guid? InvitationId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
