@@ -201,7 +201,7 @@ public sealed partial class NutritionPlanWorkflowTests
         await using var host = await VitaAHostAsync();
         using var client = VitaAClient(host);
         var vitals = await client.GetFromJsonAsync<VitaVitalsDto>(
-            $"{VitaARoute}/vitals?userId={patient.UserId}"
+            $"{VitaARoute}/vitals?userId={patient.UserId}&from=2026-11-19&to=2026-11-19"
         );
 
         var weight = Assert.Single(vitals!.Latest, m => m.MetricCode == "weight");
