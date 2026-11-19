@@ -13,13 +13,18 @@ disponibles en los contextos asignados, sin prometer acceso global.
 | Plataforma, individual o CSV | Dentro de la transacción de Identity, después de roles, permisos y acceso ERP |
 | Vinculación de cuenta existente | Después de guardar la unión de asignaciones y el acceso ERP |
 | Empleado/profesional, individual o CSV | Auth crea una invitación diferida; API confirma tras persistir perfil y scopes |
-| Paciente, individual o CSV | El perfil clínico no es una cuenta. Se encola tras verificar OTP y guardar el acceso `app` |
+| Paciente, individual o CSV | Al guardar un perfil con documento y correo válido que pueda acceder a la app. La verificación OTP sigue creando o vinculando la cuenta. |
 | Cuenta OTP posteriormente invitada al ERP | Conserva su bienvenida de app y recibe la invitación necesaria para establecer contraseña |
 
 La API guarda la confirmación en `erp.welcome_email_finalizations`; un worker
 reintenta su entrega a Auth si hay errores HTTP o reinicios. Auth registra el
 correo en `auth."WelcomeEmailDeliveries"` antes de confirmar el alta y entrega
-fuera de la transacción. Una compensación o scopes incompletos no habilitan el
+fuera de la transacción. Para pacientes, el perfil y su solicitud en
+`erp.patient_welcome_requests` se guardan juntos. Auth transfiere las solicitudes a
+su outbox en lotes, con una clave única por paciente. Verifica el contacto y
+acceso vigentes antes de enviar. El OTP posterior no genera otra bienvenida si
+la solicitud del ERP cubre ese perfil. Se conserva el flujo OTP anterior para
+perfiles históricos sin solicitud. Una compensación o scopes incompletos no habilitan el
 envío. Un nuevo POST de adopción reutiliza la invitación pendiente registrada;
 para cambiar el enlace se usa **Reenviar invitación**.
 
@@ -121,10 +126,10 @@ placeholders, reintentos, revocación, suspensión y confirmaciones tras reinici
 4. Aceptar la invitación desde un navegador privado, establecer contraseña y
    entrar al ERP. El enlace no debe aceptar un segundo uso. Repetir una adopción:
    debe conservar la invitación pendiente y no duplicar mensajes.
-5. Crear paciente y verificar OTP en la app. El alta del perfil sola no manda
-   bienvenida. Al existir la cuenta `app`, debe llegar el mensaje sin ERP y con
-   las dos tiendas en Próximamente. Invitar después esa cuenta al ERP y comprobar
-   que recibe el enlace de contraseña y conserva la app.
+5. Crear un paciente con documento y correo en el ERP. Debe llegar un
+   mensaje de app antes del primer inicio de sesión. Verificar OTP y confirmar
+   acceso sin una segunda bienvenida. Probar también alta masiva con filas
+   elegibles, inactivas, duplicadas o sin correo/documento.
 6. Configurar un fallo SMTP de prueba. La cuenta debe seguir creada; revisar
    `Pending`/`Failed`, restaurar transporte y reintentar la entrega. Comprobar
    que no cambian ID, roles ni contraseña. Repetir con una interrupción API→Auth
@@ -137,8 +142,9 @@ placeholders, reintentos, revocación, suspensión y confirmaciones tras reinici
 ## Despliegue
 
 Migraciones aditivas: `AddWelcomeEmailOutbox` (Auth) y
-`AddWelcomeEmailFinalizations` (API). No hay backfill ni envío masivo a cuentas
-históricas. Desplegar Auth antes de habilitar las nuevas llamadas de API; durante
+`AddWelcomeEmailFinalizations` (API), `AddPatientWelcomeRequests` (API) y
+`AddPatientWelcomeDeliveries` (Auth). No hay backfill ni envío masivo a perfiles
+históricos. Desplegar Auth antes de habilitar las nuevas llamadas de API; durante
 la transición soporta clientes anteriores sin `deferWelcome`. El worker de API
 tolera que Auth no esté disponible y conserva confirmaciones pendientes. Para
 pausar correo, configurar `Email__WelcomeEnabled=false`; conservar los registros.

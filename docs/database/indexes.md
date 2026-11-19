@@ -384,3 +384,11 @@ pequeñas un seq-scan es esperable. No se atribuye una prueba de carga productiv
 Cubre las asignaciones completadas con reintento pendiente. El reconciliador
 filtra por batería y vencimiento, y ordena por fecha e ID. Al confirmar la
 proyección, la asignación sale del índice. Se construye concurrentemente.
+
+## Bienvenida de pacientes desde el ERP
+
+| Índice | Uso |
+|---|---|
+| `erp.patient_welcome_requests` PK `patient_id` | Una solicitud por paciente y consulta durante OTP |
+| `erp.patient_welcome_requests (requested_at, patient_id)` parcial | Lotes de solicitudes aún sin transferir |
+| `auth.WelcomeEmailDeliveries (PatientId)` único parcial | Una entrega de alta por paciente sin indexar entregas de cuenta |

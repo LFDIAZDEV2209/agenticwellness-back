@@ -34,7 +34,13 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
 
         builder.Entity<WelcomeEmailDelivery>(b =>
         {
-            b.ToTable("WelcomeEmailDeliveries", "auth");
+            b.ToTable("WelcomeEmailDeliveries", "auth", t => t.HasCheckConstraint(
+                "ck_welcome_delivery_subject",
+                """
+                ("UserId" IS NOT NULL AND "PatientId" IS NULL)
+                    OR ("UserId" IS NULL AND "PatientId" IS NOT NULL AND "InvitationId" IS NULL)
+                """));
+            b.HasIndex(x => x.PatientId).IsUnique().HasFilter("\"PatientId\" IS NOT NULL");
             b.HasKey(x => x.Id);
             b.Property(x => x.DeduplicationKey).HasMaxLength(100).IsRequired();
             b.Property(x => x.Status).HasMaxLength(16).IsRequired();

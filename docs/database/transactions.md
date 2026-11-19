@@ -391,3 +391,8 @@ nuevas y la confirmación del trabajo se guardan juntas. La clave única existen
 paciente e idempotencia protege otro intento de la misma evaluación y métrica.
 La cancelación o un fallo revierte las inserciones y deja la batería pendiente. Los
 fallos reprograman el marcador en otra operación.
+
+El alta de paciente guarda el perfil y su solicitud de bienvenida en un
+`SaveChanges` atómico. El worker de Auth transfiere las solicitudes pendientes
+al outbox con una sentencia que reclama filas con `FOR UPDATE SKIP LOCKED`.
+El envío usa el lease y reintentos del outbox existente fuera de la transacción.

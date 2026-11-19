@@ -74,3 +74,16 @@ La suite comprueba siete recorridos: preflight de contrato; habilitación ERP/al
 ## Acceso habilitado por defecto
 
 `medications-default-access-real.spec.ts` en ERP usa esta misma infraestructura para comprobar acceso sin override, estado vacío en la app, creación/toma sin activación, restricción/restauración desde ERP, permisos de solo lectura, consistencia del programa y exclusión de pacientes inactivos. Usa una base sintética dedicada (por ejemplo `COP_MEDICATION_DATABASE=copp_review_medications_defaults_20261118`) y nunca datos del desarrollador o producción. Los resets de excepciones/estado solo afectan al paciente sintético fijo de esa base.
+
+## Bienvenida de paciente desde el ERP
+
+Crear una base aislada `copp_review_medications_welcome_*` en el contenedor local
+y arrancar el host con ese valor en `COP_MEDICATION_DATABASE`. Configurar el
+servidor Next del ERP en el puerto 3164 con gateway `http://127.0.0.1:5160`.
+El host captura en memoria los correos y OTP sintéticos.
+
+```sh
+COP_E2E_ERP_DIR=/ruta/local/al/erp \
+COP_WELCOME_FIXTURE=/tmp/copp-medication-e2e/fixture.private.json \
+node tests/CoppAddresd.Medications.E2EHost/patient-welcome.mjs
+```
