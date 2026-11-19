@@ -46,3 +46,32 @@ Comprueba un aviso en la bandeja y un push discreto por dispositivo. Toca uno
 para abrir Mis medicamentos. Verifica el segundo aviso pendiente, el tiempo
 elegido al posponer y la ausencia de seguimientos tras registrar la toma o
 pausar el tratamiento. Usa dispositivos iOS y Android del entorno de prueba.
+
+## Preferencias y WhatsApp
+
+El paciente puede ajustar push, bandeja, anticipación y segundo aviso. Las
+preferencias por pauta pueden restringir un canal o precisar sus tiempos. Un
+canal desactivado por el paciente queda desactivado para todas las pautas.
+La agenda refleja un posponer de 15/30 minutos tras recargar la app.
+
+Para WhatsApp se requiere vinculación verificada, consentimiento explícito,
+ausencia de STOP/SALIR y una plantilla utility aprobada por Meta. Configurar
+`Medications__WhatsAppRemindersEnabled=true` y
+`Medications__WhatsAppTemplate` únicamente tras esa aprobación. El adaptador
+usa `es` y `en_US` con cuatro variables posicionales (nombre, medicamento y
+dosis, hora, indicaciones) y tres botones quick reply en orden confirmar,
+posponer 30 minutos y omitir. Los botones solo transmiten el identificador
+opaco de la reserva y la acción. Cada respuesta revalida la vinculación y la
+toma, y usa una clave estable para tolerar un webhook repetido.
+
+**ES** · Hola {{1}}, tienes una toma programada de {{2}} a las {{3}}.
+Indicaciones: {{4}}.
+Botones: Ya lo tomé · Recordar en 30 min · Omitir hoy
+
+**EN** · Hi {{1}}, your next scheduled dose is {{2}} at {{3}}.
+Instructions: {{4}}.
+Buttons: I took it · Remind in 30 min · Skip this dose
+
+El host de QA puede ejecutar el planificador y aplicar una respuesta sintética
+sin invocar Meta ni FCM. La transcripción de notas de voz entrantes de WhatsApp
+no forma parte de este adaptador de botones.

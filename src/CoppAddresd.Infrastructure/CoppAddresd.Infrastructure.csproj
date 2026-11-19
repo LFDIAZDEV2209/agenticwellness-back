@@ -38,6 +38,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="CoppAddresd.UnitTests" />
     <InternalsVisibleTo Include="CoppAddresd.IntegrationTests" />
+    <InternalsVisibleTo Include="CoppAddresd.Medications.E2EHost" />
   </ItemGroup>
 
   <PropertyGroup>

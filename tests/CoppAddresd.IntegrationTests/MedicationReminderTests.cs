@@ -145,7 +145,9 @@ public sealed class MedicationReminderTests : IAsyncLifetime
         Assert.Empty(await store.ClaimRemindersAsync(patientId, "app", FollowUp, default));
         clock.UtcNow = scheduled + FollowUp;
         var app = Assert.Single(await store.ClaimRemindersAsync(patientId, "app", FollowUp, default));
-        var secondary = Assert.Single(await store.ClaimRemindersAsync(patientId, "test-secondary", FollowUp, default));
+        Assert.Empty(await store.ClaimRemindersAsync(patientId, "whatsapp", FollowUp, default));
+        await store.SetReminderPreferencesAsync(patientId, userId, new(true, true, true, 0, null), default);
+        var secondary = Assert.Single(await store.ClaimRemindersAsync(patientId, "whatsapp", FollowUp, default));
         Assert.Equal(app.Occurrence.Dose.Id, secondary.Occurrence.Dose.Id);
         Assert.NotEqual(app.DeliveryId, secondary.DeliveryId);
         Assert.Single(await db.AppNotifications.Where(n => n.PatientId == patientId).ToListAsync());

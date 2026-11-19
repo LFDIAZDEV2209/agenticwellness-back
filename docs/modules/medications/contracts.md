@@ -161,3 +161,21 @@ confirmación del plan, corrección, futuro excluido, nutracéutico adicional,
 protección del estado y suplantación de origen/otro paciente/solo lectura.
 Se ejecuta contra Auth/API/PostgreSQL reales en una base sintética dedicada
 `copp_review_medications_assigned_*`, sin notificaciones ni datos de producción.
+
+## Cierre de la pauta asignada
+
+- `PUT /api/v1/medications/patients/{patientId}/treatments/{id}` aplica una
+  pauta nueva a partir del instante de guardado. Requiere `Medications.Manage`
+  y la revisión del tratamiento. Conserva dosis y cantidades anteriores.
+  `weekdayMask` usa bits de lunes a domingo. `intervalHours` usa el primer
+  horario como ancla y un intervalo transcurrido, incluso si cruza la medianoche.
+- La suspensión desde ERP registra el motivo. El historial de tomas incluye el
+  canal comprobado cuando existe. Los eventos previos conservan su procedencia.
+- La app puede devolver una toma propia a pendiente durante los cinco minutos
+  posteriores a confirmarla. Se agrega un evento de corrección y se concilia
+  el inventario en la misma transacción.
+- Los dos clientes comparan la versión del paciente cada cuatro segundos
+  mientras la vista está visible. La revisión se actualiza en la transacción
+  de escritura. La consulta de versión no genera lecturas de auditoría.
+- El endpoint de adherencia del ERP resume los últimos 7 y 30 días, incluyendo
+  el actual hasta la hora del servidor. Solo cuenta dosis asignadas evaluables.

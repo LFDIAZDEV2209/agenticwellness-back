@@ -1,6 +1,6 @@
 namespace CoppAddresd.Application.Features.Medications;
 
-public sealed record MedicationReminderOccurrence(Guid PatientId, Guid UserId, MedicationDoseDto Dose, string? Instructions = null);
+public sealed record MedicationReminderOccurrence(Guid PatientId, Guid UserId, MedicationDoseDto Dose, string? Instructions = null, MedicationReminderPreferences? Preferences = null);
 
 public interface IMedicationReminderChannel
 {
@@ -17,3 +17,9 @@ public interface IMedicationReminderScheduler
 }
 
 public sealed record SnoozeMedicationDoseRequest(DateTimeOffset ScheduledAt, int Minutes);
+
+
+public interface IMedicationWhatsAppReplies
+{
+    Task<bool> ApplyAsync(Guid patientId, Guid userId, Guid deliveryId, string action, CancellationToken ct);
+}

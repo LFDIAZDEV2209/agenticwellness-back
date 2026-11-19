@@ -1,6 +1,7 @@
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.Features.Chat;
 using CoppAddresd.Application.Features.Patients;
+using CoppAddresd.Application.Features.Medications;
 using CoppAddresd.Application.WhatsApp.Messaging;
 using CoppAddresd.Domain.Entities.WhatsApp;
 using CoppAddresd.WhatsApp.Persistence;
@@ -18,7 +19,8 @@ public sealed class WhatsAppInboundProcessor(
     TimeProvider clock,
     ILogger<WhatsAppInboundProcessor> logger,
     CoppAddresd.Application.WhatsApp.IWhatsAppReminderHooks? reminders = null,
-    CoppAddresd.WhatsApp.Binding.WhatsAppBindingFlow? binding = null
+    CoppAddresd.WhatsApp.Binding.WhatsAppBindingFlow? binding = null,
+    IMedicationWhatsAppReplies? medicationReplies = null
 )
 {
     private const int MaxAttempts = 5;
@@ -212,6 +214,24 @@ public sealed class WhatsAppInboundProcessor(
                 (false, "en") => "Reminders resumed. Send STOP to pause.",
                 (true, _) => "Recordatorios pausados. Envía INICIAR para reactivarlos.",
                 _ => "Recordatorios reactivados. Envía SALIR para pausarlos.",
+            };
+        }
+        else if (MedicationWhatsAppChannel.IsDoseReply(input.Text))
+        {
+            var parts = input.Text.Split(':');
+            var applied = !link.OptOut && medicationReplies is not null && link.UserId is { } linkedUser
+                && await mediator.Send(new VerifyPatientChannelLinkQuery(link.PatientId, linkedUser), ct)
+                && await medicationReplies.ApplyAsync(link.PatientId, linkedUser, Guid.Parse(parts[2]), parts[1], ct);
+            input.Reply = (applied, parts[1], language) switch
+            {
+                (true, "taken", "en") => "Dose recorded.",
+                (true, "taken", _) => "Toma registrada.",
+                (true, "omitted", "en") => "Dose marked as skipped.",
+                (true, "omitted", _) => "Toma marcada como omitida.",
+                (true, "snooze", "en") => "We’ll remind you in 30 minutes.",
+                (true, "snooze", _) => "Te recordaremos en 30 minutos.",
+                (false, _, "en") => "That dose is unavailable. Check My medications in the app.",
+                _ => "Esa toma ya no está disponible. Revisa Mis medicamentos en la app.",
             };
         }
         else if (string.IsNullOrWhiteSpace(input.Text))

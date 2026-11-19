@@ -16,6 +16,7 @@ public sealed class MedicationAppReminderChannel(IDeviceTokenRepository deviceTo
 
     public async Task DispatchAsync(MedicationReminderOccurrence occurrence, Guid deliveryId, CancellationToken ct)
     {
+        if (occurrence.Preferences?.Push == false) return;
         var tokens = await deviceTokens.GetByUserIdAsync(occurrence.UserId, ct);
         var data = new Dictionary<string, string>
         {

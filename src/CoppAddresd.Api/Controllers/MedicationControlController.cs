@@ -56,6 +56,20 @@ public sealed class MedicationControlController(MedicationControlService medicat
         return Ok(result);
     }
 
+    [HttpGet("me/medications/version")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<Guid>> SelfVersion(CancellationToken ct)
+        => Ok(await medications.VersionAsync(await SelfAsync(ct), ct));
+
+    [HttpGet("me/medications/reminder-preferences")]
+    public async Task<ActionResult<MedicationReminderPreferences>> SelfReminderPreferences(CancellationToken ct)
+        => Ok(await medications.GetReminderPreferencesAsync(await SelfAsync(ct), ct));
+
+    [HttpPut("me/medications/reminder-preferences")]
+    public async Task<ActionResult<MedicationReminderPreferences>> UpdateSelfReminderPreferences(
+        MedicationReminderPreferences request, CancellationToken ct)
+        => Ok(await medications.SetReminderPreferencesAsync(await SelfAsync(ct), ActorId, request, ct));
+
     [HttpPost("me/medications/treatments")]
     public async Task<ActionResult<MedicationTreatmentDto>> SelfCreate(CreateMedicationTreatmentRequest request, CancellationToken ct)
     {
@@ -123,6 +137,32 @@ public sealed class MedicationControlController(MedicationControlService medicat
         var result = await medications.WorkspaceAsync(patientId, date, timeZone, false, ct);
         if (monitoring is not null) await monitoring.Store.AuditAccessAsync([patientId], ActorId, "staff_recorded", "read", "workspace", null, ct);
         return Ok(result);
+    }
+
+    [HttpGet("medications/patients/{patientId:guid}/version")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [RequireContextPermission("Medications.View")]
+    public async Task<ActionResult<Guid>> PatientVersion(Guid patientId, CancellationToken ct)
+    {
+        await StaffAsync(patientId, "Medications.View", ct);
+        return Ok(await medications.VersionAsync(patientId, ct));
+    }
+
+    [HttpGet("medications/patients/{patientId:guid}/adherence")]
+    [RequireContextPermission("Medications.View")]
+    public async Task<ActionResult<MedicationAdherenceSummaryDto>> Adherence(Guid patientId, string? timeZone, CancellationToken ct)
+    {
+        await StaffAsync(patientId, "Medications.View", ct);
+        return Ok(await medications.AdherenceAsync(patientId, timeZone, ct));
+    }
+
+    [HttpPut("medications/patients/{patientId:guid}/treatments/{treatmentId:guid}")]
+    [RequireContextPermission("Medications.Manage")]
+    public async Task<ActionResult<MedicationTreatmentDto>> Edit(Guid patientId, Guid treatmentId,
+        UpdateMedicationRegimenRequest request, CancellationToken ct)
+    {
+        await StaffAsync(patientId, "Medications.Manage", ct);
+        return Ok(await medications.UpdateRegimenAsync(patientId, treatmentId, ActorId, request, ct));
     }
 
     [HttpPut("medications/patients/{patientId:guid}/access")]

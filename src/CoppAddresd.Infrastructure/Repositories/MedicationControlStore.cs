@@ -105,6 +105,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             row.UpdatedBy = actorId;
             row.UpdatedAt = Now;
             AddMedicationAudit(patientId, actorId, "staff_recorded", "access_changed", "access", row.Id);
+            await NotifyWorkspaceChangedAsync(patientId, ct);
             await db.SaveChangesAsync(ct);
             return new MedicationAccessDto(row.Enabled, row.Revision);
         }, ct);
@@ -141,6 +142,10 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 Id = Guid.NewGuid(), TreatmentId = treatment.Id, Dosage = request.Dosage, Unit = request.Unit,
                 Route = request.Route ?? "", Instructions = request.Instructions ?? "", TimeZone = request.TimeZone,
                 StartDate = request.StartDate, EndDate = request.EndDate, CreatedAt = Now,
+                WeekdayMask = request.WeekdayMask, IntervalHours = request.IntervalHours,
+                PushReminder = request.Reminders?.Push, InAppReminder = request.Reminders?.InApp,
+                WhatsAppReminder = request.Reminders?.WhatsApp, LeadMinutes = request.Reminders?.LeadMinutes,
+                FollowUpMinutes = request.Reminders?.FollowUpMinutes,
             };
             db.MedicationTreatments.Add(treatment);
             db.MedicationRegimens.Add(regimen);
@@ -154,6 +159,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 EffectiveAt = Bounds(date, zone).Start,
             });
             AddMedicationAudit(patientId, actorId, origin, "treatment_created", "treatment", treatment.Id);
+            await NotifyWorkspaceChangedAsync(patientId, ct);
             await db.SaveChangesAsync(ct);
             await RefreshAlertsCoreAsync(patientId, ct);
             return new MedicationCreateResult(await TreatmentDtoAsync(treatment, ct), true);
@@ -168,14 +174,21 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 .SingleOrDefaultAsync(ct) ?? throw Missing();
             var zone = MedicationControlService.Zone(timeZone);
             var treatments = await TreatmentDtosAsync(patientId, ct);
+            if (!selfService) treatments = await WithPrescribersAsync(patientId, treatments, ct);
             var occurrences = await ProjectDosesAsync(patientId, date, zone, ct);
-            var doses = occurrences.Select(x => x.Dto).ToArray();
+            var ids = occurrences.Where(x => x.Dto.Status == "pending").Select(x => x.Dto.Id).ToArray();
+            var snoozed = await ReminderDeliveries.AsNoTracking().Where(r => r.PatientId == patientId
+                    && r.Channel == AppReminderChannel && r.Snoozed && r.ClaimedAt == null
+                    && r.DueAt > Now && ids.Contains(r.DoseId))
+                .ToDictionaryAsync(r => r.DoseId, r => r.DueAt, ct);
+            var doses = occurrences.Select(x => snoozed.TryGetValue(x.Dto.Id, out var time)
+                ? x.Dto with { SnoozedUntil = time } : x.Dto).ToArray();
             var history = await (from e in db.MedicationIntakeEvents.AsNoTracking()
                 join t in db.MedicationTreatments.AsNoTracking() on e.TreatmentId equals t.Id
                 where e.PatientId == patientId
-                orderby e.RecordedAt descending, e.Id descending
+                orderby e.RecordedAt descending, e.DoseRevision descending, e.Id descending
                 select new MedicationEventDto(e.Id, e.DoseId, e.TreatmentId, t.Name, e.Status,
-                    e.OccurredAt, e.RecordedAt, e.Reason, e.Origin)).Take(100).ToListAsync(ct);
+                    e.OccurredAt, e.RecordedAt, e.Reason, e.Origin, e.Channel)).Take(100).ToListAsync(ct);
             var access = await GetAccessAsync(patientId, ct);
             // Solo las tomas asignadas y ya programadas para este instante forman la adherencia.
             // Futuras, canceladas, adicionales y nutracéuticos no inflan el denominador.
@@ -190,7 +203,8 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 doses.Count(d => offPlan.Contains(d.TreatmentId) && d.Status == "taken"));
             return new MedicationWorkspaceDto(patient, access, treatments, doses, history,
                 new(treatments.Count(t => t.Status == "active"), doses.Count(d => d.Status != "cancelled"),
-                    doses.Count(d => d.Status == "taken"), doses.Count(d => d.Status == "pending")), adherence);
+                    doses.Count(d => d.Status == "taken"), doses.Count(d => d.Status == "pending")), adherence,
+                await VersionAsync(patientId, ct));
         }, ct);
 
     public Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
@@ -199,13 +213,16 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             patientId, actorId, origin, doseId, request, ct), ct);
 
     internal async Task<MedicationDoseDto> RecordWithinPatientTransactionAsync(Guid patientId, Guid actorId,
-        string origin, Guid doseId, RecordMedicationDoseRequest request, CancellationToken ct)
+        string origin, Guid doseId, RecordMedicationDoseRequest request, CancellationToken ct, string? channel = null)
     {
         // El llamador ya bloqueó el perfil y comparte esta transacción con el recibo de Vita.
         if (db.Database.CurrentTransaction is null)
             throw new InvalidOperationException("El registro de la toma requiere una transacción del paciente.");
         await EnsurePatientOriginAsync(patientId, origin, ct);
-        var hash = Hash(new { actorId, origin, doseId, request });
+        var hash = channel is null
+            ? Hash(new { actorId, origin, doseId, request })
+            : Hash(new { actorId, origin, doseId, request, channel });
+        channel ??= origin == "staff_recorded" ? "erp" : "app";
         var existing = await db.MedicationDoseOperations.AsNoTracking()
             .SingleOrDefaultAsync(e => e.PatientId == patientId && e.ClientRequestId == request.ClientRequestId, ct);
         if (existing is not null)
@@ -236,6 +253,9 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             Id = Guid.NewGuid(), PatientId = patientId, DoseId = doseId,
             ClientRequestId = request.ClientRequestId, RequestHash = hash, AcceptedAt = Now,
         });
+        if (request.Status == "pending" && (channel != "app" || dose.Status != "taken"
+            || request.ExpectedRevision != dose.Revision))
+            throw Conflict("Solo puedes deshacer una toma reciente que registraste en la app.");
         if (dose.Status == request.Status)
         {
             await db.SaveChangesAsync(ct);
@@ -243,27 +263,31 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         }
         if (request.ExpectedRevision is { } expected && expected != dose.Revision)
             throw Conflict("La toma cambió. Actualiza el seguimiento.");
-        if (dose.Status != "pending" && (request.ExpectedRevision is null || string.IsNullOrWhiteSpace(request.Reason)))
+        if (dose.Status != "pending" && (request.ExpectedRevision is null || (request.Status != "pending" && string.IsNullOrWhiteSpace(request.Reason))))
             throw Conflict("Para corregir una toma, actualiza la ficha y escribe el motivo.");
         var occurred = (request.OccurredAt ?? clock.GetUtcNow()).UtcDateTime;
         var regimen = await db.MedicationRegimens.AsNoTracking().SingleAsync(r => r.Id == dose.RegimenId, ct);
         var earliest = Bounds(regimen.StartDate, MedicationControlService.Zone(regimen.TimeZone)).Start;
         if (occurred < earliest) throw new UnprocessableEntityException("La fecha de toma es anterior al tratamiento.");
         var previousEvent = await db.MedicationIntakeEvents.AsNoTracking().Where(e => e.DoseId == doseId)
-            .OrderByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).Select(e => (Guid?)e.Id).FirstOrDefaultAsync(ct);
+            .OrderByDescending(e => e.DoseRevision ?? 0).ThenByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).FirstOrDefaultAsync(ct);
+        if (request.Status == "pending" && (previousEvent is null || previousEvent.ActorId != actorId
+            || previousEvent.Channel != "app" || previousEvent.RecordedAt.AddMinutes(5) < Now))
+            throw Conflict("El plazo de cinco minutos para deshacer la toma ya pasó.");
         var intakeEvent = new MedicationIntakeEvent
         {
             Id = Guid.NewGuid(), PatientId = patientId, TreatmentId = dose.TreatmentId, DoseId = doseId,
             ClientRequestId = request.ClientRequestId, RequestHash = hash, Status = request.Status,
             OccurredAt = occurred, RecordedAt = Now, ActorId = actorId, Origin = origin,
-            Reason = request.Reason, CorrectsEventId = previousEvent,
+            Reason = request.Reason, CorrectsEventId = previousEvent?.Id, Channel = channel, DoseRevision = dose.Revision + 1,
         };
         db.MedicationIntakeEvents.Add(intakeEvent);
         await ApplyIntakeStockAsync(patientId, actorId, origin, dose, intakeEvent, regimen.Dosage, ct);
         AddMedicationAudit(patientId, actorId, origin, previousEvent is null ? "dose_recorded" : "dose_corrected", "dose", dose.Id);
         dose.Status = request.Status;
-        dose.OccurredAt = occurred;
+        dose.OccurredAt = request.Status == "pending" ? null : occurred;
         dose.Revision++;
+        await NotifyWorkspaceChangedAsync(patientId, ct);
         await db.SaveChangesAsync(ct);
         await RefreshAlertsCoreAsync(patientId, ct);
         return await DoseQuery(patientId, doseId).SingleAsync(ct);
@@ -289,9 +313,10 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             db.MedicationTreatmentStatusEvents.Add(new MedicationTreatmentStatusEvent
             {
                 Id = Guid.NewGuid(), TreatmentId = treatment.Id, Status = request.Status,
-                Revision = treatment.Revision, EffectiveAt = Now,
+                Revision = treatment.Revision, EffectiveAt = Now, Reason = request.Reason,
             });
-            AddMedicationAudit(patientId, auditActor?.UserId, selfService ? "patient_reported" : "staff_recorded", "treatment_status_changed", "treatment", treatment.Id);
+            AddMedicationAudit(patientId, auditActor?.UserId, selfService ? "patient_reported" : "staff_recorded", "treatment_status_changed", "treatment", treatment.Id, request.Reason);
+            await NotifyWorkspaceChangedAsync(patientId, ct);
             await db.SaveChangesAsync(ct);
             await RefreshAlertsCoreAsync(patientId, ct);
             return await TreatmentDtoAsync(treatment, ct);
@@ -345,7 +370,8 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         var regimens = await (from r in db.MedicationRegimens.AsNoTracking()
             join t in treatments on r.TreatmentId equals t.Id
             where t.PatientId == patientId
-                && !db.MedicationRegimens.Any(later => later.TreatmentId == t.Id && later.Version > r.Version)
+                && (r.EffectiveFrom == null || r.EffectiveFrom < end)
+                && (r.EffectiveUntil == null || r.EffectiveUntil >= start)
             select new { Regimen = r, Treatment = t }).ToListAsync(ct);
         var regimenIds = regimens.Select(r => r.Regimen.Id).ToArray();
         var treatmentIds = regimens.Select(r => r.Treatment.Id).ToArray();
@@ -357,6 +383,12 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         var persisted = await db.MedicationDoses.AsNoTracking().Where(d => d.PatientId == patientId
                 && treatmentIds.Contains(d.TreatmentId) && d.ScheduledAt >= start && d.ScheduledAt < end)
             .ToDictionaryAsync(d => (d.SlotId, d.ScheduledAt), ct);
+        var savedDoseIds = persisted.Values.Select(d => d.Id).ToArray();
+        var latest = await db.MedicationIntakeEvents.AsNoTracking().Where(e => savedDoseIds.Contains(e.DoseId))
+            .GroupBy(e => e.DoseId)
+            .Select(g => g.OrderByDescending(e => e.DoseRevision ?? 0).ThenByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).First())
+            .ToListAsync(ct);
+        var latestByDose = latest.ToDictionary(e => e.DoseId);
         var result = new List<Occurrence>();
         foreach (var entry in regimens)
         {
@@ -366,21 +398,22 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             var last = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(end.AddTicks(-1), zone));
             var registeredOn = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(entry.Treatment.CreatedAt, zone));
             foreach (var slot in slots[regimen.Id])
-            for (var day = first; day <= last; day = day.AddDays(1))
+            foreach (var scheduled in ScheduleTimes(regimen, slot, zone, first, last, start))
             {
+                var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(scheduled, zone));
                 if (day < regimen.StartDate || day < registeredOn || regimen.EndDate is { } until && day > until) continue;
-                var local = day.ToDateTime(slot.LocalTime, DateTimeKind.Unspecified);
-                if (zone.IsInvalidTime(local)) continue;
-                var scheduled = ToUtc(local, zone);
-                if (scheduled < start || scheduled >= end) continue;
+                if (scheduled < start || scheduled >= end || scheduled < regimen.EffectiveFrom || scheduled >= regimen.EffectiveUntil)
+                    continue;
                 var effective = statuses[entry.Treatment.Id].LastOrDefault(e => e.EffectiveAt <= scheduled)?.Status;
                 var projectedStatus = effective == "active" ? "pending" : "cancelled";
                 persisted.TryGetValue((slot.Id, scheduled), out var saved);
                 // Un evento ya registrado conserva su estado y fecha; el ciclo de vida rige las pendientes.
                 var status = saved?.Status is "taken" or "omitted" ? saved.Status : projectedStatus;
+                var lastEvent = saved is null ? null : latestByDose.GetValueOrDefault(saved.Id);
                 var dto = new MedicationDoseDto(saved?.Id ?? OccurrenceId(slot.Id, scheduled), regimen.TreatmentId,
                     entry.Treatment.Name, regimen.Dosage, regimen.Unit, scheduled, regimen.TimeZone,
-                    status, saved?.OccurredAt, saved?.Revision ?? 0);
+                    status, saved?.OccurredAt, saved?.Revision ?? 0, lastEvent?.Channel,
+                    status == "taken" && lastEvent?.Channel == "app" ? lastEvent.RecordedAt.AddMinutes(5) : null, Instructions: regimen.Instructions);
                 result.Add(new(dto, regimen.Id, slot.Id));
             }
         }
@@ -415,7 +448,8 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
 
     private static MedicationTreatmentDto ToTreatment(MedicationTreatment t, MedicationRegimen r, IReadOnlyList<string> times)
         => new(t.Id, t.MedicationId, t.Name, t.ProductType, t.Status, t.Origin, t.Revision, t.CreatedAt,
-            r.Dosage, r.Unit, r.Route, r.Instructions, times, r.TimeZone, r.StartDate, r.EndDate, t.RxCui);
+            r.Dosage, r.Unit, r.Route, r.Instructions, times, r.TimeZone, r.StartDate, r.EndDate, t.RxCui, r.WeekdayMask, r.IntervalHours,
+            new(r.PushReminder, r.InAppReminder, r.WhatsAppReminder, r.LeadMinutes, r.FollowUpMinutes));
 
     private IQueryable<MedicationDoseDto> DoseQuery(Guid patientId, Guid? doseId = null, DateTime? start = null, DateTime? end = null)
     {

@@ -48,19 +48,25 @@ public sealed partial class MedicationControlStore
             from s in supplies.DefaultIfEmpty()
             where !db.MedicationRegimens.Any(later => later.TreatmentId == t.Id && later.Version > r.Version)
             select new { Treatment = t, Patient = p, Regimen = r, Supply = s,
-                Slots = db.MedicationScheduleSlots.Count(slot => slot.RegimenId == r.Id) };
+                Slots = db.MedicationScheduleSlots.Count(slot => slot.RegimenId == r.Id),
+                DaysPerWeek = r.WeekdayMask == null ? 7
+                    : ((r.WeekdayMask.Value & 1) == 0 ? 0 : 1) + ((r.WeekdayMask.Value & 2) == 0 ? 0 : 1)
+                    + ((r.WeekdayMask.Value & 4) == 0 ? 0 : 1) + ((r.WeekdayMask.Value & 8) == 0 ? 0 : 1)
+                    + ((r.WeekdayMask.Value & 16) == 0 ? 0 : 1) + ((r.WeekdayMask.Value & 32) == 0 ? 0 : 1)
+                    + ((r.WeekdayMask.Value & 64) == 0 ? 0 : 1) };
         if (!string.IsNullOrWhiteSpace(query)) {
             var pattern = "%" + query.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
             rows = rows.Where(x => EF.Functions.ILike(x.Treatment.Name, pattern) || EF.Functions.ILike(x.Patient.FirstName + " " + x.Patient.LastName, pattern));
         }
         var total = await rows.CountAsync(ct);
-        var values = await rows.OrderBy(x => x.Supply == null ? decimal.MaxValue : x.Treatment.Status != "active" || x.Slots == 0 ? decimal.MaxValue : x.Supply.Balance / (x.Regimen.Dosage * x.Slots))
+        var values = await rows.OrderBy(x => x.Supply == null ? decimal.MaxValue : x.Treatment.Status != "active" || x.Slots == 0 ? decimal.MaxValue : x.Supply.Balance / (x.Regimen.Dosage * (x.Regimen.IntervalHours != null
+                ? 24m / x.Regimen.IntervalHours.Value : x.Slots * x.DaysPerWeek / 7m)))
             .ThenBy(x => x.Patient.FirstName).ThenBy(x => x.Treatment.Id).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
         var items = values.Select(x => {
             var zone = MedicationControlService.Zone(x.Regimen.TimeZone);
             var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), zone).DateTime);
             var active = x.Treatment.Status == "active" && date >= x.Regimen.StartDate && (x.Regimen.EndDate is null || date <= x.Regimen.EndDate);
-            var daily = active ? x.Regimen.Dosage * x.Slots : 0;
+            var daily = active ? x.Regimen.Dosage * TimesPerDay(x.Regimen.IntervalHours, x.Regimen.WeekdayMask, x.Slots) : 0;
             int? days = x.Supply is not null && daily > 0 ? (int)Math.Min(int.MaxValue, decimal.Floor(Math.Max(0, x.Supply.Balance) / daily)) : null;
             return new MedicationSupplyDto(x.Supply?.Id ?? Guid.Empty, x.Patient.Id, x.Patient.FirstName + " " + x.Patient.LastName,
                 x.Treatment.Id, x.Treatment.Name, x.Regimen.Unit, x.Supply?.Balance ?? 0, daily, days, x.Supply?.ExpiresOn, x.Supply?.Revision ?? 0, x.Supply is not null);
@@ -98,6 +104,7 @@ public sealed partial class MedicationControlStore
                 ActorId = actorId, Origin = origin, Reason = request.Reason, RecordedAt = Now });
             AddMonitoringOperation(patientId, actorId, "stock", request.ClientRequestId, new { origin, treatmentId, request }, supply.Id);
             AddMedicationAudit(patientId, actorId, origin, "stock_" + request.Kind, "inventory", supply.Id);
+            await NotifyWorkspaceChangedAsync(patientId, ct);
             await db.SaveChangesAsync(ct); await RefreshAlertsCoreAsync(patientId, ct);
             return await SupplyDtoAsync(patientId, treatmentId, ct);
         }, ct);
@@ -114,7 +121,7 @@ public sealed partial class MedicationControlStore
                 Slots = db.MedicationScheduleSlots.Count(s => s.RegimenId == regimen.Id) }).SingleOrDefaultAsync(ct) ?? throw Missing();
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), MedicationControlService.Zone(row.Regimen.TimeZone)).DateTime);
         var daily = row.Treatment.Status == "active" && today >= row.Regimen.StartDate && (row.Regimen.EndDate is null || today <= row.Regimen.EndDate)
-            ? row.Regimen.Dosage * row.Slots : 0;
+            ? row.Regimen.Dosage * TimesPerDay(row.Regimen.IntervalHours, row.Regimen.WeekdayMask, row.Slots) : 0;
         return new(row.Supply.Id, patientId, row.PatientName, treatmentId, row.Treatment.Name, row.Regimen.Unit, row.Supply.Balance,
             daily, daily > 0 ? (int)Math.Min(int.MaxValue, decimal.Floor(Math.Max(0, row.Supply.Balance) / daily)) : null,
             row.Supply.ExpiresOn, row.Supply.Revision, true);

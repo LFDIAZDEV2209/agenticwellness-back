@@ -42,6 +42,8 @@ public static class DependencyInjection
         if (reminders.Enabled) services.AddHostedService<Reminders.WhatsAppReminderWorker>();
         services.AddHttpClient<CoppAddresd.Application.WhatsApp.Messaging.IWhatsAppMessageSender,
             Messaging.MetaCloudWhatsAppSender>().RemoveAllLoggers();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderChannel,
+            Messaging.MedicationWhatsAppChannel>();
         return services;
     }
 }

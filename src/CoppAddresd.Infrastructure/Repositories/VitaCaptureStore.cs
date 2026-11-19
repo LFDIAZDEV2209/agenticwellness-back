@@ -146,7 +146,8 @@ public sealed class VitaCaptureStore(AppDbContext db, IClinicalMeasurementReposi
         var request = MedicationControlService.ValidateRecord(new RecordMedicationDoseRequest(
             proposal.Nonce, data.Status!, data.ObservedAt, ScheduledAt: data.ScheduledAt), now);
         var dose = await medications.RecordWithinPatientTransactionAsync(proposal.PatientId, proposal.UserId,
-            "patient_reported", data.DoseId!.Value, request, ct);
+            "patient_reported", data.DoseId!.Value, request, ct,
+            proposal.Channel == "vita_whatsapp" ? "whatsapp" : proposal.Channel);
         return dose.Id;
     }
 

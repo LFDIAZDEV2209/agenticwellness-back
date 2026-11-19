@@ -59,6 +59,7 @@ var settings = new Dictionary<string, string?>
     ["Storage:SignatureKey"] = key, ["Storage:Provider"] = "Local",
     ["Storage:Local:RootPath"] = Path.Combine(output, "storage"),
     ["Cache:Provider"] = "Memory", ["Medications:Enabled"] = "true", ["Medications:MonitoringWorkerEnabled"] = "false",
+    ["Medications:RemindersEnabled"] = dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal).ToString(),
     ["Auth:InternalApiKey"] = key, ["AuthService:InternalApiKey"] = key,
     ["AuthService:BaseUrl"] = $"http://127.0.0.1:{authPort}",
     ["Cors:Origins"] = "http://localhost:3100,http://127.0.0.1:3100,http://localhost:5188,http://127.0.0.1:5188,http://localhost:5160,http://127.0.0.1:5160",
@@ -100,7 +101,10 @@ await using (var scope = api.Services.CreateAsyncScope())
 }
 
 var accounts = await SeedAsync(auth.Services, api.Services, password);
-using var rxTermsSync = dbName.StartsWith("copp_review_medications_rxterms", StringComparison.Ordinal)
+var testCatalog = dbName.StartsWith("copp_review_medications_rxterms", StringComparison.Ordinal)
+    || (dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)
+        && Environment.GetEnvironmentVariable("COP_MEDICATION_E2E_RXTERMS") == "true");
+using var rxTermsSync = testCatalog
     ? ActivatorUtilities.CreateInstance<RxTermsSyncWorker>(api.Services)
     : null;
 if (rxTermsSync is not null)
@@ -144,6 +148,33 @@ relay.Run(async context =>
         foreach (var patient in patients) await store.RefreshAlertsAsync(patient, context.RequestAborted);
         if (patients.Count > 0) await store.MonitoredPatientsAsync(patients[^1], 50, context.RequestAborted);
         await context.Response.WriteAsJsonAsync(new { refreshed = true, count = patients.Count }); return;
+    }
+    if (dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)
+        && context.Request.Method == "POST" && context.Request.Path == "/__qa/medications/sweep")
+    {
+        var channel = context.Request.Query["channel"].ToString();
+        if (channel is not ("app" or "whatsapp")) { context.Response.StatusCode = 400; return; }
+        await using var scope = api.Services.CreateAsyncScope();
+        var store = scope.ServiceProvider.GetRequiredService<CoppAddresd.Infrastructure.Repositories.MedicationControlStore>();
+        var claimed = await store.ClaimRemindersAsync(Id("101"), channel, TimeSpan.FromMinutes(30), context.RequestAborted);
+        // Se reserva con el motor real. En el host de QA no se invoca FCM ni Meta.
+        await context.Response.WriteAsJsonAsync(claimed.Select(x => new { id = x.DeliveryId, dose = x.Occurrence.Dose }));
+        return;
+    }
+    if (dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)
+        && context.Request.Method == "POST" && context.Request.Path == "/__qa/medications/whatsapp-reply")
+    {
+        var input = await context.Request.ReadFromJsonAsync<QaMedicationReply>(context.RequestAborted);
+        if (input is null) { context.Response.StatusCode = 400; return; }
+        await using var scope = api.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var qaPatientId = Id("101");
+        var user = await db.PatientProfiles.AsNoTracking().Where(p => p.Id == qaPatientId)
+            .Select(p => p.UserId!.Value).SingleAsync(context.RequestAborted);
+        var replies = scope.ServiceProvider.GetRequiredService<CoppAddresd.Application.Features.Medications.IMedicationWhatsAppReplies>();
+        var applied = await replies.ApplyAsync(qaPatientId, user, input.Id, input.Action, context.RequestAborted);
+        await context.Response.WriteAsJsonAsync(new { applied });
+        return;
     }
     if (welcomeInbox is not null && context.Request.Method == "GET" && context.Request.Path == "/__qa/welcome-inbox")
     {
@@ -359,6 +390,7 @@ sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock c
     }
 }
 
+sealed record QaMedicationReply(Guid Id, string Action);
 sealed record QaClockRequest(DateTimeOffset? UtcNow);
 sealed class QaClock : TimeProvider
 {

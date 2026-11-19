@@ -56,6 +56,8 @@ public static class DependencyInjection
         });
         services.AddHostedService<RxTermsSyncWorker>();
         services.AddScoped<MedicationControlStore>();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationWhatsAppReplies>(
+            sp => sp.GetRequiredService<MedicationControlStore>());
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderScheduler>(
             provider => provider.GetRequiredService<MedicationControlStore>());
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderChannel, MedicationAppReminderChannel>();

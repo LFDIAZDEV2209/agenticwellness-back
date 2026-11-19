@@ -208,6 +208,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MedicationDose> MedicationDoses => Set<MedicationDose>();
     public DbSet<MedicationIntakeEvent> MedicationIntakeEvents => Set<MedicationIntakeEvent>();
     public DbSet<MedicationTreatmentStatusEvent> MedicationTreatmentStatusEvents => Set<MedicationTreatmentStatusEvent>();
+    public DbSet<MedicationPatientState> MedicationPatientStates => Set<MedicationPatientState>();
     public DbSet<MedicationDoseOperation> MedicationDoseOperations => Set<MedicationDoseOperation>();
     public DbSet<PatientModuleAccess> PatientModuleAccess => Set<PatientModuleAccess>();
 
