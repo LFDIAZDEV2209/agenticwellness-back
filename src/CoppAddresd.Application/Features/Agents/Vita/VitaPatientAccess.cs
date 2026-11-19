@@ -10,12 +10,18 @@ public sealed class VitaPatientAccess(IPatientRepository patients, ILegalConsent
 {
     public async Task<PatientProfile> RequireAsync(Guid userId, string scope, CancellationToken ct)
     {
+        var patient = await RequireActiveAsync(userId, ct);
+        await consent.EnsureUserAsync(userId, scope, ct);
+        return patient;
+    }
+
+    public async Task<PatientProfile> RequireActiveAsync(Guid userId, CancellationToken ct)
+    {
         ct.ThrowIfCancellationRequested();
         if (userId == Guid.Empty) throw new ForbiddenException("VITA_PATIENT_UNAVAILABLE");
         var patient = await patients.GetByUserIdAsync(userId, ct);
         if (patient is null || patient.UserId != userId || patient.DeletedAt is not null || patient.Status != "Activo")
             throw new ForbiddenException("VITA_PATIENT_UNAVAILABLE");
-        await consent.EnsureUserAsync(userId, scope, ct);
         return patient;
     }
 

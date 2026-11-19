@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.DTOs.Ai;
 using CoppAddresd.Application.DTOs.LabExam;
+using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Application.Features.Chat;
 using CoppAddresd.Application.Features.Threads;
 using CoppAddresd.Application.Features.Wellness;
@@ -16,6 +17,7 @@ using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly.CircuitBreaker;
 
 namespace CoppAddresd.Infrastructure.Services;
 
@@ -66,6 +68,7 @@ public class AiServiceClient : IAiServiceClient
             supports_vita = request.SupportsVita,
             channel = request.Channel,
             channel_message_id = request.ChannelMessageId,
+            attachment_ids = request.AttachmentIds is { Count: > 0 } ? request.AttachmentIds : null,
         };
 
     /// <summary>
@@ -114,7 +117,8 @@ public class AiServiceClient : IAiServiceClient
         httpRequest.Options.Set(AiConsentSubject.Key, new("chat",
             PatientId: Guid.TryParse(request.PatientId, out var consentPatientId) ? consentPatientId : null,
             UserId: Guid.TryParse(request.UserId, out var consentUserId) ? consentUserId : null));
-        if (request.ChannelMessageId is not null)
+        var withAttachments = request.AttachmentIds is { Count: > 0 };
+        if (request.ChannelMessageId is not null || withAttachments)
             httpRequest.Options.Set(HttpClientResilienceExtensions.SingleAttempt, true);
         AddInternalKeyHeader(httpRequest);
 
@@ -123,23 +127,29 @@ public class AiServiceClient : IAiServiceClient
         // respuesta (`answer`/`thread_id`/`execution_id`/`agent`/
         // `suggestions`) se deserializa correctamente. Los errores se
         // propagan como AiServiceException para habilitar el re-sync del agente.
-        using var response = await _httpClient.SendAsync(httpRequest, ct);
-        if (!response.IsSuccessStatusCode)
-            await ThrowForResponseAsync(response, ct);
+        try
+        {
+            using var response = await _httpClient.SendAsync(httpRequest, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                if (withAttachments)
+                    throw await VitaAttachmentHttpErrors.ReadAsync(response, ct, forChat: true)
+                        ?? (Exception)new AiServiceException((int)response.StatusCode, "Error en el chat Vita.");
+                await ThrowForResponseAsync(response, ct);
+            }
 
-        var result = await response.Content.ReadFromJsonAsync<ChatResponseJson>(
-            JsonOpts,
-            cancellationToken: ct
-        );
-        _logger.LogDebug("AI service responded: ThreadId={ThreadId}", result?.ThreadId);
-        return new ChatResponse(
-            result!.Reply,
-            result.ThreadId,
-            result.ExecutionId,
-            result.Agent,
-            result.Suggestions,
-            result.ControlSignal, result.Actions, result.Sources ?? result.DataSources, result.VersionId
-        );
+            var result = await response.Content.ReadFromJsonAsync<ChatResponseJson>(JsonOpts, ct);
+            if (withAttachments && result is null) throw VitaAttachmentException.InvalidResponse();
+            return new ChatResponse(result!.Reply, result.ThreadId, result.ExecutionId, result.Agent,
+                result.Suggestions, result.ControlSignal, result.Actions, result.Sources ?? result.DataSources,
+                result.VersionId, withAttachments ? result.Attachments : null);
+        }
+        catch (OperationCanceledException) when (withAttachments && !ct.IsCancellationRequested)
+        { throw VitaAttachmentException.Unavailable(); }
+        catch (Exception ex) when (withAttachments && ex is HttpRequestException or BrokenCircuitException or IOException)
+        { throw VitaAttachmentException.Unavailable(); }
+        catch (JsonException) when (withAttachments)
+        { throw VitaAttachmentException.InvalidResponse(); }
     }
 
     public async Task<AiPlanResult> GeneratePlanAsync(
@@ -731,7 +741,8 @@ public class AiServiceClient : IAiServiceClient
         [property: JsonPropertyName("actions")] IReadOnlyList<CoppAddresd.Application.Features.Agents.Vita.VitaActionDto>? Actions = null,
         [property: JsonPropertyName("sources")] JsonElement? Sources = null,
         [property: JsonPropertyName("data_sources")] JsonElement? DataSources = null,
-        [property: JsonPropertyName("version_id")] string? VersionId = null
+        [property: JsonPropertyName("version_id")] string? VersionId = null,
+        [property: JsonPropertyName("attachments")] IReadOnlyList<ChatAttachment>? Attachments = null
     );
 
     private record DoneJson(string ThreadId);

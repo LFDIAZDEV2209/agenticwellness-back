@@ -21,7 +21,8 @@ public record ChatRequest(
     string? PatientId = null,
     bool SupportsVita = false,
     string? Channel = null,
-    string? ChannelMessageId = null);
+    string? ChannelMessageId = null,
+    IReadOnlyList<Guid>? AttachmentIds = null);
 
 /// <summary>
 /// Contexto de control de programa abierto adjunto al request de chat (fase 2,
@@ -65,7 +66,10 @@ public record ChatResponse(
     string? ControlSignal = null,
     IReadOnlyList<VitaActionDto>? Actions = null,
     JsonElement? Sources = null,
-    string? VersionId = null);
+    string? VersionId = null,
+    IReadOnlyList<ChatAttachment>? Attachments = null);
+
+public sealed record ChatAttachment(Guid AttachmentId, string Kind, bool Readable);
 
 /// <summary>
 /// Resultado de la inyección proactiva de un mensaje del bot en el thread

@@ -17,7 +17,9 @@ public sealed class VitaDocumentTextReader(IObjectStorageService storage)
 
     public async Task<string?> ReadAsync(Guid patientId, Guid documentId, string key, long? size, CancellationToken ct)
     {
-        var archive = PatientDocumentStorageKeys.IsArchiveOriginal(key, patientId, documentId);
+        var archive = PatientDocumentStorageKeys.IsArchiveOriginal(key, patientId, documentId)
+            || (PatientDocumentStorageKeys.TryParseVitaAttachment(key, out var owner, out var id)
+                && owner == patientId && id == documentId);
         if (!archive && !PatientDocumentStorageKeys.IsUploadKey(key, patientId)) return null;
         var extension = Path.GetExtension(key).ToLowerInvariant();
         if (size > MaxBytes || extension is not (".pdf" or ".txt" or ".md" or ".csv")) return null;

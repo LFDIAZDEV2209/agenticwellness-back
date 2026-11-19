@@ -1,4 +1,5 @@
 using CoppAddresd.Api.Security;
+using CoppAddresd.Application.Features.Agents.Vita;
 using System.Text.Json;
 using CoppAddresd.Domain.Exceptions;
 using FluentValidation;
@@ -70,6 +71,11 @@ public sealed class ExceptionHandlingMiddleware(
             context.Response.StatusCode = ex.StatusCode;
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { code = ex.Code, scope = ex.Scope }, context.RequestAborted);
+        }
+        catch (VitaAttachmentException ex)
+        {
+            context.Response.StatusCode = ex.Status;
+            await context.Response.WriteAsJsonAsync(new { code = ex.Code }, context.RequestAborted);
         }
         catch (NotFoundException ex)
         {

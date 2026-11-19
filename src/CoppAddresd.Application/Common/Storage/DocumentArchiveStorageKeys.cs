@@ -37,6 +37,7 @@ public static class DocumentArchiveStorageKeys
 
     public static void RequireArchiveKey(string key)
     {
+        if (PatientDocumentStorageKeys.TryParseVitaAttachment(key, out _, out _)) return;
         var parts = key.Split('/');
         if (parts.Length != 4 || parts[0] != "documents"
             || !Guid.TryParseExact(parts[1], "D", out var patient)

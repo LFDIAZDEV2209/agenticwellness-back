@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.DTOs.Ai;
+using CoppAddresd.Application.Features.Agents.Vita;
 using CoppAddresd.Application.Features.Chat;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -42,8 +43,31 @@ public class ChatController : ControllerBase
         CancellationToken ct
     )
     {
+        List<Guid>? attachmentIds = null;
+        if (request.AttachmentIds is { Length: > 0 } attachments)
+        {
+            if (!request.SupportsVita || !User.HasClaim("aud", "app") || User.Identity?.IsAuthenticated != true)
+                return StatusCode(403, new { code = "vita_identity_required" });
+            if (attachments.Length > 4)
+                return BadRequest(new { code = "attachment_limit_exceeded" });
+            attachmentIds = new List<Guid>(attachments.Length);
+            foreach (var attachment in attachments)
+            {
+                if (!Guid.TryParseExact(attachment, "D", out var id) || id == Guid.Empty)
+                    return BadRequest(new { code = "invalid_attachment_request" });
+                attachmentIds.Add(id);
+            }
+        }
+
         try
         {
+            string? patientId = null;
+            if (attachmentIds is not null)
+            {
+                if (!Guid.TryParse(AuthenticatedUserId, out var userId) || userId == Guid.Empty)
+                    return Unauthorized(new { code = "vita_identity_required" });
+                patientId = (await _mediator.Send(new ResolveVitaAttachmentPatientQuery(userId), ct)).ToString("D");
+            }
             var command = new ChatCommand(
                 request.Message,
                 request.Agent,
@@ -51,7 +75,9 @@ public class ChatController : ControllerBase
                 request.AgentTypeId,
                 AuthenticatedUserId,
                 request.Language,
-                SupportsVita: request.SupportsVita
+                PatientId: patientId,
+                SupportsVita: request.SupportsVita,
+                AttachmentIds: attachmentIds
             );
             var result = await _mediator.Send(command, ct);
             return Ok(result);
@@ -67,6 +93,9 @@ public class ChatController : ControllerBase
             return StatusCode(502, new { error = "No fue posible procesar la solicitud." });
         }
         catch (CoppAddresd.Domain.Exceptions.AiConsentException) { throw; }
+        catch (CoppAddresd.Domain.Exceptions.ForbiddenException) { throw; }
+        catch (VitaAttachmentException) { throw; }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Chat request failed");
@@ -296,5 +325,6 @@ public record ChatRequestDto(
     string? ThreadId = null,
     string? AgentTypeId = null,
     string? Language = null,
-    bool SupportsVita = false
+    bool SupportsVita = false,
+    string[]? AttachmentIds = null
 );

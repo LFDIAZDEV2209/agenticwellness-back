@@ -19,6 +19,30 @@ public static class PatientDocumentStorageKeys
         return key.StartsWith(prefix, StringComparison.Ordinal) && IsExtension(key.AsSpan(prefix.Length));
     }
 
+    public static string VitaAttachmentKey(Guid patientId, Guid attachmentId, string extension) =>
+        $"documents/{patientId:D}/vita-attachments/{attachmentId:D}.{extension}";
+
+    public static string? VitaAttachmentExtension(string contentType) => contentType switch
+    {
+        "application/pdf" => "pdf",
+        "image/jpeg" => "jpg",
+        "image/png" => "png",
+        "image/webp" => "webp",
+        _ => null
+    };
+
+    public static bool TryParseVitaAttachment(string key, out Guid patientId, out Guid attachmentId)
+    {
+        patientId = attachmentId = Guid.Empty;
+        var parts = key.Split('/');
+        if (parts.Length != 4 || parts[0] != "documents" || parts[2] != "vita-attachments"
+            || !Guid.TryParseExact(parts[1], "D", out patientId)) return false;
+        var extension = Path.GetExtension(parts[3]);
+        return extension is ".pdf" or ".jpg" or ".png" or ".webp"
+            && Guid.TryParseExact(parts[3].AsSpan(0, parts[3].Length - extension.Length), "D", out attachmentId)
+            && key == VitaAttachmentKey(patientId, attachmentId, extension[1..]);
+    }
+
     private static bool IsExtension(ReadOnlySpan<char> extension)
     {
         if (extension.IsEmpty) return false;

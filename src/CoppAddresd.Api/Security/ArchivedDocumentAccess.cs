@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CoppAddresd.Api.Context;
+using CoppAddresd.Application.Common.Storage;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
 
@@ -16,11 +17,14 @@ public sealed class ArchivedDocumentAccess(
     public async Task<Document?> ResolveReadableAsync(string key, ClaimsPrincipal actor,
         bool hasReadCapability, CancellationToken ct)
     {
-        var parts = key.Split('/');
-        if (parts.Length != 4 || parts[0] != "documents"
-            || !Guid.TryParseExact(parts[1], "D", out var patientId)
-            || !Guid.TryParseExact(parts[2], "D", out var documentId)
-            || string.IsNullOrWhiteSpace(parts[3])) return null;
+        if (!PatientDocumentStorageKeys.TryParseVitaAttachment(key, out var patientId, out var documentId))
+        {
+            var parts = key.Split('/');
+            if (parts.Length != 4 || parts[0] != "documents"
+                || !Guid.TryParseExact(parts[1], "D", out patientId)
+                || !Guid.TryParseExact(parts[2], "D", out documentId)
+                || string.IsNullOrWhiteSpace(parts[3])) return null;
+        }
         var document = await documents.GetByIdAsync(documentId, ct);
         if (document is null || document.DeletedAt is not null || document.PatientId != patientId
             || document.Patient?.DeletedAt is not null || document.Status is not ("Ready" or "Archived")) return null;
@@ -43,6 +47,8 @@ public sealed class ArchivedDocumentAccess(
 
     public static bool IsValidArchiveReadKey(Document document, string key)
     {
+        if (PatientDocumentStorageKeys.TryParseVitaAttachment(key, out var patientId, out var documentId))
+            return document.PatientId == patientId && document.Id == documentId && document.StorageKey == key;
         var prefix = $"documents/{document.PatientId:D}/{document.Id:D}/";
         return document.PatientId is not null && document.StorageKey.StartsWith(prefix + "original.", StringComparison.Ordinal)
             && !document.StorageKey[prefix.Length..].Contains('/')

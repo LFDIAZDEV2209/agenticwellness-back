@@ -15,6 +15,13 @@ public static class VitaServiceExtensions
         services.AddScoped<IVitaClinicalReader, VitaClinicalReader>();
         services.AddScoped<IVitaExtendedReadStore, VitaExtendedReadStore>();
         services.AddScoped<IVitaDocumentLink, VitaDocumentLink>();
+        services.AddScoped<IVitaAttachmentArchives, VitaAttachmentArchives>();
+        services.AddHttpClient<IVitaAttachmentClient, VitaAttachmentClient>((sp, client) =>
+        {
+            var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<CoppAddresd.Application.Common.AiServiceSettings>>().Value;
+            client.BaseAddress = ApplicationServiceExtensions.ResolveBaseUri(settings.BaseUrl, "http://localhost:8000");
+        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false })
+            .RemoveAllLoggers();
         services.AddScoped<VitaDocumentIndexOutbox>();
         services.AddScoped<VitaDocumentTextReader>();
         services.AddScoped<VitaDocumentIndexProcessor>();

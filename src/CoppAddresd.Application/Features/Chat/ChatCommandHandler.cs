@@ -34,8 +34,6 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
 
     public async Task<ChatResult> Handle(ChatCommand request, CancellationToken ct)
     {
-        _logger.LogInformation("Chat request: Agent={Agent}, ThreadId={ThreadId}", request.Agent, request.ThreadId);
-
         // Hook de controles (fase 2, best-effort): control abierto → Responded
         // + control_context en el payload hacia el ai-service. Con el
         // killswitch apagado no hay ninguna llamada nueva.
@@ -58,16 +56,16 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             request.PatientId,
             request.SupportsVita,
             request.Channel,
-            request.ChannelMessageId);
+            request.ChannelMessageId,
+            request.AttachmentIds);
 
         try
         {
             var result = await _aiService.ChatAsync(dto, ct);
             await ProgramControlChatHooks.TryConsumeSignalAsync(
                 _programControls, result.ControlSignal, openControl?.ControlId, _logger, ct);
-            _logger.LogInformation("Chat response: ThreadId={ThreadId}", result.ThreadId);
             return new ChatResult(result.Reply, result.ThreadId, result.ExecutionId, result.Agent,
-                result.Suggestions, result.Actions, result.Sources, result.VersionId);
+                result.Suggestions, result.Actions, result.Sources, result.VersionId, result.Attachments);
         }
         catch (AiServiceException exc) when (exc.StatusCode == 404 && request.AgentTypeId is not null)
         {
@@ -86,9 +84,8 @@ public class ChatCommandHandler : IRequestHandler<ChatCommand, ChatResult>
             var result = await _aiService.ChatAsync(dto, ct);
             await ProgramControlChatHooks.TryConsumeSignalAsync(
                 _programControls, result.ControlSignal, openControl?.ControlId, _logger, ct);
-            _logger.LogInformation("Chat response (tras re-sync): ThreadId={ThreadId}", result.ThreadId);
             return new ChatResult(result.Reply, result.ThreadId, result.ExecutionId, result.Agent,
-                result.Suggestions, result.Actions, result.Sources, result.VersionId);
+                result.Suggestions, result.Actions, result.Sources, result.VersionId, result.Attachments);
         }
     }
 }

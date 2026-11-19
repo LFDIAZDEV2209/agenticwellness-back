@@ -14,7 +14,8 @@ public record ChatCommand(
     string? PatientId = null,
     bool SupportsVita = false,
     string? Channel = null,
-    string? ChannelMessageId = null)
+    string? ChannelMessageId = null,
+    IReadOnlyList<Guid>? AttachmentIds = null)
     : IRequest<ChatResult>;
 
 /// <summary>
@@ -30,4 +31,6 @@ public record ChatResult(
     IReadOnlyList<ChatSuggestion>? Suggestions = null,
     IReadOnlyList<CoppAddresd.Application.Features.Agents.Vita.VitaActionDto>? Actions = null,
     System.Text.Json.JsonElement? Sources = null,
-    string? VersionId = null);
+    string? VersionId = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<ChatAttachment>? Attachments = null);
