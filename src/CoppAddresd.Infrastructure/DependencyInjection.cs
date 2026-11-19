@@ -120,6 +120,9 @@ public static class DependencyInjection
         services.AddScoped<IProgramAssignmentOperationsRepository, ProgramAssignmentOperationsRepository>();
         services.AddScoped<IProgramAssignmentNoticeRepository, ProgramAssignmentNoticeRepository>();
         services.AddScoped<IHealthTestRepository, HealthTestRepository>();
+        services.AddScoped<InitialBatteryMeasurementSync>();
+        services.AddScoped<IInitialBatteryMeasurementSync>(sp => sp.GetRequiredService<InitialBatteryMeasurementSync>());
+        services.AddHostedService<InitialBatteryMeasurementWorker>();
         services.AddHttpClient<IAssessmentProfileAnalysis, AssessmentProfileAnalysis>(client =>
         { client.Timeout = TimeSpan.FromSeconds(80); client.MaxResponseContentBufferSize = 131072; })
             .AddHttpMessageHandler<AiConsentHttpHandler>();

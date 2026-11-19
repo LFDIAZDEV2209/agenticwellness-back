@@ -379,3 +379,15 @@ query por dosis/día. Procesos distintos comparten el lock; solicitudes repetida
 usan UUID/hash y revisiones esperadas. La cancelación deshace toda la escritura.
 Lecturas semanales/inventario no materializan dosis; solo añaden el acceso a la
 bitácora. Un conteo físico usa supply_revision para cerrar conciliaciones previas.
+
+## Mediciones de la batería inicial (KAN-94)
+
+El trabajo pendiente se deriva del cierre ya confirmado de la asignación. Cada
+proyección abre una transacción corta `READ COMMITTED`. Bloquea la fila del paciente
+con `FOR UPDATE`, igual que el submit, y revalida el pendiente bajo el bloqueo.
+El bloqueo también coordina con el `FOR KEY SHARE` de la FK al insertar mediciones.
+Se consultan por lote las respuestas, el catálogo y los días ocupados. Las filas
+nuevas y la confirmación del trabajo se guardan juntas. La clave única existente por
+paciente e idempotencia protege otro intento de la misma evaluación y métrica.
+La cancelación o un fallo revierte las inserciones y deja la batería pendiente. Los
+fallos reprograman el marcador en otra operación.

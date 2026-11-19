@@ -230,6 +230,14 @@ La migración se verifica con el filtro `FullyQualifiedName~VitaFinal_` de
 ### 4.7 Procedencia en app y ERP
 
 `GET /api/v1/me/measurements` incluye los campos por elemento de `items`.
+
+Tras la sincronización de la batería inicial (KAN-94), `items` puede incluir `weight`
+en `kg` y `height` en `cm`, con `source: "health_test"`, `status: "confirmed"` y
+`observedAt` igual al envío de la evaluación de historia clínica. Se consultan con
+`?codes=weight,height` usando los filtros y la paginación existentes. Una lectura que
+coincida por métrica y día local conserva la fila que ya estaba registrada. El cliente
+puede calcular el IMC con `pesoKg / (tallaCm / 100)²`. El origen de la batería y el ID
+de evaluación quedan registrados en la clave de idempotencia y el lote de la fila.
 `GET /api/v1/patients/{id}/measurements` los incluye por elemento de la
 lista plana. Se mantienen autenticación, alcance del paciente, orden y
 paginación. Los campos son aditivos y aceptan `null`.

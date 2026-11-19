@@ -376,3 +376,11 @@ pequeñas un seq-scan es esperable. No se atribuye una prueba de carga productiv
 | `IX_medication_stock_movements_supply_id_recorded_at` | `app.medication_stock_movements` | `supply_id, recorded_at` | B-tree | FK y consulta por recurso | `WHERE supply_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
 | `IX_medication_supplies_patient_id_expires_on` | `app.medication_supplies` | `patient_id, expires_on` | B-tree | Alcance por paciente y paginación/orden | `WHERE patient_id = @patient ORDER BY expires_on` | Lectura acotada/constraint; mantenimiento en cada INSERT |
 | `IX_medication_supplies_treatment_id` | `app.medication_supplies` | `treatment_id` | B-tree único | FK y consulta por recurso | `WHERE treatment_id = @id` | Lectura acotada/constraint; mantenimiento en cada INSERT |
+
+### Sincronización de baterías iniciales (KAN-94)
+
+`ix_health_test_battery_measurement_sync_due` es un B-tree parcial sobre
+`app.health_test_battery_assignments (battery_id, measurements_sync_due_at, id)`.
+Cubre las asignaciones completadas con reintento pendiente. El reconciliador
+filtra por batería y vencimiento, y ordena por fecha e ID. Al confirmar la
+proyección, la asignación sale del índice. Se construye concurrentemente.

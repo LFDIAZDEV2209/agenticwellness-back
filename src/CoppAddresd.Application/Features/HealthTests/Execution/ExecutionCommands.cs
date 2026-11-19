@@ -94,7 +94,8 @@ public sealed class SubmitEvaluationCommandHandler(
     ILogger<SubmitEvaluationCommandHandler>? logger = null,
     INutritionDraftWorkflow? nutritionDraftWorkflow = null,
     CoppAddresd.Application.WhatsApp.IWhatsAppReminderHooks? whatsappReminders = null,
-    IProgramRepository? programs = null
+    IProgramRepository? programs = null,
+    IInitialBatteryMeasurementSync? measurementSync = null
 ) : IRequestHandler<SubmitEvaluationCommand, HealthTestEvaluationDto>
 {
     public async Task<HealthTestEvaluationDto> Handle(
@@ -104,6 +105,7 @@ public sealed class SubmitEvaluationCommandHandler(
     {
         // Compatibilidad de constructores: el gate se aplica únicamente en el consumidor legacy.
         _ = assignmentSettings;
+        Guid? batteryId = null;
         var result = await repository.ExecuteInTransactionAsync(
             async () =>
             {
@@ -114,6 +116,7 @@ public sealed class SubmitEvaluationCommandHandler(
                 {
                     throw new InvalidOperationException("La asignación no existe.");
                 }
+                batteryId = assignment.BatteryAssignmentId;
 
                 if (request.Request.ClientRequestId?.Length > 100)
                     throw new InvalidOperationException("clientRequestId admite como máximo 100 caracteres.");
@@ -388,6 +391,20 @@ public sealed class SubmitEvaluationCommandHandler(
             {
                 if (logger is not null) Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger,
                     "El reconciliador retomará nutrición tras la batería: tipo={ExceptionType}", ex.GetType().Name);
+            }
+        }
+
+        if (batteryId is Guid batteryAssignmentIdToSync && measurementSync is not null)
+        {
+            // La batería confirmada conserva el trabajo pendiente si vence el plazo o se cancela la petición.
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            deadline.CancelAfter(TimeSpan.FromSeconds(2));
+            try { await measurementSync.SyncAsync(result.PatientId, batteryAssignmentIdToSync, deadline.Token); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+            catch (Exception ex)
+            {
+                logger?.LogWarning("El reconciliador retomará las mediciones de la batería {BatteryId}: tipo={FailureType}",
+                    batteryAssignmentIdToSync, ex.GetType().Name);
             }
         }
 

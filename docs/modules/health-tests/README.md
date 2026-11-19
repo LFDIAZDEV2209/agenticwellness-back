@@ -493,6 +493,40 @@ una API anterior no aporta fecha, sin inventar cero días. La clave de caché
 
 Si un instrumento no tiene rangos de interpretación activos, `ScoreRangeEngine` devuelve «Sin clasificar» y severidad nula, nunca riesgo bajo por defecto. El ERP debe conservar ese estado incluso para resultados históricos cuya etiqueta indique ausencia de clasificación. La cobertura usa asignaciones, no el universo de pacientes; las evaluaciones pendientes no deben rotularse como pacientes pendientes.
 
+### Mediciones del perfil corporal (KAN-94)
+
+Al completarse la asignación de `bateria-inicial`, se proyectan las respuestas
+numéricas de `historia-clinica` en `app.clinical_measurements`.
+
+| Código de pregunta | Métrica | Unidad canónica |
+| --- | --- | --- |
+| `peso` | `weight` | `kg` |
+| `talla` | `height` | `cm` |
+
+Para habilitar `waist`, `hip`, `wrist` o `body_fat`, agregar la entrada de mapeo y
+comprobar que existen la pregunta numérica y la métrica activa con su unidad canónica.
+El proyector acepta punto o coma decimal, valida `minValue` y `maxValue` de la versión
+respondida y guarda con la precisión clínica de dos decimales. Omite las respuestas
+ausentes, inválidas o con una unidad de pregunta incompatible. Si el catálogo clínico
+carece de una métrica activa con la unidad esperada, la batería queda pendiente y se
+reintenta.
+
+Cada fila guarda `source = health_test`, `batch_id = evaluationId`, `observed_at =
+evaluation.completed_at` y una clave `health_test:bateria_inicial:{evaluationId}:{metricCode}`.
+El día corresponde a la zona horaria del paciente, con UTC como respaldo. Si ya existe
+una medición de la misma métrica en ese día, se conserva la fila existente.
+
+El submit intenta sincronizar después del commit, con un plazo de dos segundos. La
+asignación completada es el trabajo durable. Un proceso de fondo revisa los pendientes
+en lotes de hasta 50 y vuelve a consultar tras cinco segundos de inactividad. Los
+fallos de procesamiento registrados posponen la batería 30 segundos. Esto también
+procesa baterías históricas completas en segundo plano. La migración
+`20261118224500_AddInitialBatteryMeasurementSync` agrega el marcador de reintento y su
+índice parcial. Para revertirla, primero volver a la versión previa de la API y luego
+ejecutar `Down`. El rollback elimina el marcador y el índice y conserva las mediciones
+ya registradas. Aplicar con el migrador EF, que ejecuta la construcción concurrente
+del índice fuera de una transacción.
+
 ### Cierre de batería inicial y asignación del programa (paquete 2)
 
 Tras confirmar el submit, `SubmitEvaluationCommandHandler` consulta los ítems
