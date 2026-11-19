@@ -26,6 +26,9 @@ tokens de voz y persistencia del hilo.
 | POST | `/api/v1/chat/voice/session` | Ruta existente, JWT y consentimiento de voz |
 | DELETE | `/api/v1/chat/voice/session/{sessionId}` | JWT app; permite revocar tras retirar consentimiento |
 | POST | `/api/v1/internal/vita/voice/v1/chat/completions` | Clave de voz dedicada y `Vita:VoiceProxyEnabled=true` |
+| POST | `/api/v1/vita/attachments` | JWT app, paciente activo y consentimiento de chat |
+| POST | `/api/v1/vita/attachments/{attachmentId}/archive` | Igual, con confirmación explícita |
+| DELETE | `/api/v1/vita/attachments/{attachmentId}` | JWT app y paciente activo; admite revocación del consentimiento |
 
 Scopes de `context`: `day`, `nutrition`, `assessments`, `podcast`, `exercise`,
 `progress`. Desconocido → 400. El scope de contexto no acepta selectores de
@@ -37,6 +40,140 @@ Cada consulta resuelve paciente activo/no eliminado y verifica consentimiento
 `chat`. Crear voz exige además consentimiento `voice`. No basta conocer un ID.
 La revocación de voz se reenvía con el dueño del JWT incluso si ya retiró el
 consentimiento. Todas las respuestas de estas rutas se sirven sin caché HTTP.
+
+## Adjuntos efímeros y archivo en expediente
+
+### Subir un adjunto
+
+`POST /api/v1/vita/attachments` recibe `multipart/form-data` con un único `file`
+obligatorio, `threadId` opcional de hasta 128 caracteres y `language` opcional
+(`es` o `en`). La API admite hasta 10 MiB de archivo y 64 KiB adicionales de
+envoltura. El AI aplica sus propios límites por tipo, páginas y validez del binario
+para JPG, PNG, WEBP y PDF. Si falta `threadId`, el AI registra el adjunto sin
+vínculo de hilo. El AI recibe un nombre genérico con la extensión y las identidades
+resueltas a partir del JWT.
+
+`201 Created`:
+
+```json
+{
+  "attachmentId": "09474655-5eb4-49f8-9290-9bd4ad171df5",
+  "kind": "pdf",
+  "contentType": "application/pdf",
+  "sizeBytes": 123456,
+  "pageCount": 3,
+  "expiresAt": "2026-11-19T12:00:00Z"
+}
+```
+
+`kind` es `pdf` o `image`. `pageCount` es un entero o `null`. El vencimiento
+lo fija AI. La subida deja el archivo en el almacén efímero de AI.
+
+### Usar adjuntos en un turno
+
+`POST /api/v1/chat` admite el campo opcional `attachmentIds: string[]`. Cada
+elemento es un UUID con guiones y la lista tiene hasta cuatro elementos. Una
+lista ausente, nula o vacía conserva el contrato de chat previo. Una lista con
+elementos exige JWT app, paciente activo, consentimiento de chat y
+`supportsVita: true`.
+
+```json
+{
+  "message": "Resume este documento",
+  "threadId": "proactive-69685dcd-36dc-4320-a806-56c4a365083f",
+  "supportsVita": true,
+  "attachmentIds": ["09474655-5eb4-49f8-9290-9bd4ad171df5"]
+}
+```
+
+El backend reenvía la lista como `attachment_ids` y envía `user_id` y
+`patient_id` de la sesión. Aplica la resolución de hilo existente. AI comprueba
+propiedad, vigencia y compatibilidad con el hilo. El `200 OK` agrega
+`attachments: [{ "attachmentId": "<uuid>", "kind": "pdf", "readable": true }]`
+cuando AI devuelve el campo para un turno con adjuntos. `readable` es booleano.
+El AI de referencia impone un máximo de tres. Si rechaza la lista de cuatro,
+la API devuelve `422 attachment_limit_exceeded`.
+
+### Guardar en el expediente
+
+`POST /api/v1/vita/attachments/{attachmentId}/archive` recibe JSON.
+
+```json
+{
+  "confirmed": true,
+  "title": "Informe de seguimiento",
+  "documentTypeId": "3a2a43fb-692f-4d2e-a28c-3976d486b917"
+}
+```
+
+La primera confirmación requiere un título de 1 a 200 caracteres tras quitar
+espacios y un tipo de documento activo que admita la extensión. La API comprueba
+el tamaño exacto y SHA-256 antes de escribir en el storage privado configurado
+(S3 en producción). Persiste un documento raíz `Ready` bajo
+`documents/{patientId}/vita-attachments/{attachmentId}.{ext}`, con la clínica
+del perfil. La respuesta es `201 Created` al insertarlo y `200 OK` al repetir
+la confirmación. Ambos devuelven el mismo esquema.
+
+```json
+{
+  "documentId": "09474655-5eb4-49f8-9290-9bd4ad171df5",
+  "attachmentId": "09474655-5eb4-49f8-9290-9bd4ad171df5",
+  "title": "Informe de seguimiento",
+  "documentTypeId": "3a2a43fb-692f-4d2e-a28c-3976d486b917",
+  "contentType": "application/pdf",
+  "sizeBytes": 123456
+}
+```
+
+`documentId` coincide con `attachmentId`. La PK de `app.documents` evita
+duplicados entre réplicas y el trigger existente agrega al outbox en la misma
+escritura. Un reintento confirmado devuelve el documento existente incluso
+después de caducar el adjunto. Si se eliminó el documento, devuelve `404`.
+El expediente lo sirve mediante las rutas de documentos autorizadas.
+
+`DELETE /api/v1/vita/attachments/{attachmentId}` devuelve `204 No Content`
+tanto para un adjunto eliminado como para uno ausente, ajeno o caducado. La baja
+afecta al efímero. El documento del expediente tiene su propio ciclo de vida.
+
+### Errores de adjuntos
+
+El cuerpo de los errores específicos es `{"code":"<código>"}`.
+
+| HTTP | Código | Causa |
+| --- | --- | --- |
+| 400 | `attachment_confirmation_required` | Falta `confirmed: true` |
+| 400 | `invalid_attachment_archive_request` | Título o tipo ausente o inválido |
+| 400 | `attachment_limit_exceeded` | Más de cuatro adjuntos en el chat |
+| 400 | `invalid_attachment_request` | ID de adjunto del chat inválido |
+| 401/403 | `vita_identity_required` | Identidad app requerida |
+| 403 | `vita_attachments_disabled`, `attachment_forbidden` | Flag de AI apagado o rechazo de acceso por AI |
+| 404 | `vita_attachment_not_found` | Adjunto inexistente, ajeno, vencido o de otro hilo en chat. También se usa si se eliminó el documento archivado |
+| 409 | `attachment_archive_conflict` | Colisión con un documento distinto |
+| 413 | `attachment_too_large` | Tamaño excedido |
+| 415 | `attachment_type_not_allowed` | Tipo o firma no admitidos |
+| 422 | `attachment_empty`, `attachment_mime_mismatch`, `attachment_too_many_pages`, `attachment_pdf_encrypted`, `attachment_unreadable`, `invalid_attachment_request` | Archivo o formulario rechazado |
+| 422 | `attachment_document_type_invalid`, `attachment_document_type_mismatch` | Tipo de expediente inactivo, inexistente o incompatible |
+| 422 | `attachment_limit_exceeded` | El AI limita la cantidad por turno |
+| 502 | `attachment_integrity_mismatch`, `attachment_invalid_response` | Binario que no coincide con metadatos, o respuesta de AI inválida |
+| 503 | `attachment_service_unavailable`, `attachment_store_unavailable` | Canal interno de AI o su almacén indisponibles |
+
+Las respuestas de autenticación, consentimiento (`{code, scope}`), perfil no
+disponible (`ProblemDetails` 403 con `detail: "VITA_PATIENT_UNAVAILABLE"`),
+JSON mal formado y errores inesperados siguen los formatos comunes de la API.
+
+### Operación
+
+La subida y el uso en chat dependen de `VITA_ATTACHMENTS_ENABLED` en AI. El
+worker del backend consume el outbox con `Vita:DocumentIndexingEnabled=true`.
+Indexa PDFs con texto y conserva la política del lector existente para imágenes
+y PDFs escaneados sin texto. El archivo confirmado no crea mediciones.
+
+S3 recibe el objeto verificado antes del INSERT. Si la escritura en PostgreSQL
+falla o se cancela después del PUT, puede quedar un objeto privado sin fila.
+Mientras el efímero siga vigente, una nueva confirmación reutiliza la misma
+clave. Las réplicas pueden escribir el mismo binario al mismo tiempo, con una
+sola fila y un solo trabajo de indexación. El backend procesa hasta 10 MiB
+en memoria por descarga de archivo confirmada.
 
 ## Lecturas clínicas internas de Ola A
 
