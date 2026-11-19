@@ -9,7 +9,8 @@ public sealed class MedicationControlConfiguration :
     IEntityTypeConfiguration<MedicationTreatment>, IEntityTypeConfiguration<MedicationRegimen>,
     IEntityTypeConfiguration<MedicationScheduleSlot>, IEntityTypeConfiguration<MedicationDose>,
     IEntityTypeConfiguration<MedicationIntakeEvent>, IEntityTypeConfiguration<PatientModuleAccess>,
-    IEntityTypeConfiguration<MedicationTreatmentStatusEvent>, IEntityTypeConfiguration<MedicationDoseOperation>
+    IEntityTypeConfiguration<MedicationTreatmentStatusEvent>, IEntityTypeConfiguration<MedicationDoseOperation>,
+    IEntityTypeConfiguration<MedicationPatientState>
 {
     private static void Common<T>(EntityTypeBuilder<T> b, string table) where T : class
     {
@@ -26,7 +27,9 @@ public sealed class MedicationControlConfiguration :
     public void Configure(EntityTypeBuilder<MedicationTreatment> b)
     {
         Common(b, "medication_treatments");
-        b.Property(x => x.Name).HasMaxLength(200);
+        b.Property(x => x.Name).HasColumnType("text");
+        b.Property(x => x.RxCui).HasMaxLength(18);
+        b.HasOne<RxTermsProduct>().WithMany().HasForeignKey(x => x.RxCui).OnDelete(DeleteBehavior.Restrict);
         b.Property(x => x.ProductType).HasMaxLength(20);
         b.Property(x => x.Origin).HasMaxLength(30);
         b.Property(x => x.Status).HasMaxLength(20);
@@ -58,6 +61,7 @@ public sealed class MedicationControlConfiguration :
         b.ToTable("medication_regimens", "app", t =>
         {
             t.HasCheckConstraint("ck_med_regimen_quantity", "dosage > 0");
+            t.HasCheckConstraint("ck_med_regimen_recurrence", "(weekday_mask IS NULL OR weekday_mask BETWEEN 1 AND 127) AND (interval_hours IS NULL OR interval_hours BETWEEN 3 AND 168) AND (weekday_mask IS NULL OR interval_hours IS NULL)");
             t.HasCheckConstraint("ck_med_regimen_dates", "end_date IS NULL OR end_date >= start_date");
         });
     }
@@ -93,6 +97,7 @@ public sealed class MedicationControlConfiguration :
         b.Property(x => x.Status).HasMaxLength(20);
         b.Property(x => x.RequestHash).HasMaxLength(64);
         b.Property(x => x.Reason).HasMaxLength(500);
+        b.Property(x => x.Channel).HasMaxLength(20);
         b.Property(x => x.Origin).HasMaxLength(30);
         b.HasOne<PatientProfile>().WithMany().HasForeignKey(x => x.PatientId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne<MedicationTreatment>().WithMany().HasForeignKey(x => x.TreatmentId).OnDelete(DeleteBehavior.Restrict);
@@ -104,7 +109,7 @@ public sealed class MedicationControlConfiguration :
         b.HasIndex(x => x.DoseId);
         b.HasIndex(x => x.CorrectsEventId);
         b.ToTable("medication_intake_events", "app", t =>
-            t.HasCheckConstraint("ck_med_event_status", "status IN ('taken','omitted')"));
+            t.HasCheckConstraint("ck_med_event_status", "status IN ('taken','omitted','pending')"));
     }
 
     public void Configure(EntityTypeBuilder<PatientModuleAccess> b)
@@ -118,6 +123,7 @@ public sealed class MedicationControlConfiguration :
     public void Configure(EntityTypeBuilder<MedicationTreatmentStatusEvent> b)
     {
         Common(b, "medication_treatment_status_events");
+        b.Property(x => x.Reason).HasMaxLength(500);
         b.Property(x => x.Status).HasMaxLength(20);
         b.HasOne<MedicationTreatment>().WithMany().HasForeignKey(x => x.TreatmentId).OnDelete(DeleteBehavior.Restrict);
         b.HasIndex(x => new { x.TreatmentId, x.Revision }).IsUnique().HasDatabaseName("ux_med_status_revision");
@@ -138,4 +144,9 @@ public sealed class MedicationControlConfiguration :
         b.HasIndex(x => x.DoseId);
     }
 
+    public void Configure(EntityTypeBuilder<MedicationPatientState> b)
+    {
+        Common(b, "medication_patient_state");
+        b.HasOne<PatientProfile>().WithOne().HasForeignKey<MedicationPatientState>(x => x.Id).OnDelete(DeleteBehavior.Restrict);
+    }
 }

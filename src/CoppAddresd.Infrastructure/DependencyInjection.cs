@@ -47,7 +47,17 @@ public static class DependencyInjection
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationMonitoringStore, MedicationControlStore>();
         services.AddScoped<CoppAddresd.Application.Features.Medications.MedicationMonitoringService>();
         services.AddHostedService<MedicationMonitoringWorker>();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IRxTermsCatalog, RxTermsCatalog>();
+        services.AddHttpClient("RxTerms", client =>
+        {
+            client.BaseAddress = new Uri("https://data.lhncbc.nlm.nih.gov/public/rxterms/release/");
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.MaxResponseContentBufferSize = 8 * 1024 * 1024;
+        });
+        services.AddHostedService<RxTermsSyncWorker>();
         services.AddScoped<MedicationControlStore>();
+        services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationWhatsAppReplies>(
+            sp => sp.GetRequiredService<MedicationControlStore>());
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderScheduler>(
             provider => provider.GetRequiredService<MedicationControlStore>());
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationReminderChannel, MedicationAppReminderChannel>();

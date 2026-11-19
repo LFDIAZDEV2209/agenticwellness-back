@@ -4852,6 +4852,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("actor_id");
 
+                    b.Property<string>("Channel")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("channel");
+
                     b.Property<Guid>("ClientRequestId")
                         .HasColumnType("uuid")
                         .HasColumnName("client_request_id");
@@ -4863,6 +4868,10 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Property<Guid>("DoseId")
                         .HasColumnType("uuid")
                         .HasColumnName("dose_id");
+
+                    b.Property<int?>("DoseRevision")
+                        .HasColumnType("integer")
+                        .HasColumnName("dose_revision");
 
                     b.Property<DateTime>("OccurredAt")
                         .HasColumnType("timestamptz")
@@ -4920,7 +4929,7 @@ namespace CoppAddresd.Infrastructure.Migrations
 
                     b.ToTable("medication_intake_events", "app", t =>
                         {
-                            t.HasCheckConstraint("ck_med_event_status", "status IN ('taken','omitted')");
+                            t.HasCheckConstraint("ck_med_event_status", "status IN ('taken','omitted','pending')");
                         });
                 });
 
@@ -5047,6 +5056,41 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("medication_monitoring_operations", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationPatientState", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("FollowUpMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("follow_up_minutes");
+
+                    b.Property<bool>("InAppEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("in_app_enabled");
+
+                    b.Property<int>("LeadMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("lead_minutes");
+
+                    b.Property<bool>("PushEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("push_enabled");
+
+                    b.Property<Guid>("Version")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version");
+
+                    b.Property<bool>("WhatsAppEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("whats_app_enabled");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("medication_patient_state", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationRegimen", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5063,15 +5107,43 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("numeric(18,4)")
                         .HasColumnName("dosage");
 
+                    b.Property<DateTime?>("EffectiveFrom")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("effective_from");
+
+                    b.Property<DateTime?>("EffectiveUntil")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("effective_until");
+
                     b.Property<DateOnly?>("EndDate")
                         .HasColumnType("date")
                         .HasColumnName("end_date");
+
+                    b.Property<int?>("FollowUpMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("follow_up_minutes");
+
+                    b.Property<bool?>("InAppReminder")
+                        .HasColumnType("boolean")
+                        .HasColumnName("in_app_reminder");
 
                     b.Property<string>("Instructions")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("instructions");
+
+                    b.Property<int?>("IntervalHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("interval_hours");
+
+                    b.Property<int?>("LeadMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("lead_minutes");
+
+                    b.Property<bool?>("PushReminder")
+                        .HasColumnType("boolean")
+                        .HasColumnName("push_reminder");
 
                     b.Property<string>("Route")
                         .IsRequired()
@@ -5103,6 +5175,14 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("version");
 
+                    b.Property<int?>("WeekdayMask")
+                        .HasColumnType("integer")
+                        .HasColumnName("weekday_mask");
+
+                    b.Property<bool?>("WhatsAppReminder")
+                        .HasColumnType("boolean")
+                        .HasColumnName("whats_app_reminder");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TreatmentId", "Version")
@@ -5114,6 +5194,8 @@ namespace CoppAddresd.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_med_regimen_dates", "end_date IS NULL OR end_date >= start_date");
 
                             t.HasCheckConstraint("ck_med_regimen_quantity", "dosage > 0");
+
+                            t.HasCheckConstraint("ck_med_regimen_recurrence", "(weekday_mask IS NULL OR weekday_mask BETWEEN 1 AND 127) AND (interval_hours IS NULL OR interval_hours BETWEEN 3 AND 168) AND (weekday_mask IS NULL OR interval_hours IS NULL)");
                         });
                 });
 
@@ -5149,6 +5231,16 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Property<int>("Phase")
                         .HasColumnType("integer")
                         .HasColumnName("phase");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_at");
+
+                    b.Property<bool>("Snoozed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("snoozed");
 
                     b.HasKey("Id");
 
@@ -5336,8 +5428,7 @@ namespace CoppAddresd.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("text")
                         .HasColumnName("name");
 
                     b.Property<string>("Origin")
@@ -5367,6 +5458,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("revision");
 
+                    b.Property<string>("RxCui")
+                        .HasMaxLength(18)
+                        .HasColumnType("character varying(18)")
+                        .HasColumnName("rx_cui");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -5380,6 +5476,8 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MedicationId");
+
+                    b.HasIndex("RxCui");
 
                     b.HasIndex("PatientId", "ClientRequestId")
                         .IsUnique()
@@ -5408,6 +5506,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Property<DateTime>("EffectiveAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("effective_at");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
 
                     b.Property<int>("Revision")
                         .HasColumnType("integer")
@@ -10644,6 +10747,45 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("routine_exercises", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.RxTermsProduct", b =>
+                {
+                    b.Property<string>("RxCui")
+                        .HasMaxLength(18)
+                        .HasColumnType("character varying(18)")
+                        .HasColumnName("rx_cui");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Release")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("character varying(6)")
+                        .HasColumnName("release");
+
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("search_text");
+
+                    b.HasKey("RxCui");
+
+                    b.HasIndex("SearchText")
+                        .HasDatabaseName("ix_rxterms_search_trgm")
+                        .HasFilter("is_active");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchText"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("SearchText"), new[] { "gin_trgm_ops" });
+
+                    b.ToTable("rxterms_products", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.SosAlert", b =>
                 {
                     b.Property<Guid>("Id")
@@ -12284,6 +12426,15 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationPatientState", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithOne()
+                        .HasForeignKey("CoppAddresd.Domain.Entities.MedicationPatientState", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationRegimen", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.MedicationTreatment", null)
@@ -12363,6 +12514,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.RxTermsProduct", null)
+                        .WithMany()
+                        .HasForeignKey("RxCui")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.MedicationTreatmentStatusEvent", b =>

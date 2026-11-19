@@ -8,6 +8,8 @@ public sealed class MedicationReminderDelivery
     public Guid DoseId { get; set; }
     public string Channel { get; set; } = "";
     public int Phase { get; set; }
+    public DateTime? ScheduledAt { get; set; }
+    public bool Snoozed { get; set; }
     public DateTime DueAt { get; set; }
     public DateTime? ClaimedAt { get; set; }
 }

@@ -13,6 +13,7 @@ using CoppAddresd.Domain.Entities.ProgramProgress;
 using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Infrastructure.Persistence;
 using CoppAddresd.Infrastructure.Repositories;
+using CoppAddresd.Infrastructure.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -25,6 +26,11 @@ using AuthApplication = CoppAddresd.Auth.Entities.Application;
 
 // Host exclusivo de QA: API + Identity/refresh reales, PostgreSQL local aislado.
 // Nunca se cargan configuraciones privadas ni se habilitan transportes externos.
+var gatewayPort = int.TryParse(Environment.GetEnvironmentVariable("COP_MEDICATION_GATEWAY_PORT"), out var portOverride)
+    ? portOverride : 5160;
+var apiPort = gatewayPort + 2;
+var authPort = gatewayPort + 3;
+var gatewayUrl = $"http://127.0.0.1:{gatewayPort}";
 var dbName = Environment.GetEnvironmentVariable("COP_MEDICATION_DATABASE") ?? "copp_review_medications_20261117";
 var connection = new NpgsqlConnectionStringBuilder
 {
@@ -53,8 +59,9 @@ var settings = new Dictionary<string, string?>
     ["Storage:SignatureKey"] = key, ["Storage:Provider"] = "Local",
     ["Storage:Local:RootPath"] = Path.Combine(output, "storage"),
     ["Cache:Provider"] = "Memory", ["Medications:Enabled"] = "true", ["Medications:MonitoringWorkerEnabled"] = "false",
+    ["Medications:RemindersEnabled"] = dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal).ToString(),
     ["Auth:InternalApiKey"] = key, ["AuthService:InternalApiKey"] = key,
-    ["AuthService:BaseUrl"] = "http://127.0.0.1:5163",
+    ["AuthService:BaseUrl"] = $"http://127.0.0.1:{authPort}",
     ["Cors:Origins"] = "http://localhost:3100,http://127.0.0.1:3100,http://localhost:5188,http://127.0.0.1:5188,http://localhost:5160,http://127.0.0.1:5160",
     ["SkipDatabaseInitialization"] = "true",
     ["Sms:Provider"] = "Noop", ["Sms:IsEnabled"] = "false",
@@ -75,7 +82,7 @@ foreach (var setting in settings)
     Environment.SetEnvironmentVariable(setting.Key.Replace(":", "__", StringComparison.Ordinal), setting.Value);
 
 await using var auth = new AuthFactory(settings, welcomeInbox);
-auth.UseKestrel(options => options.ListenLocalhost(5163));
+auth.UseKestrel(options => options.ListenLocalhost(authPort));
 using var authClient = auth.CreateClient();
 await using (var scope = auth.Services.CreateAsyncScope())
 {
@@ -85,7 +92,7 @@ await using (var scope = auth.Services.CreateAsyncScope())
 
 var clock = new QaClock();
 await using var api = new ApiFactory(settings, clock, welcomeInbox is not null);
-api.UseKestrel(options => options.ListenLocalhost(5162));
+api.UseKestrel(options => options.ListenLocalhost(apiPort));
 using var apiClient = api.CreateClient();
 await using (var scope = api.Services.CreateAsyncScope())
 {
@@ -94,9 +101,18 @@ await using (var scope = api.Services.CreateAsyncScope())
 }
 
 var accounts = await SeedAsync(auth.Services, api.Services, password);
+var testCatalog = dbName.StartsWith("copp_review_medications_rxterms", StringComparison.Ordinal)
+    || (dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)
+        && Environment.GetEnvironmentVariable("COP_MEDICATION_E2E_RXTERMS") == "true");
+using var rxTermsSync = testCatalog
+    ? ActivatorUtilities.CreateInstance<RxTermsSyncWorker>(api.Services)
+    : null;
+if (rxTermsSync is not null)
+    await rxTermsSync.StartAsync(CancellationToken.None);
+
 var fixture = new
 {
-    database = dbName, container = "copp-medications-e2e", gateway = "http://127.0.0.1:5160",
+    database = dbName, container = "copp-medications-e2e", gateway = gatewayUrl,
     patientId = Id("101"), otherPatientId = Id("102"), clinicId = Id("201"), foreignClinicId = Id("202"),
     legacyMedicationId = Id("401"), legacyPatientMedicationId = Id("402"),
     accounts,
@@ -110,7 +126,7 @@ if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(fixturePath, UnixFileMode
 // No implementa ni simula respuestas clínicas/de autenticación.
 var relayBuilder = WebApplication.CreateBuilder();
 relayBuilder.Logging.ClearProviders();
-relayBuilder.WebHost.UseUrls("http://127.0.0.1:5160");
+relayBuilder.WebHost.UseUrls(gatewayUrl);
 var relay = relayBuilder.Build();
 using var forward = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
 relay.Run(async context =>
@@ -132,6 +148,33 @@ relay.Run(async context =>
         foreach (var patient in patients) await store.RefreshAlertsAsync(patient, context.RequestAborted);
         if (patients.Count > 0) await store.MonitoredPatientsAsync(patients[^1], 50, context.RequestAborted);
         await context.Response.WriteAsJsonAsync(new { refreshed = true, count = patients.Count }); return;
+    }
+    if (dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)
+        && context.Request.Method == "POST" && context.Request.Path == "/__qa/medications/sweep")
+    {
+        var channel = context.Request.Query["channel"].ToString();
+        if (channel is not ("app" or "whatsapp")) { context.Response.StatusCode = 400; return; }
+        await using var scope = api.Services.CreateAsyncScope();
+        var store = scope.ServiceProvider.GetRequiredService<CoppAddresd.Infrastructure.Repositories.MedicationControlStore>();
+        var claimed = await store.ClaimRemindersAsync(Id("101"), channel, TimeSpan.FromMinutes(30), context.RequestAborted);
+        // Se reserva con el motor real. En el host de QA no se invoca FCM ni Meta.
+        await context.Response.WriteAsJsonAsync(claimed.Select(x => new { id = x.DeliveryId, dose = x.Occurrence.Dose }));
+        return;
+    }
+    if (dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)
+        && context.Request.Method == "POST" && context.Request.Path == "/__qa/medications/whatsapp-reply")
+    {
+        var input = await context.Request.ReadFromJsonAsync<QaMedicationReply>(context.RequestAborted);
+        if (input is null) { context.Response.StatusCode = 400; return; }
+        await using var scope = api.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var qaPatientId = Id("101");
+        var user = await db.PatientProfiles.AsNoTracking().Where(p => p.Id == qaPatientId)
+            .Select(p => p.UserId!.Value).SingleAsync(context.RequestAborted);
+        var replies = scope.ServiceProvider.GetRequiredService<CoppAddresd.Application.Features.Medications.IMedicationWhatsAppReplies>();
+        var applied = await replies.ApplyAsync(qaPatientId, user, input.Id, input.Action, context.RequestAborted);
+        await context.Response.WriteAsJsonAsync(new { applied });
+        return;
     }
     if (welcomeInbox is not null && context.Request.Method == "GET" && context.Request.Path == "/__qa/welcome-inbox")
     {
@@ -156,7 +199,7 @@ relay.Run(async context =>
         });
         return;
     }
-    var port = context.Request.Path.StartsWithSegments("/api/auth") ? 5163 : 5162;
+    var port = context.Request.Path.StartsWithSegments("/api/auth") ? authPort : apiPort;
     using var request = new HttpRequestMessage(new HttpMethod(context.Request.Method),
         $"http://127.0.0.1:{port}{context.Request.Path}{context.Request.QueryString}");
     if (context.Request.ContentLength > 0 || context.Request.Headers.ContainsKey("Transfer-Encoding"))
@@ -175,7 +218,7 @@ relay.Run(async context =>
             context.Response.Headers[header.Key] = header.Value.ToArray();
     await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
-Console.WriteLine("Medication E2E ready: real API5162/Auth5163/PostgreSQL55437; relay5160; private fixture created.");
+Console.WriteLine($"Medication E2E ready: API {apiPort}, Auth {authPort}, relay {gatewayUrl}, PostgreSQL 55437.");
 await relay.RunAsync();
 
 static Guid Id(string suffix) => Guid.Parse("00000000-0000-4000-8000-" + suffix.PadLeft(12, '0'));
@@ -347,6 +390,7 @@ sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock c
     }
 }
 
+sealed record QaMedicationReply(Guid Id, string Action);
 sealed record QaClockRequest(DateTimeOffset? UtcNow);
 sealed class QaClock : TimeProvider
 {

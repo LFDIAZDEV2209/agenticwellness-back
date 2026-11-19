@@ -87,3 +87,34 @@ COP_E2E_ERP_DIR=/ruta/local/al/erp \
 COP_WELCOME_FIXTURE=/tmp/copp-medication-e2e/fixture.private.json \
 node tests/CoppAddresd.Medications.E2EHost/patient-welcome.mjs
 ```
+
+## Catálogo RxTerms de EE. UU.
+
+Para la prueba de catálogo, crear la base aislada
+`copp_review_medications_rxterms` en el mismo contenedor PostgreSQL y usarla
+como `COP_MEDICATION_DATABASE`. El host importa la edición pública de NLM
+después de migrar la base. Iniciar el ERP en 3160 con el gateway local de 5160.
+Desde el ERP, ejecutar con la ruta del fixture generado por el host:
+
+```sh
+COP_MEDICATION_FIXTURE=/tmp/copp-medication-e2e/fixture.private.json \
+  node e2e/medications-rxterms-real.mjs
+```
+
+Verifica búsqueda por principio activo y marca, ausencia de resultados,
+guardado y lectura del RxCUI e ingreso manual usando servicios reales.
+
+## Edición de pautas y sincronización KAN-75
+
+Iniciar el host con `COP_MEDICATION_DATABASE=copp_review_medications_kan75_...`,
+`COP_MEDICATION_GATEWAY_PORT=5260` y `COP_E2E_OUTPUT` en un directorio privado.
+Apuntar el ERP y la app al gateway local en los puertos 3160 y 5189 descritos
+por el spec. `COP_MEDICATION_E2E_RXTERMS=true` permite sincronizar la referencia
+pública de EE. UU. para la prueba del catálogo.
+
+En ERP, ejecutar `medications-completion-real.spec.ts` con
+`playwright.medications-real.config.ts` y `COP_MEDICATION_COMPLETION_FIXTURE`
+apuntando al fixture privado. Los controles de QA invocan el planificador y
+aplican una respuesta sintética a una entrega reservada en PostgreSQL. Los
+controles solo están disponibles en loopback en las bases KAN-75. No contactan
+proveedores de mensajería.

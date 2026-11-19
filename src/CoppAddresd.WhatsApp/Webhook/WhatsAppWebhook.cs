@@ -156,6 +156,10 @@ public sealed class WhatsAppWebhook(
                             && message.TryGetProperty("text", out var textObject)
                                 ? String(textObject, "body") ?? ""
                                 : "";
+                        if (String(message, "type") == "button" && message.TryGetProperty("button", out var button)
+                            && String(button, "payload") is { } payloadText
+                            && MedicationWhatsAppChannel.IsDoseReply(payloadText))
+                            text = payloadText;
                         var id = Guid.NewGuid();
                         var waId = "+" + from;
                         // El evento y la interacción se guardan juntos. En conflicto solo avanza el contador.

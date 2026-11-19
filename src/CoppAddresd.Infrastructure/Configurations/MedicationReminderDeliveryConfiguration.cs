@@ -15,6 +15,8 @@ public sealed class MedicationReminderDeliveryConfiguration : IEntityTypeConfigu
         builder.Property(row => row.DoseId).HasColumnName("dose_id");
         builder.Property(row => row.Channel).HasColumnName("channel").HasMaxLength(24);
         builder.Property(row => row.Phase).HasColumnName("phase");
+        builder.Property(row => row.ScheduledAt).HasColumnName("scheduled_at");
+        builder.Property(row => row.Snoozed).HasColumnName("snoozed").HasDefaultValue(false);
         builder.Property(row => row.DueAt).HasColumnName("due_at");
         builder.Property(row => row.ClaimedAt).HasColumnName("claimed_at");
         builder.HasIndex(row => new { row.PatientId, row.DoseId, row.Channel, row.Phase }).IsUnique();

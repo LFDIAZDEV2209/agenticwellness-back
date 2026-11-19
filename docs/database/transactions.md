@@ -396,3 +396,13 @@ El alta de paciente guarda el perfil y su solicitud de bienvenida en un
 `SaveChanges` atómico. El worker de Auth transfiere las solicitudes pendientes
 al outbox con una sentencia que reclama filas con `FOR UPDATE SKIP LOCKED`.
 El envío usa el lease y reintentos del outbox existente fuera de la transacción.
+
+### Edición de pauta y cambios de agenda
+
+En la misma transacción y bajo el bloqueo de perfil existente, una edición
+comprueba la revisión, cierra el intervalo de la pauta anterior y agrega la
+siguiente versión con sus horarios. La notificación de cambios por paciente
+se actualiza por clave primaria dentro de la transacción. Deshacer conserva el
+evento original, agrega una corrección, vuelve a pendiente y concilia el stock
+si el consumo original era posterior al último conteo físico. Las notificaciones
+externas se despachan después del commit del planificador.

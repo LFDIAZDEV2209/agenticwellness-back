@@ -6,6 +6,7 @@ public sealed class MedicationTreatment
     public Guid Id { get; set; }
     public Guid PatientId { get; set; }
     public Guid? MedicationId { get; set; }
+    public string? RxCui { get; set; }
     public string Name { get; set; } = "";
     public string ProductType { get; set; } = "medication";
     public string Origin { get; set; } = "patient_reported";
@@ -24,6 +25,15 @@ public sealed class MedicationRegimen
     public Guid Id { get; set; }
     public Guid TreatmentId { get; set; }
     public int Version { get; set; } = 1;
+    public DateTime? EffectiveFrom { get; set; }
+    public DateTime? EffectiveUntil { get; set; }
+    public int? WeekdayMask { get; set; }
+    public int? IntervalHours { get; set; }
+    public bool? PushReminder { get; set; }
+    public bool? InAppReminder { get; set; }
+    public bool? WhatsAppReminder { get; set; }
+    public int? LeadMinutes { get; set; }
+    public int? FollowUpMinutes { get; set; }
     public decimal Dosage { get; set; }
     public string Unit { get; set; } = "";
     public string Route { get; set; } = "";
@@ -71,6 +81,8 @@ public sealed class MedicationIntakeEvent
     public Guid ActorId { get; set; }
     public string Origin { get; set; } = "";
     public string? Reason { get; set; }
+    public string? Channel { get; set; }
+    public int? DoseRevision { get; set; }
     public Guid? CorrectsEventId { get; set; }
 }
 
@@ -93,6 +105,7 @@ public sealed class MedicationTreatmentStatusEvent
     public Guid TreatmentId { get; set; }
     public string Status { get; set; } = "active";
     public int Revision { get; set; }
+    public string? Reason { get; set; }
     public DateTime EffectiveAt { get; set; }
 }
 
@@ -105,4 +118,16 @@ public sealed class MedicationDoseOperation
     public Guid ClientRequestId { get; set; }
     public string RequestHash { get; set; } = "";
     public DateTime AcceptedAt { get; set; }
+}
+
+/// <summary>Preferencias de avisos y versión observable de la agenda en todas las instancias.</summary>
+public sealed class MedicationPatientState
+{
+    public Guid Id { get; set; }
+    public Guid Version { get; set; }
+    public bool PushEnabled { get; set; } = true;
+    public bool InAppEnabled { get; set; } = true;
+    public bool WhatsAppEnabled { get; set; }
+    public int LeadMinutes { get; set; }
+    public int? FollowUpMinutes { get; set; }
 }

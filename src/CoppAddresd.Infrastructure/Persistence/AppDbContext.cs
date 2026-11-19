@@ -201,12 +201,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SosAlertRecipient> SosAlertRecipients => Set<SosAlertRecipient>();
     public DbSet<AssessmentProfileInsight> AssessmentProfileInsights => Set<AssessmentProfileInsight>();
 
+    public DbSet<RxTermsProduct> RxTermsProducts => Set<RxTermsProduct>();
     public DbSet<MedicationTreatment> MedicationTreatments => Set<MedicationTreatment>();
     public DbSet<MedicationRegimen> MedicationRegimens => Set<MedicationRegimen>();
     public DbSet<MedicationScheduleSlot> MedicationScheduleSlots => Set<MedicationScheduleSlot>();
     public DbSet<MedicationDose> MedicationDoses => Set<MedicationDose>();
     public DbSet<MedicationIntakeEvent> MedicationIntakeEvents => Set<MedicationIntakeEvent>();
     public DbSet<MedicationTreatmentStatusEvent> MedicationTreatmentStatusEvents => Set<MedicationTreatmentStatusEvent>();
+    public DbSet<MedicationPatientState> MedicationPatientStates => Set<MedicationPatientState>();
     public DbSet<MedicationDoseOperation> MedicationDoseOperations => Set<MedicationDoseOperation>();
     public DbSet<PatientModuleAccess> PatientModuleAccess => Set<PatientModuleAccess>();
 

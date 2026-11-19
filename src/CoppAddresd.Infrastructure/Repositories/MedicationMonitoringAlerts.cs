@@ -37,8 +37,9 @@ public sealed partial class MedicationControlStore
             {
                 var supply = supplies.SingleOrDefault(s => s.TreatmentId == t.Id);
                 if (supply is null) continue;
-                if (supply.Balance <= t.Dosage * t.Times.Count * 7)
-                    desired["stock:" + t.Id] = (t.Id, "stock_low", supply.Balance <= t.Dosage * t.Times.Count * 4 ? "high" : "warning");
+                var dailyUsage = t.Dosage * TimesPerDay(t.IntervalHours, t.WeekdayMask, t.Times.Count);
+                if (supply.Balance <= dailyUsage * 7)
+                    desired["stock:" + t.Id] = (t.Id, "stock_low", supply.Balance <= dailyUsage * 4 ? "high" : "warning");
                 if (supply.Balance > 0 && supply.ExpiresOn < today)
                     desired["expiry:" + t.Id] = (t.Id, "expired", "high");
             }

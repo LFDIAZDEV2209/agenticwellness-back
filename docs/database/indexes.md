@@ -392,3 +392,15 @@ proyección, la asignación sale del índice. Se construye concurrentemente.
 | `erp.patient_welcome_requests` PK `patient_id` | Una solicitud por paciente y consulta durante OTP |
 | `erp.patient_welcome_requests (requested_at, patient_id)` parcial | Lotes de solicitudes aún sin transferir |
 | `auth.WelcomeEmailDeliveries (PatientId)` único parcial | Una entrega de alta por paciente sin indexar entregas de cuenta |
+
+## Catálogo de medicamentos de EE. UU.
+
+| Índice | Uso | Mantenimiento |
+|---|---|---|
+| PK `app.rxterms_products(rx_cui)` | Referencia del tratamiento y sincronización idempotente | Una entrada por presentación |
+| `ix_rxterms_search_trgm` | GIN trigram de `search_text` para filas activas | Actualización al publicar una edición |
+| Índice FK de `app.medication_treatments(rx_cui)` | Referencias a la presentación por RxCUI | Se actualiza al crear tratamientos |
+
+`app.medication_patient_state` usa la PK `id` del paciente para consultar la
+versión de la agenda y sus preferencias. La consulta no toca tablas de eventos,
+prescripciones ni bitácora.

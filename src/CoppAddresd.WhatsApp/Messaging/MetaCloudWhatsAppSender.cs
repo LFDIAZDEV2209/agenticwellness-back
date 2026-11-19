@@ -89,6 +89,25 @@ public sealed class MetaCloudWhatsAppSender(
             ct
         );
 
+    public Task<WhatsAppSendResult> SendQuickReplyTemplateAsync(string waId, string name, string language,
+        IReadOnlyList<string> bodyParameters, IReadOnlyList<string> replies, CancellationToken ct)
+    {
+        var components = new List<object>
+        {
+            new { type = "body", parameters = bodyParameters.Select(text => new { type = "text", text }).ToArray() },
+        };
+        components.AddRange(replies.Select((payload, index) => new
+        {
+            type = "button", sub_type = "quick_reply", index,
+            parameters = new[] { new { type = "payload", payload } },
+        }));
+        return SendAsync(waId, new
+        {
+            messaging_product = "whatsapp", recipient_type = "individual", to = waId.TrimStart('+'),
+            type = "template", template = new { name, language = new { code = language }, components },
+        }, ct);
+    }
+
     /// <summary>
     /// Marca como leído el mensaje entrante y activa el indicador de escritura
     /// (tres puntos). Meta lo descarta al responder o a los 25 segundos; el

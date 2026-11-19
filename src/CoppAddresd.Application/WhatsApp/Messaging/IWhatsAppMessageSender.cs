@@ -35,6 +35,10 @@ public interface IWhatsAppMessageSender
         CancellationToken ct
     );
 
+    Task<WhatsAppSendResult> SendQuickReplyTemplateAsync(string waId, string name, string language,
+        IReadOnlyList<string> bodyParameters, IReadOnlyList<string> replies, CancellationToken ct)
+        => Task.FromResult(WhatsAppSendResult.Failed("quick_reply_unavailable", WhatsAppFailureKind.Permanent));
+
     /// <summary>Correlación opaca para conciliar callbacks que lleguen antes del ACK HTTP.</summary>
     Task<WhatsAppSendResult> SendTemplateWithCallbackAsync(string waId, string name, string language,
         IReadOnlyList<string> bodyParameters, string callbackData, CancellationToken ct)
