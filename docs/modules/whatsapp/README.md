@@ -107,6 +107,17 @@ reentrega. Un JSON válido con estructuras desconocidas se ignora.
 Solo acepta el phone_number_id configurado. Recibos de estado no abren ventana.
 El payload completo es información sensible: no se imprime en logs.
 
+### Recibos de estado (KAN-54)
+
+Cada `statuses[]` aceptado se persiste en `whatsapp.message_receipts` (append-only, único
+`(wamid, status)`) **antes** de reenviarse al receptor de SOS; un fallo del receptor ya no pierde el
+recibo. El estado local avanza de forma monótona `sent < delivered < read` y `failed` gana, tanto en
+`whatsapp.outbound_messages` (cada fragmento del chat, con `wamid`) como en
+`reminder_deliveries.receipt_status/at/error_code`. Se toleran duplicados, orden invertido y wamid
+desconocido (solo queda el recibo). Si el recibo llega antes del ACK del envío, el INSERT del saliente
+concilia después con el recibo más avanzado. Los logs muestran el estado y el wamid enmascarado
+(últimos 8 caracteres), nunca el teléfono ni el contenido.
+
 ## Identidad y conversación
 
 `FindActivePatientByPhoneQuery` pertenece a Patients; su adaptador consulta solo
@@ -176,12 +187,12 @@ y la persistencia de su cursor, al recuperar el evento puede reenviar ese fragme
 No hay funciones ni plantillas de citas. El nutricionista responde por el agente
 dentro de la conversación y su ventana de 24 h; no tiene plantilla proactiva.
 
-| Tipo | Fuente canónica en el backend | Motivo resuelto |
-|---|---|---|
-| Bienestar | Paciente activo + inscripción `Active` | Interacción, baja o programa inactivo |
-| Racha | `streak_states`: CurrentStreak > 0 y LastActiveDate = ayer en Bogotá | Día calificado hoy o racha ya no vigente |
-| Podcast | `program_weeks.tasks_snapshot` del día, fallback `weekly_day_templates.media_id`, medio Podcast publicado y no demo | `task_completions` podcast en la fecha local o contenido desasignado/no publicado |
-| Evaluación inicial | Asignaciones pending/in_progress de `bateria-inicial`, activa y AutoAssignOnPatientCreate; sin evaluación completada | Evaluación entregada, asignación cancelada/vencida o batería deshabilitada |
+| Tipo               | Fuente canónica en el backend                                                                                        | Motivo resuelto                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Bienestar          | Paciente activo + inscripción `Active`                                                                               | Interacción, baja o programa inactivo                                             |
+| Racha              | `streak_states`: CurrentStreak > 0 y LastActiveDate = ayer en Bogotá                                                 | Día calificado hoy o racha ya no vigente                                          |
+| Podcast            | `program_weeks.tasks_snapshot` del día, fallback `weekly_day_templates.media_id`, medio Podcast publicado y no demo  | `task_completions` podcast en la fecha local o contenido desasignado/no publicado |
+| Evaluación inicial | Asignaciones pending/in_progress de `bateria-inicial`, activa y AutoAssignOnPatientCreate; sin evaluación completada | Evaluación entregada, asignación cancelada/vencida o batería deshabilitada        |
 
 Racha en riesgo significa racha vigente ayer que aún no calificó hoy, la misma
 vigencia que `ProgramRepository.EffectiveCurrentStreak`; no se altera el contador
