@@ -22,7 +22,8 @@ public sealed class PostgresFixture : IAsyncLifetime
         await using var app = CreateAppDb();
         await app.Database.OpenConnectionAsync(ct);
         await using var command = app.Database.GetDbConnection().CreateCommand();
-        command.CommandText = app.Database.GenerateCreateScript();
+        // El modelo de RxTerms usa gin_trgm_ops. En producción lo instala la migración de catálogos.
+        command.CommandText = "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n" + app.Database.GenerateCreateScript();
         await command.ExecuteNonQueryAsync(ct);
         appSchemaCreated = true;
     }
