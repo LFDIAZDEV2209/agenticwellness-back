@@ -12,7 +12,7 @@ public sealed class MedicationAppReminderChannel(IDeviceTokenRepository deviceTo
     IConfiguration configuration, ILogger<MedicationAppReminderChannel> logger) : IMedicationReminderChannel
 {
     public string Code => MedicationControlStore.AppReminderChannel;
-    public bool Enabled => configuration.GetValue<bool>("Medications:RemindersEnabled");
+    public bool Enabled => MedicationReminderTestScope.AppEnabled(configuration);
 
     public async Task DispatchAsync(MedicationReminderOccurrence occurrence, Guid deliveryId, CancellationToken ct)
     {

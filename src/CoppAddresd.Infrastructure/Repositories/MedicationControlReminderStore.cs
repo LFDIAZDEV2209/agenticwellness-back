@@ -1,6 +1,7 @@
 using CoppAddresd.Application.Features.Medications;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Entities.ProgramProgress;
+using CoppAddresd.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoppAddresd.Infrastructure.Repositories;
@@ -16,11 +17,13 @@ public sealed partial class MedicationControlStore : IMedicationReminderSchedule
     private static readonly TimeSpan ReminderLookback = TimeSpan.FromMinutes(100);
     private IQueryable<MedicationReminderDelivery> ReminderDeliveries => db.Set<MedicationReminderDelivery>();
 
-    internal Task<List<Guid>> ListReminderPatientsAsync(Guid? cursor, CancellationToken ct)
+    internal Task<List<Guid>> ListReminderPatientsAsync(Guid? cursor, CancellationToken ct, bool demoOnly = false)
     {
         var active = MedicationAccessQuery.Resolve(db).Where(row => row.Enabled);
         return db.PatientProfiles.AsNoTracking()
             .Where(patient => patient.UserId != null
+                && (!demoOnly || (patient.Id == MedicationReminderTestScope.PatientId
+                    && patient.UserId == MedicationReminderTestScope.UserId))
                 && active.Any(row => row.PatientId == patient.Id)
                 && db.MedicationTreatments.Any(t => t.PatientId == patient.Id && t.Status == "active")
                 && (!cursor.HasValue || patient.Id.CompareTo(cursor.Value) > 0))

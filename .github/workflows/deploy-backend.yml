@@ -268,6 +268,8 @@ jobs:
       - name: Registrar nueva Task Definition (imagen SHA)
         id: taskdef
         shell: bash
+        env:
+          DEMO_REMINDERS_ONLY: ${{ vars.MEDICATION_DEMO_REMINDERS_ONLY_DEV || 'false' }}
         run: |
           TD_NAME="cooppadresd-${{ matrix.service }}"
           TASK_DEF_JSON=$(aws ecs describe-task-definition --task-definition "$TD_NAME" --region "${{ env.AWS_REGION }}" --query "taskDefinition" --output json)
@@ -279,8 +281,12 @@ jobs:
             WA_ENABLED="${{ vars.WHATSAPP_ENABLED_DEV || '0' }}"
             WA_REMINDERS="${{ vars.WHATSAPP_REMINDERS_ENABLED_DEV || 'false' }}"
             MEDICATIONS_ENABLED="${{ vars.MEDICATIONS_ENABLED_DEV || 'false' }}"
-            EXTRA_ENV=$(echo "$EXTRA_ENV" | jq --arg enabled "$WA_ENABLED" --arg reminders "$WA_REMINDERS" --arg medications "$MEDICATIONS_ENABLED" \
-              '. + [{name:"WHATSAPP_ENABLED",value:$enabled},{name:"WhatsApp__Reminders__Enabled",value:$reminders},{name:"Medications__Enabled",value:$medications}]')
+            case "$DEMO_REMINDERS_ONLY" in
+              true|false) ;;
+              *) echo "::error::MEDICATION_DEMO_REMINDERS_ONLY_DEV debe ser true o false"; exit 1 ;;
+            esac
+            EXTRA_ENV=$(echo "$EXTRA_ENV" | jq --arg enabled "$WA_ENABLED" --arg reminders "$WA_REMINDERS" --arg medications "$MEDICATIONS_ENABLED" --arg demo "$DEMO_REMINDERS_ONLY" \
+              '. + [{name:"WHATSAPP_ENABLED",value:$enabled},{name:"WhatsApp__Reminders__Enabled",value:$reminders},{name:"Medications__Enabled",value:$medications},{name:"Medications__DemoRemindersOnly",value:$demo}]')
             if [ "$WA_ENABLED" = "1" ] || [ "$WA_ENABLED" = "true" ]; then
               WA_SECRET_ARN="${{ vars.WHATSAPP_SECRET_ARN_DEV }}"
               test -n "$WA_SECRET_ARN" || { echo "Falta WHATSAPP_SECRET_ARN_DEV"; exit 1; }
@@ -318,6 +324,26 @@ jobs:
           echo "secrets existentes: $(echo "$TASK_DEF_JSON" | jq -r '[.containerDefinitions[0].secrets[]?.name] | join(",")')"
           echo "envs finales: $(echo "$NEW_TASK_DEF_JSON" | jq -r '[.containerDefinitions[0].environment[]?.name] | join(",")')"
           echo "secrets finales: $(echo "$NEW_TASK_DEF_JSON" | jq -r '[.containerDefinitions[0].secrets[]?.name] | join(",")')"
+          if [ "${{ matrix.service }}" = "api" ]; then
+            echo "$NEW_TASK_DEF_JSON" | jq -c '
+              [.containerDefinitions[0].environment[] |
+                select(.name | IN("Medications__Enabled","Medications__RemindersEnabled","Medications__DemoRemindersOnly","Fcm__Enabled","Fcm__ProjectId"))]
+                | map({key: .name, value: .value}) | from_entries'
+          fi
+          if [ "${{ matrix.service }}" = "api" ] && [ "$DEMO_REMINDERS_ONLY" = "true" ]; then
+            if ! jq -e '
+              .containerDefinitions[0] |
+              (.environment | map({key: .name, value: .value}) | from_entries) as $env |
+              $env.Medications__DemoRemindersOnly == "true" and
+              (($env.Medications__Enabled // "") | ascii_downcase) == "true" and
+              (($env.Fcm__Enabled // "") | ascii_downcase) == "true" and
+              $env.Fcm__ProjectId == "coppadresd01" and
+              any(.secrets[]?; .name == "Fcm__ServiceAccountJson")
+            ' >/dev/null <<< "$NEW_TASK_DEF_JSON"; then
+              echo "::error::La prueba KAN-78 requiere medicamentos y FCM habilitados para coppadresd01"
+              exit 1
+            fi
+          fi
           echo "task role: $(echo "$NEW_TASK_DEF_JSON" | jq -r '.taskRoleArn // "sin-task-role-hereda-previo"')"
           REGISTERED=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEF_JSON" --region "${{ env.AWS_REGION }}")
           echo "arn=$(echo "$REGISTERED" | jq -r '.taskDefinition.taskDefinitionArn')" >> "$GITHUB_OUTPUT"

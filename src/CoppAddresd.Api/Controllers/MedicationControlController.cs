@@ -2,6 +2,7 @@ using CoppAddresd.Api.Authorization;
 using CoppAddresd.Api.Context;
 using CoppAddresd.Application.Features.Medications;
 using CoppAddresd.Domain.Exceptions;
+using CoppAddresd.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,7 @@ public sealed class MedicationControlController(MedicationControlService medicat
             var access = await medications.SelfAccessAsync(ActorId, ct);
             enabled = view = manage = access.Enabled;
             revision = access.Revision;
-            canSnooze = access.Enabled && settings?.GetValue<bool>("Medications:RemindersEnabled") == true;
+            canSnooze = access.Enabled && MedicationReminderTestScope.AppEnabledForUser(settings, ActorId);
         }
         else if (medications.Enabled && IsApplication("erp"))
         {
@@ -91,7 +92,9 @@ public sealed class MedicationControlController(MedicationControlService medicat
         CancellationToken ct)
     {
         var patient = await SelfAsync(ct);
-        if (!configuration.GetValue<bool>("Medications:RemindersEnabled")) return NotFound();
+        if (!MedicationReminderTestScope.AppEnabledForUser(configuration, ActorId)
+            || (MedicationReminderTestScope.IsDemoOnly(configuration) && patient != MedicationReminderTestScope.PatientId))
+            return NotFound();
         if (request.Minutes is not (15 or 30) || request.ScheduledAt == default) return BadRequest();
         return await reminders.SnoozeAsync(patient, doseId, request.ScheduledAt.UtcDateTime, request.Minutes, ct)
             ? NoContent() : Conflict();

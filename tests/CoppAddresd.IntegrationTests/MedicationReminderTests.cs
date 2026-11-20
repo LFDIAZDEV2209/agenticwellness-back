@@ -2,6 +2,7 @@ using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Infrastructure.Persistence;
 using CoppAddresd.Infrastructure.Repositories;
+using CoppAddresd.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NSubstitute;
@@ -68,6 +69,37 @@ public sealed class MedicationReminderTests : IAsyncLifetime
         await admin.OpenAsync();
         await using var drop = new NpgsqlCommand($"""DROP DATABASE "{database}" WITH (FORCE)""", admin);
         await drop.ExecuteNonQueryAsync();
+    }
+
+    [NutritionPostgresFact]
+    public async Task SharedEnvironmentScope_OnlyListsTheReservedDemoPatientAndLinkedAccount()
+    {
+        await using var db = Context();
+        var store = Store(db);
+        Assert.Contains(patientId, await store.ListReminderPatientsAsync(null, default));
+        Assert.Empty(await store.ListReminderPatientsAsync(null, default, demoOnly: true));
+
+        var demoPatientId = MedicationReminderTestScope.PatientId;
+        var unrelatedUser = Guid.NewGuid();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""INSERT INTO auth."Users" ("Id") VALUES ({unrelatedUser})""");
+        db.PatientProfiles.Add(new PatientProfile
+        {
+            Id = demoPatientId, UserId = unrelatedUser, FirstName = "QA", LastName = "Recordatorios",
+        });
+        db.MedicationTreatments.Add(new MedicationTreatment
+        {
+            Id = Guid.NewGuid(), PatientId = demoPatientId, Name = "Tratamiento demo",
+            ClientRequestId = Guid.NewGuid(), CreatedBy = userId,
+            Status = "active", CreatedAt = scheduled, UpdatedAt = scheduled,
+        });
+        await db.SaveChangesAsync();
+        Assert.Empty(await store.ListReminderPatientsAsync(null, default, demoOnly: true));
+
+        var demoUserId = MedicationReminderTestScope.UserId;
+        await db.Database.ExecuteSqlInterpolatedAsync($"""INSERT INTO auth."Users" ("Id") VALUES ({demoUserId})""");
+        (await db.PatientProfiles.SingleAsync(p => p.Id == demoPatientId)).UserId = demoUserId;
+        await db.SaveChangesAsync();
+        Assert.Equal(demoPatientId, Assert.Single(await store.ListReminderPatientsAsync(null, default, demoOnly: true)));
     }
 
     [NutritionPostgresFact]

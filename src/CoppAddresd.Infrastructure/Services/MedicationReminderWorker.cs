@@ -35,7 +35,8 @@ public sealed class MedicationReminderWorker(IServiceScopeFactory scopes, IConfi
         Guid? cursor = null;
         while (!ct.IsCancellationRequested)
         {
-            var patients = await reader.ListReminderPatientsAsync(cursor, ct);
+            var patients = await reader.ListReminderPatientsAsync(cursor, ct,
+                demoOnly: MedicationReminderTestScope.IsDemoOnly(configuration));
             if (patients.Count == 0) return;
             foreach (var patientId in patients)
             {
