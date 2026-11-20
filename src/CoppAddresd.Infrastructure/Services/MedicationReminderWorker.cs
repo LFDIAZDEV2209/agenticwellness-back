@@ -25,7 +25,7 @@ public sealed class MedicationReminderWorker(IServiceScopeFactory scopes, IConfi
         }
     }
 
-    private async Task SweepAsync(CancellationToken ct)
+    internal async Task SweepAsync(CancellationToken ct)
     {
         await using var listingScope = scopes.CreateAsyncScope();
         var reader = listingScope.ServiceProvider.GetRequiredService<MedicationControlStore>();
