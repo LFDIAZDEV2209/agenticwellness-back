@@ -118,3 +118,18 @@ apuntando al fixture privado. Los controles de QA invocan el planificador y
 aplican una respuesta sintética a una entrega reservada en PostgreSQL. Los
 controles solo están disponibles en loopback en las bases KAN-75. No contactan
 proveedores de mensajería.
+
+## Recordatorios push y bandeja KAN-78
+
+Arranca el host en una base nueva `copp_review_medications_kan78_*`. Usa el
+gateway del fixture para el ERP en 3100 y la app en 5188. La ruta de QA
+`POST /__qa/medications/push-sweep` ejecuta una pasada del worker con el reloj
+del host y captura las llamadas FCM en memoria. No contacta a Firebase.
+
+Desde el ERP, ejecuta la prueba con el fixture privado de esa ejecución:
+
+```sh
+COP_MEDICATION_PUSH_FIXTURE=/tmp/copp-medication-e2e/fixture.private.json \
+  node node_modules/@playwright/test/cli.js test \
+  --config playwright.medications-real.config.ts e2e/medications-notifications-real.spec.ts
+```

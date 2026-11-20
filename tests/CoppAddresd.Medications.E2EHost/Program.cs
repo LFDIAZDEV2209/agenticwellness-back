@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
+using CoppAddresd.Application.Common;
+using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Auth.Data;
 using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Interfaces;
@@ -41,6 +43,8 @@ if (!dbName.StartsWith("copp_review_medications_", StringComparison.Ordinal))
     throw new InvalidOperationException("Solo se admiten bases locales copp_review_medications_.");
 var welcomeInbox = dbName.StartsWith("copp_review_medications_welcome_", StringComparison.Ordinal)
     ? new QaWelcomeInbox() : null;
+var pushInbox = dbName.StartsWith("copp_review_medications_kan78_", StringComparison.Ordinal)
+    ? new QaPushInbox() : null;
 var output = Path.GetFullPath(Environment.GetEnvironmentVariable("COP_E2E_OUTPUT") ?? "/tmp/copp-medication-e2e");
 if (!output.StartsWith(Path.GetTempPath(), StringComparison.Ordinal))
     throw new InvalidOperationException("La evidencia debe estar fuera de los repositorios.");
@@ -59,7 +63,7 @@ var settings = new Dictionary<string, string?>
     ["Storage:SignatureKey"] = key, ["Storage:Provider"] = "Local",
     ["Storage:Local:RootPath"] = Path.Combine(output, "storage"),
     ["Cache:Provider"] = "Memory", ["Medications:Enabled"] = "true", ["Medications:MonitoringWorkerEnabled"] = "false",
-    ["Medications:RemindersEnabled"] = dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal).ToString(),
+    ["Medications:RemindersEnabled"] = (pushInbox is not null || dbName.StartsWith("copp_review_medications_kan75_", StringComparison.Ordinal)).ToString(),
     ["Auth:InternalApiKey"] = key, ["AuthService:InternalApiKey"] = key,
     ["AuthService:BaseUrl"] = $"http://127.0.0.1:{authPort}",
     ["Cors:Origins"] = "http://localhost:3100,http://127.0.0.1:3100,http://localhost:5188,http://127.0.0.1:5188,http://localhost:5160,http://127.0.0.1:5160",
@@ -91,7 +95,7 @@ await using (var scope = auth.Services.CreateAsyncScope())
 }
 
 var clock = new QaClock();
-await using var api = new ApiFactory(settings, clock, welcomeInbox is not null);
+await using var api = new ApiFactory(settings, clock, welcomeInbox is not null, pushInbox);
 api.UseKestrel(options => options.ListenLocalhost(apiPort));
 using var apiClient = api.CreateClient();
 await using (var scope = api.Services.CreateAsyncScope())
@@ -131,6 +135,14 @@ var relay = relayBuilder.Build();
 using var forward = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
 relay.Run(async context =>
 {
+    if (pushInbox is not null && context.Request.Path == "/__qa/medications/push-sweep"
+        && context.Request.Method == "POST")
+    {
+        using var worker = ActivatorUtilities.CreateInstance<MedicationReminderWorker>(api.Services);
+        await worker.SweepAsync(context.RequestAborted);
+        await context.Response.WriteAsJsonAsync(pushInbox.Messages.ToArray());
+        return;
+    }
     // Único control de infraestructura de QA: reloj inyectado de la API.
     // No sustituye repositorios, autenticación, autorización ni respuestas de negocio.
     if (context.Request.Path == "/__qa/clock" && context.Request.Method == "POST")
@@ -372,7 +384,7 @@ sealed class AuthFactory(IReadOnlyDictionary<string, string?> settings, QaWelcom
     }
 }
 
-sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock clock, bool welcomeEmails) : WebApplicationFactory<ApiEntry::Program>
+sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock clock, bool welcomeEmails, QaPushInbox? pushInbox) : WebApplicationFactory<ApiEntry::Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -384,9 +396,29 @@ sealed class ApiFactory(IReadOnlyDictionary<string, string?> settings, QaClock c
             AuthFactory.RemoveBackgroundServices(services);
             if (welcomeEmails)
                 services.AddHostedService<CoppAddresd.Api.Security.WelcomeEmailFinalizationWorker>();
+            if (pushInbox is not null)
+            {
+                services.RemoveAll<IFcmClient>();
+                services.AddSingleton<IFcmClient>(pushInbox);
+            }
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(clock);
         });
+    }
+}
+
+sealed record QaPushMessage(string Token, string Title, string Body, Dictionary<string, string>? Data);
+
+sealed class QaPushInbox : IFcmClient
+{
+    public ConcurrentQueue<QaPushMessage> Messages { get; } = new();
+
+    public Task<FcmSendResult> SendAsync(string deviceToken, string title, string body,
+        Dictionary<string, string>? data = null, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        Messages.Enqueue(new QaPushMessage(deviceToken, title, body, data));
+        return Task.FromResult(new FcmSendResult(FcmSendStatus.Sent));
     }
 }
 

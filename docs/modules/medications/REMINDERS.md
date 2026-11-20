@@ -11,7 +11,10 @@ los alertas de efectos como disparadores.
 1. Aplica la migración de API `AddMedicationReminders`.
 2. Habilita `Medications__Enabled` y `Medications__RemindersEnabled`.
 3. Para entrega nativa, configura el transporte FCM existente y registra el
-   dispositivo del paciente. La bandeja funciona sin credenciales de push.
+   dispositivo del paciente. Android requiere `google-services.json`. iOS
+   necesita la configuración Firebase del mismo proyecto y un perfil con
+   Push Notifications. El cliente iOS intercambia el token APNs por un token
+   FCM compatible con el backend. La bandeja funciona sin credenciales de push.
 4. Ajusta `Medications__ReminderFollowUpMinutes` si hace falta. El valor
    predeterminado es 30 minutos y el rango permitido es 15–90.
 
@@ -46,6 +49,11 @@ Comprueba un aviso en la bandeja y un push discreto por dispositivo. Toca uno
 para abrir Mis medicamentos. Verifica el segundo aviso pendiente, el tiempo
 elegido al posponer y la ausencia de seguimientos tras registrar la toma o
 pausar el tratamiento. Usa dispositivos iOS y Android del entorno de prueba.
+
+El host de QA `copp_review_medications_kan78_*` permite avanzar el reloj y
+ejecutar el worker real desde `POST /__qa/medications/push-sweep`. Usa un
+transporte FCM en memoria. La prueba Playwright comprueba la bandeja real y
+la carga de push sin enviar avisos a Firebase ni a dispositivos.
 
 ## Preferencias y WhatsApp
 
