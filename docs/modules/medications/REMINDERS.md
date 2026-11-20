@@ -22,6 +22,16 @@ Se mantiene deshabilitado por defecto en ambientes existentes. Los mensajes
 son discretos en todos los dispositivos. La carga de push solo contiene el
 tipo, destino y un identificador opaco de notificación.
 
+## Prueba en el entorno compartido
+
+La variable de repositorio `MEDICATION_DEMO_REMINDERS_ONLY_DEV=true` activa
+push y bandeja del motor únicamente para el paciente sintético reservado
+`900006702` al desplegar la API. El worker verifica tanto la identidad del
+paciente como la cuenta asociada, y «Posponer» se limita a ese paciente.
+Mientras está activa esta opción, el barrido de todos los canales de
+medicamentos se limita al caso de prueba. Configura la variable en `false`
+y vuelve a desplegar al acabar la prueba.
+
 ## Entrega y posponer
 
 La base reserva una fila única por paciente, toma, canal y fase bajo el mismo

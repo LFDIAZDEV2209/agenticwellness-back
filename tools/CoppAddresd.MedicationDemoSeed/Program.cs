@@ -6,6 +6,7 @@ using CoppAddresd.Domain.Enums.ProgramProgress;
 using CoppAddresd.Application.Features.Medications;
 using CoppAddresd.Infrastructure.Persistence;
 using CoppAddresd.Infrastructure.Repositories;
+using CoppAddresd.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +22,7 @@ try
     var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { { "Medications:Enabled", "true" } }).Build();
     await using var auth = new AuthDbContext(new DbContextOptionsBuilder<AuthDbContext>().UseNpgsql(connection).Options);
     await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(connection).Options);
-    var userId = Guid.Parse("f1ea5b76-52c8-47d8-ae59-ab82ad13b2a9"); var patientId = Guid.Parse("bd0e7dd6-5b05-4fb9-8d09-09d53fe809f5");
+    var userId = MedicationReminderTestScope.UserId; var patientId = MedicationReminderTestScope.PatientId;
     var password = "Demo!" + Convert.ToHexString(HMACSHA256.HashData(System.Text.Encoding.UTF8.GetBytes(connection), System.Text.Encoding.UTF8.GetBytes("copp:medication-demo:" + userId))).ToLowerInvariant()[..24];
     var state = new DemoState(userId, patientId, "900006702", "medication.demo.20261118@copp.test", password);
     // Refuse every collision before creating or changing any row. Existing passwords are never reset.
