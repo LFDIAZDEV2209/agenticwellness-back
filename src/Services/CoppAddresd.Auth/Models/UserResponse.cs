@@ -10,12 +10,21 @@ public record UserScopedRoleResponse(
     string ScopeType,
     string? ScopeName);
 
+public record UserPatientLinkResponse(
+    Guid Id,
+    string? DocumentNumber,
+    string? Status);
+
 public record UserResponse(
     string Id,
-    string Email,
+    string? Email,
     string FirstName,
     string LastName,
     bool IsActive,
     DateTime CreatedAt,
     string[] Roles,
-    UserScopedRoleResponse[]? ScopedRoles = null);
+    UserScopedRoleResponse[]? ScopedRoles = null,
+    string[]? Applications = null,
+    string? PhoneNumber = null,
+    UserPatientLinkResponse? Patient = null,
+    string AccountType = "erp");

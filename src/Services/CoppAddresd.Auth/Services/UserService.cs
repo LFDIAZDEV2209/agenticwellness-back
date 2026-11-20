@@ -20,6 +20,14 @@ internal class ScopeNameRow
     public string Name { get; set; } = string.Empty;
 }
 
+internal sealed class PatientLinkRow
+{
+    public Guid UserId { get; set; }
+    public Guid Id { get; set; }
+    public string? DocumentNumber { get; set; }
+    public string? Status { get; set; }
+}
+
 public class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -48,9 +56,12 @@ public class UserService : IUserService
         if (user is null) return null;
 
         var roles = await _userManager.GetRolesAsync(user);
-        var scopedRoles = await GetScopedRolesForUsersAsync(new[] { id }, ct);
-        scopedRoles.TryGetValue(id, out var scoped);
-        return MapToResponse(user, roles, scoped);
+        Guid[] userIds = [id];
+        var scopedRoles = await GetScopedRolesForUsersAsync(userIds, ct);
+        var applications = await GetApplicationsForUsersAsync(userIds, ct);
+        var patients = await GetPatientLinksForUsersAsync(userIds, ct);
+        return MapToResponse(user, roles, scopedRoles.GetValueOrDefault(id),
+            applications.GetValueOrDefault(id) ?? [], user.PhoneNumber, patients.GetValueOrDefault(id));
     }
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken ct = default)
@@ -64,16 +75,59 @@ public class UserService : IUserService
         // (evita N+1 con GetRolesAsync ya existente por usuario).
         var userIds = users.Select(u => u.Id).ToArray();
         var scopedRolesMap = await GetScopedRolesForUsersAsync(userIds, ct);
+        var applications = await GetApplicationsForUsersAsync(userIds, ct);
+        var patients = await GetPatientLinksForUsersAsync(userIds, ct);
 
         var result = new List<UserResponse>();
         foreach (var user in users)
         {
             var roles = await _userManager.GetRolesAsync(user);
             scopedRolesMap.TryGetValue(user.Id, out var scoped);
-            result.Add(MapToResponse(user, roles, scoped));
+            result.Add(MapToResponse(user, roles, scoped,
+                applications.GetValueOrDefault(user.Id) ?? [], user.PhoneNumber, patients.GetValueOrDefault(user.Id)));
         }
 
         return result;
+    }
+
+    private async Task<Dictionary<Guid, string[]>> GetApplicationsForUsersAsync(
+        Guid[] userIds,
+        CancellationToken ct)
+    {
+        if (userIds.Length == 0) return [];
+
+        var rows = await _dbContext.UserApplications.AsNoTracking()
+            .Where(ua => userIds.Contains(ua.UserId) &&
+                (ua.Application.Code == ApplicationCodes.Erp || ua.Application.Code == ApplicationCodes.App))
+            .Select(ua => new { ua.UserId, ua.Application.Code })
+            .ToListAsync(ct);
+
+        return rows.GroupBy(row => row.UserId).ToDictionary(
+            group => group.Key,
+            group => group.Select(row => row.Code)
+                .OrderByDescending(code => code == ApplicationCodes.Erp)
+                .ToArray());
+    }
+
+    /// <summary>
+    /// Lee el vínculo de cada cuenta en el esquema app. Los tests SQLite sustituyen esta lectura.
+    /// </summary>
+    protected virtual async Task<Dictionary<Guid, UserPatientLinkResponse>> GetPatientLinksForUsersAsync(
+        Guid[] userIds,
+        CancellationToken ct)
+    {
+        if (userIds.Length == 0) return [];
+
+        const string sql = """
+            SELECT user_id AS "UserId", id AS "Id", document_number AS "DocumentNumber", status AS "Status"
+            FROM app.patient_profiles
+            WHERE user_id = ANY({0}) AND deleted_at IS NULL
+            """;
+
+        var rows = await _dbContext.Database.SqlQueryRaw<PatientLinkRow>(sql, userIds).ToListAsync(ct);
+        return rows.ToDictionary(
+            row => row.UserId,
+            row => new UserPatientLinkResponse(row.Id, row.DocumentNumber, row.Status));
     }
 
     /// <summary>
@@ -1114,16 +1168,28 @@ public class UserService : IUserService
     private static UserResponse MapToResponse(
         ApplicationUser user,
         IList<string> roles,
-        List<UserScopedRoleResponse>? scopedRoles = null)
+        List<UserScopedRoleResponse>? scopedRoles = null,
+        string[]? applications = null,
+        string? phoneNumber = null,
+        UserPatientLinkResponse? patient = null)
     {
         return new UserResponse(
             Id: user.Id.ToString(),
-            Email: user.Email!,
+            Email: user.Email,
             FirstName: user.FirstName,
             LastName: user.LastName,
             IsActive: user.IsActive,
             CreatedAt: user.CreatedAt,
             Roles: roles.ToArray(),
-            ScopedRoles: scopedRoles?.Count > 0 ? scopedRoles.ToArray() : null);
+            ScopedRoles: scopedRoles?.Count > 0 ? scopedRoles.ToArray() : null,
+            Applications: applications,
+            PhoneNumber: phoneNumber,
+            Patient: patient,
+            AccountType: ClassifyAccountType(
+                applications?.Contains(ApplicationCodes.Erp) == true,
+                applications?.Contains(ApplicationCodes.App) == true));
     }
+
+    private static string ClassifyAccountType(bool hasErp, bool hasApp) =>
+        !hasErp && hasApp ? "patient" : "erp";
 }

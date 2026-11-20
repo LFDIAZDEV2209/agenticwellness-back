@@ -323,6 +323,18 @@ camino de usuario único UserManager no expone overloads con ct (limitación de
 la API Identity), por lo que la cancelación se verifica explícitamente antes
 de cada operación.
 
+### Directorio de usuarios (GET /api/auth/users y GET /api/auth/users/{id})
+
+Las lecturas del directorio incluyen `applications` (`erp`, `app` o ambas, en ese orden),
+`phoneNumber` y el vínculo `patient` (`id`, `documentNumber`, `status`) si existe. El correo
+puede ser nulo para las cuentas creadas por OTP. Una cuenta tiene `accountType: "patient"`
+cuando tiene registrada la app móvil y carece de acceso ERP. El resto, incluido el
+personal legado sin aplicaciones registradas, se clasifica como `erp`. La ficha aporta el
+vínculo y se omite si fue eliminada.
+
+Auth lee aplicaciones y fichas en dos consultas por lote. La lectura de `app.patient_profiles`
+usa el índice único existente sobre `user_id` y no escribe en ese esquema.
+
 ### Endpoints de usuarios con asignaciones (POST/PUT /api/auth/users)
 
 Para eliminar el N+1 del frontend (1 request por rol/permiso), `CreateUserRequest`

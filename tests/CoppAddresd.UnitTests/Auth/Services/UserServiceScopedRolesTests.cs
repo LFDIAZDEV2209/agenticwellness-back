@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using AuthApplication = CoppAddresd.Auth.Entities.Application;
 
 namespace CoppAddresd.UnitTests.Auth.Services;
 
@@ -29,6 +30,7 @@ public class UserServiceScopedRolesTests
     private sealed class TestUserService : UserService
     {
         private readonly AuthDbContext _testDbContext;
+        public Dictionary<Guid, UserPatientLinkResponse> PatientLinks { get; } = [];
 
         public TestUserService(
             UserManager<ApplicationUser> userManager,
@@ -87,6 +89,11 @@ public class UserServiceScopedRolesTests
             Guid[] orgIds,
             CancellationToken ct)
             => Task.FromResult(new Dictionary<Guid, string>());
+
+        protected override Task<Dictionary<Guid, UserPatientLinkResponse>> GetPatientLinksForUsersAsync(
+            Guid[] userIds,
+            CancellationToken ct)
+            => Task.FromResult(PatientLinks.Where(link => userIds.Contains(link.Key)).ToDictionary());
     }
 
     private sealed class Harness : IDisposable
@@ -176,6 +183,52 @@ public class UserServiceScopedRolesTests
             _provider.Dispose();
             _connection.Dispose();
         }
+    }
+
+    [Theory]
+    [InlineData(true, false, true, "patient")]
+    [InlineData(true, true, true, "erp")]
+    [InlineData(false, false, false, "erp")]
+    [InlineData(false, false, true, "erp")]
+    [InlineData(true, false, false, "patient")]
+    [InlineData(false, true, true, "erp")]
+    public async Task Directorio_ClasificaCuentaYConservaDatos(
+        bool hasApp, bool hasErp, bool hasPatient, string expectedType)
+    {
+        using var h = new Harness();
+        var user = await h.CreateUserAsync("Ángel", "Rodríguez", "angel@test.com");
+        user.Email = null;
+        user.PhoneNumber = "+573053924819";
+
+        var ct = CancellationToken.None;
+        if (hasApp)
+        {
+            var app = new AuthApplication { Id = Guid.NewGuid(), Code = "app", Name = "App" };
+            h.Db.UserApplications.Add(new UserApplication { UserId = user.Id, Application = app });
+        }
+        if (hasErp)
+        {
+            var erp = new AuthApplication { Id = Guid.NewGuid(), Code = "erp", Name = "ERP" };
+            h.Db.UserApplications.Add(new UserApplication { UserId = user.Id, Application = erp });
+        }
+        await h.Db.SaveChangesAsync(ct);
+
+        var patient = hasPatient ? new UserPatientLinkResponse(Guid.NewGuid(), "55551234", "Activo") : null;
+        if (patient is not null) h.Users.PatientLinks.Add(user.Id, patient);
+
+        var listed = Assert.Single(await h.Users.GetAllAsync(ct));
+        var detail = await h.Users.GetByIdAsync(user.Id, ct);
+        string[] applications = hasErp ? (hasApp ? ["erp", "app"] : ["erp"]) : hasApp ? ["app"] : [];
+
+        Assert.NotNull(detail);
+        Assert.All(new[] { listed, detail }, response =>
+        {
+            Assert.Equal(expectedType, response.AccountType);
+            Assert.Equal(applications, response.Applications);
+            Assert.Equal(patient, response.Patient);
+            Assert.Null(response.Email);
+            Assert.Equal("+573053924819", response.PhoneNumber);
+        });
     }
 
     [Fact]
