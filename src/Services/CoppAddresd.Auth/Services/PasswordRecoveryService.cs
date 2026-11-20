@@ -10,49 +10,134 @@ using Microsoft.EntityFrameworkCore;
 namespace CoppAddresd.Auth.Services;
 
 /// <summary>Recuperación para cuentas existentes. OTP separado del login, de un solo uso y sin aprovisionar usuarios.</summary>
-public sealed class PasswordRecoveryService(IPatientLookupService patients, UserManager<ApplicationUser> users,
-    AuthDbContext db, ITwilioOtpService sms, IEmailSender email, IOtpProtectionService protection, IHttpContextAccessor context)
+public sealed class PasswordRecoveryService(
+    IPatientLookupService patients,
+    UserManager<ApplicationUser> users,
+    AuthDbContext db,
+    ITwilioOtpService sms,
+    IEmailSender email,
+    IOtpProtectionService protection,
+    IHttpContextAccessor context
+)
 {
     private string Ip => context.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-    private static string Channel(string contact) => contact == "phone" ? "RecoveryPhone" : "RecoveryEmail";
-    private static string Hash(string salt, string code) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(salt + code)));
-    private async Task<(PatientLookupResult Patient, ApplicationUser User)> FindAccount(string document, CancellationToken ct)
+
+    private static string Channel(string contact) =>
+        contact == "phone" ? "RecoveryPhone" : "RecoveryEmail";
+
+    private static string Hash(string salt, string code) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(salt + code)));
+
+    /// <summary>Mensajes de política en español; Identity los devuelve en inglés.</summary>
+    private static string PasswordPolicyMessage(IEnumerable<IdentityError> errors)
+    {
+        var messages = errors
+            .Select(error =>
+                error.Code switch
+                {
+                    "PasswordTooShort" => "La contraseña debe tener al menos 8 caracteres.",
+                    "PasswordRequiresNonAlphanumeric" =>
+                        "Incluye al menos un símbolo (por ejemplo !, #, $).",
+                    "PasswordRequiresDigit" => "Incluye al menos un número.",
+                    "PasswordRequiresLower" => "Incluye al menos una minúscula.",
+                    "PasswordRequiresUpper" => "Incluye al menos una mayúscula.",
+                    "PasswordRequiresUniqueChars" => "Usa al menos 4 caracteres distintos.",
+                    _ => error.Description,
+                }
+            )
+            .Distinct();
+        return string.Join(" ", messages);
+    }
+
+    private async Task<(PatientLookupResult Patient, ApplicationUser User)> FindAccount(
+        string document,
+        CancellationToken ct
+    )
     {
         var patient = await patients.FindByDocumentNumberAsync(document, ct);
-        var user = patient?.UserId is {} id ? await users.FindByIdAsync(id.ToString()) : null;
-        if (patient is null || user is null || !user.IsActive || !await db.UserApplications.AnyAsync(a => a.UserId == user.Id && a.Application.Code == "app" && a.Application.IsActive && !a.IsSuspended, ct))
-            throw new InvalidOperationException("No se puede recuperar esta cuenta. Contacta a tu equipo de atención.");
+        var user = patient?.UserId is { } id ? await users.FindByIdAsync(id.ToString()) : null;
+        if (
+            patient is null
+            || user is null
+            || !user.IsActive
+            || !await db.UserApplications.AnyAsync(
+                a =>
+                    a.UserId == user.Id
+                    && a.Application.Code == "app"
+                    && a.Application.IsActive
+                    && !a.IsSuspended,
+                ct
+            )
+        )
+            throw new InvalidOperationException(
+                "No se puede recuperar esta cuenta. Contacta a tu equipo de atención."
+            );
         return (patient, user);
     }
+
     private static string Target(PatientLookupResult patient, string contact)
     {
         if (contact == "email")
-            return !string.IsNullOrWhiteSpace(patient.Email) ? patient.Email.Trim() : throw new InvalidOperationException("Correo no disponible.");
-        if (string.IsNullOrWhiteSpace(patient.PhoneNumber)) throw new InvalidOperationException("Teléfono no disponible.");
+            return !string.IsNullOrWhiteSpace(patient.Email)
+                ? patient.Email.Trim()
+                : throw new InvalidOperationException("Correo no disponible.");
+        if (string.IsNullOrWhiteSpace(patient.PhoneNumber))
+            throw new InvalidOperationException("Teléfono no disponible.");
         var digits = new string(patient.PhoneNumber.Where(char.IsDigit).ToArray());
         // Se respeta el número internacional o el país registrado; nunca se adivina el prefijo.
         var prefix = new string((patient.PhoneCountryCode ?? "").Where(char.IsDigit).ToArray());
-        if (patient.PhoneNumber.TrimStart().StartsWith('+')) return "+" + digits;
-        if (prefix.Length == 0) throw new InvalidOperationException("Código de país no disponible.");
+        if (patient.PhoneNumber.TrimStart().StartsWith('+'))
+            return "+" + digits;
+        if (prefix.Length == 0)
+            throw new InvalidOperationException("Código de país no disponible.");
         return "+" + prefix + digits;
     }
 
-    public async Task<SendOtpResponse> SendAsync(PasswordRecoveryCodeRequest request, CancellationToken ct)
+    public async Task<SendOtpResponse> SendAsync(
+        PasswordRecoveryCodeRequest request,
+        CancellationToken ct
+    )
     {
         var (patient, _) = await FindAccount(request.DocumentNumber, ct);
         var target = Target(patient, request.ContactId);
         var guard = protection.CheckCanSend(Ip, patient.DocumentNumber, target);
-        if (!guard.Allowed) throw new CoppAddresd.Auth.Exceptions.OtpProtectionException(guard.Reason!.Value, "Intenta más tarde.", guard.RetryAfterSeconds);
+        if (!guard.Allowed)
+            throw new CoppAddresd.Auth.Exceptions.OtpProtectionException(
+                guard.Reason!.Value,
+                "Intenta más tarde.",
+                guard.RetryAfterSeconds
+            );
         var code = RandomNumberGenerator.GetInt32(0, 1000000).ToString("D6");
         var salt = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
-        if (request.ContactId == "phone") await sms.SendAsync(target, ct, request.Language);
-        else await email.SendAsync(AuthOtpMessages.Recovery(target, code, 300, request.Language), ct);
+        if (request.ContactId == "phone")
+            await sms.SendAsync(target, ct, request.Language);
+        else
+            await email.SendAsync(
+                AuthOtpMessages.Recovery(target, code, 300, request.Language),
+                ct
+            );
         protection.RegisterSend(Ip, patient.DocumentNumber, target);
         var now = DateTime.UtcNow;
-        await db.OtpCodes.Where(o => o.DocumentNumber == patient.DocumentNumber && o.Channel.StartsWith("Recovery") && o.UsedAt == null)
+        await db
+            .OtpCodes.Where(o =>
+                o.DocumentNumber == patient.DocumentNumber
+                && o.Channel.StartsWith("Recovery")
+                && o.UsedAt == null
+            )
             .ExecuteUpdateAsync(s => s.SetProperty(o => o.UsedAt, now), ct);
-        db.OtpCodes.Add(new OtpCode { Id = Guid.NewGuid(), DocumentNumber = patient.DocumentNumber, Channel = Channel(request.ContactId),
-            Target = target, Salt = salt, CodeHash = Hash(salt, code), CreatedAt = now, ExpiresAt = now.AddMinutes(5) });
+        db.OtpCodes.Add(
+            new OtpCode
+            {
+                Id = Guid.NewGuid(),
+                DocumentNumber = patient.DocumentNumber,
+                Channel = Channel(request.ContactId),
+                Target = target,
+                Salt = salt,
+                CodeHash = Hash(salt, code),
+                CreatedAt = now,
+                ExpiresAt = now.AddMinutes(5),
+            }
+        );
         await db.SaveChangesAsync(ct);
         return new SendOtpResponse(300); // Nunca devuelve códigos de recuperación.
     }
@@ -63,7 +148,8 @@ public sealed class PasswordRecoveryService(IPatientLookupService patients, User
         foreach (var validator in users.PasswordValidators)
         {
             var result = await validator.ValidateAsync(users, user, request.NewPassword);
-            if (!result.Succeeded) throw new InvalidOperationException(string.Join(" ", result.Errors.Select(e => e.Description)));
+            if (!result.Succeeded)
+                throw new InvalidOperationException(PasswordPolicyMessage(result.Errors));
         }
         var channel = Channel(request.ContactId);
         var strategy = db.Database.CreateExecutionStrategy();
@@ -71,23 +157,63 @@ public sealed class PasswordRecoveryService(IPatientLookupService patients, User
         {
             // Bloqueo de fila: dos envíos con el mismo código no pueden restablecer dos veces.
             await using var tx = await db.Database.BeginTransactionAsync(ct);
-            var otp = await db.OtpCodes.FromSqlInterpolated($"SELECT * FROM auth.\"OtpCodes\" WHERE \"DocumentNumber\" = {patient.DocumentNumber} AND \"Channel\" = {channel} AND \"UsedAt\" IS NULL ORDER BY \"CreatedAt\" DESC LIMIT 1 FOR UPDATE").FirstOrDefaultAsync(ct);
-            if (otp is null || otp.IsExpired || otp.Attempts >= 5 || otp.Target != Target(patient, request.ContactId)) return false;
+            var otp = await db
+                .OtpCodes.FromSqlInterpolated(
+                    $"SELECT * FROM auth.\"OtpCodes\" WHERE \"DocumentNumber\" = {patient.DocumentNumber} AND \"Channel\" = {channel} AND \"UsedAt\" IS NULL ORDER BY \"CreatedAt\" DESC LIMIT 1 FOR UPDATE"
+                )
+                .FirstOrDefaultAsync(ct);
+            if (
+                otp is null
+                || otp.IsExpired
+                || otp.Attempts >= 5
+                || otp.Target != Target(patient, request.ContactId)
+            )
+                return false;
             var guard = protection.CheckCanVerify(Ip, otp.Target);
-            if (!guard.Allowed) throw new CoppAddresd.Auth.Exceptions.OtpProtectionException(guard.Reason!.Value, "Intenta más tarde.", guard.RetryAfterSeconds);
-            var valid = request.ContactId == "phone" ? (await sms.CheckAsync(otp.Target, request.Otp, ct)).IsApproved
-                : CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(Hash(otp.Salt, request.Otp)), Encoding.UTF8.GetBytes(otp.CodeHash));
+            if (!guard.Allowed)
+                throw new CoppAddresd.Auth.Exceptions.OtpProtectionException(
+                    guard.Reason!.Value,
+                    "Intenta más tarde.",
+                    guard.RetryAfterSeconds
+                );
+            var valid =
+                request.ContactId == "phone"
+                    ? (await sms.CheckAsync(otp.Target, request.Otp, ct)).IsApproved
+                    : CryptographicOperations.FixedTimeEquals(
+                        Encoding.UTF8.GetBytes(Hash(otp.Salt, request.Otp)),
+                        Encoding.UTF8.GetBytes(otp.CodeHash)
+                    );
             if (!valid)
             {
-                otp.Attempts++; protection.RegisterVerifyFailed(Ip, otp.Target);
-                await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); return false;
+                otp.Attempts++;
+                protection.RegisterVerifyFailed(Ip, otp.Target);
+                await db.SaveChangesAsync(ct);
+                await tx.CommitAsync(ct);
+                return false;
             }
             var token = await users.GeneratePasswordResetTokenAsync(user);
             var changed = await users.ResetPasswordAsync(user, token, request.NewPassword);
-            if (!changed.Succeeded) throw new InvalidOperationException("No se pudo cambiar la contraseña.");
+            if (!changed.Succeeded)
+                throw new InvalidOperationException(
+                    PasswordPolicyMessage(changed.Errors) is { Length: > 0 } policy
+                        ? policy
+                        : "No se pudo cambiar la contraseña."
+                );
+            // Recuperar la cuenta prueba el control del contacto: se limpia el
+            // bloqueo por intentos fallidos para que el nuevo acceso funcione ya.
+            var unlocked = await users.SetLockoutEndDateAsync(user, null);
+            if (unlocked.Succeeded)
+                unlocked = await users.ResetAccessFailedCountAsync(user);
+            if (!unlocked.Succeeded)
+                throw new InvalidOperationException(
+                    "La contraseña se actualizó, pero la cuenta sigue bloqueada. Intenta de nuevo en unos minutos."
+                );
             otp.UsedAt = DateTime.UtcNow;
-            await db.RefreshTokens.Where(r => r.UserId == user.Id && r.RevokedAt == null).ExecuteUpdateAsync(s => s.SetProperty(r => r.RevokedAt, DateTime.UtcNow), ct);
-            await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+            await db
+                .RefreshTokens.Where(r => r.UserId == user.Id && r.RevokedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.RevokedAt, DateTime.UtcNow), ct);
+            await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
             protection.RegisterVerifySucceeded(Ip, otp.Target);
             return true;
         });

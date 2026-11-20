@@ -27,7 +27,11 @@ public class AuthController : ControllerBase
     private readonly IOtpService _otpService;
     private readonly IHostEnvironment _environment;
 
-    public AuthController(IAuthService authService, IOtpService otpService, IHostEnvironment environment)
+    public AuthController(
+        IAuthService authService,
+        IOtpService otpService,
+        IHostEnvironment environment
+    )
     {
         _authService = authService;
         _otpService = otpService;
@@ -37,9 +41,19 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(
         [FromBody] LoginRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
-        var result = await _authService.LoginAsync(request, ct);
+        TokenResult? result;
+        try
+        {
+            result = await _authService.LoginAsync(request, ct);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Credenciales inválidas o cuenta bloqueada: mismo 401, mensaje claro.
+            return Unauthorized(new { message = ex.Message });
+        }
 
         if (result is null)
         {
@@ -48,10 +62,13 @@ public class AuthController : ControllerBase
 
         SetRefreshTokenCookie(result.RefreshToken, request.RememberMe, request.Application);
 
-        return Ok(new LoginResponse(
-            AccessToken: result.AccessToken,
-            TokenType: result.TokenType,
-            ExpiresIn: result.ExpiresIn));
+        return Ok(
+            new LoginResponse(
+                AccessToken: result.AccessToken,
+                TokenType: result.TokenType,
+                ExpiresIn: result.ExpiresIn
+            )
+        );
     }
 
     /// <summary>
@@ -62,7 +79,8 @@ public class AuthController : ControllerBase
     [HttpPost("id-lookup")]
     public async Task<ActionResult<IdLookupResponse>> IdLookup(
         [FromBody] IdLookupRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var result = await _otpService.LookupByIdAsync(request, ct);
 
@@ -80,24 +98,33 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("recovery-code")]
     [AllowAnonymous]
-    public async Task<IActionResult> SendRecoveryCode([FromBody] PasswordRecoveryCodeRequest request,
-        [FromServices] CoppAddresd.Auth.Services.PasswordRecoveryService recovery, CancellationToken ct)
-        => Ok(await recovery.SendAsync(request, ct));
+    public async Task<IActionResult> SendRecoveryCode(
+        [FromBody] PasswordRecoveryCodeRequest request,
+        [FromServices] CoppAddresd.Auth.Services.PasswordRecoveryService recovery,
+        CancellationToken ct
+    ) => Ok(await recovery.SendAsync(request, ct));
 
     [HttpPost("recover-password")]
     [AllowAnonymous]
-    public async Task<IActionResult> RecoverPassword([FromBody] PasswordRecoveryRequest request,
-        [FromServices] CoppAddresd.Auth.Services.PasswordRecoveryService recovery, CancellationToken ct)
+    public async Task<IActionResult> RecoverPassword(
+        [FromBody] PasswordRecoveryRequest request,
+        [FromServices] CoppAddresd.Auth.Services.PasswordRecoveryService recovery,
+        CancellationToken ct
+    )
     {
-        if (!await recovery.ResetAsync(request, ct)) return BadRequest(new { message = "Código inválido o expirado." });
+        if (!await recovery.ResetAsync(request, ct))
+            return BadRequest(new { message = "Código inválido o expirado." });
         ClearRefreshCookies("app", includeLegacy: false);
-        return Ok(new { message = "Contraseña actualizada. Inicia sesión con tu nueva contraseña." });
+        return Ok(
+            new { message = "Contraseña actualizada. Inicia sesión con tu nueva contraseña." }
+        );
     }
 
     [HttpPost("send-otp")]
     public async Task<ActionResult<SendOtpResponse>> SendOtp(
         [FromBody] SendOtpRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var (success, error, result) = await _otpService.SendOtpAsync(request, ct);
 
@@ -117,7 +144,8 @@ public class AuthController : ControllerBase
     [HttpPost("verify-otp")]
     public async Task<ActionResult<LoginResponse>> VerifyOtp(
         [FromBody] VerifyOtpRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var result = await _otpService.VerifyOtpAsync(request, ct);
 
@@ -131,21 +159,36 @@ public class AuthController : ControllerBase
         // Prueba explícita para consumidores que exigen PHONE. Un backend nuevo
         // falla cerrado mientras una versión antigua de Auth todavía no la emite.
         if (request.ContactId == "phone")
-            return Ok(new { result.AccessToken, result.TokenType, result.ExpiresIn, VerifiedContactId = "phone" });
+            return Ok(
+                new
+                {
+                    result.AccessToken,
+                    result.TokenType,
+                    result.ExpiresIn,
+                    VerifiedContactId = "phone",
+                }
+            );
 
-        return Ok(new LoginResponse(
-            AccessToken: result.AccessToken,
-            TokenType: result.TokenType,
-            ExpiresIn: result.ExpiresIn));
+        return Ok(
+            new LoginResponse(
+                AccessToken: result.AccessToken,
+                TokenType: result.TokenType,
+                ExpiresIn: result.ExpiresIn
+            )
+        );
     }
 
     [HttpPost("refresh")]
     public async Task<ActionResult<RefreshTokenResponse>> Refresh(
         [FromBody] RefreshTokenRequest? request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var application = NormalizeApplication(request?.Application);
-        var (refreshToken, fromLegacyCookie) = ResolveRefreshToken(application, request?.RefreshToken);
+        var (refreshToken, fromLegacyCookie) = ResolveRefreshToken(
+            application,
+            request?.RefreshToken
+        );
 
         if (string.IsNullOrWhiteSpace(refreshToken))
         {
@@ -158,7 +201,10 @@ public class AuthController : ControllerBase
         // Un token emitido para otra aplicacion (p. ej. la cookie heredada del
         // ERP llegando a la app del paciente) no es de este cliente: se trata
         // como ausente, SIN rotarlo ni limpiar cookies ajenas.
-        if (application is not null && await BelongsToOtherApplicationAsync(refreshToken, application, ct))
+        if (
+            application is not null
+            && await BelongsToOtherApplicationAsync(refreshToken, application, ct)
+        )
         {
             Response.Headers["X-Refresh-Status"] = "missing";
             return Unauthorized(new { message = "Refresh token no corresponde a la aplicacion" });
@@ -182,16 +228,20 @@ public class AuthController : ControllerBase
             ClearRefreshCookies(application: null, includeLegacy: true);
         }
 
-        return Ok(new RefreshTokenResponse(
-            AccessToken: result.AccessToken,
-            TokenType: result.TokenType,
-            ExpiresIn: result.ExpiresIn));
+        return Ok(
+            new RefreshTokenResponse(
+                AccessToken: result.AccessToken,
+                TokenType: result.TokenType,
+                ExpiresIn: result.ExpiresIn
+            )
+        );
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(
         [FromBody] RefreshTokenRequest? request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         // El logout se resuelve con la cookie de refresh, sin depender del
         // access token (que pudo haber expirado). Sin cookie: idempotente.
@@ -203,13 +253,18 @@ public class AuthController : ControllerBase
         {
             // La cookie heredada puede ser de la otra aplicacion: ni se revoca
             // ni se retira (seguiria siendo la sesion valida de esa app).
-            var otherApplication = application is not null
+            var otherApplication =
+                application is not null
                 && await BelongsToOtherApplicationAsync(refreshToken, application, ct);
 
             if (!otherApplication)
             {
                 clearLegacy = clearLegacy || fromLegacyCookie;
-                var userId = await _authService.GetUserIdByRefreshTokenAsync(refreshToken, ct, application);
+                var userId = await _authService.GetUserIdByRefreshTokenAsync(
+                    refreshToken,
+                    ct,
+                    application
+                );
                 if (userId.HasValue)
                 {
                     await _authService.LogoutAsync(userId.Value, ct, application);
@@ -222,7 +277,6 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Sesión cerrada correctamente" });
     }
 
-
     /// <summary>
     /// Define la primera contrasena de una cuenta OTP (APP movil). Falla si la
     /// cuenta ya tiene contrasena: en ese caso usar change-password.
@@ -231,7 +285,8 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> SetFirstPassword(
         [FromBody] SetFirstPasswordRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -239,10 +294,11 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Token inválido" });
         }
 
-        var (success, error) = await _authService.SetFirstPasswordAsync(userId, new ChangePasswordRequest
-        {
-            NewPassword = request.NewPassword
-        }, ct);
+        var (success, error) = await _authService.SetFirstPasswordAsync(
+            userId,
+            new ChangePasswordRequest { NewPassword = request.NewPassword },
+            ct
+        );
 
         if (!success)
         {
@@ -251,6 +307,7 @@ public class AuthController : ControllerBase
 
         return Ok(new { message = "Contraseña establecida" });
     }
+
     /// <summary>
     /// Solicita la eliminación de la cuenta del usuario autenticado. El acceso se
     /// bloquea de inmediato, los datos se conservan 90 días y luego se anonimizan.
@@ -259,7 +316,8 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeleteAccount(
         [FromBody] DeleteAccountRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -267,20 +325,31 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Token invalido" });
         }
 
-        if (!string.Equals(request.Confirmation?.Trim(), "ELIMINAR", StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.Equals(
+                request.Confirmation?.Trim(),
+                "ELIMINAR",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
         {
             return BadRequest(new { message = "Confirmacion invalida" });
         }
 
         // La aplicacion sale del `aud` del token; el cuerpo solo es respaldo.
-        var application = NormalizeApplication(User.FindFirst("aud")?.Value)
+        var application =
+            NormalizeApplication(User.FindFirst("aud")?.Value)
             ?? NormalizeApplication(request.Application);
         if (application is null)
         {
             return BadRequest(new { message = "Aplicacion invalida" });
         }
 
-        var (success, error, purgeAfter) = await _authService.RequestAccountDeletionAsync(userId, application, ct);
+        var (success, error, purgeAfter) = await _authService.RequestAccountDeletionAsync(
+            userId,
+            application,
+            ct
+        );
         if (!success)
         {
             return BadRequest(new { message = error });
@@ -288,12 +357,14 @@ public class AuthController : ControllerBase
 
         ClearRefreshCookies(application, includeLegacy: true);
 
-        return Ok(new
-        {
-            message = "Cuenta marcada para eliminacion",
-            purgeAfter,
-            retentionDays = Services.AuthService.AccountRetentionDays
-        });
+        return Ok(
+            new
+            {
+                message = "Cuenta marcada para eliminacion",
+                purgeAfter,
+                retentionDays = Services.AuthService.AccountRetentionDays,
+            }
+        );
     }
 
     /// <summary>
@@ -303,7 +374,8 @@ public class AuthController : ControllerBase
     [HttpPost("account/deletion-handoff")]
     [Authorize]
     public async Task<ActionResult<AccountDeletionHandoffResponse>> CreateAccountDeletionHandoff(
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -320,7 +392,9 @@ public class AuthController : ControllerBase
         var result = await _authService.CreateAccountDeletionHandoffAsync(userId, application, ct);
         if (result is null)
         {
-            return BadRequest(new { message = "La cuenta no tiene acceso activo a esta aplicación" });
+            return BadRequest(
+                new { message = "La cuenta no tiene acceso activo a esta aplicación" }
+            );
         }
 
         Response.Headers.CacheControl = "no-store";
@@ -331,7 +405,8 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ChangePassword(
         [FromBody] ChangePasswordRequest request,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -348,9 +423,14 @@ public class AuthController : ControllerBase
 
         // Todos los refresh tokens del usuario quedaron revocados: se retiran la
         // cookie heredada y la de la aplicacion con la que llego este access token.
-        ClearRefreshCookies(NormalizeApplication(User.FindFirst("aud")?.Value), includeLegacy: true);
+        ClearRefreshCookies(
+            NormalizeApplication(User.FindFirst("aud")?.Value),
+            includeLegacy: true
+        );
 
-        return Ok(new { message = "Contraseña cambiada correctamente. Debe iniciar sesión nuevamente." });
+        return Ok(
+            new { message = "Contraseña cambiada correctamente. Debe iniciar sesión nuevamente." }
+        );
     }
 
     /// <summary>
@@ -398,7 +478,10 @@ public class AuthController : ControllerBase
     /// Origen del refresh token: cookie de la aplicacion, cookie heredada
     /// (solo como respaldo) o cuerpo de la peticion.
     /// </summary>
-    private (string? Token, bool FromLegacyCookie) ResolveRefreshToken(string? application, string? bodyToken)
+    private (string? Token, bool FromLegacyCookie) ResolveRefreshToken(
+        string? application,
+        string? bodyToken
+    )
     {
         if (application is not null)
         {
@@ -423,9 +506,15 @@ public class AuthController : ControllerBase
     /// Un token inexistente o inactivo devuelve false: lo resuelve el flujo normal.
     /// </summary>
     private async Task<bool> BelongsToOtherApplicationAsync(
-        string refreshToken, string application, CancellationToken ct)
+        string refreshToken,
+        string application,
+        CancellationToken ct
+    )
     {
-        var tokenApplication = await _authService.GetRefreshTokenApplicationCodeAsync(refreshToken, ct);
+        var tokenApplication = await _authService.GetRefreshTokenApplicationCodeAsync(
+            refreshToken,
+            ct
+        );
         return tokenApplication is not null
             && !string.Equals(tokenApplication, application, StringComparison.OrdinalIgnoreCase);
     }
@@ -436,7 +525,11 @@ public class AuthController : ControllerBase
             ? DateTimeOffset.UtcNow.AddDays(RefreshTokenMaxAgeDays)
             : DateTimeOffset.UtcNow.AddHours(SessionCookieMaxAgeHours);
 
-        Response.Cookies.Append(RefreshCookieName(application), refreshToken, BuildCookieOptions(expires));
+        Response.Cookies.Append(
+            RefreshCookieName(application),
+            refreshToken,
+            BuildCookieOptions(expires)
+        );
     }
 
     /// <summary>
@@ -475,9 +568,10 @@ public class AuthController : ControllerBase
             SameSite = _environment.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.None,
             Path = "/api/auth",
             IsEssential = true,
-            Expires = expires
+            Expires = expires,
         };
     }
 }
+
 /// <summary>Solicita la primera contrasena de una cuenta OTP.</summary>
 public sealed record SetFirstPasswordRequest(string NewPassword);

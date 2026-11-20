@@ -129,13 +129,25 @@ public class AuthService : IAuthService
         {
             if (result.IsLockedOut)
             {
+                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+                var minutes = lockoutEnd is { } end
+                    ? Math.Max(1, (int)Math.Ceiling((end - DateTimeOffset.UtcNow).TotalMinutes))
+                    : 15;
                 _logger.LogWarning("Login failed: user {UserId} is locked out", user.Id);
+                throw new InvalidOperationException(
+                    $"Tu cuenta está bloqueada temporalmente por intentos fallidos. Podrás entrar en {minutes} minuto{(minutes == 1 ? "" : "s")} o restablece tu contraseña."
+                );
             }
-            else
-            {
-                _logger.LogWarning("Login failed: invalid password for user {UserId}", user.Id);
-            }
-            return null;
+
+            var failed = await _userManager.GetAccessFailedCountAsync(user);
+            var max = _userManager.Options.Lockout.MaxFailedAccessAttempts;
+            var remaining = Math.Max(0, max - failed);
+            _logger.LogWarning("Login failed: invalid password for user {UserId}", user.Id);
+            throw new InvalidOperationException(
+                remaining > 0
+                    ? $"Credenciales inválidas. Te quedan {remaining} intento{(remaining == 1 ? "" : "s")} antes de que la cuenta se bloquee 15 minutos."
+                    : "Credenciales inválidas. La cuenta se bloqueó temporalmente por intentos fallidos."
+            );
         }
 
         // La aplicación del login determina el `aud` del token. El acceso se
@@ -204,7 +216,11 @@ public class AuthService : IAuthService
         );
     }
 
-    public async Task<TokenResult?> RefreshAsync(string refreshToken, CancellationToken ct = default, string? application = null)
+    public async Task<TokenResult?> RefreshAsync(
+        string refreshToken,
+        CancellationToken ct = default,
+        string? application = null
+    )
     {
         var storedToken = await _dbContext
             .RefreshTokens.Include(rt => rt.User)
@@ -245,8 +261,18 @@ public class AuthService : IAuthService
 
         // El refresh conserva la aplicación con la que se emitió el token
         // original: el nuevo access token mantiene el mismo `aud`.
-        if (storedToken.Application is null || !storedToken.Application.IsActive
-            || (application is not null && !string.Equals(storedToken.Application.Code, application, StringComparison.OrdinalIgnoreCase)))
+        if (
+            storedToken.Application is null
+            || !storedToken.Application.IsActive
+            || (
+                application is not null
+                && !string.Equals(
+                    storedToken.Application.Code,
+                    application,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+        )
         {
             _logger.LogWarning(
                 "Refresh failed: token {TokenId} has no valid application binding",
@@ -340,12 +366,23 @@ public class AuthService : IAuthService
         );
     }
 
-    public async Task<Guid?> GetUserIdByRefreshTokenAsync(string refreshToken, CancellationToken ct = default, string? application = null)
+    public async Task<Guid?> GetUserIdByRefreshTokenAsync(
+        string refreshToken,
+        CancellationToken ct = default,
+        string? application = null
+    )
     {
-        var storedToken = await _dbContext.RefreshTokens
-            .AsNoTracking()
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken
-                && (application == null || (rt.Application != null && rt.Application.Code == application)), ct);
+        var storedToken = await _dbContext
+            .RefreshTokens.AsNoTracking()
+            .FirstOrDefaultAsync(
+                rt =>
+                    rt.Token == refreshToken
+                    && (
+                        application == null
+                        || (rt.Application != null && rt.Application.Code == application)
+                    ),
+                ct
+            );
 
         if (storedToken is null || !storedToken.IsActive)
         {
@@ -373,11 +410,21 @@ public class AuthService : IAuthService
         return storedToken.Application?.Code;
     }
 
-    public async Task<bool> LogoutAsync(Guid userId, CancellationToken ct = default, string? application = null)
+    public async Task<bool> LogoutAsync(
+        Guid userId,
+        CancellationToken ct = default,
+        string? application = null
+    )
     {
-        var activeTokens = await _dbContext.RefreshTokens
-            .Where(rt => rt.UserId == userId && rt.RevokedAt == null
-                && (application == null || (rt.Application != null && rt.Application.Code == application)))
+        var activeTokens = await _dbContext
+            .RefreshTokens.Where(rt =>
+                rt.UserId == userId
+                && rt.RevokedAt == null
+                && (
+                    application == null
+                    || (rt.Application != null && rt.Application.Code == application)
+                )
+            )
             .ToListAsync(ct);
 
         foreach (var token in activeTokens)
