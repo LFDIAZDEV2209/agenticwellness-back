@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Email/Assets/copp-adresd.png" />
+    <EmbeddedResource Include="Email/transactional-v1.json" />
   </ItemGroup>
 
   <ItemGroup>

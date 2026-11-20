@@ -53,8 +53,24 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
         }
         mail.AlternateViews.Add(html);
 
-        await smtp.SendMailAsync(mail, ct);
-        logger.LogInformation("Correo enviado a {To} (asunto: {Subject})", message.To, message.Subject);
+        try
+        {
+            await smtp.SendMailAsync(mail, ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (message.TemplateCode is not null)
+        {
+            logger.LogWarning("Correo {TemplateCode} a {To}: fallo SMTP ({ErrorType})",
+                message.TemplateCode, message.To, ex.GetType().Name);
+            throw;
+        }
+        if (message.TemplateCode is { } code)
+            logger.LogInformation("Correo {TemplateCode} a {To}: aceptado por SMTP", code, message.To);
+        else
+            logger.LogInformation("Correo enviado a {To} (asunto: {Subject})", message.To, message.Subject);
     }
 }
 
@@ -66,6 +82,11 @@ public class LogEmailSender(ILogger<LogEmailSender> logger) : IEmailSender
 {
     public Task SendAsync(EmailMessage message, CancellationToken ct = default)
     {
+        if (message.TemplateCode is { } code)
+        {
+            logger.LogInformation("Correo {TemplateCode} a {To}: simulado", code, message.To);
+            return Task.CompletedTask;
+        }
         logger.LogInformation(
             "[EMAIL {Provider}] Para: {To} | Asunto: {Subject} (cuerpo omitido: puede contener enlaces de acceso)",
             "LOG", message.To, message.Subject);

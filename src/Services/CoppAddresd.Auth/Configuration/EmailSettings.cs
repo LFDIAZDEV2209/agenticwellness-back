@@ -30,6 +30,7 @@ public class EmailSettings
 
     public bool WelcomeEnabled { get; set; } = true;
     public int WelcomeMaxAttempts { get; set; } = 5;
+    public TransactionalEmailSettings Transactional { get; set; } = new();
 
     // SMTP (usado solo con Provider = "Smtp").
     public string SmtpHost { get; set; } = string.Empty;
@@ -41,4 +42,28 @@ public class EmailSettings
     public string? SmtpPassword { get; set; }
 
     public bool SmtpUseSsl { get; set; } = true;
+}
+
+public sealed class TransactionalEmailSettings
+{
+    public string? Name { get; set; }
+    public string? LogoUrl { get; set; }
+    public string? AccentColor { get; set; }
+    public string? SupportWhatsApp { get; set; }
+    public Dictionary<string, TransactionalEmailLanguages> Templates { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed class TransactionalEmailLanguages
+{
+    public TransactionalEmailCopy? Es { get; set; }
+    public TransactionalEmailCopy? En { get; set; }
+}
+
+public sealed class TransactionalEmailCopy
+{
+    public string? Subject { get; set; }
+    public string? Preheader { get; set; }
+    public string? Title { get; set; }
+    public string? Button { get; set; }
+    public string? Callout { get; set; }
 }

@@ -6,6 +6,7 @@ using CoppAddresd.Auth.Constants;
 using CoppAddresd.Auth.Data;
 using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Security;
+using CoppAddresd.Auth.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -52,11 +53,14 @@ public static class ServiceCollectionExtensions
             options.User.RequireUniqueEmail = true;
 
             options.SignIn.RequireConfirmedEmail = false;
+            options.Tokens.PasswordResetTokenProvider = PasswordResetEmailTokenProvider.ProviderName;
         })
         .AddEntityFrameworkStores<AuthDbContext>()
-        .AddDefaultTokenProviders();
+        .AddDefaultTokenProviders()
+        .AddTokenProvider<PasswordResetEmailTokenProvider>(PasswordResetEmailTokenProvider.ProviderName);
 
         services.Replace(ServiceDescriptor.Scoped<IUserValidator<ApplicationUser>, PatientUserValidator>());
+        services.AddScoped<PasswordResetEmailLink>();
         return services;
     }
 
