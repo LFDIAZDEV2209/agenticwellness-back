@@ -6,7 +6,10 @@ public sealed record EmailMessage(
     string Subject,
     string HtmlBody,
     string? PlainTextBody = null,
-    IReadOnlyList<EmailInlineImage>? InlineImages = null);
+    IReadOnlyList<EmailInlineImage>? InlineImages = null)
+{
+    public string? TemplateCode { get; init; }
+}
 
 public sealed record EmailInlineImage(string ContentId, byte[] Content, string ContentType);
 

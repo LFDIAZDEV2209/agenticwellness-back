@@ -2,13 +2,45 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using CoppAddresd.Auth.Configuration;
+using CoppAddresd.Auth.Interfaces;
 using CoppAddresd.Auth.Services;
 
 // Genera vistas y MIME locales con datos ficticios. No envía correo ni usa credenciales.
-var output = Path.GetFullPath(
-    args.FirstOrDefault() ?? Path.Combine(Path.GetTempPath(), "copp-welcome-preview")
-);
+var transactional = args.Contains("--transactional", StringComparer.Ordinal);
+var output = Path.GetFullPath(args.FirstOrDefault(arg => arg != "--transactional")
+    ?? Path.Combine(Path.GetTempPath(), transactional ? "copp-transactional-preview" : "copp-welcome-preview"));
 Directory.CreateDirectory(output);
+if (transactional)
+{
+    const string origin = "https://preview.example.invalid";
+    var values = new Dictionary<string, string?>
+    {
+        ["nombre"] = "Ana",
+        ["correo_pago"] = "ana@example.invalid",
+        ["enlace_descarga"] = origin + "/download",
+        ["enlace_plataforma"] = origin + "/platform",
+        ["enlace_restablecer"] = origin + "/reset?token=QA-PREVIEW",
+        ["enlace_nutricion"] = origin + "/nutrition",
+        ["enlace_inventario"] = origin + "/inventory",
+        ["medicamento"] = "Producto de muestra",
+        ["cantidad"] = "12",
+        ["dias_restantes"] = "6",
+    };
+    foreach (var language in new[] { "es", "en" })
+    {
+        var english = language == "en";
+        values["resumen_dia"] = english ? "Oatmeal for breakfast, grilled vegetables for lunch." : "Avena en el desayuno y verduras a la parrilla en el almuerzo.";
+        values["fecha"] = english ? "November 20, 2026" : "20 de noviembre de 2026";
+        values["duracion"] = english ? "4 weeks" : "4 semanas";
+        foreach (var code in new[] { "BIEN-01", "ACT-01", "ACT-02", "PWD-01", "NUT-01", "NUT-02", "INV-01" })
+        {
+            var message = TransactionalEmailTemplate.Build(new(code, "ana@example.invalid", language, values), new EmailSettings());
+            await WritePreview($"{code}-{language}", message, output);
+        }
+    }
+    Console.WriteLine(output);
+    return;
+}
 foreach (
     var (name, app, erp, invite, language) in new[]
     {
@@ -36,6 +68,12 @@ foreach (
         content,
         new EmailSettings { FrontendUrl = "https://erp.coppadresd.com" }
     );
+    await WritePreview(name, message, output);
+}
+Console.WriteLine(output);
+
+static async Task WritePreview(string name, EmailMessage message, string output)
+{
     var preview = message.HtmlBody;
     foreach (var image in message.InlineImages ?? [])
         preview = preview.Replace(
@@ -79,4 +117,3 @@ foreach (
     var generated = Directory.GetFiles(output, "*.eml").Single(x => !before.Contains(x));
     File.Move(generated, Path.Combine(output, name + ".eml"), overwrite: true);
 }
-Console.WriteLine(output);

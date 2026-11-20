@@ -1,0 +1,197 @@
+{
+  "BIEN-01": {
+    "link": "enlace_descarga",
+    "es": {
+      "subject": "Bienvenido a {{marca}}, {{nombre}}. Tu acceso ya está listo",
+      "preheader": "Descarga la app y crea tu contraseña.",
+      "title": "¡Bienvenido a {{marca}}, {{nombre}}!",
+      "button": "Descargar la app",
+      "intro": "Gracias por confiar en nosotros. Tu pago fue confirmado y tu cuenta ya está creada. Nos alegra acompañarte en tu plan nutricional y en el control de tus medicamentos.",
+      "items": [
+        "Descarga la app {{marca}}.",
+        "Abre la app y selecciona Crear contraseña.",
+        "Ingresa el correo con el que realizaste tu pago: {{correo_pago}}.",
+        "Crea tu contraseña para empezar a usar {{marca}}."
+      ],
+      "numbered": true,
+      "callout": "Usa siempre el mismo correo con el que pagaste. Por tu seguridad, {{marca}} nunca te pedirá tu contraseña por correo, WhatsApp, SMS ni llamada.",
+      "closing": "¿Tienes dudas? {{soporte}}"
+    },
+    "en": {
+      "subject": "Welcome to {{marca}}, {{nombre}}. Your account is ready",
+      "preheader": "Download the app and create your password.",
+      "title": "Welcome to {{marca}}, {{nombre}}!",
+      "button": "Download the app",
+      "intro": "Thank you for choosing us. Your payment was confirmed and your account is ready. We look forward to supporting you with nutrition and medication tracking.",
+      "items": [
+        "Download the {{marca}} app.",
+        "Open the app and select Create password.",
+        "Enter the email address you used to pay: {{correo_pago}}.",
+        "Create your password to start using {{marca}}."
+      ],
+      "numbered": true,
+      "callout": "Always use the same email address you paid with. For your security, {{marca}} will never ask for your password by email, WhatsApp, text message, or phone call.",
+      "closing": "Need help? {{soporte}}"
+    }
+  },
+  "ACT-01": {
+    "link": "enlace_plataforma",
+    "es": {
+      "subject": "Tu cuenta de {{marca}} está activa",
+      "preheader": "Ya puedes ingresar con tu correo de pago.",
+      "title": "Listo, {{nombre}}. Tu cuenta está activa",
+      "button": "Abrir {{marca}}",
+      "intro": "Creaste tu contraseña correctamente. Puedes ingresar con {{correo_pago}} y la contraseña que acabas de crear.",
+      "items": [
+        "Completa tu evaluación nutricional para recibir tu plan.",
+        "Consulta tus medicamentos y sus horarios de toma.",
+        "Indica tu inventario actual para que podamos avisarte a tiempo."
+      ],
+      "numbered": true,
+      "callout": "¿No fuiste tú? Cambia tu contraseña desde la app o contáctanos. {{soporte}}",
+      "closing": "Gracias por estar aquí. Te acompañamos en cada paso."
+    },
+    "en": {
+      "subject": "Your {{marca}} account is active",
+      "preheader": "You can now sign in with the email address you used to pay.",
+      "title": "You're all set, {{nombre}}. Your account is active",
+      "button": "Open {{marca}}",
+      "intro": "You created your password successfully. You can now sign in with {{correo_pago}} and the password you just created.",
+      "items": [
+        "Complete your nutrition assessment to get your plan.",
+        "Review your medications and their schedule.",
+        "Enter your current inventory so we can notify you in time."
+      ],
+      "numbered": true,
+      "callout": "Was this someone else? Change your password in the app or contact us. {{soporte}}",
+      "closing": "Thank you for being here. We’re with you every step of the way."
+    }
+  },
+  "ACT-02": {
+    "link": "enlace_descarga",
+    "es": {
+      "subject": "{{nombre}}, te falta un paso para empezar",
+      "preheader": "Tu pago está confirmado. Solo falta crear tu contraseña.",
+      "title": "Te esperamos en {{marca}}",
+      "button": "Descargar la app",
+      "intro": "Tu cuenta está lista. Crea tu contraseña para empezar.",
+      "items": [
+        "Descarga la app.",
+        "Selecciona Crear contraseña.",
+        "Usa tu correo de pago: {{correo_pago}}."
+      ],
+      "numbered": true,
+      "callout": "Si ya creaste tu contraseña, puedes ignorar este mensaje. Si tienes problemas para ingresar, responde a este correo y te ayudamos.",
+      "closing": "El equipo de {{marca}}"
+    },
+    "en": {
+      "subject": "{{nombre}}, you’re one step away from getting started",
+      "preheader": "Your payment is confirmed. Create your password to get started.",
+      "title": "Welcome to {{marca}}",
+      "button": "Download the app",
+      "intro": "Your account is ready. Create your password to get started.",
+      "items": [
+        "Download the app.",
+        "Select Create password.",
+        "Enter the email address you used to pay: {{correo_pago}}."
+      ],
+      "numbered": true,
+      "callout": "If you already created your password, you can ignore this message. If you have trouble signing in, reply to this email for help.",
+      "closing": "The {{marca}} team"
+    }
+  },
+  "PWD-01": {
+    "link": "enlace_restablecer",
+    "es": {
+      "subject": "Restablece tu contraseña de {{marca}}",
+      "preheader": "Recibimos tu solicitud. El enlace vence pronto.",
+      "title": "Restablece tu contraseña",
+      "button": "Crear nueva contraseña",
+      "intro": "Recibimos una solicitud para cambiar la contraseña de la cuenta asociada a {{correo_pago}}. Usa el botón para crear una nueva.",
+      "callout": "El enlace vence en {{vigencia_enlace}} y solo puede usarse una vez. Si no solicitaste este cambio, ignora este correo. Tu contraseña actual seguirá vigente.",
+      "closing": "Por tu seguridad, {{marca}} nunca te pedirá tu contraseña por ningún medio."
+    },
+    "en": {
+      "subject": "Reset your {{marca}} password",
+      "preheader": "We received your request. The link expires soon.",
+      "title": "Reset your password",
+      "button": "Create a new password",
+      "intro": "We received a password reset request for the account associated with {{correo_pago}}. Use the button to create a new password.",
+      "callout": "The link expires in {{vigencia_enlace}} and can be used once. If you didn’t request this change, ignore this email. Your current password will remain valid.",
+      "closing": "For your security, {{marca}} will never ask for your password."
+    }
+  },
+  "NUT-01": {
+    "link": "enlace_nutricion",
+    "es": {
+      "subject": "{{nombre}}, tu plan nutricional ya está listo",
+      "preheader": "Tu plan está publicado. Hoy te toca: {{resumen_dia}}",
+      "title": "Tu plan nutricional está listo",
+      "button": "Ver mi plan completo",
+      "intro": "Completamos tu evaluación y tu plan ya está publicado en la sección Nutrición de la app.",
+      "items": [
+        "Fecha de publicación: {{fecha}}",
+        "Duración del plan: {{duracion}}",
+        "Hoy te toca: {{resumen_dia}}"
+      ],
+      "callout": "Puedes consultar el plan en la app en cualquier momento. Si tienes dudas sobre tu alimentación, consúltalas con tu nutricionista.",
+      "closing": "Un paso a la vez. Estamos contigo."
+    },
+    "en": {
+      "subject": "{{nombre}}, your nutrition plan is ready",
+      "preheader": "Your plan is published. Today’s menu: {{resumen_dia}}",
+      "title": "Your nutrition plan is ready",
+      "button": "View my full plan",
+      "intro": "We completed your assessment and published your plan in the Nutrition section of the app.",
+      "items": [
+        "Date published: {{fecha}}",
+        "Plan duration: {{duracion}}",
+        "Today’s menu: {{resumen_dia}}"
+      ],
+      "callout": "You can review your plan in the app at any time. Ask your dietitian if you have questions about your nutrition.",
+      "closing": "One step at a time. We’re with you."
+    }
+  },
+  "NUT-02": {
+    "link": "enlace_nutricion",
+    "es": {
+      "subject": "Tu plan nutricional fue actualizado",
+      "preheader": "Revisa los cambios en la sección Nutrición.",
+      "title": "Actualizamos tu plan",
+      "button": "Revisar cambios",
+      "intro": "Hola, {{nombre}}. Tu plan nutricional tiene una nueva versión publicada. Revisa los cambios antes de tu próxima comida.",
+      "callout": "Las versiones anteriores están guardadas en el historial de la app.",
+      "closing": "Gracias por mantenerte al día con tu plan."
+    },
+    "en": {
+      "subject": "Your nutrition plan was updated",
+      "preheader": "Review the changes in the Nutrition section.",
+      "title": "We updated your plan",
+      "button": "Review changes",
+      "intro": "Hi, {{nombre}}. A new version of your nutrition plan is available. Review the changes before your next meal.",
+      "callout": "Earlier versions are available in your history in the app.",
+      "closing": "Thank you for keeping up with your plan."
+    }
+  },
+  "INV-01": {
+    "link": "enlace_inventario",
+    "es": {
+      "subject": "Inventario bajo: {{dias_restantes}} días de {{medicamento}}",
+      "preheader": "Actualiza tu inventario para no quedarte sin tratamiento.",
+      "title": "Tu inventario está bajo",
+      "button": "Actualizar inventario",
+      "intro": "Te quedan {{cantidad}} unidades de {{medicamento}}, para aproximadamente {{dias_restantes}} días.",
+      "callout": "Antes de cambiar, suspender o reanudar un tratamiento, consulta con tu médico.",
+      "closing": "Te avisaremos de nuevo cuando sea necesario."
+    },
+    "en": {
+      "subject": "Low inventory: {{dias_restantes}} days of {{medicamento}} left",
+      "preheader": "Update your inventory so you don’t run out.",
+      "title": "Your inventory is low",
+      "button": "Update inventory",
+      "intro": "You have {{cantidad}} units of {{medicamento}} left, which should last about {{dias_restantes}} days.",
+      "callout": "Talk to your doctor before changing, stopping, or restarting treatment.",
+      "closing": "We’ll let you know when another update is needed."
+    }
+  }
+}
