@@ -62,6 +62,14 @@ public sealed class MedicationControlController(MedicationControlService medicat
     public async Task<ActionResult<Guid>> SelfVersion(CancellationToken ct)
         => Ok(await medications.VersionAsync(await SelfAsync(ct), ct));
 
+    [HttpGet("me/medications/catalog/us")]
+    public async Task<ActionResult<IReadOnlyList<RxTermsOption>>> SearchSelfUsCatalog(
+        string? search, [FromServices] IRxTermsCatalog catalog, CancellationToken ct)
+    {
+        await SelfAsync(ct);
+        return Ok(await catalog.SearchAsync(search, ct));
+    }
+
     [HttpGet("me/medications/reminder-preferences")]
     public async Task<ActionResult<MedicationReminderPreferences>> SelfReminderPreferences(CancellationToken ct)
         => Ok(await medications.GetReminderPreferencesAsync(await SelfAsync(ct), ct));
