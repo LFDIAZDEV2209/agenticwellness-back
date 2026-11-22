@@ -236,6 +236,48 @@ public class PatientsController(
         return Ok(patient);
     }
 
+    [HttpGet("identity-availability")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<PatientIdentityAvailability>> IdentityAvailability(
+        [FromQuery] string? email,
+        [FromQuery] string? documentNumber,
+        [FromServices] IPatientRepository patients,
+        [FromServices] IAuthUsersLookupClient accounts,
+        CancellationToken ct
+    )
+    {
+        if (!User.HasClaim("aud", "erp") || !await context.HasPermissionAsync("Patients.Create", ct))
+            return Forbid();
+
+        email = email?.Trim();
+        documentNumber = documentNumber?.Trim();
+        if ((email is null) == (documentNumber is null)
+            || email is { Length: 0 or > 320 }
+            || (email is not null && !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+            || documentNumber is { Length: 0 or > 50 })
+            return BadRequest();
+
+        var account = email is null ? null : await accounts.LookupByEmailAsync(email, ct);
+        if (account is { Exists: true, UserId: { } userId } && await context.HasPermissionAsync("Users.View", ct))
+            return Ok(new PatientIdentityAvailability(true,
+                new PatientIdentityOwner("user", userId, account.FirstName, account.LastName)));
+
+        var patient = email is not null
+            ? await patients.GetByEmailAsync(email, ct)
+            : await patients.GetByDocumentNumberAsync(documentNumber!, ct);
+        if (patient is not null)
+        {
+            var (allowed, professionalId) = await ResolvePatientScopeAsync(ct);
+            if (allowed
+                && (context.ActiveClinicId is not { } clinicId || patient.ClinicId == clinicId)
+                && !await IsOutsideOwnScopeAsync(patient.Id, professionalId, ct))
+                return Ok(new PatientIdentityAvailability(true,
+                    new PatientIdentityOwner("patient", patient.Id, patient.FirstName, patient.LastName)));
+        }
+
+        return Ok(new PatientIdentityAvailability(patient is not null || account?.Exists == true, null));
+    }
+
     [HttpPost]
     public async Task<ActionResult<PatientDto>> Create(
         [FromBody] CreatePatientRequest request,
@@ -547,31 +589,8 @@ public class PatientsController(
     /// (Patients.ViewOwn → solo pacientes asignados a su profesional). La
     /// autorización es positiva: sin ninguno de los dos, no hay acceso.
     /// </summary>
-    private async Task<(bool Allowed, Guid? OwnProfessionalId)> ResolvePatientScopeAsync(
-        CancellationToken ct
-    )
-    {
-        // Los roles del Perfil 360 conservan asignación incluso con Patients.View.
-        if (!User.IsInRole("Admin") && (User.IsInRole("ClinicalDirector")
-            || User.IsInRole("NutritionReviewer") || User.IsInRole("CareCoordinator")
-            || await context.HasPermissionAsync("Program.Profile360View", ct)))
-        {
-            var professional = await context.GetProfessionalIdAsync(ct);
-            var allowed = await context.HasPermissionAsync("Patients.View", ct)
-                || await context.HasPermissionAsync("Patients.ViewOwn", ct);
-            return (allowed && professional is not null, professional);
-        }
-        if (await context.HasPermissionAsync("Patients.View", ct))
-            return (true, null);
-
-        if (await context.HasPermissionAsync("Patients.ViewOwn", ct))
-        {
-            var professional = await context.GetProfessionalIdAsync(ct);
-            return (professional is not null, professional);
-        }
-
-        return (false, null);
-    }
+    private Task<(bool Allowed, Guid? OwnProfessionalId)> ResolvePatientScopeAsync(CancellationToken ct) =>
+        PatientDirectoryScope.ResolveAsync(User, context, ct);
 
     /// <summary>
     /// ¿Puede el usuario acceder al paciente? Frontera de clínica (404 para
@@ -621,3 +640,6 @@ public class PatientsController(
     private bool IsOutsideActiveClinic(PatientDto patient) =>
         context.ActiveClinicId is { } clinicId && patient.ClinicId != clinicId;
 }
+
+public record PatientIdentityAvailability(bool Exists, PatientIdentityOwner? Owner);
+public record PatientIdentityOwner(string Kind, Guid Id, string? FirstName, string? LastName);

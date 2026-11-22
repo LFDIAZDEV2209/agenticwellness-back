@@ -46,6 +46,9 @@ public class InternalUsersController(UserManager<ApplicationUser> userManager) :
                 exists = true,
                 isActive = user.IsActive,
                 hasPassword = user.PasswordHash is not null,
+                userId = user.Id,
+                firstName = user.FirstName,
+                lastName = user.LastName,
             }
         );
     }

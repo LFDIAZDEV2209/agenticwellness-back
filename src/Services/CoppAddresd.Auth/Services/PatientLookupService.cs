@@ -48,6 +48,7 @@ public class PatientLookupService : IPatientLookupService
             WHERE LOWER(pp.document_number) = LOWER({0})
               AND pp.document_number IS NOT NULL
               AND pp.document_number <> ''
+              AND pp.deleted_at IS NULL
               AND (pp.status IS NULL OR pp.status <> 'Inactivo')
             ORDER BY pp.created_at
             LIMIT 1

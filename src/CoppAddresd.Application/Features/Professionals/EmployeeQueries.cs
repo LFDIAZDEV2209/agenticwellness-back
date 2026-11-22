@@ -98,14 +98,22 @@ public record PatientEmailMatchDto(
     string FirstName,
     string LastName,
     string Status,
-    bool HasAccount
+    bool HasAccount,
+    [property: System.Text.Json.Serialization.JsonIgnore] Guid? ClinicId = null
 );
 
 /// <summary>
 /// Estado de la cuenta de Auth con ese correo. Null cuando el Auth Service no
 /// respondió (lectura informativa best-effort).
 /// </summary>
-public record AccountEmailMatchDto(bool Exists, bool IsActive, bool HasPassword);
+public record AccountEmailMatchDto(
+    bool Exists,
+    bool IsActive,
+    bool HasPassword,
+    Guid? UserId = null,
+    string? FirstName = null,
+    string? LastName = null
+);
 
 /// <summary>
 /// Disponibilidad de un correo dentro de una organización + contexto de los
@@ -115,7 +123,8 @@ public record EmailAvailabilityResult(
     bool Available,
     EmployeeEmailMatchDto? Employee = null,
     PatientEmailMatchDto? Patient = null,
-    AccountEmailMatchDto? Account = null
+    AccountEmailMatchDto? Account = null,
+    bool PatientEmailExists = false
 );
 
 public sealed class CheckEmployeeEmailAvailabilityQueryHandler(
@@ -162,15 +171,20 @@ public sealed class CheckEmployeeEmailAvailabilityQueryHandler(
                     patient.FirstName,
                     patient.LastName,
                     patient.Status,
-                    patient.UserId is not null
+                    patient.UserId is not null,
+                    patient.ClinicId
                 ),
             account is null
                 ? null
                 : new AccountEmailMatchDto(
                     account.Exists,
                     account.IsActive,
-                    account.HasPassword
-                )
+                    account.HasPassword,
+                    account.UserId,
+                    account.FirstName,
+                    account.LastName
+                ),
+            PatientEmailExists: patient is not null
         );
     }
 }
