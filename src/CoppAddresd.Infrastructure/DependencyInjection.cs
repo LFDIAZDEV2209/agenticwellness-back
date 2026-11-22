@@ -1,4 +1,5 @@
 using CoppAddresd.Application.Common;
+using CoppAddresd.Application.Features.FamilyCameras;
 using CoppAddresd.Application.Features.HealthTests.Notifications;
 using CoppAddresd.Application.Features.HealthTests.Scoring;
 using CoppAddresd.Application.Features.ProgramProgress.Commands.ReconcileStreaks;
@@ -106,6 +107,8 @@ public static class DependencyInjection
         services.AddScoped<CoppAddresd.Application.Features.Media.IMediaRetirementStore, MediaRetirementStore>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
+        services.AddScoped<IFamilyCameraStore, FamilyCameraStore>();
+        services.AddSingleton<IFamilyCameraFeed, DemoFamilyCameraFeed>();
         services.AddScoped<IPatientDashboardRepository, PatientDashboardRepository>();
         services.AddScoped<ICatalogRepository, CatalogRepository>();
         services.AddScoped<IAgentCatalogRepository, AgentCatalogRepository>();

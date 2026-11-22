@@ -34,9 +34,11 @@ var apiPort = gatewayPort + 2;
 var authPort = gatewayPort + 3;
 var gatewayUrl = $"http://127.0.0.1:{gatewayPort}";
 var dbName = Environment.GetEnvironmentVariable("COP_MEDICATION_DATABASE") ?? "copp_review_medications_20261117";
+var databasePort = int.TryParse(Environment.GetEnvironmentVariable("COP_E2E_DATABASE_PORT"), out var postgresPort)
+    ? postgresPort : 55437;
 var connection = new NpgsqlConnectionStringBuilder
 {
-    Host = "127.0.0.1", Port = 55437, Database = dbName, Username = "app_user",
+    Host = "127.0.0.1", Port = databasePort, Database = dbName, Username = "app_user",
     IncludeErrorDetail = false,
 };
 if (!dbName.StartsWith("copp_review_medications_", StringComparison.Ordinal))

@@ -1461,6 +1461,130 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("exercise_routines", "app");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyCamera", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("OwnerPatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_patient_id");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("provider");
+
+                    b.Property<Guid?>("SharedMembershipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_membership_id");
+
+                    b.Property<bool>("SharedWithAdministrators")
+                        .HasColumnType("boolean")
+                        .HasColumnName("shared_with_administrators");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerPatientId");
+
+                    b.HasIndex("SharedMembershipId");
+
+                    b.ToTable("family_cameras", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyTeam", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("LeaderPatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("leader_patient_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaderPatientId");
+
+                    b.ToTable("family_teams", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyTeamInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("team_id");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeHash")
+                        .IsUnique();
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("family_team_invitations", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyTeamMembership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("team_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId")
+                        .IsUnique();
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("family_team_memberships", "app");
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.FoodAi.Food", b =>
                 {
                     b.Property<Guid>("Id")
@@ -11844,6 +11968,53 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Media");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyCamera", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerPatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.FamilyTeamMembership", null)
+                        .WithMany()
+                        .HasForeignKey("SharedMembershipId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyTeam", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("LeaderPatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyTeamInvitation", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.FamilyTeam", null)
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Entities.FamilyTeamMembership", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Entities.FamilyTeam", null)
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.FoodAi.FoodAlias", b =>

@@ -4,6 +4,18 @@ Reglas del proyecto (skill `database-indexes`). Cada índice creado en producci�
 
 ## Registro
 
+Los índices de cámaras familiares se crean con la migración `AddFamilyCameras` en tablas nuevas. El costo de escritura se limita a altas, cambios de acceso y eliminación de equipos.
+
+| Índice | Tabla | Columnas | Tipo | Uso |
+| --- | --- | --- | --- | --- |
+| `IX_family_cameras_owner_patient_id` | `app.family_cameras` | `owner_patient_id` | B-tree | Listar cámaras propias y compartidas con el ERP |
+| `IX_family_cameras_shared_membership_id` | `app.family_cameras` | `shared_membership_id` | B-tree | Listar cámaras para el líder y revocar al eliminar la membresía |
+| `IX_family_team_invitations_code_hash` | `app.family_team_invitations` | `code_hash` | B-tree único | Buscar y consumir el código de un solo uso |
+| `IX_family_team_invitations_team_id` | `app.family_team_invitations` | `team_id` | B-tree | Limpiar códigos vencidos y eliminar por equipo |
+| `IX_family_team_memberships_patient_id` | `app.family_team_memberships` | `patient_id` | B-tree único | Resolver la membresía actual y evitar dos equipos por paciente |
+| `IX_family_team_memberships_team_id` | `app.family_team_memberships` | `team_id` | B-tree | Listar los miembros y eliminarlos al cerrar el equipo |
+| `IX_family_teams_leader_patient_id` | `app.family_teams` | `leader_patient_id` | B-tree | Consultar equipos del líder y aplicar la FK del perfil |
+
 | Index                                               | Tabla                                 | Columnas                          | Tipo                                                             | Motivo                                                                                                                                                                             | Query que beneficia                                                        | Impacto esperado                                    | Costo potencial                                                   |
 | --------------------------------------------------- | ------------------------------------- | --------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------- |
 | `ix_activity_logs_occurred_at`                      | `audit.activity_logs`                 | `occurred_at`                     | B-tree                                                           | Filtros por rango temporal de actividad (reportería/consultas de auditoría)                                                                                                        | `WHERE occurred_at BETWEEN ...`                                            | Index scan en vez de seq scan sobre tabla creciente | Coste en cada INSERT del trigger (índice extra por fila auditada) |

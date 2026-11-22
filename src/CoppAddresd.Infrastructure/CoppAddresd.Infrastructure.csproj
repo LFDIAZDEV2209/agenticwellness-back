@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Services/FamilyCameraDemo/*.jpg" />
     <EmbeddedResource Include="Migrations\Seed\AddPatientCatalogs.sql" />
     <EmbeddedResource Include="Migrations\Seed\AddNutritionFoodCatalog.sql" />
     <EmbeddedResource Include="Migrations\Seed\AddProfessionalCatalogs.sql" />
