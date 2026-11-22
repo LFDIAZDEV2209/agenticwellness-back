@@ -82,6 +82,19 @@ public sealed class PatientRepository(AppDbContext dbContext) : IPatientReposito
             .FirstOrDefaultAsync(ct);
     }
 
+    public Task<PatientProfile?> GetByDocumentNumberAsync(
+        string documentNumber,
+        CancellationToken ct = default
+    )
+    {
+        var normalized = documentNumber.Trim().ToLowerInvariant();
+        return dbContext.PatientProfiles.AsNoTracking()
+            .Where(patient => patient.DeletedAt == null && patient.DocumentNumber != null)
+            .Where(patient => patient.DocumentNumber!.Trim().ToLower() == normalized)
+            .OrderBy(patient => patient.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task<(IReadOnlyList<PatientProfile> Items, int Total)> ListAsync(
         int page,
         int pageSize,

@@ -5,7 +5,14 @@ namespace CoppAddresd.Application.Interfaces;
 /// <see cref="HasPassword"/> true = la cuenta ya puede iniciar sesión; false =
 /// está pendiente de invitación/activación.
 /// </summary>
-public record AccountLookupResult(bool Exists, bool IsActive, bool HasPassword);
+public record AccountLookupResult(
+    bool Exists,
+    bool IsActive,
+    bool HasPassword,
+    Guid? UserId = null,
+    string? FirstName = null,
+    string? LastName = null
+);
 
 /// <summary>
 /// Cliente de los endpoints internos del Auth Service para leer el estado de

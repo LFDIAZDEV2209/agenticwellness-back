@@ -103,6 +103,12 @@ POST   /api/v1/employees                 # crear (extensión profesional opciona
 PUT    /api/v1/employees/{id}            # PATCH semántico; listas = sync total
 ```
 
+## Comprobación de identidad durante el alta en ERP
+
+`GET /api/v1/patients/identity-availability` requiere audiencia ERP y `Patients.Create`. Acepta `email` o `documentNumber` y realiza una búsqueda exacta sin distinguir mayúsculas. Devuelve `{ exists, owner }`. `owner` incluye el tipo, ID y nombre cuando el operador puede abrir el perfil con sus permisos y su contexto de clínica o asignación. La búsqueda omite pacientes eliminados.
+
+`GET /api/v1/professionals/email-availability` distingue un empleado existente en la organización de una cuenta Auth que se puede reutilizar, incluidas las invitaciones pendientes. Los datos enlazables del empleado, la cuenta o el paciente se devuelven según los permisos de lectura del operador.
+
 ## Autorización por contexto (Fase 2)
 
 Modelo scoped sobre el Auth Service (ver `PLAN.md` → Decisiones):

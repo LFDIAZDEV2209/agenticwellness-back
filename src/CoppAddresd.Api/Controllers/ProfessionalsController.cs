@@ -1,6 +1,8 @@
 using CoppAddresd.Api.Authorization;
 using CoppAddresd.Api.Constants;
+using CoppAddresd.Api.Context;
 using CoppAddresd.Application.Features.Professionals;
+using CoppAddresd.Application.Features.Patients;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Exceptions;
@@ -50,17 +52,37 @@ public class ProfessionalsController(
     /// el propio campo; el alta lo vuelve a validar como autoridad final.
     /// </summary>
     [HttpGet("email-availability")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [RequirePermission(PermissionCodes.ProfessionalsCreate)]
     public async Task<ActionResult<EmailAvailabilityResult>> EmailAvailability(
         [FromQuery] string email,
         [FromQuery] Guid organizationId,
+        [FromServices] ICurrentContext context,
         CancellationToken ct
     )
     {
+        if (!User.HasClaim("aud", "erp")) return Forbid();
+
         var result = await mediator.Send(
             new CheckEmployeeEmailAvailabilityQuery(organizationId, email),
             ct
         );
+
+        if (result.Account is { UserId: not null } account && !await context.HasPermissionAsync("Users.View", ct))
+            result = result with { Account = account with { UserId = null, FirstName = null, LastName = null } };
+
+        if (result.Employee is not null && !await context.HasPermissionAsync(PermissionCodes.EmployeesView, ct))
+            result = result with { Employee = null };
+
+        if (result.Patient is { } patient)
+        {
+            var (allowed, professionalId) = await PatientDirectoryScope.ResolveAsync(User, context, ct);
+            if (!allowed
+                || (context.ActiveClinicId is { } clinicId && patient.ClinicId != clinicId)
+                || (professionalId is { } owner && !await mediator.Send(new PatientIsAssignedQuery(patient.Id, owner), ct)))
+                result = result with { Patient = null };
+        }
+
         return Ok(result);
     }
 

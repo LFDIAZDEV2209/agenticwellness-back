@@ -153,7 +153,7 @@ El flujo verifica la propiedad de la identidad vía OTP y aprovisiona la cuenta:
 
 ```
 1. POST /api/auth/id-lookup  { documentNumber, application }
-   → Busca el paciente en app.patient_profiles por document_number (LOWER).
+   → Busca el paciente no eliminado en app.patient_profiles por document_number (LOWER).
    → Devuelve datos básicos + los correos/teléfonos asociados ENMASCARADOS
      (label) para que el usuario elija el canal. 404 si no existe.
 2. POST /api/auth/send-otp    { documentNumber, contactId, language? }

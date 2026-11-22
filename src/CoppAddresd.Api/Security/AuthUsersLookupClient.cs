@@ -41,7 +41,12 @@ public class AuthUsersLookupClient(
             return new AccountLookupResult(
                 root.GetProperty("exists").GetBoolean(),
                 root.GetProperty("isActive").GetBoolean(),
-                root.GetProperty("hasPassword").GetBoolean()
+                root.GetProperty("hasPassword").GetBoolean(),
+                root.TryGetProperty("userId", out var userId)
+                    && userId.ValueKind == JsonValueKind.String
+                    && userId.TryGetGuid(out var id) ? id : null,
+                root.TryGetProperty("firstName", out var firstName) ? firstName.GetString() : null,
+                root.TryGetProperty("lastName", out var lastName) ? lastName.GetString() : null
             );
         }
         catch (Exception ex)
@@ -49,8 +54,7 @@ public class AuthUsersLookupClient(
         {
             logger.LogWarning(
                 ex,
-                "No se pudo consultar el estado de la cuenta para {Email}",
-                email
+                "No se pudo consultar el estado de la cuenta"
             );
             return null;
         }
