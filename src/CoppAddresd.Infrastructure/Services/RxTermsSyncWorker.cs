@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace CoppAddresd.Infrastructure.Services;
 
@@ -52,7 +53,7 @@ public sealed class RxTermsSyncWorker(
         for (var monthsAgo = 0; monthsAgo < 3; monthsAgo++)
         {
             var release = now.AddMonths(-monthsAgo).ToString("yyyyMM", CultureInfo.InvariantCulture);
-            if (string.CompareOrdinal(current, release) >= 0)
+            if (IsPublished(current, release))
                 return;
             using var response = await client.GetAsync($"RxTerms{release}.zip", ct);
             if (response.StatusCode == HttpStatusCode.NotFound)
@@ -85,6 +86,7 @@ public sealed class RxTermsSyncWorker(
         int id = Index("RXCUI"), full = Index("FULL_NAME"), generic = Index("FULL_GENERIC_NAME"),
             brand = Index("BRAND_NAME"), display = Index("DISPLAY_NAME"),
             synonym = Index("DISPLAY_NAME_SYNONYM"), strength = Index("STRENGTH"),
+            route = Index("ROUTE"), doseForm = Index("RXN_DOSE_FORM"), unitForm = Index("NEW_DOSE_FORM"),
             retired = Index("IS_RETIRED"), suppressed = Index("SUPPRESS_FOR");
 
         var products = new List<RxTermsProduct>();
@@ -101,11 +103,16 @@ public sealed class RxTermsSyncWorker(
             var name = fields[full].Trim();
             if (code.Length is < 1 or > 18 || code.Any(c => !char.IsAsciiDigit(c)) || name.Length == 0 || !seen.Add(code))
                 throw new InvalidDataException("RxCUI repetido o presentación de RxTerms inválida.");
+            var routeName = fields[route].Trim();
             products.Add(new()
             {
                 RxCui = code,
                 Name = name,
                 SearchText = string.Join(' ', code, name, fields[generic], fields[brand], fields[display], fields[synonym], fields[strength]),
+                Strength = NonEmpty(fields[strength]),
+                DoseForm = NonEmpty(fields[doseForm]),
+                Route = NormalizeRoute(routeName),
+                DoseUnit = DoseUnit(routeName, fields[unitForm].Trim()),
                 Release = release,
                 IsActive = true,
             });
@@ -115,13 +122,36 @@ public sealed class RxTermsSyncWorker(
         return products;
     }
 
+    private static string? NonEmpty(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizeRoute(string route)
+    {
+        if (route is "Oral Pill" or "Oral Liquid" or "Chewable" or "Effervescent")
+            return "Oral";
+
+        // Pack describe el envase y puede agrupar más de una presentación.
+        return route is "" or "Pack" ? null : route;
+    }
+
+    private static string? DoseUnit(string route, string form)
+    {
+        // Unidades sugeridas de presentaciones claras; nunca se usa la concentración ni el envase como dosis.
+        if (route == "Oral Liquid") return "mL";
+        if (form == "Tab" || form.EndsWith(" Tab", StringComparison.Ordinal)) return "tablet";
+        if (form == "Cap" || form.EndsWith(" Cap", StringComparison.Ordinal)) return "capsule";
+        if (form == "Lozenge") return "lozenge";
+        if (form == "Suppository") return "suppository";
+        if (route == "Transdermal" && form.EndsWith(" Patch", StringComparison.Ordinal)) return "patch";
+        return null;
+    }
+
     private async Task PublishAsync(AppDbContext db, string release, IReadOnlyList<RxTermsProduct> products, CancellationToken cancellationToken)
     {
         await db.Database.CreateExecutionStrategy().ExecuteAsync(async ct =>
         {
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             await db.Database.ExecuteSqlRawAsync("SELECT pg_advisory_xact_lock(hashtext('app.rxterms_products.sync'))", ct);
-            if (string.CompareOrdinal(await LatestReleaseAsync(db, ct), release) >= 0)
+            if (IsPublished(await LatestReleaseAsync(db, ct), release))
                 return;
 
             await db.Database.ExecuteSqlRawAsync("""
@@ -129,7 +159,7 @@ public sealed class RxTermsSyncWorker(
                 """, ct);
             var connection = (NpgsqlConnection)db.Database.GetDbConnection();
             await using (var writer = await connection.BeginBinaryImportAsync("""
-                COPY rxterms_stage (rx_cui, name, search_text, release, is_active)
+                COPY rxterms_stage (rx_cui, name, search_text, strength, dose_form, route, dose_unit, release, is_active)
                 FROM STDIN (FORMAT BINARY)
                 """, ct))
             {
@@ -139,6 +169,10 @@ public sealed class RxTermsSyncWorker(
                     await writer.WriteAsync(product.RxCui, ct);
                     await writer.WriteAsync(product.Name, ct);
                     await writer.WriteAsync(product.SearchText, ct);
+                    await writer.WriteAsync(product.Strength, NpgsqlDbType.Text, ct);
+                    await writer.WriteAsync(product.DoseForm, NpgsqlDbType.Text, ct);
+                    await writer.WriteAsync(product.Route, NpgsqlDbType.Text, ct);
+                    await writer.WriteAsync(product.DoseUnit, NpgsqlDbType.Text, ct);
                     await writer.WriteAsync(product.Release, ct);
                     await writer.WriteAsync(product.IsActive, ct);
                 }
@@ -146,10 +180,12 @@ public sealed class RxTermsSyncWorker(
             }
 
             await db.Database.ExecuteSqlRawAsync("""
-                INSERT INTO app.rxterms_products (rx_cui, name, search_text, release, is_active)
-                SELECT rx_cui, name, search_text, release, is_active FROM rxterms_stage
+                INSERT INTO app.rxterms_products (rx_cui, name, search_text, strength, dose_form, route, dose_unit, release, is_active)
+                SELECT rx_cui, name, search_text, strength, dose_form, route, dose_unit, release, is_active FROM rxterms_stage
                 ON CONFLICT (rx_cui) DO UPDATE
                 SET name = EXCLUDED.name, search_text = EXCLUDED.search_text,
+                    strength = EXCLUDED.strength, dose_form = EXCLUDED.dose_form,
+                    route = EXCLUDED.route, dose_unit = EXCLUDED.dose_unit,
                     release = EXCLUDED.release, is_active = true
                 """, ct);
             await db.Database.ExecuteSqlInterpolatedAsync($"""
@@ -162,6 +198,15 @@ public sealed class RxTermsSyncWorker(
         }, cancellationToken);
     }
 
-    private static Task<string?> LatestReleaseAsync(AppDbContext db, CancellationToken ct) =>
-        db.RxTermsProducts.OrderByDescending(x => x.Release).Select(x => x.Release).FirstOrDefaultAsync(ct);
+    private static Task<PublishedRelease?> LatestReleaseAsync(AppDbContext db, CancellationToken ct) =>
+        db.RxTermsProducts.Where(x => x.IsActive).OrderByDescending(x => x.Release)
+            .ThenByDescending(x => x.DoseForm != null)
+            .Select(x => new PublishedRelease(x.Release, x.DoseForm != null)).FirstOrDefaultAsync(ct);
+
+    // Volver a descargar una vez la edición instalada por la versión anterior del importador.
+    private static bool IsPublished(PublishedRelease? current, string release) =>
+        current is not null && (string.CompareOrdinal(current.Release, release) > 0
+            || (current.Release == release && current.HasMetadata));
+
+    private sealed record PublishedRelease(string Release, bool HasMetadata);
 }

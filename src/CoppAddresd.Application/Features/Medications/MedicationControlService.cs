@@ -130,7 +130,8 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
         if (request.ClientRequestId == Guid.Empty) errors.Add(new("clientRequestId", "La operación debe tener un identificador."));
         if (request.MedicationId == Guid.Empty) errors.Add(new("medicationId", "Medicamento no válido."));
         if (request.RxCui is { } code && (code.Length is < 1 or > 18 || code.Any(c => !char.IsAsciiDigit(c))
-            || request.MedicationId is not null || request.ProductType != "medication" || origin != "staff_recorded"))
+            || request.MedicationId is not null || request.ProductType != "medication"
+            || origin is not ("staff_recorded" or "patient_reported")))
             errors.Add(new("rxCui", "Selecciona un medicamento válido del catálogo de EE. UU."));
         if (request.RxCui is null && (string.IsNullOrWhiteSpace(request.Name) || request.Name.Trim().Length > 200)) errors.Add(new("name", "Escribe un nombre de hasta 200 caracteres."));
         if (request.ProductType is not ("medication" or "vitamin" or "supplement")) errors.Add(new("productType", "Selecciona el tipo de producto."));

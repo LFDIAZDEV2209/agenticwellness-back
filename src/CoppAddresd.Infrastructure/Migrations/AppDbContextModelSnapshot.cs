@@ -10754,6 +10754,14 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("character varying(18)")
                         .HasColumnName("rx_cui");
 
+                    b.Property<string>("DoseForm")
+                        .HasColumnType("text")
+                        .HasColumnName("dose_form");
+
+                    b.Property<string>("DoseUnit")
+                        .HasColumnType("text")
+                        .HasColumnName("dose_unit");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
@@ -10769,10 +10777,18 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("character varying(6)")
                         .HasColumnName("release");
 
+                    b.Property<string>("Route")
+                        .HasColumnType("text")
+                        .HasColumnName("route");
+
                     b.Property<string>("SearchText")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("search_text");
+
+                    b.Property<string>("Strength")
+                        .HasColumnType("text")
+                        .HasColumnName("strength");
 
                     b.HasKey("RxCui");
 
