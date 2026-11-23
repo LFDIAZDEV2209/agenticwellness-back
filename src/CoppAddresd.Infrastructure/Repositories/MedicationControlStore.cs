@@ -8,11 +8,14 @@ using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Exceptions;
 using CoppAddresd.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CoppAddresd.Infrastructure.Repositories;
 
 /// <summary>Persistencia del circuito inicial. Cada mutación serializa solo el paciente afectado.</summary>
-public sealed partial class MedicationControlStore(AppDbContext db, IPatientScopeGuard scope, TimeProvider clock, IPatientScopeActor? auditActor = null, IAuditActorContext? auditContext = null) : IMedicationControlStore, IMedicationMonitoringStore
+public sealed partial class MedicationControlStore(AppDbContext db, IPatientScopeGuard scope, TimeProvider clock,
+    IPatientScopeActor? auditActor = null, IAuditActorContext? auditContext = null,
+    IObjectStorageService? objectStorage = null, ILogger<MedicationControlStore>? logger = null) : IMedicationControlStore, IMedicationMonitoringStore
 {
     public async Task<MedicationAccessDto> GetAccessAsync(Guid patientId, CancellationToken ct)
         => await MedicationAccessQuery.Resolve(db).Where(a => a.PatientId == patientId)
@@ -111,11 +114,14 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         }, ct);
 
     public Task<MedicationCreateResult> CreateAsync(Guid patientId, Guid actorId, string origin,
-        CreateMedicationTreatmentRequest request, CancellationToken ct)
-        => InPatientTransactionAsync(patientId, async () =>
+        CreateMedicationTreatmentRequest request, CancellationToken ct, MedicationPhotoUpload? photo = null)
+    {
+        var pendingPhoto = PreparePhoto(patientId, MedicationPhotoTarget.Treatment, request.ClientRequestId, photo);
+        return InPatientPhotoTransactionAsync(patientId, pendingPhoto, async () =>
         {
             await EnsurePatientOriginAsync(patientId, origin, ct);
-            var hash = Hash(new { actorId, origin, request });
+            var hash = pendingPhoto is null ? Hash(new { actorId, origin, request })
+                : Hash(new { actorId, origin, request, photo = pendingPhoto.Upload.Sha256 });
             var existing = await db.MedicationTreatments.AsNoTracking()
                 .SingleOrDefaultAsync(t => t.PatientId == patientId && t.ClientRequestId == request.ClientRequestId, ct);
             if (existing is not null)
@@ -136,6 +142,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 Id = Guid.NewGuid(), PatientId = patientId, MedicationId = request.MedicationId,
                 Name = name, RxCui = request.RxCui, ProductType = request.ProductType, Origin = origin, CreatedBy = actorId,
                 ClientRequestId = request.ClientRequestId, RequestHash = hash, CreatedAt = Now, UpdatedAt = Now,
+                PhotoStorageKey = pendingPhoto?.StorageKey,
             };
             var regimen = new MedicationRegimen
             {
@@ -162,8 +169,11 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             await NotifyWorkspaceChangedAsync(patientId, ct);
             await db.SaveChangesAsync(ct);
             await RefreshAlertsCoreAsync(patientId, ct);
-            return new MedicationCreateResult(await TreatmentDtoAsync(treatment, ct), true);
+            var result = new MedicationCreateResult(await TreatmentDtoAsync(treatment, ct), true);
+            await StorePhotoAsync(pendingPhoto, ct);
+            return result;
         }, ct);
+    }
 
     public Task<MedicationWorkspaceDto> WorkspaceAsync(Guid patientId, DateOnly date, string timeZone, bool selfService, CancellationToken ct)
         => InPatientTransactionAsync(patientId, async () =>
@@ -188,7 +198,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
                 where e.PatientId == patientId
                 orderby e.RecordedAt descending, e.DoseRevision descending, e.Id descending
                 select new MedicationEventDto(e.Id, e.DoseId, e.TreatmentId, t.Name, e.Status,
-                    e.OccurredAt, e.RecordedAt, e.Reason, e.Origin, e.Channel)).Take(100).ToListAsync(ct);
+                    e.OccurredAt, e.RecordedAt, e.Reason, e.Origin, e.Channel, e.PhotoStorageKey != null)).Take(100).ToListAsync(ct);
             var access = await GetAccessAsync(patientId, ct);
             // Solo las tomas asignadas y ya programadas para este instante forman la adherencia.
             // Futuras, canceladas, adicionales y nutracéuticos no inflan el denominador.
@@ -208,19 +218,23 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         }, ct);
 
     public Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
-        RecordMedicationDoseRequest request, CancellationToken ct)
-        => InPatientTransactionAsync(patientId, () => RecordWithinPatientTransactionAsync(
-            patientId, actorId, origin, doseId, request, ct), ct);
+        RecordMedicationDoseRequest request, CancellationToken ct, MedicationPhotoUpload? photo = null)
+    {
+        var pendingPhoto = PreparePhoto(patientId, MedicationPhotoTarget.IntakeEvent, request.ClientRequestId, photo);
+        return InPatientPhotoTransactionAsync(patientId, pendingPhoto, () => RecordWithinPatientTransactionAsync(
+            patientId, actorId, origin, doseId, request, ct, photo: pendingPhoto), ct);
+    }
 
     internal async Task<MedicationDoseDto> RecordWithinPatientTransactionAsync(Guid patientId, Guid actorId,
-        string origin, Guid doseId, RecordMedicationDoseRequest request, CancellationToken ct, string? channel = null)
+        string origin, Guid doseId, RecordMedicationDoseRequest request, CancellationToken ct, string? channel = null,
+        PendingMedicationPhoto? photo = null)
     {
         // El llamador ya bloqueó el perfil y comparte esta transacción con el recibo de Vita.
         if (db.Database.CurrentTransaction is null)
             throw new InvalidOperationException("El registro de la toma requiere una transacción del paciente.");
         await EnsurePatientOriginAsync(patientId, origin, ct);
-        var hash = channel is null
-            ? Hash(new { actorId, origin, doseId, request })
+        var hash = photo is not null ? Hash(new { actorId, origin, doseId, request, channel, photo = photo.Upload.Sha256 })
+            : channel is null ? Hash(new { actorId, origin, doseId, request })
             : Hash(new { actorId, origin, doseId, request, channel });
         channel ??= origin == "staff_recorded" ? "erp" : "app";
         var existing = await db.MedicationDoseOperations.AsNoTracking()
@@ -258,6 +272,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             throw Conflict("Solo puedes deshacer una toma reciente que registraste en la app.");
         if (dose.Status == request.Status)
         {
+            if (photo is not null) throw Conflict("La toma ya está registrada. Actualiza el seguimiento.");
             await db.SaveChangesAsync(ct);
             return await DoseQuery(patientId, doseId).SingleAsync(ct);
         }
@@ -280,6 +295,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             ClientRequestId = request.ClientRequestId, RequestHash = hash, Status = request.Status,
             OccurredAt = occurred, RecordedAt = Now, ActorId = actorId, Origin = origin,
             Reason = request.Reason, CorrectsEventId = previousEvent?.Id, Channel = channel, DoseRevision = dose.Revision + 1,
+            PhotoStorageKey = photo?.StorageKey,
         };
         db.MedicationIntakeEvents.Add(intakeEvent);
         await ApplyIntakeStockAsync(patientId, actorId, origin, dose, intakeEvent, regimen.Dosage, ct);
@@ -290,7 +306,9 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         await NotifyWorkspaceChangedAsync(patientId, ct);
         await db.SaveChangesAsync(ct);
         await RefreshAlertsCoreAsync(patientId, ct);
-        return await DoseQuery(patientId, doseId).SingleAsync(ct);
+        var result = await DoseQuery(patientId, doseId).SingleAsync(ct);
+        await StorePhotoAsync(photo, ct);
+        return result;
     }
 
     public Task<MedicationTreatmentDto> ChangeStatusAsync(Guid patientId, Guid treatmentId,
@@ -449,7 +467,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
     private static MedicationTreatmentDto ToTreatment(MedicationTreatment t, MedicationRegimen r, IReadOnlyList<string> times)
         => new(t.Id, t.MedicationId, t.Name, t.ProductType, t.Status, t.Origin, t.Revision, t.CreatedAt,
             r.Dosage, r.Unit, r.Route, r.Instructions, times, r.TimeZone, r.StartDate, r.EndDate, t.RxCui, r.WeekdayMask, r.IntervalHours,
-            new(r.PushReminder, r.InAppReminder, r.WhatsAppReminder, r.LeadMinutes, r.FollowUpMinutes));
+            new(r.PushReminder, r.InAppReminder, r.WhatsAppReminder, r.LeadMinutes, r.FollowUpMinutes), HasPhoto: t.PhotoStorageKey != null);
 
     private IQueryable<MedicationDoseDto> DoseQuery(Guid patientId, Guid? doseId = null, DateTime? start = null, DateTime? end = null)
     {

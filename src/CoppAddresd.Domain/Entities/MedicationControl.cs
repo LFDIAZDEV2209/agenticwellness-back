@@ -14,6 +14,7 @@ public sealed class MedicationTreatment
     public int Revision { get; set; } = 1;
     public Guid ClientRequestId { get; set; }
     public string RequestHash { get; set; } = "";
+    public string? PhotoStorageKey { get; set; }
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -84,6 +85,7 @@ public sealed class MedicationIntakeEvent
     public string? Channel { get; set; }
     public int? DoseRevision { get; set; }
     public Guid? CorrectsEventId { get; set; }
+    public string? PhotoStorageKey { get; set; }
 }
 
 /// <summary>Habilitación explícita del módulo por paciente, independiente de permisos del personal.</summary>

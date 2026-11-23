@@ -87,8 +87,11 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
     }
 
     public Task<MedicationCreateResult> CreateAsync(Guid patientId, Guid actorId, string origin,
-        CreateMedicationTreatmentRequest request, CancellationToken ct)
-        => store.CreateAsync(patientId, actorId, origin, ValidateTreatment(request, origin), ct);
+        CreateMedicationTreatmentRequest request, CancellationToken ct, MedicationPhotoUpload? photo = null)
+        => store.CreateAsync(patientId, actorId, origin, ValidateTreatment(request, origin), ct, photo);
+
+    public Task<MedicationPhotoContent> ReadPhotoAsync(Guid patientId, Guid id, MedicationPhotoTarget target, CancellationToken ct)
+        => store.ReadPhotoAsync(patientId, id, target, ct);
 
     public Task<MedicationAdherenceSummaryDto> AdherenceAsync(Guid patientId, string? timeZone, CancellationToken ct)
     {
@@ -159,8 +162,12 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
     }
 
     public Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
-        RecordMedicationDoseRequest request, CancellationToken ct)
-        => store.RecordAsync(patientId, actorId, origin, doseId, ValidateRecord(request, clock.GetUtcNow()), ct);
+        RecordMedicationDoseRequest request, CancellationToken ct, MedicationPhotoUpload? photo = null)
+    {
+        if (photo is not null && request.Status != "taken")
+            throw Invalid("photo", "Solo puedes adjuntar una foto al confirmar una toma.");
+        return store.RecordAsync(patientId, actorId, origin, doseId, ValidateRecord(request, clock.GetUtcNow()), ct, photo);
+    }
 
     public static RecordMedicationDoseRequest ValidateRecord(RecordMedicationDoseRequest request, DateTimeOffset now)
     {
