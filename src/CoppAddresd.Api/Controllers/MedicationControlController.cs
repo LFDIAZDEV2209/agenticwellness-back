@@ -12,7 +12,7 @@ namespace CoppAddresd.Api.Controllers;
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("api/v1")]
-public sealed class MedicationControlController(MedicationControlService medications, ICurrentContext current, MedicationMonitoringService? monitoring = null, IConfiguration? settings = null) : ControllerBase
+public sealed partial class MedicationControlController(MedicationControlService medications, ICurrentContext current, MedicationMonitoringService? monitoring = null, IConfiguration? settings = null) : ControllerBase
 {
     [HttpGet("me/capabilities")]
     public async Task<IActionResult> Capabilities(CancellationToken ct)

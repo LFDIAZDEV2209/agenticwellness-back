@@ -20,7 +20,8 @@ public sealed record MedicationTreatmentDto(Guid Id, Guid? MedicationId, string 
     string Status, string Origin, int Revision, DateTime CreatedAt, decimal Dosage, string Unit,
     string Route, string Instructions, IReadOnlyList<string> Times, string TimeZone, DateOnly StartDate, DateOnly? EndDate,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? RxCui = null, int? WeekdayMask = null, int? IntervalHours = null,
-    MedicationReminderOverrides? Reminders = null, string? Prescriber = null)
+    MedicationReminderOverrides? Reminders = null, string? Prescriber = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool HasPhoto = false)
 {
     // El origen lo fija el endpoint, nunca un campo enviado por el paciente.
     // Nutracéuticos permanecen adicionales al plan obligatorio.
@@ -31,7 +32,12 @@ public sealed record MedicationDoseDto(Guid Id, Guid TreatmentId, string Name, d
     string? Channel = null, DateTime? UndoUntil = null, DateTime? SnoozedUntil = null,
     string? Instructions = null);
 public sealed record MedicationEventDto(Guid Id, Guid DoseId, Guid TreatmentId, string Name, string Status,
-    DateTime OccurredAt, DateTime RecordedAt, string? Reason, string Origin, string? Channel = null);
+    DateTime OccurredAt, DateTime RecordedAt, string? Reason, string Origin, string? Channel = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool HasPhoto = false);
+
+public enum MedicationPhotoTarget { Treatment, IntakeEvent }
+public sealed record MedicationPhotoUpload(Stream Content, string ContentType, string Sha256);
+public sealed record MedicationPhotoContent(Stream Content, string ContentType);
 public sealed record MedicationAdherenceWindowDto(int Due, int Taken, int? Percent);
 public sealed record MedicationAdherenceSummaryDto(MedicationAdherenceWindowDto Last7Days, MedicationAdherenceWindowDto Last30Days);
 public sealed record MedicationAdherenceDto(int ScheduledDoses, int DueDoses, int TakenDoses,
@@ -76,7 +82,7 @@ public interface IMedicationControlStore
     Task<MedicationCurrentDayDto> ReadCurrentDayAsync(Guid patientId, DateOnly date, TimeZoneInfo viewZone,
         DateTimeOffset asOf, CancellationToken ct);
     Task<MedicationCreateResult> CreateAsync(Guid patientId, Guid actorId, string origin,
-        CreateMedicationTreatmentRequest request, CancellationToken ct);
+        CreateMedicationTreatmentRequest request, CancellationToken ct, MedicationPhotoUpload? photo = null);
     Task<MedicationTreatmentDto> UpdateRegimenAsync(Guid patientId, Guid treatmentId, Guid actorId,
         UpdateMedicationRegimenRequest request, CancellationToken ct);
     Task<MedicationAdherenceSummaryDto> AdherenceAsync(Guid patientId, DateOnly today, string timeZone, CancellationToken ct);
@@ -85,7 +91,8 @@ public interface IMedicationControlStore
     Task<MedicationReminderPreferences> SetReminderPreferencesAsync(Guid patientId, Guid actorId,
         MedicationReminderPreferences request, CancellationToken ct);
     Task<MedicationDoseDto> RecordAsync(Guid patientId, Guid actorId, string origin, Guid doseId,
-        RecordMedicationDoseRequest request, CancellationToken ct);
+        RecordMedicationDoseRequest request, CancellationToken ct, MedicationPhotoUpload? photo = null);
+    Task<MedicationPhotoContent> ReadPhotoAsync(Guid patientId, Guid id, MedicationPhotoTarget target, CancellationToken ct);
     Task<MedicationTreatmentDto> ChangeStatusAsync(Guid patientId, Guid treatmentId,
         ChangeMedicationStatusRequest request, bool selfService, CancellationToken ct);
 }

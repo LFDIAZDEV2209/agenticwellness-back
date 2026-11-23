@@ -34,6 +34,7 @@ public sealed class MedicationControlConfiguration :
         b.Property(x => x.Origin).HasMaxLength(30);
         b.Property(x => x.Status).HasMaxLength(20);
         b.Property(x => x.RequestHash).HasMaxLength(64);
+        b.Property(x => x.PhotoStorageKey).HasMaxLength(250);
         b.Property(x => x.Revision).IsConcurrencyToken();
         b.HasOne<PatientProfile>().WithMany().HasForeignKey(x => x.PatientId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne<Medication>().WithMany().HasForeignKey(x => x.MedicationId).OnDelete(DeleteBehavior.Restrict);
@@ -97,6 +98,7 @@ public sealed class MedicationControlConfiguration :
         b.Property(x => x.Status).HasMaxLength(20);
         b.Property(x => x.RequestHash).HasMaxLength(64);
         b.Property(x => x.Reason).HasMaxLength(500);
+        b.Property(x => x.PhotoStorageKey).HasMaxLength(250);
         b.Property(x => x.Channel).HasMaxLength(20);
         b.Property(x => x.Origin).HasMaxLength(30);
         b.HasOne<PatientProfile>().WithMany().HasForeignKey(x => x.PatientId).OnDelete(DeleteBehavior.Restrict);

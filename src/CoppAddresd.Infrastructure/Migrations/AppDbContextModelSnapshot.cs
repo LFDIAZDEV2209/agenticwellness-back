@@ -4887,6 +4887,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("patient_id");
 
+                    b.Property<string>("PhotoStorageKey")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("photo_storage_key");
+
                     b.Property<string>("Reason")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -5440,6 +5445,11 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uuid")
                         .HasColumnName("patient_id");
+
+                    b.Property<string>("PhotoStorageKey")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("photo_storage_key");
 
                     b.Property<string>("ProductType")
                         .IsRequired()
