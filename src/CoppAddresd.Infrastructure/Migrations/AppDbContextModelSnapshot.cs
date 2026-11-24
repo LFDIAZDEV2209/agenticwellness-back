@@ -11640,6 +11640,95 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("welcome_email_finalizations", "erp");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Infrastructure.Persistence.WellnessJourneyGeneration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DraftHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("draft_hash");
+
+                    b.Property<string>("DraftJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("draft_json");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(48)
+                        .HasColumnType("character varying(48)")
+                        .HasColumnName("error_code");
+
+                    b.Property<Guid?>("LeaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lease_id");
+
+                    b.Property<DateTimeOffset?>("LeaseUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lease_until");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payment_id");
+
+                    b.Property<string>("ResultJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("result_json");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId")
+                        .HasDatabaseName("ix_wellness_journey_patient_id");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_wellness_journey_payment_id");
+
+                    b.HasIndex("CreatedAt", "Id")
+                        .HasDatabaseName("ix_wellness_journey_claimable")
+                        .HasFilter("status IN ('pending', 'running')");
+
+                    b.ToTable("wellness_journey_generations", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_wellness_journey_attempts", "attempts > 0");
+
+                            t.HasCheckConstraint("ck_wellness_journey_lease", "(status = 'running' AND lease_id IS NOT NULL AND lease_until IS NOT NULL) OR (status <> 'running' AND lease_id IS NULL AND lease_until IS NULL)");
+
+                            t.HasCheckConstraint("ck_wellness_journey_result", "(status = 'ready') = (result_json IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_wellness_journey_status", "status IN ('pending', 'running', 'ready', 'failed')");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.AgentDocument", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.KnowledgeBase", "KnowledgeBase")
@@ -13589,6 +13678,15 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Infrastructure.Persistence.WellnessJourneyGeneration", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.AgentType", b =>

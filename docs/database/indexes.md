@@ -26,6 +26,14 @@ Aplicar y revertir con un ejecutor sin transacción externa.
 | `IX_PaidActivations_LinkedUserId` | `auth."PaidActivations"` | `LinkedUserId` | B-tree | FK a la cuenta existente y reconciliación por usuario. | Se actualiza al vincular la cuenta. |
 | `IX_PaidActivations_NextEmailAttemptAt` | `auth."PaidActivations"` | `NextEmailAttemptAt` | B-tree parcial no nulo | Lee los envíos vencidos ordenados por su siguiente intento. | Excluye los envíos finalizados. |
 
+## Generación de bienestar en demostración
+
+| Índice | Tabla | Columnas | Tipo | Uso e impacto |
+| --- | --- | --- | --- | --- |
+| `ux_wellness_journey_payment_id` | `app.wellness_journey_generations` | `payment_id` | B-tree único | Deduplica el envío inicial y localiza la generación del pago. Cada alta comprueba unicidad. |
+| `ix_wellness_journey_patient_id` | `app.wellness_journey_generations` | `patient_id` | B-tree | Localiza las filas de la FK del perfil durante el borrado. |
+| `ix_wellness_journey_claimable` | `app.wellness_journey_generations` | `created_at, id` | B-tree parcial | Ordena los trabajos pendientes o reclamables tras vencer el lease. La fila sale del índice al terminar. |
+
 ## Registro
 
 | Index                                               | Tabla                                 | Columnas                          | Tipo                                                             | Motivo                                                                                                                                                                             | Query que beneficia                                                        | Impacto esperado                                    | Costo potencial                                                   |
