@@ -75,6 +75,41 @@ Fuera de Development, configurar SMTP y montar la misma ruta absoluta
 persistir entre despliegues y quedar protegido en reposo. Verificar el acceso
 por HTTPS a la página y a las dos rutas de Auth antes de activar el flujo.
 
+## Bienvenida de membresía simulada
+
+La prueba de KAN-116, KAN-58 y KAN-86 usa el checkout de demostración
+con un buzón de captura local. Activa `VITE_PAID_ACTIVATION_DEMO=true` en
+Vite sin URL de checkout real. Configura Auth en `Development` con
+`PaidActivationDemo__Enabled=true`, `PaidActivationDemo__WebBaseUrl` con
+el origen de la web local y `Email__Provider=Smtp` con un host SMTP de
+loopback. Fuera de esa configuración, una solicitud válida de simulación
+recibe 404.
+
+Auth registra la confirmación y encarga la bienvenida en una sola escritura
+por `paymentId`. La cola usa PostgreSQL y reintenta el envío ante fallos SMTP.
+El reenvío usa el recibo opaco del navegador con una pausa de cinco segundos
+entre solicitudes válidas y rota el enlace anterior. Los enlaces se emiten en
+ES/EN, vencen a los 30 minutos por defecto y se usan una sola vez. Un fallo de
+SMTP conserva el pago y permite otro intento. El anillo de claves compartido
+es necesario para conservar enlaces si Auth se inicia con un nuevo directorio
+de claves o se ejecuta con varias instancias.
+
+La página verifica el enlace y lo intercambia por una cookie HttpOnly de
+configuración antes de retirarlo de la URL. La cookie permite retomar la misma
+activación tras recarga o respuesta perdida. La redención vincula el pago
+simulado a una cuenta existente después de autenticarla con audiencia `app`.
+Para un correo nuevo, el alta de prueba guarda el usuario, su acceso a la app,
+perfil, contacto de emergencia y ambos recibos vigentes en la transacción
+que vincula el pago. El usuario entra a la app con la sesión Auth habitual.
+`PaidActivationDemo__AppBaseUrl` debe usar el mismo host local que la web.
+
+El script `scripts/qa/seed-paid-customer-journey.sql` publica los dos
+documentos sintéticos por idioma sobre la infraestructura legal existente.
+Los contenidos y campos de contacto aprobados para producción se acuerdan
+con KAN-119 y el equipo de producto. El piloto local usa una plantilla ES/EN
+marcada como simulada y el transporte SMTP existente. La bienvenida de altas
+ERP conserva su disparador y contenido por permisos.
+
 ## Previsualización y pruebas
 
 ```sh

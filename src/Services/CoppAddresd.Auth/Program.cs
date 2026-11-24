@@ -104,6 +104,14 @@ builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection(EmailSettings.SectionName)
 );
 var emailProvider = builder.Configuration["Email:Provider"] ?? "Log";
+var paidActivationDemo = PaidActivationDemoSettings.Read(
+    builder.Configuration, builder.Environment, emailProvider);
+builder.Services.AddSingleton(paidActivationDemo);
+builder.Services.AddSingleton<PaidActivationLinks>();
+builder.Services.AddScoped<PaidActivationService>();
+builder.Services.AddScoped<PaidActivationSignupService>();
+if (paidActivationDemo.WebOrigin is not null)
+    builder.Services.AddHostedService<PaidActivationEmailWorker>();
 var passwordResetDestination = PasswordResetEmailLink.GetPublicDestination(
     builder.Configuration["Email:PasswordResetUrl"]
 );
@@ -118,7 +126,7 @@ if (!builder.Environment.IsDevelopment()
 {
     passwordResetDestination = null;
 }
-if (passwordResetDestination is not null && hasPersistentKeyRing)
+if ((passwordResetDestination is not null || paidActivationDemo.WebOrigin is not null) && hasPersistentKeyRing)
 {
     builder.Services.AddDataProtection()
         .SetApplicationName("CoppAddresd.Auth")

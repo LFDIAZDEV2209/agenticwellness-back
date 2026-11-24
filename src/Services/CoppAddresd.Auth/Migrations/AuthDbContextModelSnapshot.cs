@@ -420,6 +420,69 @@ namespace CoppAddresd.Auth.Migrations
                     b.ToTable("OtpCodes", "auth");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PaidActivation", b =>
+                {
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AmountCents")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<int>("EmailAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EmailLeaseUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EmailRevision")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)");
+
+                    b.Property<DateTime>("LastEmailRequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LinkedUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("NextEmailAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Plan")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<DateTime?>("RedeemedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("SetupSessionExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("SetupSessionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("LinkedUserId");
+
+                    b.HasIndex("NextEmailAttemptAt")
+                        .HasFilter("\"NextEmailAttemptAt\" IS NOT NULL");
+
+                    b.ToTable("PaidActivations", "auth");
+                });
+
             modelBuilder.Entity("CoppAddresd.Auth.Entities.Permission", b =>
                 {
                     b.Property<Guid>("Id")
@@ -905,6 +968,14 @@ namespace CoppAddresd.Auth.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PaidActivation", b =>
+                {
+                    b.HasOne("CoppAddresd.Auth.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("LinkedUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("CoppAddresd.Auth.Entities.RefreshToken", b =>

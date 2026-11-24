@@ -18,6 +18,14 @@ Si queda un índice inválido después de un intento interrumpido, verificarlo
 en `pg_index`, retirar ese índice con `DROP INDEX CONCURRENTLY` y reintentar.
 Aplicar y revertir con un ejecutor sin transacción externa.
 
+## Activación de membresía en demostración
+
+| Índice | Tabla | Columnas | Tipo | Uso | Impacto |
+| --- | --- | --- | --- | --- | --- |
+| `PK_PaidActivations` | `auth."PaidActivations"` | `PaymentId` | B-tree único | Repetir confirmación conserva el pago original. Busca la redención y el reenvío por recibo. | Una entrada por pago simulado. |
+| `IX_PaidActivations_LinkedUserId` | `auth."PaidActivations"` | `LinkedUserId` | B-tree | FK a la cuenta existente y reconciliación por usuario. | Se actualiza al vincular la cuenta. |
+| `IX_PaidActivations_NextEmailAttemptAt` | `auth."PaidActivations"` | `NextEmailAttemptAt` | B-tree parcial no nulo | Lee los envíos vencidos ordenados por su siguiente intento. | Excluye los envíos finalizados. |
+
 ## Registro
 
 | Index                                               | Tabla                                 | Columnas                          | Tipo                                                             | Motivo                                                                                                                                                                             | Query que beneficia                                                        | Impacto esperado                                    | Costo potencial                                                   |
