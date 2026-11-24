@@ -68,6 +68,10 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
             b.ToTable("Users", "auth");
             b.Property(u => u.FirstName).HasMaxLength(100).IsRequired();
             b.Property(u => u.LastName).HasMaxLength(100).IsRequired();
+            b.HasIndex(u => u.NormalizedEmail)
+                .HasDatabaseName("UX_Users_NormalizedEmail")
+                .IsUnique()
+                .HasFilter("\"NormalizedEmail\" IS NOT NULL");
             b.HasIndex(u => u.PurgeAfter).HasFilter("\"PurgeAfter\" IS NOT NULL AND \"PurgedAt\" IS NULL");
         });
 

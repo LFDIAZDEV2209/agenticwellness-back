@@ -2,6 +2,22 @@
 
 Reglas del proyecto (skill `database-indexes`). Cada índice creado en producción se registra aquí. Sin registro → no se crea.
 
+## Identidad por correo
+
+| Índice | Tabla | Columnas | Tipo | Uso | Impacto |
+| --- | --- | --- | --- | --- | --- |
+| `UX_Users_NormalizedEmail` | `auth."Users"` | `NormalizedEmail` | B-tree único parcial | Consulta por correo de Identity y unicidad para todas las aplicaciones | Sustituye `EmailIndex`. Los valores nulos quedan fuera. Cada escritura de correo paga el chequeo de unicidad. |
+
+Antes de aplicar `EnforceUniqueNormalizedEmail`, ejecutar el
+[inventario KAN-122](../../scripts/qa/kan-122-email-reconciliation-readonly.sql) con
+datos autorizados y confirmar las claves con el normalizador de Auth.
+Resolver candidatos y claves ausentes o desactualizadas antes del corte.
+La migración se detiene si se repite una clave persistida. La creación
+concurrente conserva el índice anterior hasta que el reemplazo esté válido.
+Si queda un índice inválido después de un intento interrumpido, verificarlo
+en `pg_index`, retirar ese índice con `DROP INDEX CONCURRENTLY` y reintentar.
+Aplicar y revertir con un ejecutor sin transacción externa.
+
 ## Registro
 
 | Index                                               | Tabla                                 | Columnas                          | Tipo                                                             | Motivo                                                                                                                                                                             | Query que beneficia                                                        | Impacto esperado                                    | Costo potencial                                                   |
