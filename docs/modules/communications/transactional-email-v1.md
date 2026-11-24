@@ -34,7 +34,7 @@ del proveedor de Identity. El número de soporte puede venir de la configuració
 
 - `Email:Transactional:Name`, `LogoUrl`, `AccentColor` y `SupportWhatsApp` definen la marca. El logo usa `Email:WelcomeLogoUrl` como respaldo.
 - `Email:Transactional:Templates:{código}:{Es|En}` admite `Subject`, `Preheader`, `Title`, `Button` y `Callout`. Cada texto admite las variables de su propia plantilla.
-- SMTP utiliza el proveedor existente y registra código, destinatario y estado. Los eventos de estas plantillas omiten el asunto, el cuerpo y los enlaces en el registro.
+- SMTP registra código y estado. Omite asunto, cuerpo y enlaces. `PWD-01` también omite el destinatario.
 
 Ejemplo con valores ficticios para previsualizar el contrato:
 
@@ -55,15 +55,25 @@ Ejemplo con valores ficticios para previsualizar el contrato:
 
 ## Enlaces de restablecimiento
 
-El llamador emite el enlace con `PasswordResetEmailLink.IssueAsync`, pasando
-la cuenta activa y la URL HTTPS de restablecimiento de confianza. El enlace
-contiene el identificador de cuenta y un token opaco URL-safe. La futura
-pantalla entrega el token decodificado a `UserManager.ResetPasswordAsync` para
-esa misma cuenta y revoca las sesiones existentes usando el flujo de Auth.
-Identity cambia el sello de seguridad al aplicar la primera actualización,
-lo que invalida el token. Las réplicas de Auth que emitan o consuman enlaces
-deben compartir un anillo persistente de claves de Data Protection antes de
-habilitar ese flujo.
+La app solicita el enlace en `POST /api/auth/account/password-reset/request`.
+Auth responde con el mismo 202 para correos válidos y encola la consulta.
+Solo envía `PWD-01` si el correo de Auth está confirmado y la cuenta tiene
+acceso activo a la app. La cola en memoria aplica un minuto entre envíos por
+correo y réplica.
+
+Configurar `Email:PasswordResetUrl` con la URL HTTPS pública y la ruta
+`/recuperar-cuenta`. El identificador, token y lenguaje viajan en el fragmento
+de URL, que la página borra al abrirse. La página entrega el token a
+`POST /api/auth/account/password-reset/confirm` dentro del cuerpo de la
+solicitud. Tras un único uso válido, Auth actualiza la contraseña e invalida
+la renovación de las sesiones existentes en la misma transacción. Los
+tokens de acceso ya emitidos conservan su vencimiento. El enlace vence en
+60 minutos.
+
+Fuera de Development, configurar SMTP y montar la misma ruta absoluta
+`DataProtection:KeyRingPath` en todas las réplicas de Auth. El anillo debe
+persistir entre despliegues y quedar protegido en reposo. Verificar el acceso
+por HTTPS a la página y a las dos rutas de Auth antes de activar el flujo.
 
 ## Previsualización y pruebas
 
