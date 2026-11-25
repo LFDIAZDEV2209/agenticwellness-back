@@ -31,6 +31,9 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
 
     public DbSet<PaidMembershipDemoEvent> PaidMembershipDemoEvents => Set<PaidMembershipDemoEvent>();
 
+    public DbSet<PrivacyExportArtifact> PrivacyExportArtifacts => Set<PrivacyExportArtifact>();
+    public DbSet<PrivacyRequest> PrivacyRequests => Set<PrivacyRequest>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -59,6 +62,29 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
             b.Property(x => x.Kind).HasMaxLength(8).IsRequired();
             b.HasOne<PaidActivation>().WithMany().HasForeignKey(x => x.PaymentId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<PrivacyExportArtifact>(b =>
+        {
+            b.ToTable("PrivacyExportArtifacts", "auth");
+            b.HasKey(x => x.RequestId);
+            b.HasOne<PrivacyRequest>().WithOne().HasForeignKey<PrivacyExportArtifact>(x => x.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.ExpiresAt).HasFilter("\"ProtectedContent\" IS NOT NULL");
+        });
+        builder.Entity<PrivacyRequest>(b =>
+        {
+            b.ToTable("PrivacyRequests", "auth", t => t.HasCheckConstraint(
+                "ck_privacy_request_kind_format",
+                """
+                ("Kind" = 'export' AND "Format" IS NOT NULL AND "Format" IN ('json', 'csv'))
+                    OR ("Kind" = 'deletion' AND "Format" IS NULL)
+                """));
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Kind).HasMaxLength(16).IsRequired();
+            b.Property(x => x.Format).HasMaxLength(4);
+            // No FK en cascada: la baja de la cuenta no elimina el comprobante.
+            b.HasIndex(x => new { x.UserId, x.Kind }).IsUnique().HasFilter("\"ClosedAt\" IS NULL");
         });
 
         builder.Entity<WelcomeEmailDelivery>(b =>

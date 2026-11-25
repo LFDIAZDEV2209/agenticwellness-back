@@ -574,6 +574,73 @@ namespace CoppAddresd.Auth.Migrations
                     b.ToTable("Permissions", "auth");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyExportArtifact", b =>
+                {
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("ProtectedContent")
+                        .HasColumnType("bytea");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PublishedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasFilter("\"ProtectedContent\" IS NOT NULL");
+
+                    b.ToTable("PrivacyExportArtifacts", "auth");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExportPreparedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Format")
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Kind")
+                        .IsUnique()
+                        .HasFilter("\"ClosedAt\" IS NULL");
+
+                    b.ToTable("PrivacyRequests", "auth", t =>
+                        {
+                            t.HasCheckConstraint("ck_privacy_request_kind_format", "(\"Kind\" = 'export' AND \"Format\" IS NOT NULL AND \"Format\" IN ('json', 'csv'))\n    OR (\"Kind\" = 'deletion' AND \"Format\" IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Auth.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1036,6 +1103,15 @@ namespace CoppAddresd.Auth.Migrations
                     b.HasOne("CoppAddresd.Auth.Entities.PaidActivation", null)
                         .WithMany()
                         .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyExportArtifact", b =>
+                {
+                    b.HasOne("CoppAddresd.Auth.Entities.PrivacyRequest", null)
+                        .WithOne()
+                        .HasForeignKey("CoppAddresd.Auth.Entities.PrivacyExportArtifact", "RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

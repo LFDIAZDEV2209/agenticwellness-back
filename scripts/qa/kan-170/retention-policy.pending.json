@@ -1,0 +1,15 @@
+{
+  "approval": null,
+  "rules": {
+    "profile": null,
+    "wellness": null,
+    "vitals": null,
+    "clinical": null,
+    "ai": null,
+    "service_logs": null,
+    "audit": null,
+    "archives": null,
+    "rds_backups": null,
+    "object_versions": null
+  }
+}
