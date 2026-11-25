@@ -73,6 +73,47 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
 
     private LegalConsentService Service(AppDbContext db) => new(db, settings, TimeProvider.System);
 
+    [NutritionPostgresFact]
+    public async Task Account_receipt_serializes_concurrent_retries_and_records_metadata()
+    {
+        await using var db = Context();
+        var configuration = new AccountLegalConsentSettings { EnforcementEnabled = true };
+        configuration.Documents["en"] = new() { Terms = "fixture-terms-en", Privacy = "fixture-privacy-en" };
+        LegalDocumentVersion Add(string code)
+        {
+            var document = new LegalDocument { Id = Guid.NewGuid(), Code = code, Title = code };
+            var version = new LegalDocumentVersion { Id = Guid.NewGuid(), DocumentId = document.Id,
+                Major = 1, IsPublished = true, Content = "Synthetic test data." };
+            document.CurrentVersionId = version.Id;
+            db.LegalDocuments.Add(document);
+            db.LegalDocumentVersions.Add(version);
+            return version;
+        }
+        var terms = Add(configuration.Documents["en"].Terms);
+        Add(configuration.Documents["en"].Privacy);
+        await db.SaveChangesAsync();
+        var monitor = Substitute.For<IOptionsMonitor<AccountLegalConsentSettings>>();
+        monitor.CurrentValue.Returns(configuration);
+        async Task<LegalConsentReceiptDto> Accept()
+        {
+            await using var context = Context();
+            var service = new AccountLegalConsentService(context, monitor, TimeProvider.System);
+            return await service.AcceptAsync(user, new(terms.Id, "en", Guid.NewGuid()),
+                new("192.0.2.10", "Test client"), default);
+        }
+
+        var results = await Task.WhenAll(Accept(), Accept());
+        Assert.Equal(results[0], results[1]);
+        var receipt = await db.LegalDocumentAcceptances.AsNoTracking().SingleAsync();
+        Assert.Equal(terms.Id, receipt.LegalDocumentVersionId);
+        Assert.Equal(user, receipt.UserId);
+        Assert.Equal("en", receipt.Locale);
+        Assert.Contains("192.0.2.10", receipt.DisclosureSnapshot);
+        Assert.Contains("Test client", receipt.DisclosureSnapshot);
+        var audit = await db.ActivityLogs.AsNoTracking().SingleAsync(row => row.TableName == "legal_document_acceptances");
+        Assert.Equal(user, audit.UserId);
+    }
+
     private static async Task Apply(AppDbContext db, Migration migration, bool up, bool skipGrants = false)
     {
         var operations = (up ? migration.UpOperations : migration.DownOperations)
