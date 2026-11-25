@@ -41,7 +41,7 @@ public sealed class WelcomeEmailTests
                 app,
                 erp,
                 ["Professional"],
-                [new("Pacientes", ["Consultar"])]
+                [new("Personas", ["Consultar"])]
             ),
             Settings
         );
@@ -186,7 +186,7 @@ public sealed class WelcomeEmailTests
         Assert.Equal(erp, mail.PlainTextBody!.Contains("ERP"));
         Assert.Equal(app, mail.PlainTextBody.Contains("Android"));
         if (erp)
-            Assert.Contains("Pacientes: Consultar", mail.PlainTextBody);
+            Assert.Contains("Personas: Consultar", mail.PlainTextBody);
         Assert.DoesNotContain("Eliminar", mail.PlainTextBody);
         await fixture.Db.Entry(delivery).ReloadAsync();
         Assert.Equal("Sent", delivery.Status);
