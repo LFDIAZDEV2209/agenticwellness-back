@@ -1,17 +1,20 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using CoppAddresd.Api.Configuration;
 using CoppAddresd.Api.Context;
 using CoppAddresd.Api.Controllers;
 using CoppAddresd.Application.Features.LegalDocuments;
 using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Application.Services;
 using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Enums;
 using CoppAddresd.Domain.Exceptions;
 using CoppAddresd.Infrastructure.Migrations;
 using CoppAddresd.Infrastructure.Persistence;
+using CoppAddresd.Infrastructure.Repositories;
 using CoppAddresd.Infrastructure.Services;
 using CoppAddresd.Auth.Configuration;
 using CoppAddresd.Auth.Controllers;
@@ -67,6 +70,7 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
         // Apply exact production migration operations; the audit-role GRANT is not needed by this
         // disposable owner-only fixture and would otherwise require a cluster-wide app_user role.
         await Apply(db, new InitialAuditSchema(), up: true, skipGrants: true);
+        await Apply(db, new AddAuditActionWidening(), up: true);
         await Apply(db, new AddLegalDocuments(), up: true);
         await Apply(db, new AddLegalDocumentsAudit(), up: true);
         await Apply(db, new AddLegalConsentReceipts(), up: true);
@@ -284,6 +288,86 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
         Assert.All((await AccountStatus("es")).Documents, document => Assert.Null(document.ReceiptId));
         apiConfig.EnforcementEnabled = false;
         Assert.Empty((await AccountStatus("es")).Documents);
+    }
+
+    [NutritionPostgresFact]
+    public async Task Legal_history_shares_export_scope_and_retains_older_versions()
+    {
+        await using var db = Context();
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE erp.clinics (id uuid PRIMARY KEY, organization_id uuid NOT NULL);
+            CREATE TABLE app.patient_profiles (id uuid PRIMARY KEY, user_id uuid, clinic_id uuid, deleted_at timestamptz);
+            CREATE TABLE app.patient_professionals (patient_id uuid, professional_id uuid, status text);
+            """);
+        var organization = Guid.NewGuid();
+        var otherOrganization = Guid.NewGuid();
+        var clinic = Guid.NewGuid();
+        var otherClinic = Guid.NewGuid();
+        var patient = Guid.NewGuid();
+        var outside = Guid.NewGuid();
+        var otherUser = Guid.NewGuid();
+        var professional = Guid.NewGuid();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO erp.clinics VALUES ({clinic},{organization}),({otherClinic},{otherOrganization});
+            INSERT INTO app.patient_profiles VALUES ({patient},{user},{clinic},NULL),({outside},{otherUser},{otherClinic},NULL);
+            INSERT INTO app.patient_professionals VALUES ({patient},{professional},'Active'),({outside},{professional},'Active');
+            """);
+
+        var document = new LegalDocument { Id = Guid.NewGuid(), Code = "paid-demo-terms-es", Title = "Términos, prueba" };
+        var old = new LegalDocumentVersion { Id = Guid.NewGuid(), DocumentId = document.Id, Major = 1, Content = "Sintético" };
+        var current = new LegalDocumentVersion { Id = Guid.NewGuid(), DocumentId = document.Id, Major = 2, Content = "Sintético" };
+        db.LegalDocuments.Add(document);
+        db.LegalDocumentVersions.AddRange(old, current);
+        await db.SaveChangesAsync();
+        var first = new DateTime(2026, 11, 23, 18, 15, 0, DateTimeKind.Utc);
+        LegalDocumentAcceptance Receipt(Guid subject, string scope, Guid version, DateTime at, string snapshot) => new()
+        {
+            Id = Guid.NewGuid(), UserId = subject, Scope = scope, Locale = "es", LegalDocumentVersionId = version,
+            DisclosureId = "synthetic", IdempotencyKey = Guid.NewGuid(), AcceptedAt = at, DisclosureSnapshot = snapshot,
+        };
+        var v1 = Receipt(user, document.Code, old.Id, first, "{}");
+        var v2 = Receipt(user, AccountLegalScopes.Terms, current.Id, first.AddDays(1),
+            """{"ip":"192.0.2.10","userAgent":"  =SYNTHETIC(\"foo\",\"bar\")"}""");
+        db.LegalDocumentAcceptances.AddRange(v1, v2,
+            Receipt(otherUser, AccountLegalScopes.Terms, current.Id, first.AddDays(1), "{}"),
+            Receipt(user, "chat", current.Id, first.AddDays(2), "{}"));
+        await db.SaveChangesAsync();
+
+        const string view = "LegalAcceptances.View";
+        const string export = "LegalAcceptances.Export";
+        var actorId = Guid.NewGuid();
+        var actor = Substitute.For<IPatientScopeActor>();
+        actor.UserId.Returns(actorId);
+        actor.HasPermissionAsync(view, Arg.Any<CancellationToken>()).Returns(true);
+        actor.ProfessionalIdAsync(Arg.Any<CancellationToken>()).Returns(professional);
+        var store = new PatientScopeStore(db);
+        var history = new LegalAcceptanceHistory(db, new PatientScopeGuard(actor, store), store);
+        var any = new LegalAcceptanceFilter(null, document.Code, null, null, null);
+        var page = await history.ListAsync(any, 1, 1, clinic, null, view, default);
+        Assert.Equal(2, page.Total);
+        Assert.Equal(v2.Id, Assert.Single(page.Items).ReceiptId);
+        var older = Assert.Single((await history.ListAsync(any, 2, 1, null, organization, view, default)).Items);
+        Assert.Equal(v1.Id, older.ReceiptId);
+        Assert.Null(older.Ip);
+        Assert.Empty((await history.ListAsync(any with { AccountId = otherUser }, 1, 25, clinic, null, view, default)).Items);
+        await Assert.ThrowsAsync<ForbiddenException>(() => history.ExportAsync(any, actorId, clinic, null, export, default));
+
+        actor.HasPermissionAsync(export, Arg.Any<CancellationToken>()).Returns(true);
+        var filt = any with { Version = (2, 0), From = first, Before = first.AddDays(2) };
+        var filtered = Assert.Single((await history.ListAsync(filt, 1, 25, null, organization, view, default)).Items);
+        Assert.Equal(v2.Id, filtered.ReceiptId);
+        Assert.Equal("192.0.2.10", filtered.Ip);
+        var csv = Encoding.UTF8.GetString((await history.ExportAsync(filt, actorId, null, organization, export, default))!);
+        Assert.Contains(v2.Id.ToString(), csv);
+        Assert.DoesNotContain(v1.Id.ToString(), csv);
+        Assert.DoesNotContain(otherUser.ToString(), csv);
+        Assert.Contains("\"Términos, prueba\"", csv);
+        Assert.Contains("2026-11-24T18:15:00.0000000Z", csv);
+        Assert.Contains("\"'  =SYNTHETIC(\"\"foo\"\",\"\"bar\"\")\"", csv);
+        var audit = await db.ActivityLogs.AsNoTracking().SingleAsync(row => row.Action == AuditAction.LegalAcceptanceHistoryExport);
+        Assert.Equal(actorId, audit.UserId);
+        Assert.Equal(1, audit.Metadata!.Value.GetProperty("rowCount").GetInt32());
+        Assert.DoesNotContain(v2.Id.ToString(), audit.Metadata.Value.GetRawText());
     }
 
     [NutritionPostgresFact]
