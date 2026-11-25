@@ -34,6 +34,27 @@
       "closing": "Need help? {{soporte}}"
     }
   },
+  "PAID-ACTIVATION-DEMO": {
+    "link": "enlace_activacion",
+    "es": {
+      "subject": "Bienvenido a {{marca}}",
+      "preheader": "Tu pago simulado se confirmó. Continúa con la activación de tu membresía de prueba.",
+      "title": "Bienvenido a {{marca}}",
+      "button": "Activa tu membresía",
+      "intro": "Tu pago simulado se confirmó. Usa el botón para continuar con la activación de tu membresía de prueba.",
+      "callout": "Este enlace es personal y de un solo uso. Si vence, solicita otro correo desde la confirmación de tu membresía.",
+      "closing": "Si no solicitaste esta activación, puedes ignorar este correo."
+    },
+    "en": {
+      "subject": "Welcome to {{marca}}",
+      "preheader": "Your simulated payment was confirmed. Continue activating your demo membership.",
+      "title": "Welcome to {{marca}}",
+      "button": "Activate your membership",
+      "intro": "Your simulated payment was confirmed. Use the button to continue activating your demo membership.",
+      "callout": "This link is for you and can only be used once. If it expires, request another email from your membership confirmation page.",
+      "closing": "If you didn’t request this activation, you can ignore this email."
+    }
+  },
   "ACT-01": {
     "link": "enlace_plataforma",
     "es": {

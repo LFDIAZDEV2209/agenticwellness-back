@@ -4,6 +4,7 @@ public static class WellnessEngine
 {
     public const int PlanLength = 365;
     public const string ReferenceVersion = "5.2";
+    public const int ReferenceParametersVersion = 1;
 
     public static double BasalMetabolicRate(WellnessProfile profile, double weightKg) =>
         10 * weightKg + 6.25 * profile.HeightCm - 5 * profile.Age +

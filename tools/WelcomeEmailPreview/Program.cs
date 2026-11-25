@@ -37,6 +37,10 @@ if (transactional)
             var message = TransactionalEmailTemplate.Build(new(code, "ana@example.invalid", language, values), new EmailSettings());
             await WritePreview($"{code}-{language}", message, output);
         }
+        values["enlace_activacion"] = $"http://127.0.0.1:5196/{(english ? "activate-membership" : "activar-membresia")}#paymentId=preview&token=NOT-A-REAL-TOKEN&lang={language}";
+        const string demoCode = "PAID-ACTIVATION-DEMO";
+        await WritePreview($"{demoCode}-{language}",
+            TransactionalEmailTemplate.Build(new(demoCode, "ana@example.invalid", language, values), new()), output);
     }
     Console.WriteLine(output);
     return;

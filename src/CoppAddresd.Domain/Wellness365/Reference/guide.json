@@ -1,0 +1,730 @@
+{
+ "walk": {
+  "es": {
+   "n": "Caminata",
+   "s": [
+    "Párate derecho, mirada al frente y hombros relajados.",
+    "Da pasos naturales: apoya primero el talón y luego la punta del pie.",
+    "Balancea los brazos con los codos doblados a 90°.",
+    "Elige un ritmo en el que puedas conversar sin ahogarte."
+   ],
+   "b": "Inhala por la nariz durante 2–3 pasos y exhala por la boca durante 2–3 pasos.",
+   "m": "Mirar el celular o el piso;Dar pasos demasiado largos;Encorvar la espalda",
+   "e": "Camina más lento y en terreno plano.",
+   "h": "Sube un poco el paso en los minutos centrales."
+  },
+  "en": {
+   "n": "Walking",
+   "s": [
+    "Stand tall, eyes forward, shoulders relaxed.",
+    "Take natural steps: heel first, then toes.",
+    "Swing your arms with elbows bent at 90°.",
+    "Pick a pace where you can still hold a conversation."
+   ],
+   "b": "Inhale through your nose for 2–3 steps, exhale through your mouth for 2–3 steps.",
+   "m": "Looking at your phone or the floor;Over-striding;Rounding your back",
+   "e": "Walk slower on flat ground.",
+   "h": "Pick up the pace a little in the middle minutes."
+  }
+ },
+ "bike": {
+  "es": {
+   "n": "Bicicleta estática",
+   "s": [
+    "Ajusta el asiento: la rodilla casi se estira al bajar el pedal.",
+    "Sujeta el manubrio sin apretar y mantén la espalda larga.",
+    "Pedalea a ritmo constante con resistencia baja.",
+    "Mantén las rodillas alineadas con los pies, sin abrirlas."
+   ],
+   "b": "Respira de forma continua; si no puedes hablar, baja el ritmo.",
+   "m": "Asiento muy bajo;Apretar el manubrio;Rebotar sobre el asiento",
+   "e": "Reduce la resistencia al mínimo.",
+   "h": "Sube la resistencia un punto en los minutos centrales."
+  },
+  "en": {
+   "n": "Stationary bike",
+   "s": [
+    "Set the seat so your knee is almost straight at the bottom of the pedal stroke.",
+    "Hold the handlebars lightly and keep your back long.",
+    "Pedal at a steady pace with low resistance.",
+    "Keep knees in line with your feet, not flaring out."
+   ],
+   "b": "Breathe steadily; if you cannot talk, slow down.",
+   "m": "Seat too low;Gripping the handlebars tightly;Bouncing on the seat",
+   "e": "Lower the resistance to the minimum.",
+   "h": "Raise the resistance one notch in the middle minutes."
+  }
+ },
+ "ellip": {
+  "es": {
+   "n": "Elíptica",
+   "s": [
+    "Sube con calma sujetándote de los agarres.",
+    "Pisa con todo el pie y mantén los talones abajo.",
+    "Empuja y jala los brazos al ritmo de las piernas.",
+    "Mantén el torso erguido y el abdomen firme."
+   ],
+   "b": "Inhala y exhala de forma pareja, sin contener el aire.",
+   "m": "Inclinarse hacia adelante;Apoyarse en los agarres con todo el peso;Ir muy rápido",
+   "e": "Pedalea más lento y sin mover los brazos.",
+   "h": "Pedalea hacia atrás durante 1 minuto."
+  },
+  "en": {
+   "n": "Elliptical",
+   "s": [
+    "Step on carefully, holding the handles.",
+    "Plant your whole foot and keep heels down.",
+    "Push and pull the arms in rhythm with your legs.",
+    "Keep your torso upright and your abdomen firm."
+   ],
+   "b": "Breathe in and out evenly without holding your breath.",
+   "m": "Leaning forward;Putting all your weight on the handles;Going too fast",
+   "e": "Move slower and keep the arms still.",
+   "h": "Pedal backwards for 1 minute."
+  }
+ },
+ "hill": {
+  "es": {
+   "n": "Caminata en pendiente suave",
+   "s": [
+    "Sube la inclinación a 2–4 %.",
+    "Inclina el cuerpo un poco hacia adelante desde los tobillos.",
+    "Da pasos cortos y firmes.",
+    "No te agarres con fuerza de las barras."
+   ],
+   "b": "Respira profundo y constante; debes poder decir frases cortas.",
+   "m": "Agarrarse fuerte de las barras;Pasos largos;Inclinación muy alta",
+   "e": "Baja la inclinación a 0–1 %.",
+   "h": "Sube 1 % la inclinación en el minuto central."
+  },
+  "en": {
+   "n": "Gentle incline walk",
+   "s": [
+    "Set the incline to 2–4 %.",
+    "Lean slightly forward from the ankles.",
+    "Take short, firm steps.",
+    "Do not grip the rails tightly."
+   ],
+   "b": "Breathe deeply and steadily; you should be able to say short sentences.",
+   "m": "Gripping the rails;Long strides;Incline too high",
+   "e": "Lower the incline to 0–1 %.",
+   "h": "Raise the incline 1 % in the middle minute."
+  }
+ },
+ "int": {
+  "es": {
+   "n": "Intervalos caminata rápida / suave",
+   "s": [
+    "Calienta 1 minuto caminando suave.",
+    "Camina rápido 1 minuto (aún puedes hablar con frases cortas).",
+    "Camina suave 2 minutos para recuperar el aliento.",
+    "Repite hasta completar el tiempo."
+   ],
+   "b": "Exhala largo durante la fase suave para recuperarte.",
+   "m": "Correr en lugar de caminar rápido;No recuperar entre intervalos",
+   "e": "Intervalos de 30 s rápidos y 90 s suaves.",
+   "h": "Intervalos de 90 s rápidos y 90 s suaves."
+  },
+  "en": {
+   "n": "Brisk / easy walking intervals",
+   "s": [
+    "Warm up with 1 minute of easy walking.",
+    "Walk briskly for 1 minute (you can still speak in short sentences).",
+    "Walk easy for 2 minutes to recover.",
+    "Repeat until the time is up."
+   ],
+   "b": "Exhale slowly during the easy phase to recover.",
+   "m": "Running instead of brisk walking;Not recovering between intervals",
+   "e": "30 s brisk and 90 s easy intervals.",
+   "h": "90 s brisk and 90 s easy intervals."
+  }
+ },
+ "chair": {
+  "es": {
+   "n": "Sentadilla a la silla",
+   "s": [
+    "Párate frente a una silla firme con los pies al ancho de los hombros.",
+    "Lleva la cadera hacia atrás como si fueras a sentarte.",
+    "Toca la silla con los glúteos y sube empujando con los talones.",
+    "Mantén las rodillas en línea con los pies y el pecho arriba."
+   ],
+   "b": "Inhala al bajar, exhala al subir. No contengas el aire.",
+   "m": "Rodillas que se juntan hacia adentro;Despegar los talones;Dejarse caer sobre la silla",
+   "e": "Usa una silla más alta o apoya las manos en una mesa.",
+   "h": "Baja contando 3 segundos y sube sin impulso."
+  },
+  "en": {
+   "n": "Chair squat",
+   "s": [
+    "Stand in front of a sturdy chair, feet shoulder-width apart.",
+    "Send your hips back as if you were about to sit.",
+    "Lightly touch the chair with your glutes, then push up through your heels.",
+    "Keep knees in line with your feet and chest up."
+   ],
+   "b": "Inhale on the way down, exhale on the way up. Do not hold your breath.",
+   "m": "Knees caving inward;Heels lifting;Dropping onto the chair",
+   "e": "Use a higher chair or hold on to a table.",
+   "h": "Lower for 3 seconds and stand up without momentum."
+  }
+ },
+ "row": {
+  "es": {
+   "n": "Remo con banda elástica",
+   "s": [
+    "Sentado o de pie, ancla la banda al frente a la altura del pecho.",
+    "Toma los extremos con los brazos estirados.",
+    "Jala llevando los codos hacia atrás y juntando los omóplatos.",
+    "Regresa lento contando 3 segundos."
+   ],
+   "b": "Exhala al jalar, inhala al volver.",
+   "m": "Encoger los hombros hacia las orejas;Arquear la espalda;Soltar la banda de golpe",
+   "e": "Usa una banda más suave o acércate al anclaje.",
+   "h": "Pausa 2 segundos con los omóplatos juntos."
+  },
+  "en": {
+   "n": "Resistance band row",
+   "s": [
+    "Seated or standing, anchor the band in front of you at chest height.",
+    "Hold the ends with arms straight.",
+    "Pull, driving elbows back and squeezing shoulder blades together.",
+    "Return slowly, counting 3 seconds."
+   ],
+   "b": "Exhale as you pull, inhale as you return.",
+   "m": "Shrugging shoulders to ears;Arching the back;Letting the band snap back",
+   "e": "Use a lighter band or stand closer to the anchor.",
+   "h": "Pause 2 seconds with shoulder blades together."
+  }
+ },
+ "wall": {
+  "es": {
+   "n": "Flexiones de pared",
+   "s": [
+    "Párate a un brazo de distancia de la pared.",
+    "Apoya las manos a la altura de los hombros.",
+    "Dobla los codos y acerca el pecho a la pared con el cuerpo en línea recta.",
+    "Empuja para volver al inicio."
+   ],
+   "b": "Inhala al acercarte, exhala al empujar.",
+   "m": "Dejar caer la cadera;Abrir mucho los codos;Ir muy rápido",
+   "e": "Párate más cerca de la pared.",
+   "h": "Párate más lejos o usa una mesa firme más baja."
+  },
+  "en": {
+   "n": "Wall push-ups",
+   "s": [
+    "Stand an arm’s length from the wall.",
+    "Place your hands on the wall at shoulder height.",
+    "Bend your elbows and bring your chest toward the wall, body in a straight line.",
+    "Push back to the start."
+   ],
+   "b": "Inhale as you lean in, exhale as you push.",
+   "m": "Letting the hips sag;Flaring the elbows;Going too fast",
+   "e": "Stand closer to the wall.",
+   "h": "Stand farther away or use a lower sturdy table."
+  }
+ },
+ "bridge": {
+  "es": {
+   "n": "Puente de glúteos",
+   "s": [
+    "Acuéstate boca arriba con las rodillas dobladas y los pies al ancho de la cadera.",
+    "Aprieta los glúteos y sube la cadera hasta formar una línea de hombros a rodillas.",
+    "Sostén 1–2 segundos arriba.",
+    "Baja lento, vértebra por vértebra."
+   ],
+   "b": "Exhala al subir, inhala al bajar.",
+   "m": "Arquear la zona lumbar;Empujar con la punta de los pies;Subir demasiado",
+   "e": "Sube solo la mitad del recorrido.",
+   "h": "Sostén 4 segundos arriba."
+  },
+  "en": {
+   "n": "Glute bridge",
+   "s": [
+    "Lie on your back, knees bent, feet hip-width apart.",
+    "Squeeze your glutes and lift your hips into a line from shoulders to knees.",
+    "Hold 1–2 seconds at the top.",
+    "Lower slowly, one vertebra at a time."
+   ],
+   "b": "Exhale as you lift, inhale as you lower.",
+   "m": "Over-arching the lower back;Pushing through the toes;Lifting too high",
+   "e": "Lift only halfway.",
+   "h": "Hold for 4 seconds at the top."
+  }
+ },
+ "lunge": {
+  "es": {
+   "n": "Zancadas asistidas",
+   "s": [
+    "Párate junto a una silla o pared para apoyarte.",
+    "Da un paso corto hacia adelante.",
+    "Baja la cadera recto hacia abajo, con la rodilla de adelante sobre el tobillo.",
+    "Empuja con el talón delantero para volver. Alterna las piernas."
+   ],
+   "b": "Inhala al bajar, exhala al subir.",
+   "m": "Paso demasiado largo;La rodilla pasa la punta del pie;Inclinar el torso",
+   "e": "Baja solo unos centímetros.",
+   "h": "Suelta un poco el apoyo."
+  },
+  "en": {
+   "n": "Assisted lunges",
+   "s": [
+    "Stand next to a chair or wall for support.",
+    "Take a short step forward.",
+    "Lower your hips straight down, front knee over the ankle.",
+    "Push through the front heel to return. Alternate legs."
+   ],
+   "b": "Inhale as you lower, exhale as you rise.",
+   "m": "Step too long;Knee going past the toes;Leaning the torso",
+   "e": "Lower only a few centimeters.",
+   "h": "Use a little less support."
+  }
+ },
+ "plank": {
+  "es": {
+   "n": "Plancha en rodillas",
+   "s": [
+    "Apoya los antebrazos y las rodillas en una colchoneta.",
+    "Coloca los codos justo debajo de los hombros.",
+    "Forma una línea recta de rodillas a cabeza con el abdomen firme.",
+    "Sostén 15–20 segundos respirando normal y descansa."
+   ],
+   "b": "Respira normal. Nunca contengas el aire.",
+   "m": "Hundir la cadera;Subir la cadera;Contener la respiración",
+   "e": "Hazla 10 segundos o apoya las manos en una mesa.",
+   "h": "Sostén 30 segundos."
+  },
+  "en": {
+   "n": "Knee plank",
+   "s": [
+    "Rest your forearms and knees on a mat.",
+    "Place elbows directly under your shoulders.",
+    "Form a straight line from knees to head with your abdomen firm.",
+    "Hold 15–20 seconds breathing normally, then rest."
+   ],
+   "b": "Breathe normally. Never hold your breath.",
+   "m": "Sagging hips;Raising hips too high;Holding your breath",
+   "e": "Hold 10 seconds or place your hands on a table.",
+   "h": "Hold 30 seconds."
+  }
+ },
+ "mob": {
+  "es": {
+   "n": "Movilidad articular",
+   "s": [
+    "De pie, haz 10 círculos suaves de hombros hacia atrás.",
+    "Haz 5 círculos de cadera hacia cada lado.",
+    "Gira cada tobillo 8 veces.",
+    "Inclina el cuello suavemente hacia cada lado, sin forzar."
+   ],
+   "b": "Respira lento y profundo durante todo el movimiento.",
+   "m": "Mover rápido o con rebotes;Forzar hasta sentir dolor",
+   "e": "Reduce el tamaño de los círculos.",
+   "h": "Agrega 5 repeticiones por zona."
+  },
+  "en": {
+   "n": "Joint mobility",
+   "s": [
+    "Standing, make 10 gentle backward shoulder circles.",
+    "Make 5 hip circles in each direction.",
+    "Rotate each ankle 8 times.",
+    "Gently tilt your neck to each side without forcing."
+   ],
+   "b": "Breathe slowly and deeply throughout.",
+   "m": "Moving fast or bouncing;Forcing into pain",
+   "e": "Make smaller circles.",
+   "h": "Add 5 repetitions per area."
+  }
+ },
+ "str": {
+  "es": {
+   "n": "Estiramientos suaves",
+   "s": [
+    "Hombros: cruza un brazo sobre el pecho y sostén 20–30 s por lado.",
+    "Pantorrillas: apoya las manos en la pared y estira una pierna hacia atrás.",
+    "Muslo trasero: sentado, estira una pierna y baja el pecho sin redondear la espalda.",
+    "Mantén cada posición sin rebotes: tensión suave, nunca dolor."
+   ],
+   "b": "Exhala lento al profundizar el estiramiento.",
+   "m": "Rebotar;Estirar hasta sentir dolor;Contener la respiración",
+   "e": "Sostén 15 segundos.",
+   "h": "Sostén 40 segundos."
+  },
+  "en": {
+   "n": "Gentle stretching",
+   "s": [
+    "Shoulders: cross one arm over your chest and hold 20–30 s per side.",
+    "Calves: hands on the wall, stretch one leg back.",
+    "Hamstrings: seated, extend one leg and lean forward without rounding your back.",
+    "Hold each position without bouncing: gentle tension, never pain."
+   ],
+   "b": "Exhale slowly as you deepen the stretch.",
+   "m": "Bouncing;Stretching into pain;Holding your breath",
+   "e": "Hold 15 seconds.",
+   "h": "Hold 40 seconds."
+  }
+ },
+ "bal": {
+  "es": {
+   "n": "Equilibrio con apoyo",
+   "s": [
+    "Párate junto a una pared o silla firme con una mano apoyada.",
+    "Levanta un pie 2–3 cm del piso y sostén 10–20 s.",
+    "Mira un punto fijo al frente.",
+    "Cambia de pierna."
+   ],
+   "b": "Respira normal y relajado.",
+   "m": "Mirar al piso;Soltar el apoyo antes de tiempo",
+   "e": "Apoya la punta del pie levantado en el piso.",
+   "h": "Usa solo un dedo de apoyo."
+  },
+  "en": {
+   "n": "Supported balance",
+   "s": [
+    "Stand next to a wall or sturdy chair with one hand on it.",
+    "Lift one foot 2–3 cm off the floor and hold 10–20 s.",
+    "Look at a fixed point ahead.",
+    "Switch legs."
+   ],
+   "b": "Breathe normally and stay relaxed.",
+   "m": "Looking at the floor;Letting go of the support too soon",
+   "e": "Keep the toes of the lifted foot touching the floor.",
+   "h": "Use just one finger for support."
+  }
+ },
+ "breath": {
+  "es": {
+   "n": "Respiración diafragmática",
+   "s": [
+    "Siéntate o acuéstate cómodo con una mano en el pecho y otra en el abdomen.",
+    "Inhala 4 segundos por la nariz inflando el abdomen.",
+    "Exhala 6 segundos por la boca, suave.",
+    "Repite sin forzar con los hombros relajados."
+   ],
+   "b": "La mano del pecho casi no se mueve; la del abdomen sube y baja.",
+   "m": "Subir los hombros;Forzar el aire",
+   "e": "Inhala 3 y exhala 4 segundos.",
+   "h": "Inhala 5 y exhala 7 segundos."
+  },
+  "en": {
+   "n": "Diaphragmatic breathing",
+   "s": [
+    "Sit or lie down comfortably, one hand on your chest and one on your belly.",
+    "Inhale for 4 seconds through your nose, expanding your belly.",
+    "Exhale for 6 seconds through your mouth, softly.",
+    "Repeat without forcing, shoulders relaxed."
+   ],
+   "b": "The chest hand barely moves; the belly hand rises and falls.",
+   "m": "Raising the shoulders;Forcing the air",
+   "e": "Inhale 3 and exhale 4 seconds.",
+   "h": "Inhale 5 and exhale 7 seconds."
+  }
+ },
+ "kpush": {
+  "es": {
+   "n": "Flexiones en rodillas",
+   "s": [
+    "Apoya manos y rodillas en una colchoneta, manos un poco más anchas que los hombros.",
+    "Forma una línea recta desde las rodillas hasta la cabeza, abdomen firme.",
+    "Baja el pecho hacia el piso doblando los codos a 45° del cuerpo.",
+    "Empuja el piso para volver sin bloquear los codos."
+   ],
+   "b": "Inhala al bajar, exhala al empujar.",
+   "m": "Dejar caer la cadera;Abrir los codos en cruz;Bajar solo la cabeza",
+   "e": "Haz las flexiones de pared o con las manos sobre una mesa.",
+   "h": "Pasa a flexiones completas o baja contando 4 segundos."
+  },
+  "en": {
+   "n": "Knee push-ups",
+   "s": [
+    "Place hands and knees on a mat, hands slightly wider than shoulders.",
+    "Form a straight line from knees to head, abdomen firm.",
+    "Lower your chest toward the floor, elbows at 45° from your body.",
+    "Push the floor away to return without locking the elbows."
+   ],
+   "b": "Inhale as you lower, exhale as you push.",
+   "m": "Letting the hips sag;Flaring elbows out wide;Lowering only the head",
+   "e": "Do wall push-ups or hands on a table.",
+   "h": "Move to full push-ups or lower for 4 seconds."
+  }
+ },
+ "press": {
+  "es": {
+   "n": "Press de hombros con mancuernas",
+   "s": [
+    "Sentado en una silla firme o de pie, mancuernas (o botellas con agua) a la altura de los hombros.",
+    "Mantén el abdomen firme y las costillas abajo.",
+    "Empuja hacia arriba hasta casi estirar los brazos.",
+    "Baja lento hasta los hombros contando 3 segundos."
+   ],
+   "b": "Exhala al empujar, inhala al bajar.",
+   "m": "Arquear la espalda;Subir los hombros hacia las orejas;Usar impulso con las piernas",
+   "e": "Usa menos peso o hazlo con una sola mancuerna.",
+   "h": "Sube el peso un poco cuando completes todas las series."
+  },
+  "en": {
+   "n": "Dumbbell shoulder press",
+   "s": [
+    "Seated on a sturdy chair or standing, dumbbells (or water bottles) at shoulder height.",
+    "Keep your abdomen firm and ribs down.",
+    "Press up until your arms are almost straight.",
+    "Lower slowly to shoulder height, counting 3 seconds."
+   ],
+   "b": "Exhale as you press, inhale as you lower.",
+   "m": "Arching the back;Shrugging toward the ears;Using leg momentum",
+   "e": "Use lighter weight or one dumbbell.",
+   "h": "Increase the weight slightly when you finish all sets."
+  }
+ },
+ "tri": {
+  "es": {
+   "n": "Extensión de tríceps con banda",
+   "s": [
+    "Pisa la banda con un pie o ánclala arriba y toma los extremos.",
+    "Pega los codos a las costillas.",
+    "Estira los antebrazos hacia abajo hasta casi bloquear los codos.",
+    "Vuelve lento sin despegar los codos."
+   ],
+   "b": "Exhala al estirar, inhala al volver.",
+   "m": "Mover los codos hacia adelante;Inclinar el torso;Soltar la banda de golpe",
+   "e": "Usa una banda más suave.",
+   "h": "Usa una banda más fuerte o sostén 1 segundo abajo."
+  },
+  "en": {
+   "n": "Band triceps extension",
+   "s": [
+    "Step on the band or anchor it high and hold the ends.",
+    "Keep elbows tucked against your ribs.",
+    "Straighten your forearms down until the elbows are almost locked.",
+    "Return slowly without letting the elbows move."
+   ],
+   "b": "Exhale as you extend, inhale as you return.",
+   "m": "Letting elbows drift forward;Leaning the torso;Letting the band snap back",
+   "e": "Use a lighter band.",
+   "h": "Use a stronger band or hold 1 second at the bottom."
+  }
+ },
+ "curl": {
+  "es": {
+   "n": "Curl de bíceps",
+   "s": [
+    "De pie o sentado, una mancuerna (o botella) en cada mano con las palmas al frente.",
+    "Pega los codos a las costillas.",
+    "Dobla los codos subiendo el peso hacia los hombros.",
+    "Baja lento contando 3 segundos."
+   ],
+   "b": "Exhala al subir, inhala al bajar.",
+   "m": "Balancear el cuerpo;Mover los codos hacia adelante;Bajar de golpe",
+   "e": "Usa menos peso o alterna un brazo a la vez.",
+   "h": "Sube el peso un poco cuando completes todas las series."
+  },
+  "en": {
+   "n": "Biceps curl",
+   "s": [
+    "Standing or seated, a dumbbell (or bottle) in each hand, palms forward.",
+    "Keep elbows tucked against your ribs.",
+    "Bend your elbows, lifting the weight toward your shoulders.",
+    "Lower slowly, counting 3 seconds."
+   ],
+   "b": "Exhale as you lift, inhale as you lower.",
+   "m": "Swinging the body;Letting elbows drift forward;Dropping the weight",
+   "e": "Use lighter weight or alternate one arm at a time.",
+   "h": "Increase the weight slightly when you finish all sets."
+  }
+ },
+ "drow": {
+  "es": {
+   "n": "Remo con mancuerna a una mano",
+   "s": [
+    "Apoya una mano y una rodilla en una silla o banco firme; la espalda queda recta, casi paralela al piso.",
+    "Toma la mancuerna con el brazo estirado.",
+    "Jala el codo hacia la cadera juntando el omóplato.",
+    "Baja lento contando 3 segundos. Cambia de lado."
+   ],
+   "b": "Exhala al jalar, inhala al bajar.",
+   "m": "Girar el torso;Redondear la espalda;Jalar con el hombro en lugar de la espalda",
+   "e": "Usa menos peso o la banda elástica.",
+   "h": "Pausa 2 segundos arriba."
+  },
+  "en": {
+   "n": "One-arm dumbbell row",
+   "s": [
+    "Place one hand and one knee on a sturdy chair or bench; your back is flat, almost parallel to the floor.",
+    "Hold the dumbbell with your arm straight.",
+    "Pull your elbow toward your hip, squeezing the shoulder blade.",
+    "Lower slowly, counting 3 seconds. Switch sides."
+   ],
+   "b": "Exhale as you pull, inhale as you lower.",
+   "m": "Twisting the torso;Rounding the back;Pulling with the shoulder instead of the back",
+   "e": "Use lighter weight or the resistance band.",
+   "h": "Pause 2 seconds at the top."
+  }
+ },
+ "gob": {
+  "es": {
+   "n": "Sentadilla con mancuerna",
+   "s": [
+    "Sostén una mancuerna (o botella grande) pegada al pecho con las dos manos.",
+    "Pies al ancho de los hombros, puntas un poco hacia afuera.",
+    "Baja la cadera como si te sentaras, con el pecho arriba.",
+    "Empuja con los talones para subir."
+   ],
+   "b": "Inhala al bajar, exhala al subir.",
+   "m": "Rodillas hacia adentro;Despegar los talones;Redondear la espalda",
+   "e": "Haz la sentadilla a la silla sin peso.",
+   "h": "Baja contando 4 segundos o sube el peso."
+  },
+  "en": {
+   "n": "Goblet squat",
+   "s": [
+    "Hold a dumbbell (or large bottle) against your chest with both hands.",
+    "Feet shoulder-width apart, toes slightly out.",
+    "Lower your hips as if sitting, chest up.",
+    "Push through your heels to stand."
+   ],
+   "b": "Inhale as you lower, exhale as you rise.",
+   "m": "Knees caving in;Heels lifting;Rounding the back",
+   "e": "Do the chair squat with no weight.",
+   "h": "Lower for 4 seconds or increase the weight."
+  }
+ },
+ "rdl": {
+  "es": {
+   "n": "Peso muerto rumano con mancuernas",
+   "s": [
+    "De pie, mancuernas (o botellas) frente a los muslos y rodillas ligeramente dobladas.",
+    "Lleva la cadera hacia atrás con la espalda recta, deslizando las mancuernas cerca de las piernas.",
+    "Baja hasta sentir el estiramiento atrás del muslo.",
+    "Aprieta glúteos para subir."
+   ],
+   "b": "Inhala al bajar, exhala al subir.",
+   "m": "Redondear la espalda;Doblar demasiado las rodillas;Alejar el peso del cuerpo",
+   "e": "Hazlo sin peso o con una banda.",
+   "h": "Baja contando 4 segundos o sube el peso."
+  },
+  "en": {
+   "n": "Romanian deadlift with dumbbells",
+   "s": [
+    "Standing, dumbbells (or bottles) in front of your thighs, knees slightly bent.",
+    "Send your hips back with a flat back, sliding the weights close to your legs.",
+    "Lower until you feel a stretch behind your thighs.",
+    "Squeeze your glutes to stand."
+   ],
+   "b": "Inhale as you lower, exhale as you rise.",
+   "m": "Rounding the back;Bending the knees too much;Letting the weight drift away from the body",
+   "e": "Do it without weight or with a band.",
+   "h": "Lower for 4 seconds or increase the weight."
+  }
+ },
+ "calf": {
+  "es": {
+   "n": "Elevación de talones",
+   "s": [
+    "Párate junto a una pared o silla y apoya una mano.",
+    "Sube sobre la punta de los pies lo más alto que puedas.",
+    "Sostén 1 segundo arriba.",
+    "Baja lento contando 3 segundos."
+   ],
+   "b": "Exhala al subir, inhala al bajar.",
+   "m": "Rebotar;Doblar las rodillas;Soltar el apoyo",
+   "e": "Sube solo la mitad.",
+   "h": "Hazlo con un pie a la vez."
+  },
+  "en": {
+   "n": "Calf raises",
+   "s": [
+    "Stand next to a wall or chair and rest one hand on it.",
+    "Rise onto the balls of your feet as high as you can.",
+    "Hold 1 second at the top.",
+    "Lower slowly, counting 3 seconds."
+   ],
+   "b": "Exhale as you rise, inhale as you lower.",
+   "m": "Bouncing;Bending the knees;Letting go of the support",
+   "e": "Rise only halfway.",
+   "h": "Do it one foot at a time."
+  }
+ },
+ "step": {
+  "es": {
+   "n": "Subida al escalón",
+   "s": [
+    "Párate frente a un escalón o banco bajo y estable.",
+    "Sube con un pie apoyando todo el pie.",
+    "Sube el otro pie y baja controlado con el mismo pie por el que subiste.",
+    "Alterna el pie que inicia."
+   ],
+   "b": "Exhala al subir, inhala al bajar.",
+   "m": "Empujarte con el pie de abajo;Meter la rodilla hacia adentro;Escalón inestable",
+   "e": "Usa un escalón más bajo y apóyate en una pared.",
+   "h": "Agrega mancuernas o sube más lento."
+  },
+  "en": {
+   "n": "Step-ups",
+   "s": [
+    "Stand in front of a low, stable step or bench.",
+    "Step up with one foot, placing the whole foot on the step.",
+    "Bring the other foot up, then step down in control.",
+    "Alternate the leading foot."
+   ],
+   "b": "Exhale as you step up, inhale as you step down.",
+   "m": "Pushing off the lower foot;Knee caving in;Unstable step",
+   "e": "Use a lower step and hold a wall.",
+   "h": "Add dumbbells or go slower."
+  }
+ },
+ "dead": {
+  "es": {
+   "n": "Bicho muerto",
+   "s": [
+    "Acuéstate boca arriba con los brazos al techo y las rodillas dobladas a 90° sobre la cadera.",
+    "Pega la zona lumbar al piso con el abdomen firme.",
+    "Baja lento un brazo y la pierna contraria sin despegar la espalda.",
+    "Vuelve y cambia de lado."
+   ],
+   "b": "Exhala al bajar, inhala al volver.",
+   "m": "Arquear la espalda;Moverse muy rápido",
+   "e": "Mueve solo las piernas o solo los brazos.",
+   "h": "Sostén 2 segundos abajo."
+  },
+  "en": {
+   "n": "Dead bug",
+   "s": [
+    "Lie on your back with arms toward the ceiling and knees bent at 90° over your hips.",
+    "Press your lower back into the floor with your abdomen firm.",
+    "Slowly lower one arm and the opposite leg without lifting your back.",
+    "Return and switch sides."
+   ],
+   "b": "Exhale as you lower, inhale as you return.",
+   "m": "Arching the back;Moving too fast",
+   "e": "Move only legs or only arms.",
+   "h": "Hold 2 seconds at the bottom."
+  }
+ },
+ "bird": {
+  "es": {
+   "n": "Pájaro-perro",
+   "s": [
+    "Apoya manos y rodillas en una colchoneta, espalda recta.",
+    "Estira un brazo hacia adelante y la pierna contraria hacia atrás.",
+    "Mantén la cadera nivelada, sin girar.",
+    "Sostén 2 segundos y cambia de lado."
+   ],
+   "b": "Respira normal, sin contener el aire.",
+   "m": "Girar la cadera;Arquear la espalda;Levantar demasiado",
+   "e": "Levanta solo un brazo o solo una pierna.",
+   "h": "Sostén 5 segundos."
+  },
+  "en": {
+   "n": "Bird dog",
+   "s": [
+    "Place hands and knees on a mat, back flat.",
+    "Reach one arm forward and the opposite leg back.",
+    "Keep your hips level, no twisting.",
+    "Hold 2 seconds and switch sides."
+   ],
+   "b": "Breathe normally without holding your breath.",
+   "m": "Twisting the hips;Arching the back;Lifting too high",
+   "e": "Lift only one arm or only one leg.",
+   "h": "Hold 5 seconds."
+  }
+ }
+}
