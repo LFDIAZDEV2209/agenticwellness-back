@@ -53,17 +53,11 @@ jobs:
           if echo "$CHANGED" | grep -q "tests/CoppAddresd.UnitTests"; then
             SERVICES="$SERVICES auth api"
           fi
-          if echo "$CHANGED" | grep -q "tests/CoppAddresd.Telemedicine.UnitTests"; then
-            SERVICES="$SERVICES telemedicine"
-          fi
           if echo "$CHANGED" | grep -q "tests/CoppAddresd.Community.UnitTests"; then
             SERVICES="$SERVICES community"
           fi
           if echo "$CHANGED" | grep -q -E "src/CoppAddresd\.(Api|WhatsApp)|tests/CoppAddresd\.WhatsApp\.Tests"; then
             SERVICES="$SERVICES api"
-          fi
-          if echo "$CHANGED" | grep -q "src/Services/CoppAddresd.Telemedicine"; then
-            SERVICES="$SERVICES telemedicine"
           fi
           if echo "$CHANGED" | grep -q "src/Services/CoppAddresd.Community"; then
             SERVICES="$SERVICES community"
@@ -78,7 +72,7 @@ jobs:
             SHARED="workflow_dispatch"
           fi
           if [ -n "$SHARED" ]; then
-            SERVICES="auth api telemedicine community"
+            SERVICES="auth api community"
           fi
 
           if [ -z "$SERVICES" ]; then
@@ -98,10 +92,7 @@ jobs:
               TESTS="$TESTS tests/CoppAddresd.UnitTests"
             fi
             if [ -n "$SHARED" ]; then
-              TESTS="tests/CoppAddresd.UnitTests tests/CoppAddresd.Telemedicine.UnitTests tests/CoppAddresd.Community.UnitTests"
-            fi
-            if echo "$SERVICES" | grep -q -E "(^| )telemedicine( |$)"; then
-              TESTS="$TESTS tests/CoppAddresd.Telemedicine.UnitTests"
+              TESTS="tests/CoppAddresd.UnitTests tests/CoppAddresd.Community.UnitTests"
             fi
             if echo "$SERVICES" | grep -q -E "(^| )community( |$)"; then
               TESTS="$TESTS tests/CoppAddresd.Community.UnitTests"
@@ -217,15 +208,6 @@ jobs:
               # de la task def previa (incidente I0002: community nació sin él).
               echo "task_role=arn:aws:iam::933629770820:role/cooppadresd-ecsTaskRole" >> "$GITHUB_OUTPUT"
               ;;
-            telemedicine)
-              echo "dockerfile=src/Services/CoppAddresd.Telemedicine/Dockerfile" >> "$GITHUB_OUTPUT"
-              echo "ecr=cooppadresd-telemedicine" >> "$GITHUB_OUTPUT"
-              # AuthService__BaseUrl: validación de sesiones ERP (ErpSessionValidation); sin ella todo token ERP responde 500.
-              echo "extra_env=[{\"name\":\"Jwt__Issuer\",\"value\":\"CoppAddresd.Auth\"},{\"name\":\"AuthService__BaseUrl\",\"value\":\"http://cooppadresd-alb-269201785.us-east-2.elb.amazonaws.com\"}]" >> "$GITHUB_OUTPUT"
-              echo "extra_secrets=[]" >> "$GITHUB_OUTPUT"
-              # Sin AWS SDK en el contenedor: el jq preserva el taskRoleArn de la task def previa.
-              echo "task_role=" >> "$GITHUB_OUTPUT"
-              ;;
             community)
               echo "dockerfile=src/Services/CoppAddresd.Community/Dockerfile" >> "$GITHUB_OUTPUT"
               echo "ecr=cooppadresd-community" >> "$GITHUB_OUTPUT"
@@ -298,7 +280,7 @@ jobs:
           # la task def original; community nació sin role y el clone-forward lo
           # arrastraba → Storage S3 sin credenciales → HC0044 en prod (incidente I0002
           # 2026-10-13). El jq deja el taskRoleArn en null solo cuando el servicio no
-          # declara task_role (auth/telemedicine no usan el SDK de AWS).
+          # declara task_role (auth no usa el SDK de AWS).
           # Sin comments dentro del programa jq (portabilidad de versiones).
           NEW_TASK_DEF_JSON=$(echo "$TASK_DEF_JSON" | jq --arg img "$NEW_IMAGE" \
             --arg role "${{ steps.svc.outputs.task_role }}" \
@@ -350,8 +332,8 @@ jobs:
           echo "rev=$(echo "$REGISTERED" | jq -r '.taskDefinition.revision')" >> "$GITHUB_OUTPUT"
 
       # Las columnas nuevas deben existir antes de que la imagen reciba tráfico.
-      - name: Aplicar migraciones antes de activar API/Telemedicine
-        if: matrix.service == 'api' || matrix.service == 'telemedicine'
+      - name: Aplicar migraciones antes de activar API
+        if: matrix.service == 'api'
         timeout-minutes: 21
         env:
           MIGRATION_SERVICE: cooppadresd-${{ matrix.service }}
@@ -451,11 +433,6 @@ jobs:
               ;;
             api)
               WARM_PATH="/api/v1/foodai/health"
-              METHOD="GET"
-              BODY=""
-              ;;
-            telemedicine)
-              WARM_PATH="/api/v1/telemedicine/webhooks/health"
               METHOD="GET"
               BODY=""
               ;;
