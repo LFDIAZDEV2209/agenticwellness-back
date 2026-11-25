@@ -109,6 +109,7 @@ var paidActivationDemo = PaidActivationDemoSettings.Read(
 builder.Services.AddSingleton(paidActivationDemo);
 builder.Services.AddSingleton<PaidActivationLinks>();
 builder.Services.AddScoped<PaidActivationService>();
+builder.Services.AddScoped<PaidMembershipDemoService>();
 builder.Services.AddScoped<PaidActivationSignupService>();
 if (paidActivationDemo.WebOrigin is not null)
     builder.Services.AddHostedService<PaidActivationEmailWorker>();

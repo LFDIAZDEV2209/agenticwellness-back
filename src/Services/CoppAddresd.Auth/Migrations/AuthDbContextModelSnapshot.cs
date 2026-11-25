@@ -428,6 +428,9 @@ namespace CoppAddresd.Auth.Migrations
                     b.Property<int>("AmountCents")
                         .HasColumnType("integer");
 
+                    b.Property<byte[]>("CheckoutKeyHash")
+                        .HasColumnType("bytea");
+
                     b.Property<DateTime>("ConfirmedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -456,6 +459,26 @@ namespace CoppAddresd.Auth.Migrations
                     b.Property<Guid?>("LinkedUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("MembershipExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("MembershipPaid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("MembershipRevision")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("MembershipState")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasDefaultValue("active");
+
                     b.Property<DateTime?>("NextEmailAttemptAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -481,6 +504,36 @@ namespace CoppAddresd.Auth.Migrations
                         .HasFilter("\"NextEmailAttemptAt\" IS NOT NULL");
 
                     b.ToTable("PaidActivations", "auth");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PaidMembershipDemoEvent", b =>
+                {
+                    b.Property<Guid>("PaymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AmountCents")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PaymentId", "EventId");
+
+                    b.HasIndex("PaymentId", "Revision")
+                        .IsUnique();
+
+                    b.ToTable("PaidMembershipDemoEvents", "auth");
                 });
 
             modelBuilder.Entity("CoppAddresd.Auth.Entities.Permission", b =>
@@ -976,6 +1029,15 @@ namespace CoppAddresd.Auth.Migrations
                         .WithMany()
                         .HasForeignKey("LinkedUserId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PaidMembershipDemoEvent", b =>
+                {
+                    b.HasOne("CoppAddresd.Auth.Entities.PaidActivation", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Auth.Entities.RefreshToken", b =>

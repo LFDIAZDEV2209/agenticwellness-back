@@ -18,7 +18,8 @@ public sealed class PaidActivationDemoController(
     PaidActivationDemoSettings settings,
     PaidActivationService activations,
     PaidActivationLinks links,
-    PaidActivationSignupService signup) : ControllerBase
+    PaidActivationSignupService signup,
+    PaidMembershipDemoService memberships) : ControllerBase
 {
     private const string SetupCookie = "copp_paid_setup_demo";
 
@@ -29,7 +30,7 @@ public sealed class PaidActivationDemoController(
             return NotFound();
 
         var email = request.Email.Trim();
-        if (request.PaymentId == Guid.Empty
+        if (request.PaymentId == Guid.Empty || request.CheckoutKey == Guid.Empty || request.Trial && request.CheckoutKey is null
             || !MailAddress.TryCreate(email, out var parsed)
             || parsed.Address != email
             || request.Plan is not ("monthly" or "annual")
@@ -39,7 +40,7 @@ public sealed class PaidActivationDemoController(
         }
 
         return Accepted(await activations.ConfirmAsync(
-            request.PaymentId, email, request.Plan, request.Language, ct));
+            request.PaymentId, email, request.Plan, request.Language, request.Trial, request.CheckoutKey, ct));
     }
 
     [HttpGet("receipt/{paymentId:guid}")]
@@ -49,6 +50,24 @@ public sealed class PaidActivationDemoController(
             return NotFound();
         var receipt = await activations.ReceiptAsync(paymentId, ct);
         return receipt is null ? NotFound() : Ok(receipt);
+    }
+
+    [HttpPost("membership-events")]
+    public async Task<IActionResult> MembershipEvents(MembershipEvent request, CancellationToken ct)
+    {
+        if (settings.WebOrigin is null)
+            return NotFound();
+        if (!IsWebRequest())
+            return Forbid();
+        if (request.PaymentId == Guid.Empty || request.EventId == Guid.Empty || request.CheckoutKey == Guid.Empty
+            || request.ExpectedRevision < 0 || request.Kind is not ("activate" or "renew" or "expire" or "cancel"))
+            return BadRequest(new { code = "invalid_demo_membership_event" });
+
+        var result = await memberships.ApplyAsync(request.PaymentId, request.EventId, request.CheckoutKey,
+            request.ExpectedRevision, request.Kind, ct);
+        if (result.Conflict)
+            return Conflict(new { code = "demo_membership_conflict" });
+        return result.Receipt is null ? NotFound() : Ok(result.Receipt);
     }
 
     [HttpPost("resend")]
@@ -149,7 +168,12 @@ public sealed class PaidActivationDemoController(
         Guid PaymentId,
         [Required, MaxLength(254)] string Email,
         [Required, MaxLength(7)] string Plan,
-        [Required, MaxLength(2)] string Language);
+        [Required, MaxLength(2)] string Language,
+        bool Trial = false,
+        Guid? CheckoutKey = null);
+
+    public sealed record MembershipEvent(Guid PaymentId, Guid EventId, Guid CheckoutKey,
+        int ExpectedRevision, [Required, MaxLength(8)] string Kind);
 
     public sealed record ActivationReceipt(Guid PaymentId);
 

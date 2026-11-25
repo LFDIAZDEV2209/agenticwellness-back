@@ -76,7 +76,8 @@ public sealed record PaidSetupProof(Guid PaymentId, Guid SessionId, int Revision
         && activation.SetupSessionExpiresAt > DateTime.UtcNow;
 }
 
-public sealed record PaidActivationReceipt(Guid PaymentId, string Plan, int AmountCents, string Currency);
+public sealed record PaidActivationReceipt(Guid PaymentId, string Plan, int AmountCents, string Currency,
+    string MembershipStatus, DateTime ExpiresAt, int MembershipRevision, bool MembershipPaid);
 
 public enum PaidActivationState
 {
@@ -95,33 +96,40 @@ public sealed class PaidActivationService(
     PaidActivationLinks links)
 {
     public async Task<PaidActivationReceipt> ConfirmAsync(
-        Guid paymentId, string email, string plan, string language, CancellationToken ct)
+        Guid paymentId, string email, string plan, string language, bool trial, Guid? checkoutKey, CancellationToken ct)
     {
         var now = DateTime.UtcNow;
         var amountCents = plan == "annual" ? 11976 : 1996;
+        var hash = checkoutKey is { } key ? PaidMembershipDemoService.HashCheckoutKey(key) : null;
+        var state = trial ? "trial" : "active";
+        var expiresAt = trial ? now.AddDays(PaidMembershipDemoService.TrialDays)
+            : PaidMembershipDemoService.AddPeriod(now, plan);
+        DateTime? emailAttempt = trial ? null : now;
         // El registro original conserva el pagador y encarga el correo en la misma escritura.
         await db.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO auth."PaidActivations"
                 ("PaymentId", "Email", "Plan", "AmountCents", "Language", "ConfirmedAt", "LastEmailRequestedAt",
-                 "NextEmailAttemptAt", "EmailRevision", "EmailAttempts")
-            VALUES ({paymentId}, {email}, {plan}, {amountCents}, {language}, {now}, {now}, {now}, 1, 0)
+                 "NextEmailAttemptAt", "EmailRevision", "EmailAttempts", "MembershipState",
+                 "MembershipExpiresAt", "MembershipPaid", "MembershipRevision", "CheckoutKeyHash")
+            VALUES ({paymentId}, {email}, {plan}, {amountCents}, {language}, {now}, {now}, {emailAttempt}, 1, 0,
+                    {state}, {expiresAt}, {!trial}, 0, {hash})
             ON CONFLICT ("PaymentId") DO NOTHING
             """, ct);
         return (await ReceiptAsync(paymentId, ct))!;
     }
 
-    public Task<PaidActivationReceipt?> ReceiptAsync(Guid paymentId, CancellationToken ct) =>
-        db.PaidActivations.AsNoTracking()
-            .Where(activation => activation.PaymentId == paymentId)
-            .Select(activation => new PaidActivationReceipt(
-                activation.PaymentId, activation.Plan, activation.AmountCents, "USD"))
-            .SingleOrDefaultAsync(ct);
+    public async Task<PaidActivationReceipt?> ReceiptAsync(Guid paymentId, CancellationToken ct)
+    {
+        var row = await db.PaidActivations.AsNoTracking().SingleOrDefaultAsync(x => x.PaymentId == paymentId, ct);
+        return row is null ? null : PaidMembershipDemoService.Receipt(row, DateTime.UtcNow);
+    }
 
     public async Task<PaidSetupProof?> PrepareAsync(Guid paymentId, string token, CancellationToken ct)
     {
         var activation = await db.PaidActivations.AsNoTracking()
             .SingleOrDefaultAsync(row => row.PaymentId == paymentId, ct);
-        return activation is null || activation.RedeemedAt is not null || !links.IsValid(activation, token)
+        return activation is null || !PaidMembershipDemoService.IsActive(activation, DateTime.UtcNow)
+            || activation.RedeemedAt is not null || !links.IsValid(activation, token)
             ? null
             : new(paymentId, Guid.NewGuid(), activation.EmailRevision, DateTimeOffset.UtcNow.AddMinutes(30));
     }
@@ -132,7 +140,8 @@ public sealed class PaidActivationService(
         var eligibleSince = now.AddSeconds(-5);
         await db.PaidActivations
             .Where(activation =>
-                activation.PaymentId == paymentId
+                activation.PaymentId == paymentId && activation.MembershipPaid && activation.MembershipState == "active"
+                && (activation.MembershipExpiresAt ?? activation.ConfirmedAt.AddMonths(activation.Plan == "annual" ? 12 : 1)) > now
                 && (activation.RedeemedAt == null
                     || activation.LinkedUserId == null && activation.SetupSessionExpiresAt <= now)
                 && activation.LastEmailRequestedAt <= eligibleSince)
@@ -155,7 +164,7 @@ public sealed class PaidActivationService(
         var activation = await db.PaidActivations
             .FromSqlInterpolated($"""SELECT * FROM auth."PaidActivations" WHERE "PaymentId" = {paymentId} FOR UPDATE""")
             .SingleOrDefaultAsync(ct);
-        if (activation is null)
+        if (activation is null || !PaidMembershipDemoService.IsActive(activation, DateTime.UtcNow))
             return new(PaidActivationState.Invalid);
         var ownsSession = proof?.OwnsRedeemedSession(activation) == true;
         if (ownsSession && activation.LinkedUserId is not null)

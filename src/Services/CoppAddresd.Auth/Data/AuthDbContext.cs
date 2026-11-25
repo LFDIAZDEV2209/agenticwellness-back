@@ -29,6 +29,8 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
     public DbSet<AccountDeletionSession> AccountDeletionSessions => Set<AccountDeletionSession>();
     public DbSet<PaidActivation> PaidActivations => Set<PaidActivation>();
 
+    public DbSet<PaidMembershipDemoEvent> PaidMembershipDemoEvents => Set<PaidMembershipDemoEvent>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -37,6 +39,9 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
         {
             b.ToTable("PaidActivations", "auth");
             b.HasKey(x => x.PaymentId);
+            b.Property(x => x.MembershipState).HasMaxLength(8).HasDefaultValue("active");
+            b.Property(x => x.MembershipPaid).HasDefaultValue(true);
+            b.Property(x => x.MembershipRevision).HasDefaultValue(0);
             b.Property(x => x.PaymentId).ValueGeneratedNever();
             b.Property(x => x.Email).HasMaxLength(254).IsRequired();
             b.Property(x => x.Plan).HasMaxLength(7).IsRequired();
@@ -44,6 +49,16 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
             b.HasIndex(x => x.NextEmailAttemptAt).HasFilter("\"NextEmailAttemptAt\" IS NOT NULL");
             b.HasOne<ApplicationUser>().WithMany()
                 .HasForeignKey(x => x.LinkedUserId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<PaidMembershipDemoEvent>(b =>
+        {
+            b.ToTable("PaidMembershipDemoEvents", "auth");
+            b.HasKey(x => new { x.PaymentId, x.EventId });
+            b.HasIndex(x => new { x.PaymentId, x.Revision }).IsUnique();
+            b.Property(x => x.Kind).HasMaxLength(8).IsRequired();
+            b.HasOne<PaidActivation>().WithMany().HasForeignKey(x => x.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<WelcomeEmailDelivery>(b =>
