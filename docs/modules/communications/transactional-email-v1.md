@@ -25,6 +25,7 @@ del contrato y escapa su valor en HTML.
 
 El consumidor proporciona todas las URLs de acción. Deben ser HTTPS y
 corresponder al entorno oficial. Si falta una URL, la composición falla.
+De forma exclusiva, `PAID-ACTIVATION-DEMO` exige una URL HTTP o HTTPS de loopback.
 Para correos de cuenta, el destinatario es el correo de acceso. Si se omite
 `correo_pago`, se usa el destinatario. El nombre, fecha, duración y resumen
 tienen textos alternativos si faltan. `vigencia_enlace` toma los 60 minutos
@@ -106,8 +107,9 @@ que vincula el pago. El usuario entra a la app con la sesión Auth habitual.
 El script `scripts/qa/seed-paid-customer-journey.sql` publica los dos
 documentos sintéticos por idioma sobre la infraestructura legal existente.
 Los contenidos y campos de contacto aprobados para producción se acuerdan
-con KAN-119 y el equipo de producto. El piloto local usa una plantilla ES/EN
-marcada como simulada y el transporte SMTP existente. La bienvenida de altas
+con KAN-119 y el equipo de producto. El piloto local usa `PAID-ACTIVATION-DEMO`,
+la misma maqueta visual del catálogo con contenido ES/EN marcado como simulado,
+y el transporte SMTP existente. La bienvenida de altas
 ERP conserva su disparador y contenido por permisos.
 
 ## Previsualización y pruebas
@@ -118,8 +120,8 @@ COP_PLAYWRIGHT_PROJECT=/ruta/a/antares-paciente node tools/WelcomeEmailPreview/t
 dotnet test tests/CoppAddresd.UnitTests --filter FullyQualifiedName~TransactionalEmailTests
 ```
 
-La herramienta genera 14 archivos HTML y sus mensajes MIME con datos
+La herramienta genera 16 archivos HTML y sus mensajes MIME con datos
 ficticios. La prueba de render comprueba los enlaces, el texto alternativo y
-tres tamaños de pantalla. La prueba SMTP entrega siete mensajes a un buzón
+tres tamaños de pantalla. La prueba SMTP entrega ocho mensajes a un buzón
 local de captura. La revisión de Gmail, Outlook y un dispositivo móvil
 requiere buzones QA autorizados y envío por el transporte configurado.

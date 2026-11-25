@@ -1,16 +1,17 @@
-using System.Text.Encodings.Web;
+using CoppAddresd.Auth.Configuration;
 using CoppAddresd.Auth.Data;
 using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CoppAddresd.Auth.Services;
 
 internal sealed class PaidActivationEmailWorker(
     IServiceScopeFactory scopes,
+    IOptions<EmailSettings> emailSettings,
     ILogger<PaidActivationEmailWorker> logger) : BackgroundService
 {
-    internal const string TemplateCode = "PAID-ACTIVATION-DEMO";
     private const int MaxAttempts = 3;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,7 +68,13 @@ internal sealed class PaidActivationEmailWorker(
         {
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
             deadline.CancelAfter(TimeSpan.FromSeconds(15));
-            await sender.SendAsync(Message(job, links.Issue(job)), deadline.Token);
+            var message = TransactionalEmailTemplate.Build(new(
+                TransactionalEmailTemplate.PaidActivationDemoCode,
+                job.Email,
+                job.Language,
+                new Dictionary<string, string?> { ["enlace_activacion"] = links.Issue(job) }
+            ), emailSettings.Value);
+            await sender.SendAsync(message, deadline.Token);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -96,13 +103,4 @@ internal sealed class PaidActivationEmailWorker(
             activation.NextEmailAttemptAt <= now
             && activation.EmailAttempts < MaxAttempts
             && (activation.EmailLeaseUntil == null || activation.EmailLeaseUntil <= now));
-
-    private static EmailMessage Message(PaidActivation activation, string url)
-    {
-        var (subject, intro, label) = activation.Language == "en"
-            ? ("Welcome to Copp Adresd", "Your simulated payment was confirmed. Open this link to continue activation.", "Activate your membership")
-            : ("Bienvenido a Copp Adresd", "Tu pago simulado se confirmó. Abre este enlace para continuar la activación.", "Activa tu membresía");
-        var html = $"<p>{intro}</p><p><a href=\"{HtmlEncoder.Default.Encode(url)}\">{label}</a></p>";
-        return new(activation.Email, subject, html, $"{intro}\n\n{url}") { TemplateCode = TemplateCode };
-    }
 }

@@ -19,6 +19,9 @@ const templates = {
   'NUT-01': ['Ver mi plan completo', 'View my full plan', '/nutrition'],
   'NUT-02': ['Revisar cambios', 'Review changes', '/nutrition'],
   'INV-01': ['Actualizar inventario', 'Update inventory', '/inventory'],
+  'PAID-ACTIVATION-DEMO': ['Activa tu membresía', 'Activate your membership', {
+    es: '/activar-membresia', en: '/activate-membership',
+  }],
 };
 
 try {
@@ -26,7 +29,7 @@ try {
     '-p:AllowMissingPrunePackageData=true', '--', output, '--transactional'], { cwd: root, stdio: 'inherit' });
   const browser = await chromium.launch();
   try {
-    for (const [code, [spanish, english, path]] of Object.entries(templates)) {
+    for (const [code, [spanish, english, destination]] of Object.entries(templates)) {
       for (const lang of ['es', 'en']) {
         const file = join(output, `${code}-${lang}.html`);
         await readFile(file);
@@ -38,8 +41,9 @@ try {
           const button = page.getByRole('link', { name: lang === 'es' ? spanish : english, exact: true });
           assert.equal(await button.count(), 1, `${code} ${lang}: primary link`);
           const target = new URL(await button.getAttribute('href'));
-          assert.equal(target.origin, 'https://preview.example.invalid');
-          assert.equal(target.pathname, path);
+          const demo = code === 'PAID-ACTIVATION-DEMO';
+          assert.equal(target.origin, demo ? 'http://127.0.0.1:5196' : 'https://preview.example.invalid');
+          assert.equal(target.pathname, demo ? destination[lang] : destination);
           assert.equal(await page.locator('script,iframe').count(), 0);
           for (const width of [320, 480, 768]) {
             await page.setViewportSize({ width, height: 850 });
@@ -57,7 +61,7 @@ try {
   } finally {
     await browser.close();
   }
-  console.log('14 correos verificados en HTML, MIME y tres anchos.');
+  console.log(`${Object.keys(templates).length * 2} correos verificados en HTML, MIME y tres anchos.`);
 } finally {
   await rm(output, { recursive: true, force: true });
 }

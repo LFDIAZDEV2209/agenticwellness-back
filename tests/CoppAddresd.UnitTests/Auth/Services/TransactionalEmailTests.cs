@@ -21,7 +21,7 @@ namespace CoppAddresd.UnitTests.Auth.Services;
 public sealed class TransactionalEmailTests
 {
     private const string Recipient = "ana@example.invalid";
-    private static readonly string[] Codes = ["BIEN-01", "ACT-01", "ACT-02", "PWD-01", "NUT-01", "NUT-02", "INV-01"];
+    private static readonly string[] Codes = ["BIEN-01", "ACT-01", "ACT-02", "PWD-01", "NUT-01", "NUT-02", "INV-01", "PAID-ACTIVATION-DEMO"];
 
     [Theory]
     [InlineData("BIEN-01", "Bienvenido a Copp Adresd, Ana. Tu acceso ya está listo", "Welcome to Copp Adresd, Ana. Your account is ready")]
@@ -71,12 +71,41 @@ public sealed class TransactionalEmailTests
     [InlineData(null)]
     [InlineData("javascript:alert(1)")]
     [InlineData("http://example.invalid/reset")]
+    [InlineData("http://127.0.0.1/reset")]
     [InlineData("https://user@example.invalid/reset")]
     public void RequiredLink_RejectsMissingOrUnsafeDestinations(string? target)
     {
         var values = Values();
         values["enlace_restablecer"] = target;
         Assert.Throws<ArgumentException>(() => TransactionalEmailTemplate.Build(new("PWD-01", Recipient, "es", values), new()));
+    }
+
+    [Theory]
+    [InlineData("es-CO", "es", "Bienvenido a Copp Adresd", "Activa tu membresía")]
+    [InlineData("en-US", "en", "Welcome to Copp Adresd", "Activate your membership")]
+    public void PaidActivationDemo_StylesTheSameLinkInBothAlternatives(string locale, string lang, string subject, string cta)
+    {
+        const string link = "http://127.0.0.1:5196/activate#paymentId=fixture&token=test";
+        var mail = TransactionalEmailTemplate.Build(new("PAID-ACTIVATION-DEMO", Recipient, locale,
+            new Dictionary<string, string?> { ["enlace_activacion"] = link }), new());
+
+        Assert.Equal("PAID-ACTIVATION-DEMO", mail.TemplateCode);
+        Assert.Equal(subject, mail.Subject);
+        Assert.Contains($"lang=\"{lang}\"", mail.HtmlBody);
+        Assert.Contains($"href=\"{WebUtility.HtmlEncode(link)}\"", mail.HtmlBody);
+        Assert.Contains(cta, WebUtility.HtmlDecode(mail.HtmlBody));
+        Assert.Contains(cta, mail.PlainTextBody);
+        Assert.Contains(link, mail.PlainTextBody);
+    }
+
+    [Theory]
+    [InlineData("https://example.invalid/activate")]
+    [InlineData("http://127.0.0.1@example.invalid/activate")]
+    [InlineData("http://user@127.0.0.1/activate")]
+    public void PaidActivationDemo_RejectsLinksOtherThanLoopbackWithoutCredentials(string link)
+    {
+        Assert.Throws<ArgumentException>(() => TransactionalEmailTemplate.Build(
+            new("PAID-ACTIVATION-DEMO", Recipient, "es", new Dictionary<string, string?> { ["enlace_activacion"] = link }), new()));
     }
 
     [Fact]
@@ -135,7 +164,7 @@ public sealed class TransactionalEmailTests
     }
 
     [Fact]
-    public async Task SmtpDeliversAllSevenMultipartMessagesToLoopbackInbox()
+    public async Task SmtpDeliversAllMultipartMessagesToLoopbackInbox()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         using var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -193,6 +222,7 @@ public sealed class TransactionalEmailTests
         ["nombre"] = "Ana", ["correo_pago"] = Recipient,
         ["enlace_descarga"] = "https://example.invalid/download", ["enlace_plataforma"] = "https://example.invalid/app",
         ["enlace_restablecer"] = "https://example.invalid/reset?lang=es&token=opaque",
+        ["enlace_activacion"] = "http://127.0.0.1:5196/activar-membresia#paymentId=fixture&token=test",
         ["enlace_nutricion"] = "https://example.invalid/nutrition", ["enlace_inventario"] = "https://example.invalid/inventory",
         ["fecha"] = "20 nov 2026", ["duracion"] = "4 semanas", ["resumen_dia"] = "Avena y fruta",
         ["medicamento"] = "A", ["cantidad"] = "12", ["dias_restantes"] = "6",

@@ -19,6 +19,7 @@ public sealed record TransactionalEmailContent(
 /// <summary>Renderiza el catálogo transaccional v1 en HTML y texto plano a partir del mismo contenido.</summary>
 public static partial class TransactionalEmailTemplate
 {
+    internal const string PaidActivationDemoCode = "PAID-ACTIVATION-DEMO";
     private static readonly Lazy<Dictionary<string, Template>> Templates = new(LoadTemplates);
 
     public static EmailMessage Build(TransactionalEmailContent content, EmailSettings settings)
@@ -63,8 +64,11 @@ public static partial class TransactionalEmailTemplate
             version["dias_restantes"] = StockCount(values, "dias_restantes", english);
         }
 
-        var link = HttpsUrl(values.GetValueOrDefault(template.Link))
-            ?? throw new ArgumentException($"Falta una URL HTTPS válida para {template.Link}.", nameof(content));
+        var isDemo = content.Code == PaidActivationDemoCode;
+        var link = ActionUrl(values.GetValueOrDefault(template.Link), loopbackOnly: isDemo)
+            ?? throw new ArgumentException(isDemo
+                ? $"Falta una URL local de prueba válida para {template.Link}."
+                : $"Falta una URL HTTPS válida para {template.Link}.", nameof(content));
         var logo = HttpsUrl(brand.LogoUrl ?? settings.WelcomeLogoUrl);
         var accent = HexColor().IsMatch(brand.AccentColor ?? "") ? brand.AccentColor! : "#075B50";
 
@@ -99,12 +103,15 @@ public static partial class TransactionalEmailTemplate
         };
     }
 
-    internal static string? HttpsUrl(string? value) =>
+    internal static string? HttpsUrl(string? value) => ActionUrl(value, loopbackOnly: false);
+
+    private static string? ActionUrl(string? value, bool loopbackOnly) =>
         value is { Length: > 0 and <= 8192 }
         && !value.Any(char.IsWhiteSpace)
         && !value.Any(char.IsControl)
         && Uri.TryCreate(value, UriKind.Absolute, out var uri)
-        && uri.Scheme == Uri.UriSchemeHttps && uri.Host.Length > 0 && uri.UserInfo.Length == 0
+        && uri.Host.Length > 0 && uri.UserInfo.Length == 0
+        && (loopbackOnly ? uri.IsLoopback && (uri.Scheme is "http" or "https") : uri.Scheme == Uri.UriSchemeHttps)
             ? uri.AbsoluteUri
             : null;
 

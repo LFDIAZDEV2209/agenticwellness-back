@@ -63,7 +63,7 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
         }
         catch (Exception ex) when (message.TemplateCode is not null)
         {
-            if (message.TemplateCode is "PWD-01" or PaidActivationEmailWorker.TemplateCode)
+            if (message.TemplateCode is "PWD-01" or TransactionalEmailTemplate.PaidActivationDemoCode)
             {
                 logger.LogWarning("Correo {TemplateCode}: fallo SMTP ({ErrorType})", message.TemplateCode, ex.GetType().Name);
                 throw;
@@ -72,7 +72,7 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
                 message.TemplateCode, message.To, ex.GetType().Name);
             throw;
         }
-        if (message.TemplateCode is "PWD-01" or PaidActivationEmailWorker.TemplateCode)
+        if (message.TemplateCode is "PWD-01" or TransactionalEmailTemplate.PaidActivationDemoCode)
             logger.LogInformation("Correo {TemplateCode}: aceptado por SMTP", message.TemplateCode);
         else if (message.TemplateCode is { } code)
             logger.LogInformation("Correo {TemplateCode} a {To}: aceptado por SMTP", code, message.To);
