@@ -1,0 +1,21 @@
+name: Wellness 365 parity
+
+on:
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wellness365-parity:
+    name: Wellness 365 golden parity
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+      - name: Comparar el motor C# con la referencia v5.2
+        run: dotnet test tests/CoppAddresd.UnitTests -c Release --nologo --filter 'FullyQualifiedName~CoppAddresd.UnitTests.Wellness365'
