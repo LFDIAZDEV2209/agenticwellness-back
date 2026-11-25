@@ -135,7 +135,7 @@ public sealed class PreviewNotificationTemplateQueryHandler(
         IReadOnlyDictionary<string, string>? localized = null
     ) =>
         new(
-            patient is null ? (language == NotificationLanguage.en ? "Patient" : "Paciente") : $"{patient.FirstName} {patient.LastName}".Trim(),
+            patient is null ? (language == NotificationLanguage.en ? "Person" : "Persona") : $"{patient.FirstName} {patient.LastName}".Trim(),
             patient?.DocumentNumber,
             HealthTestTemplateLocalization.DisplayLabel(alert.Rule?.Name, language, localized),
             HealthTestTemplateLocalization.DisplayLabel(alert.Result?.Label ?? alert.Rule?.Name, language, localized),

@@ -58,7 +58,7 @@ public sealed class SosPushDispatcher(
 
         var title = "🚨 Alerta SOS activa";
         var bodyText =
-            "Un paciente activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma.";
+            "Una persona activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma.";
 
         foreach (var staffUserId in staffUserIds)
         {

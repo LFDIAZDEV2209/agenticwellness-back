@@ -21,13 +21,13 @@ public sealed class NutritionCases(INutritionPrescriptionRepository repository, 
     private async Task<NutritionCaseContext> AccessAsync(Guid patientId, NutritionActor actor, CancellationToken ct)
     {
         if (actor.UserId == Guid.Empty || !actor.CanView && !actor.CanManage && !actor.CanApprove) throw new ForbiddenException("Se requiere permiso de Nutrición.");
-        if (!await store.CanAccessAsync(patientId, actor, ct)) throw new NotFoundException("Paciente no encontrado.");
-        return await store.GetContextAsync(patientId, ct) ?? throw new NotFoundException("Paciente no encontrado.");
+        if (!await store.CanAccessAsync(patientId, actor, ct)) throw new NotFoundException("Persona no encontrada.");
+        return await store.GetContextAsync(patientId, ct) ?? throw new NotFoundException("Persona no encontrada.");
     }
     private async Task<NutritionPrescription> PlanAsync(Guid patientId, Guid? id, CancellationToken ct)
     {
         var plan = id is { } key ? await repository.GetByIdAsync(key, ct) : null;
-        return plan?.PatientId == patientId ? plan : throw new NotFoundException("Prescripción no encontrada.");
+        return plan?.PatientId == patientId ? plan : throw new NotFoundException("Recomendación no encontrada.");
     }
     public async Task<NutritionView> GetAsync(GetNutritionCaseQuery query, CancellationToken ct)
     {
@@ -96,7 +96,7 @@ public sealed class NutritionCases(INutritionPrescriptionRepository repository, 
             if (command.Operation == NutritionOperation.Regenerate)
             {
                 var prior = await PlanAsync(command.PatientId, command.Id, ct);
-                if (command.Revision != prior.Revision) Conflict("La prescripción cambió; recarga la revisión.");
+                if (command.Revision != prior.Revision) Conflict("La recomendación cambió; recarga la revisión.");
                 NutritionStateMachine.Ensure(command.Operation, prior.State);
                 fallback = Read<NutritionPatient>(prior.ClinicalProfileJson);
             }
@@ -122,7 +122,7 @@ public sealed class NutritionCases(INutritionPrescriptionRepository repository, 
             {
                 plan = await PlanAsync(command.PatientId, command.Id, txCt);
                 if (!currentContext.TestsComplete) plan.Provisional = true;
-                if (command.Revision != plan.Revision) Conflict("La prescripción cambió; recarga la revisión.");
+                if (command.Revision != plan.Revision) Conflict("La recomendación cambió; recarga la revisión.");
                 NutritionStateMachine.Ensure(command.Operation, plan.State);
                 if (command.Operation == NutritionOperation.CreateVersion)
                 {

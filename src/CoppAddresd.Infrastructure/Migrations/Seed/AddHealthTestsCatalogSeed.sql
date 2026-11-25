@@ -34,7 +34,7 @@ JOIN app.health_test_instruments i ON i.code = v.code
 ON CONFLICT (instrument_id, version_number) DO NOTHING;
 
 INSERT INTO app.health_test_questions (id, version_id, code, section, text, type, scoring_direction, sort_order, is_active, hint, unit, min_value, max_value, default_value, min_label, max_label)
-SELECT '5dcc3d7f-5ec4-59f5-b153-90f1982f1275'::uuid, v.id, 'dx', 'Diagnósticos actuales', '¿Cuál de estos diagnósticos tienes actualmente?', 'multi', 'positive', 0, true, 'Marca todos los que aplican.', NULL, NULL, NULL, NULL, NULL, NULL
+SELECT '5dcc3d7f-5ec4-59f5-b153-90f1982f1275'::uuid, v.id, 'dx', 'Condiciones de salud actuales', '¿Cuáles de estas condiciones de salud confirmadas por un profesional tienes actualmente?', 'multi', 'positive', 0, true, 'Marca todos los que aplican.', NULL, NULL, NULL, NULL, NULL, NULL
 FROM app.health_test_versions v JOIN app.health_test_instruments i ON i.id = v.instrument_id
 WHERE i.code = 'historia-clinica' AND v.version_number = 1 AND v.is_current = true
 ON CONFLICT (version_id, code) DO NOTHING;
@@ -734,7 +734,7 @@ FROM app.health_test_questions q WHERE q.code = 'adh_compromiso' AND q.is_active
 ON CONFLICT DO NOTHING;
 
 INSERT INTO app.health_test_questions (id, version_id, code, section, text, type, scoring_direction, sort_order, is_active, hint, unit, min_value, max_value, default_value, min_label, max_label)
-SELECT '628c11bf-9b6c-52be-8747-d67b1339cc3c'::uuid, v.id, 'adh_constancia', 'Compromiso · Constancia', 'Cuando empiezo un programa o tratamiento, lo termino aunque sea duro.', 'scale', 'positive', 1, true, NULL, NULL, NULL, NULL, NULL, 'Nunca', 'Siempre'
+SELECT '628c11bf-9b6c-52be-8747-d67b1339cc3c'::uuid, v.id, 'adh_constancia', 'Compromiso · Constancia', 'Cuando empiezo un programa o plan, lo termino aunque sea duro.', 'scale', 'positive', 1, true, NULL, NULL, NULL, NULL, NULL, 'Nunca', 'Siempre'
 FROM app.health_test_versions v JOIN app.health_test_instruments i ON i.id = v.instrument_id
 WHERE i.code = 'iac-adresd' AND v.version_number = 1 AND v.is_current = true
 ON CONFLICT (version_id, code) DO NOTHING;

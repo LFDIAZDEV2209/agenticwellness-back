@@ -27,7 +27,7 @@ public sealed partial class ProgramRepository
         "alm" => MealType.Almuerzo,
         "mer" => MealType.Snack,
         "cen" => MealType.Cena,
-        _ => throw new InvalidOperationException("Tipo de comida prescrita inválido."),
+        _ => throw new InvalidOperationException("Tipo de comida recomendada inválido."),
     };
 
     /// <summary>Adapta la prescripción al DTO existente usando el motor Atwater canónico.</summary>

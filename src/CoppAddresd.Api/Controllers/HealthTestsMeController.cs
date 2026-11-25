@@ -76,7 +76,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         if (string.Equals(scope, "initial", StringComparison.OrdinalIgnoreCase))
@@ -137,7 +137,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var batteries = await repository.ListBatteryAssignmentsByPatientAsync(patientId.Value, ct);
@@ -155,7 +155,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var assignment = await repository.GetAssignmentByIdAsync(assignmentId, ct);
@@ -180,7 +180,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var assignment = await repository.GetAssignmentByIdAsync(assignmentId, ct);
@@ -202,7 +202,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var assignment = await repository.GetAssignmentByIdAsync(assignmentId, ct);
@@ -226,7 +226,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var results = await repository.ListResultsByPatientAsync(patientId.Value, ct);
@@ -243,7 +243,7 @@ public class HealthTestsMeController(
         var patientId = await ResolvePatientOr404Async(ct);
         if (patientId is null)
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var evaluations = await repository.ListEvaluationsByPatientAsync(patientId.Value, ct);

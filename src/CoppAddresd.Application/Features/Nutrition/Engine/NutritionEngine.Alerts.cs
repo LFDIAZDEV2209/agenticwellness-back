@@ -56,7 +56,7 @@ public sealed partial class NutritionEngine
             "Cena antes de las 7:30 PM, sin carbohidratos simples (pan blanco, azúcar, gaseosas)." };
         if (p.Estres is "elevado" or "muy_elevado") notes.Add("Incluye almendras, espinaca y legumbres (magnesio) para apoyar el manejo del estrés.");
         if (p.SleepNivel is "prioritario" or "fragil") notes.Add("Evita café y té después de las 2:00 PM.");
-        notes.Add("Este plan es de apoyo y fue revisado por tu nutricionista; no reemplaza la consulta médica.");
+        notes.Add("Este plan de apoyo fue revisado por tu nutricionista. Si tienes dudas, consulta a tu profesional de la salud.");
         return notes;
     }
 }

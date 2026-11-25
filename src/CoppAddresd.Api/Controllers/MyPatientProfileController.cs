@@ -35,7 +35,7 @@ public class MyPatientProfileController(IMediator mediator, ICurrentContext curr
         if (profile is null)
         {
             return NotFound(
-                new { message = "No hay un perfil de paciente vinculado a tu cuenta." }
+                new { message = "No hay un perfil de persona vinculado a tu cuenta." }
             );
         }
 

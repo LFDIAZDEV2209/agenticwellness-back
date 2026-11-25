@@ -235,7 +235,7 @@ public sealed class NutritionPlanWorkflow(AppDbContext db, IClinicalContextServi
     {
         var patient = await db.PatientProfiles.AsNoTracking().Where(p => p.UserId == userId)
             .Select(p => (Guid?)p.Id).FirstOrDefaultAsync(ct)
-            ?? throw new NotFoundException("No existe perfil de paciente.");
+            ?? throw new NotFoundException("No existe perfil de persona.");
         timezone ??= await db.ProgramEnrollments.AsNoTracking().Where(e => e.PatientId == patient)
             .OrderByDescending(e => e.CreatedAt).Select(e => e.Timezone).FirstOrDefaultAsync(ct);
         var today = LocalToday(timezone);
@@ -301,7 +301,7 @@ public sealed class NutritionPlanWorkflow(AppDbContext db, IClinicalContextServi
                 .Select(p => p.PatientId).ToListAsync(ct);
             if (owners.Count != inputs.Count || owners.Any(id => id is null)) throw new NotFoundException("No se encontraron los planes seleccionados.");
             var patientIds = owners.Select(id => id!.Value).Distinct().OrderBy(id => id).ToArray();
-            if (patientIds.Length != inputs.Count) throw new UnprocessableEntityException("Aprueba un solo plan por paciente en cada lote.");
+            if (patientIds.Length != inputs.Count) throw new UnprocessableEntityException("Aprueba un solo plan por persona en cada lote.");
             if (!actor.ViewAll && (actor.ProfessionalId is not { } professionalId
                 || await db.PatientProfessionalAssignments.AsNoTracking()
                     .Where(a => patientIds.Contains(a.PatientId) && a.ProfessionalId == professionalId && a.Status == "Active")
@@ -324,7 +324,7 @@ public sealed class NutritionPlanWorkflow(AppDbContext db, IClinicalContextServi
                     || b.Battery is { Items.Count: > 0 } && b.Battery.Items.Where(i => i.IsRequired)
                         .Any(i => !b.Assignments.Any(a => a.Version?.InstrumentId == i.InstrumentId && a.Status == HealthTestAssignmentStatus.completed))
                     || (b.Battery is null || b.Battery.Items.Count == 0) && b.Assignments.Any(a => a.Status != HealthTestAssignmentStatus.completed)))
-                    throw new UnprocessableEntityException("El paciente debe completar todas sus baterías requeridas.");
+                    throw new UnprocessableEntityException("La persona debe completar todas sus baterías requeridas.");
                 NutritionPlanReviewRules.ValidateForApproval(plan);
             }
             var timezones = (await db.ProgramEnrollments.AsNoTracking().Where(e => patientIds.Contains(e.PatientId))
@@ -336,7 +336,7 @@ public sealed class NutritionPlanWorkflow(AppDbContext db, IClinicalContextServi
                 && a.Plan is { IsTemplate: false, ReviewStatus: "approved", Status: NutritionPlanStatus.Active }
                 && a.Plan.PatientId == a.PatientId && (a.EndDate is null
                 || DateOnly.FromDateTime(a.EndDate.Value) >= LocalToday(timezones.GetValueOrDefault(a.PatientId)))))
-                throw new BusinessRuleViolationException("El paciente ya tiene un ciclo vigente. Para ajustarlo, modifica y vuelve a aprobar su plan actual.");
+                throw new BusinessRuleViolationException("La persona ya tiene un ciclo vigente. Para ajustarlo, modifica y vuelve a aprobar su plan actual.");
             foreach (var assignment in old) { assignment.Status = AssignmentStatus.Completed; assignment.UpdatedAt = DateTime.UtcNow; }
             foreach (var plan in plans)
             {

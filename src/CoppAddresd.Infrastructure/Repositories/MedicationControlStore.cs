@@ -231,7 +231,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
     {
         // El llamador ya bloqueó el perfil y comparte esta transacción con el recibo de Vita.
         if (db.Database.CurrentTransaction is null)
-            throw new InvalidOperationException("El registro de la toma requiere una transacción del paciente.");
+            throw new InvalidOperationException("El registro de la toma requiere una transacción de la persona.");
         await EnsurePatientOriginAsync(patientId, origin, ct);
         var hash = photo is not null ? Hash(new { actorId, origin, doseId, request, channel, photo = photo.Upload.Sha256 })
             : channel is null ? Hash(new { actorId, origin, doseId, request })
@@ -283,7 +283,7 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
         var occurred = (request.OccurredAt ?? clock.GetUtcNow()).UtcDateTime;
         var regimen = await db.MedicationRegimens.AsNoTracking().SingleAsync(r => r.Id == dose.RegimenId, ct);
         var earliest = Bounds(regimen.StartDate, MedicationControlService.Zone(regimen.TimeZone)).Start;
-        if (occurred < earliest) throw new UnprocessableEntityException("La fecha de toma es anterior al tratamiento.");
+        if (occurred < earliest) throw new UnprocessableEntityException("La fecha de toma es anterior al inicio del plan de medicación.");
         var previousEvent = await db.MedicationIntakeEvents.AsNoTracking().Where(e => e.DoseId == doseId)
             .OrderByDescending(e => e.DoseRevision ?? 0).ThenByDescending(e => e.RecordedAt).ThenByDescending(e => e.Id).FirstOrDefaultAsync(ct);
         if (request.Status == "pending" && (previousEvent is null || previousEvent.ActorId != actorId
@@ -320,11 +320,11 @@ public sealed partial class MedicationControlStore(AppDbContext db, IPatientScop
             // El paciente registra tomas/omisiones, pero nunca altera el plan del equipo.
             // Se deniega incluso el no-op para no crear una vía de actualización ambigua.
             if (selfService && treatment.Origin != "patient_reported")
-                throw new ForbiddenException("Solo tu equipo puede cambiar un tratamiento asignado.");
+                throw new ForbiddenException("Solo tu equipo puede cambiar un plan de medicación asignado.");
             if (treatment.Status == request.Status) return await TreatmentDtoAsync(treatment, ct);
-            if (request.ExpectedRevision != treatment.Revision) throw Conflict("El tratamiento cambió. Actualiza la ficha.");
+            if (request.ExpectedRevision != treatment.Revision) throw Conflict("El plan de medicación cambió. Actualiza la ficha.");
             if (treatment.Status == "completed")
-                throw Conflict("Registra un nuevo tratamiento para conservar la vigencia del tratamiento finalizado.");
+                throw Conflict("Registra un nuevo plan de medicación para conservar la vigencia del plan finalizado.");
             treatment.Status = request.Status;
             treatment.Revision++;
             treatment.UpdatedAt = Now;

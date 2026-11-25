@@ -41,7 +41,7 @@ public sealed class ClinicalSafetyRulesSeeder(
             "Evitar ejercicio de alta intensidad; priorizar actividad moderada",
             SafetySeverity.Warning, 30),
         new("heart_rate", ">", 100m, null, "bpm",
-            "Consultar antes de prescribir ejercicio intenso",
+            "Consultar antes de recomendar ejercicio intenso",
             SafetySeverity.Warning, 40),
     ];
 

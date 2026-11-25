@@ -63,12 +63,12 @@ public sealed class CalculateScoresCommandHandler(
             request.PatientId, ScoreTrigger.ManualRecompute,
             force: true, periodEndLocalDate: request.PeriodEndLocalDate, ct: ct)
             ?? throw new NotFoundException(
-                $"NOT_FOUND: no existe una inscripción activa para el paciente {request.PatientId}.");
+                $"NOT_FOUND: no existe una inscripción activa para la persona {request.PatientId}.");
 
         var transformation = await repository.GetOrComputeTransformationScoreAsync(
             request.PatientId, ScoreTrigger.ManualRecompute, force: true, ct: ct)
             ?? throw new NotFoundException(
-                $"NOT_FOUND: no existe una inscripción activa para el paciente {request.PatientId}.");
+                $"NOT_FOUND: no existe una inscripción activa para la persona {request.PatientId}.");
 
         // SPEC §15, C: la XP clínica se evalúa SOLO en este disparador (después
         // de persistir la fila de health_scores, cuyo id es el source_ref_id
