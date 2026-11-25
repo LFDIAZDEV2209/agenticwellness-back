@@ -11640,6 +11640,606 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("welcome_email_finalizations", "erp");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("action");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id")
+                        .HasDefaultValueSql("NULLIF(current_setting('audit.user_id', true), '')::uuid");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("PersonId", "OccurredAt");
+
+                    b.ToTable("audit_log", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_audit_log_action", "btrim(action) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Consent", b =>
+                {
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<Guid>("AcceptanceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("acceptance_id");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recorded_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("PersonId", "AcceptanceId");
+
+                    b.HasIndex("AcceptanceId")
+                        .IsUnique();
+
+                    b.HasIndex("PersonId", "RecordedAt");
+
+                    b.ToTable("consent", "app");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365DailyLog", b =>
+                {
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer")
+                        .HasColumnName("day");
+
+                    b.Property<decimal>("Adherence")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)")
+                        .HasColumnName("adherence");
+
+                    b.Property<bool>("CompletedExercise")
+                        .HasColumnType("boolean")
+                        .HasColumnName("completed_exercise");
+
+                    b.Property<int>("Energy")
+                        .HasColumnType("integer")
+                        .HasColumnName("energy");
+
+                    b.Property<DateOnly>("LogDate")
+                        .HasColumnType("date")
+                        .HasColumnName("log_date");
+
+                    b.Property<int>("Pain")
+                        .HasColumnType("integer")
+                        .HasColumnName("pain");
+
+                    b.Property<decimal>("SleepHours")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)")
+                        .HasColumnName("sleep_hours");
+
+                    b.PrimitiveCollection<string[]>("Symptoms")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("symptoms");
+
+                    b.Property<decimal?>("WaistCm")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("waist_cm");
+
+                    b.Property<decimal?>("WeightKg")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("weight_kg");
+
+                    b.HasKey("PersonId", "Day");
+
+                    b.HasIndex("LogDate");
+
+                    b.HasIndex("PersonId", "LogDate")
+                        .IsUnique();
+
+                    b.ToTable("daily_log", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_daily_log_adherence", "adherence BETWEEN 0 AND 1");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_day", "day BETWEEN 1 AND 365");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_energy", "energy BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_pain", "pain BETWEEN 0 AND 10");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_sleep", "sleep_hours BETWEEN 0 AND 24");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio']::text[]");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_waist", "waist_cm > 0 AND waist_cm <= 500");
+
+                            t.HasCheckConstraint("ck_motor365_daily_log_weight", "weight_kg > 0 AND weight_kg <= 1000");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365EngineEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<decimal?>("CalorieDelta")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("calorie_delta");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer")
+                        .HasColumnName("day");
+
+                    b.Property<string>("EngineVer")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("engine_ver");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("MessageEn")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("message_en");
+
+                    b.Property<string>("MessageEs")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("message_es");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("ParamsVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("params_version");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("PlanVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("plan_version");
+
+                    b.Property<decimal?>("RatePercent")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("rate_percent");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAt");
+
+                    b.HasIndex("ParamsVersion", "EngineVer");
+
+                    b.HasIndex("PersonId", "Day");
+
+                    b.ToTable("engine_event", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_engine_event_day", "day BETWEEN 1 AND 365");
+
+                            t.HasCheckConstraint("ck_motor365_engine_event_kind", "kind IN ('meta', 'modo', 'sin', 'ajuste')");
+
+                            t.HasCheckConstraint("ck_motor365_engine_event_version", "plan_version > 0");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365EngineParams", b =>
+                {
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("changed_by");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("EngineVer")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("engine_ver");
+
+                    b.Property<string>("ParametersJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("parameters_json");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("reason");
+
+                    b.HasKey("Version");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.ToTable("engine_params", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_engine_params_parameters", "jsonb_typeof(parameters_json) = 'object'");
+
+                            t.HasCheckConstraint("ck_motor365_engine_params_reason", "btrim(reason) <> ''");
+
+                            t.HasCheckConstraint("ck_motor365_engine_params_version", "version > 0 AND btrim(engine_ver) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Person", b =>
+                {
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("patient_id");
+
+                    b.Property<int>("ActivityLevel")
+                        .HasColumnType("integer")
+                        .HasColumnName("activity_level");
+
+                    b.Property<int>("BirthYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("birth_year");
+
+                    b.Property<string>("EngineVer")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("engine_ver");
+
+                    b.Property<int>("FitnessLevel")
+                        .HasColumnType("integer")
+                        .HasColumnName("fitness_level");
+
+                    b.Property<string>("Goal")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("goal");
+
+                    b.Property<decimal>("HeightCm")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("height_cm");
+
+                    b.Property<decimal>("InitialWaistCm")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("initial_waist_cm");
+
+                    b.Property<decimal>("InitialWeightKg")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("initial_weight_kg");
+
+                    b.Property<bool>("LactoseFree")
+                        .HasColumnType("boolean")
+                        .HasColumnName("lactose_free");
+
+                    b.Property<string>("Pace")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("pace");
+
+                    b.Property<int>("PlanVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("plan_version");
+
+                    b.Property<string>("Sex")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("sex");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<decimal?>("TargetWeightKg")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("target_weight_kg");
+
+                    b.Property<bool>("Vegetarian")
+                        .HasColumnType("boolean")
+                        .HasColumnName("vegetarian");
+
+                    b.HasKey("PatientId");
+
+                    b.ToTable("person", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_person_activity", "activity_level BETWEEN 1 AND 4");
+
+                            t.HasCheckConstraint("ck_motor365_person_birth_year", "birth_year BETWEEN 1900 AND EXTRACT(YEAR FROM start_date)");
+
+                            t.HasCheckConstraint("ck_motor365_person_fitness", "fitness_level BETWEEN 0 AND 3");
+
+                            t.HasCheckConstraint("ck_motor365_person_goal", "goal IN ('LoseWeight', 'GainMuscle', 'Tone')");
+
+                            t.HasCheckConstraint("ck_motor365_person_height", "height_cm > 0 AND height_cm <= 300");
+
+                            t.HasCheckConstraint("ck_motor365_person_initial_waist", "initial_waist_cm > 0 AND initial_waist_cm <= 500");
+
+                            t.HasCheckConstraint("ck_motor365_person_initial_weight", "initial_weight_kg > 0 AND initial_weight_kg <= 1000");
+
+                            t.HasCheckConstraint("ck_motor365_person_pace", "pace IN ('Slow', 'Moderate', 'Maximum')");
+
+                            t.HasCheckConstraint("ck_motor365_person_sex", "sex IN ('Female', 'Male')");
+
+                            t.HasCheckConstraint("ck_motor365_person_target_weight", "target_weight_kg > 0 AND target_weight_kg <= 1000");
+
+                            t.HasCheckConstraint("ck_motor365_person_versions", "plan_version > 0 AND btrim(engine_ver) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365PlanSnapshot", b =>
+                {
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("PlanVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("plan_version");
+
+                    b.Property<int>("ParamsVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("params_version");
+
+                    b.Property<string>("EngineVer")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("engine_ver");
+
+                    b.Property<DateTimeOffset>("GeneratedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("generated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("PlanJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("plan_json");
+
+                    b.Property<bool>("ScreeningComplete")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("screening_complete");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_id");
+
+                    b.HasKey("PersonId", "PlanVersion", "ParamsVersion");
+
+                    b.HasIndex("GeneratedAt");
+
+                    b.HasIndex("ParamsVersion", "EngineVer");
+
+                    b.HasIndex("PersonId", "SubmissionId");
+
+                    b.ToTable("plan_snapshot", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_plan_snapshot_plan", "jsonb_typeof(plan_json) = 'object'");
+
+                            t.HasCheckConstraint("ck_motor365_plan_snapshot_screening", "screening_complete");
+
+                            t.HasCheckConstraint("ck_motor365_plan_snapshot_version", "plan_version > 0");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365ProfessionalReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("Decision")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("decision");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<Guid>("ProfessionalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("professional_id");
+
+                    b.Property<DateTimeOffset>("ReviewedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessionalId");
+
+                    b.HasIndex("PersonId", "ReviewedAt");
+
+                    b.HasIndex("PersonId", "SubmissionId");
+
+                    b.ToTable("professional_review", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_professional_review_decision", "decision IN ('Approved', 'Rejected', 'NeedsChanges')");
+                        });
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Screening", b =>
+                {
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_id");
+
+                    b.Property<bool>("AnswersComplete")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("boolean")
+                        .HasColumnName("answers_complete")
+                        .HasComputedColumnSql("par_q_1 IS NOT NULL AND par_q_2 IS NOT NULL AND par_q_3 IS NOT NULL AND par_q_4 IS NOT NULL AND par_q_5 IS NOT NULL AND par_q_6 IS NOT NULL AND par_q_7 IS NOT NULL AND nqs_1 IS NOT NULL AND nqs_2 IS NOT NULL AND nqs_3 IS NOT NULL AND nqs_4 IS NOT NULL AND nqs_5 IS NOT NULL AND nqs_6 IS NOT NULL", true);
+
+                    b.Property<short?>("Nqs1")
+                        .HasColumnType("smallint")
+                        .HasColumnName("nqs_1");
+
+                    b.Property<short?>("Nqs2")
+                        .HasColumnType("smallint")
+                        .HasColumnName("nqs_2");
+
+                    b.Property<short?>("Nqs3")
+                        .HasColumnType("smallint")
+                        .HasColumnName("nqs_3");
+
+                    b.Property<short?>("Nqs4")
+                        .HasColumnType("smallint")
+                        .HasColumnName("nqs_4");
+
+                    b.Property<short?>("Nqs5")
+                        .HasColumnType("smallint")
+                        .HasColumnName("nqs_5");
+
+                    b.Property<short?>("Nqs6")
+                        .HasColumnType("smallint")
+                        .HasColumnName("nqs_6");
+
+                    b.Property<short?>("ParQ1")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_1");
+
+                    b.Property<short?>("ParQ2")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_2");
+
+                    b.Property<short?>("ParQ3")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_3");
+
+                    b.Property<short?>("ParQ4")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_4");
+
+                    b.Property<short?>("ParQ5")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_5");
+
+                    b.Property<short?>("ParQ6")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_6");
+
+                    b.Property<short?>("ParQ7")
+                        .HasColumnType("smallint")
+                        .HasColumnName("par_q_7");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recorded_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("PersonId", "SubmissionId");
+
+                    b.HasIndex("PersonId", "RecordedAt");
+
+                    b.HasIndex("PersonId", "SubmissionId", "AnswersComplete")
+                        .IsUnique()
+                        .HasDatabaseName("ux_motor365_screening_completion");
+
+                    b.ToTable("screening", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_screening_nqs_1", "nqs_1 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_nqs_2", "nqs_2 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_nqs_3", "nqs_3 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_nqs_4", "nqs_4 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_nqs_5", "nqs_5 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_nqs_6", "nqs_6 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_1", "par_q_1 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_2", "par_q_2 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_3", "par_q_3 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_4", "par_q_4 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_5", "par_q_5 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_6", "par_q_6 IN (0, 1)");
+
+                            t.HasCheckConstraint("ck_motor365_screening_par_q_7", "par_q_7 IN (0, 1)");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Entities.AgentDocument", b =>
                 {
                     b.HasOne("CoppAddresd.Domain.Entities.KnowledgeBase", "KnowledgeBase")
@@ -13589,6 +14189,104 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365AuditLog", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Consent", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.LegalDocumentAcceptance", null)
+                        .WithMany()
+                        .HasForeignKey("AcceptanceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365DailyLog", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365EngineEvent", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365EngineParams", null)
+                        .WithMany()
+                        .HasForeignKey("ParamsVersion", "EngineVer")
+                        .HasPrincipalKey("Version", "EngineVer")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Person", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.PatientProfile", null)
+                        .WithOne()
+                        .HasForeignKey("CoppAddresd.Domain.Wellness365.Motor365Person", "PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365PlanSnapshot", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365EngineParams", null)
+                        .WithMany()
+                        .HasForeignKey("ParamsVersion", "EngineVer")
+                        .HasPrincipalKey("Version", "EngineVer")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365ProfessionalReview", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Entities.Professional", null)
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Screening", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId", "SubmissionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Screening", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Entities.AgentType", b =>

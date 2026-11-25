@@ -404,3 +404,22 @@ proyección, la asignación sale del índice. Se construye concurrentemente.
 `app.medication_patient_state` usa la PK `id` del paciente para consultar la
 versión de la agenda y sus preferencias. La consulta no toca tablas de eventos,
 prescripciones ni bitácora.
+
+## Motor 365 (KAN-134)
+
+Todos los índices del módulo son B-tree y se construyen sobre tablas nuevas.
+Cada fila mantiene sus índices al insertarse. Los índices de fechas y de
+claves foráneas agregan costo de escritura a cambio de lecturas acotadas y
+validaciones eficientes al consultar o borrar los registros referenciados.
+
+| Tabla | Claves e índices |
+|---|---|
+| `app.person` | PK `(patient_id)` para el vínculo uno a uno con el paciente. |
+| `app.consent` | PK `(person_id, acceptance_id)`, único `(acceptance_id)` para un solo vínculo por recibo y `(person_id, recorded_at)` para historial. |
+| `app.screening` | PK `(person_id, submission_id)`, único `(person_id, submission_id, answers_complete)` para la FK de caché e índice `(person_id, recorded_at)` para historial. |
+| `app.daily_log` | PK `(person_id, day)` para el día del programa, único `(person_id, log_date)` para el día local e índice `(log_date)` para rangos globales. |
+| `app.engine_params` | PK `(version)`, UNIQUE `(version, engine_ver)` para validar las versiones juntas e índice `(created_at)`. |
+| `app.plan_snapshot` | PK `(person_id, plan_version, params_version)` para caché, índices `(person_id, submission_id)` y `(params_version, engine_ver)` para FK, y `(generated_at)` para caducidad. |
+| `app.engine_event` | PK `(id)`, índices `(person_id, day)`, `(occurred_at)` y FK `(params_version, engine_ver)`. |
+| `app.audit_log` | PK `(id)`, índices `(person_id, occurred_at)` y `(occurred_at)` para auditoría temporal por paciente y global. |
+| `app.professional_review` | PK `(id)`, índices FK `(person_id, submission_id)` y `(professional_id)`, e índice `(person_id, reviewed_at)` para historial. |
