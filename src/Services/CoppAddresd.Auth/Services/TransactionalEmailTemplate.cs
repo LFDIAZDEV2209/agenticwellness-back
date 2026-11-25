@@ -43,7 +43,7 @@ public static partial class TransactionalEmailTemplate
             ?? ShortText(brand.SupportWhatsApp, 40);
         var version = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["marca"] = ShortText(brand.Name, 64) ?? "Copp Adresd",
+            ["marca"] = ShortText(EmailSettings.ResolveBrandName(brand.Name), 64) ?? EmailSettings.DefaultBrandName,
             ["nombre"] = ShortText(values.GetValueOrDefault("nombre"), 80) ?? (english ? "there" : "paciente"),
             ["correo_pago"] = paymentEmail,
             ["soporte_whatsapp"] = support ?? "",

@@ -67,7 +67,7 @@ public sealed class SmtpEmailService : IEmailService
 
         using var mailMessage = new MailMessage
         {
-            From = new MailAddress(senderAddress, senderName, Encoding.UTF8),
+            From = new MailAddress(senderAddress, EmailOptions.ResolveBrandName(senderName), Encoding.UTF8),
             Subject = message.Subject,
             Body = message.Body,
             IsBodyHtml = message.IsHtml,

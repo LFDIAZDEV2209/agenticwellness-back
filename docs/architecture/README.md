@@ -99,6 +99,7 @@ GET /api/v1/orders?page=1&pageSize=20
 | 2026-09-04 | Pre-agregación CQRS Dashboard #5 (Comunidad ADRED) | Rollup `community.community_daily_metrics` en el microservicio Community (HotChocolate GraphQL). Las mutaciones encolan eventos no bloqueantes; HostedService ejecuta upsert atómico `ON CONFLICT`; la query ERP lee rollup-first con fallback OLTP. Detalle: [`docs/modules/community/analytics.md`](../modules/community/analytics.md). |
 | 2026-09-04 | Pre-agregación CQRS Dashboard #6 (Inventario & Farmacia) | Rollup `erp.inventory_daily_metrics` en el stack principal (MediatR). `GetAnalyticsAsync` lee O(1) del rollup (costos en centavos `long`); fallback OLTP original intacto; estado puntual del inventario siempre desde `products`. Detalle: [`docs/modules/inventory/analytics.md`](../modules/inventory/analytics.md). |
 | 2026-09-04 | Estrategia de Migración ClickHouse + CDC (Fase 2) | Hoja de ruta Debezium CDC + Kafka + ClickHouse OLAP para analítica columnar de alta dimensión con dual-read. Detalle: [`docs/architecture/clickhouse-cdc-migration-strategy.md`](clickhouse-cdc-migration-strategy.md). |
+| 2026-11-24 | [Motor 365 en .NET](../decisions/2026-11-24-motor-365-dotnet.md) | Port de la referencia JavaScript v5.2 a C# en el backend existente. ADR pendiente de firma y verificación de paridad. |
 
 ## Deuda técnica / pendientes
 

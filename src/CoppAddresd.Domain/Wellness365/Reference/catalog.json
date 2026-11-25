@@ -1,0 +1,279 @@
+[
+ {
+  "id": "walk",
+  "n": "Caminata",
+  "cat": "Cardio",
+  "imp": "bajo",
+  "min": 0,
+  "ic": "run",
+  "how": "Ritmo en que puedas conversar."
+ },
+ {
+  "id": "bike",
+  "n": "Bicicleta estática",
+  "cat": "Cardio",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "run",
+  "how": "Resistencia baja, cadencia constante."
+ },
+ {
+  "id": "ellip",
+  "n": "Elíptica",
+  "cat": "Cardio",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "run",
+  "how": "Sin impacto en articulaciones."
+ },
+ {
+  "id": "hill",
+  "n": "Caminata en pendiente suave",
+  "cat": "Cardio",
+  "imp": "medio",
+  "min": 2,
+  "ic": "run",
+  "how": "Inclinación 2–4%.",
+  "avoid": [
+   "rodilla"
+  ]
+ },
+ {
+  "id": "int",
+  "n": "Intervalos caminata rápida / suave",
+  "cat": "Cardio",
+  "imp": "medio",
+  "min": 3,
+  "ic": "run",
+  "how": "1 min rápido / 2 min suave.",
+  "avoid": [
+   "hta",
+   "rodilla"
+  ]
+ },
+ {
+  "id": "chair",
+  "n": "Sentadilla a la silla",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "how": "Sin contener la respiración.",
+  "avoid": [
+   "rodilla_severa"
+  ],
+  "g": "legs"
+ },
+ {
+  "id": "row",
+  "n": "Remo con banda elástica",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "how": "Espalda recta, exhala al jalar.",
+  "g": "pull"
+ },
+ {
+  "id": "wall",
+  "n": "Flexiones de pared",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "how": "Cuerpo alineado, ritmo lento.",
+  "g": "push"
+ },
+ {
+  "id": "bridge",
+  "n": "Puente de glúteos",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "how": "Sube exhalando, baja inhalando.",
+  "g": "legs"
+ },
+ {
+  "id": "lunge",
+  "n": "Zancadas asistidas",
+  "cat": "Fuerza",
+  "imp": "medio",
+  "min": 2,
+  "ic": "dumb",
+  "how": "Con apoyo en una silla.",
+  "avoid": [
+   "caida",
+   "rodilla"
+  ],
+  "g": "legs"
+ },
+ {
+  "id": "plank",
+  "n": "Plancha en rodillas",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 2,
+  "ic": "dumb",
+  "how": "Isométrico corto, 15–20 s.",
+  "avoid": [
+   "hta",
+   "isom"
+  ],
+  "g": "core"
+ },
+ {
+  "id": "mob",
+  "n": "Movilidad articular",
+  "cat": "Movilidad",
+  "imp": "bajo",
+  "min": 0,
+  "ic": "mob",
+  "how": "Círculos suaves de hombros, cadera y tobillos."
+ },
+ {
+  "id": "str",
+  "n": "Estiramientos suaves",
+  "cat": "Movilidad",
+  "imp": "bajo",
+  "min": 0,
+  "ic": "mob",
+  "how": "20–30 s sin rebotes."
+ },
+ {
+  "id": "bal",
+  "n": "Equilibrio con apoyo",
+  "cat": "Equilibrio",
+  "imp": "bajo",
+  "min": 0,
+  "ic": "mob",
+  "how": "Junto a una pared o silla firme.",
+  "avoid": [
+   "caida_sin_apoyo"
+  ]
+ },
+ {
+  "id": "breath",
+  "n": "Respiración diafragmática",
+  "cat": "Movilidad",
+  "imp": "bajo",
+  "min": 0,
+  "ic": "mob",
+  "how": "5 minutos, relajada."
+ },
+ {
+  "id": "kpush",
+  "n": "Flexiones en rodillas",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "push"
+ },
+ {
+  "id": "press",
+  "n": "Press de hombros con mancuernas",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "push"
+ },
+ {
+  "id": "tri",
+  "n": "Extensión de tríceps con banda",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "push"
+ },
+ {
+  "id": "curl",
+  "n": "Curl de bíceps",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "pull"
+ },
+ {
+  "id": "drow",
+  "n": "Remo con mancuerna a una mano",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "pull"
+ },
+ {
+  "id": "gob",
+  "n": "Sentadilla con mancuerna",
+  "cat": "Fuerza",
+  "imp": "medio",
+  "min": 2,
+  "ic": "dumb",
+  "g": "legs",
+  "avoid": [
+   "rodilla"
+  ]
+ },
+ {
+  "id": "rdl",
+  "n": "Peso muerto rumano con mancuernas",
+  "cat": "Fuerza",
+  "imp": "medio",
+  "min": 2,
+  "ic": "dumb",
+  "g": "legs",
+  "avoid": [
+   "isom"
+  ]
+ },
+ {
+  "id": "calf",
+  "n": "Elevación de talones",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "legs",
+  "avoid": [
+   "caida_sin_apoyo"
+  ]
+ },
+ {
+  "id": "step",
+  "n": "Subida al escalón",
+  "cat": "Fuerza",
+  "imp": "medio",
+  "min": 2,
+  "ic": "dumb",
+  "g": "legs",
+  "avoid": [
+   "caida",
+   "rodilla"
+  ]
+ },
+ {
+  "id": "dead",
+  "n": "Bicho muerto",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "core"
+ },
+ {
+  "id": "bird",
+  "n": "Pájaro-perro",
+  "cat": "Fuerza",
+  "imp": "bajo",
+  "min": 1,
+  "ic": "dumb",
+  "g": "core",
+  "avoid": [
+   "rodilla"
+  ]
+ }
+]

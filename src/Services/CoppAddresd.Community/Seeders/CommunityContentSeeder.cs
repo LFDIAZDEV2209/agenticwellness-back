@@ -33,7 +33,7 @@ public static class CommunityContentSeeder
         new("1000000003", "Carolina Mendoza", "Nutricionista y paciente de corazón. Fan del programa INFINITO."),
         new("1000000004", "Jorge Herrera", "Hipertenso diagnosticado en 2023. Aprendiendo a bajar la sal, no el ánimo."),
         new("1000000005", "Luisa Fernández", "Madre, cardiópata y optimista. Aquí para compartir y aprender."),
-        new("1000000006", "Miguel Ángel Peña", "Ex-fumador desde marzo. El COPP-ADRESD me cambió la vida."),
+        new("1000000006", "Miguel Ángel Peña", "Ex-fumador desde marzo. Agentic Wellness IA me cambió la vida."),
         new("1000000007", "Diana Ospina", "Enfermera jubilada. Vigilo mi presión a diario y ayudo a otros a hacerlo."),
         new("1000000008", "Camilo Restrepo", "Deportista amateur. La presión alta no me detuvo: me reinventó."),
     ];
@@ -48,7 +48,7 @@ public static class CommunityContentSeeder
     private static readonly IReadOnlyList<PostSeed> Posts =
     [
         new("1000000001",
-            "¡Bienvenidos a la Comunidad Copp Adresd! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
+            "¡Bienvenidos a la Comunidad Agentic Wellness IA! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
             true, 240, ["1000000002", "1000000003", "1000000004", "1000000005", "1000000006"]),
         new("1000000002",
             "Recordatorio del programa: tomen su medicación a la misma hora todos los días. ⏰ Usar la alarma del celular me ayudó a no fallar nunca más.",
@@ -93,12 +93,12 @@ public static class CommunityContentSeeder
 
     private static readonly IReadOnlyList<CommentSeed> Comments =
     [
-        new("1000000001", "¡Bienvenidos a la Comunidad Copp Adresd! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
+        new("1000000001", "¡Bienvenidos a la Comunidad Agentic Wellness IA! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
             "1000000003", "¡Me encanta! Ojalá hubiera existido esto cuando me diagnosticaron. 💜", 230,
             [
                 new("1000000001", "¡Bienvenida, Carolina! Gracias por sumarte.", 225),
             ]),
-        new("1000000001", "¡Bienvenidos a la Comunidad Copp Adresd! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
+        new("1000000001", "¡Bienvenidos a la Comunidad Agentic Wellness IA! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
             "1000000002", "Listo, cumpliendo desde ya. ¡Vamos con todo! 💪", 220),
         new("1000000003", "Receta del día: avena con canela y manzana 🍎 sin azúcar añadida. 15 minutos de preparación y el corazón te lo agradece. ¿Quién la prueba?",
             "1000000001", "La probé esta mañana y quedó deliciosa. ¿Puedes compartir la medida exacta de canela?", 180,
@@ -200,7 +200,7 @@ public static class CommunityContentSeeder
                 new("1000000003", "1000000001", "Cuidado con la rodilla, Andrés. Estira bien antes.", 2290),
                 new("1000000001", "1000000001", "Día 3: hoy toca la caminata grupal en el parque. ¡Nos vemos a las 7! 🌅", 90),
             ]),
-        new("Cocina saludable Copp Adresd", "1000000003",
+        new("Cocina saludable Agentic Wellness IA", "1000000003",
             ["1000000003", "1000000001", "1000000005", "1000000007"],
             120,
             [

@@ -32,6 +32,8 @@ por defecto. La prueba de recepción real y habilitación operativa siguen pendi
 
 ## Plantilla
 
+KAN-120 actualiza la marca en el cuerpo de referencia de `whatsapp-template.json` y `SosWhatsAppTemplate.Body`. La revisión en Meta exige acreditar el texto de la plantilla activa antes de dar por verificado el canal. El contrato mantiene la clave, el idioma y los cinco parámetros.
+
 Cinco parámetros: nombre, dirección, enlace, hora UTC del SOS, lecturas con unidades/procedencia/hora. Texto estático idéntico a `SosWhatsAppTemplate.Body`; no requiere LLM. El enlace corto existente se usa si está configurado; en otro caso se conserva un mapa Google válido. Sin GPS se indica ausencia de ubicación.
 
 ## Validación local

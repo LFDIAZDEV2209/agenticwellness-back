@@ -33,6 +33,8 @@ del proveedor de Identity. El número de soporte puede venir de la configuració
 
 ## Configuración
 
+El nombre público por defecto es **Agentic Wellness IA**. Al construir el remitente SMTP y el valor de `{{marca}}`, los valores históricos exactos se muestran como la marca vigente. Los nombres personalizados siguen siendo válidos. La dirección oficial de contacto y las direcciones de transporte conservan sus valores configurados.
+
 - `Email:Transactional:Name`, `LogoUrl`, `AccentColor` y `SupportWhatsApp` definen la marca. El logo usa `Email:WelcomeLogoUrl` como respaldo.
 - `Email:Transactional:Templates:{código}:{Es|En}` admite `Subject`, `Preheader`, `Title`, `Button` y `Callout`. Cada texto admite las variables de su propia plantilla.
 - SMTP registra código y estado. Omite asunto, cuerpo y enlaces. `PWD-01` también omite el destinatario.
