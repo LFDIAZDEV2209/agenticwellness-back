@@ -2,6 +2,38 @@
 
 Reglas del proyecto (skill `database-indexes`). Cada índice creado en producción se registra aquí. Sin registro → no se crea.
 
+## Identidad por correo
+
+| Índice | Tabla | Columnas | Tipo | Uso | Impacto |
+| --- | --- | --- | --- | --- | --- |
+| `UX_Users_NormalizedEmail` | `auth."Users"` | `NormalizedEmail` | B-tree único parcial | Consulta por correo de Identity y unicidad para todas las aplicaciones | Sustituye `EmailIndex`. Los valores nulos quedan fuera. Cada escritura de correo paga el chequeo de unicidad. |
+
+Antes de aplicar `EnforceUniqueNormalizedEmail`, ejecutar el
+[inventario KAN-122](../../scripts/qa/kan-122-email-reconciliation-readonly.sql) con
+datos autorizados y confirmar las claves con el normalizador de Auth.
+Resolver candidatos y claves ausentes o desactualizadas antes del corte.
+La migración se detiene si se repite una clave persistida. La creación
+concurrente conserva el índice anterior hasta que el reemplazo esté válido.
+Si queda un índice inválido después de un intento interrumpido, verificarlo
+en `pg_index`, retirar ese índice con `DROP INDEX CONCURRENTLY` y reintentar.
+Aplicar y revertir con un ejecutor sin transacción externa.
+
+## Activación de membresía en demostración
+
+| Índice | Tabla | Columnas | Tipo | Uso | Impacto |
+| --- | --- | --- | --- | --- | --- |
+| `PK_PaidActivations` | `auth."PaidActivations"` | `PaymentId` | B-tree único | Repetir confirmación conserva el pago original. Busca la redención y el reenvío por recibo. | Una entrada por pago simulado. |
+| `IX_PaidActivations_LinkedUserId` | `auth."PaidActivations"` | `LinkedUserId` | B-tree | FK a la cuenta existente y reconciliación por usuario. | Se actualiza al vincular la cuenta. |
+| `IX_PaidActivations_NextEmailAttemptAt` | `auth."PaidActivations"` | `NextEmailAttemptAt` | B-tree parcial no nulo | Lee los envíos vencidos ordenados por su siguiente intento. | Excluye los envíos finalizados. |
+
+## Generación de bienestar en demostración
+
+| Índice | Tabla | Columnas | Tipo | Uso e impacto |
+| --- | --- | --- | --- | --- |
+| `ux_wellness_journey_payment_id` | `app.wellness_journey_generations` | `payment_id` | B-tree único | Deduplica el envío inicial y localiza la generación del pago. Cada alta comprueba unicidad. |
+| `ix_wellness_journey_patient_id` | `app.wellness_journey_generations` | `patient_id` | B-tree | Localiza las filas de la FK del perfil durante el borrado. |
+| `ix_wellness_journey_claimable` | `app.wellness_journey_generations` | `created_at, id` | B-tree parcial | Ordena los trabajos pendientes o reclamables tras vencer el lease. La fila sale del índice al terminar. |
+
 ## Registro
 
 | Index                                               | Tabla                                 | Columnas                          | Tipo                                                             | Motivo                                                                                                                                                                             | Query que beneficia                                                        | Impacto esperado                                    | Costo potencial                                                   |

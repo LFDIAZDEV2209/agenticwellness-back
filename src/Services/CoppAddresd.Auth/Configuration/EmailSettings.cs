@@ -27,6 +27,8 @@ public class EmailSettings
 
     /// <summary>Vacío: se usa FrontendUrl/login. Debe apuntar al ERP oficial.</summary>
     public string? ErpLoginUrl { get; set; }
+    /// <summary>URL HTTPS pública de /recuperar-cuenta. Vacío deshabilita la recuperación por enlace.</summary>
+    public string? PasswordResetUrl { get; set; }
     /// <summary>Sin publicar: el correo muestra Próximamente, sin enlaces ficticios.</summary>
     public string? IosDownloadUrl { get; set; }
     public string? AndroidDownloadUrl { get; set; }
