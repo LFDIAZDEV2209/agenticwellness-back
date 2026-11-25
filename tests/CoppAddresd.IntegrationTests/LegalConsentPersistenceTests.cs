@@ -131,6 +131,7 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
         services.AddSingleton<PaidActivationLinks>();
         services.AddScoped<PaidActivationService>();
         services.AddScoped<PaidActivationSignupService>();
+        services.AddScoped<PaidMembershipDemoService>();
         await using var app = builder.Build();
         app.UseRateLimiter();
         app.MapControllers();
@@ -241,6 +242,7 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
         var access = await journey.GetAccessAsync(created.Id, default);
         Assert.NotNull(access);
         Assert.Equal(activation.PaymentId, access.PaymentId);
+        Assert.True(access.MembershipActive);
         Assert.True(access.ConsentCurrent);
 
         var current = Substitute.For<ICurrentContext>();
@@ -283,6 +285,14 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
         Assert.False((await AccountStatus("es")).AcceptanceRequired);
         Assert.True((await journey.GetAccessAsync(created.Id, default))!.ConsentCurrent);
         Assert.Equal(3, await db.LegalDocumentAcceptances.CountAsync());
+
+        var expiredAt = DateTime.UtcNow.AddMinutes(-1);
+        await fixture.PaidActivations.Where(payment => payment.PaymentId == activation.PaymentId)
+            .ExecuteUpdateAsync(update => update.SetProperty(payment => payment.MembershipExpiresAt, expiredAt));
+        var expired = await journey.GetAccessAsync(created.Id, default);
+        Assert.NotNull(expired);
+        Assert.False(expired.MembershipActive);
+        Assert.True(expired.ConsentCurrent);
 
         current.UserId.Returns(Guid.NewGuid());
         Assert.All((await AccountStatus("es")).Documents, document => Assert.Null(document.ReceiptId));

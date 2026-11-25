@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoppAddresd.Infrastructure.Services;
 
-public sealed record WellnessJourneyAccess(Guid PatientId, Guid PaymentId, bool ConsentCurrent);
+public sealed record WellnessJourneyAccess(Guid PatientId, Guid PaymentId, bool ConsentCurrent, bool MembershipActive);
 
 public sealed record WellnessJourneySnapshot(
     Guid GenerationId,
@@ -20,7 +20,7 @@ public sealed record WellnessJourneyClaim(Guid GenerationId, Guid LeaseId, int A
 
 public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock, IAccountLegalConsentService accountConsents)
 {
-    private sealed record PaidJourneyMember(Guid PatientId, Guid PaymentId, string Locale);
+    private sealed record PaidJourneyMember(Guid PatientId, Guid PaymentId, string Locale, bool MembershipActive);
     private const string Pending = "pending";
     private const string Running = "running";
     private const string Ready = "ready";
@@ -33,23 +33,31 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock, IA
         try
         {
             var status = await accountConsents.GetJourneyStatusAsync(userId, member.Locale, ct);
-            return new(member.PatientId, member.PaymentId, !status.AcceptanceRequired);
+            return new(member.PatientId, member.PaymentId, !status.AcceptanceRequired, member.MembershipActive);
         }
         catch (AccountLegalConsentException error) when (error.StatusCode == 503)
         {
-            return new(member.PatientId, member.PaymentId, false);
+            return new(member.PatientId, member.PaymentId, false, member.MembershipActive);
         }
     }
 
     public async Task<string?> GetLegalLocaleAsync(Guid userId, CancellationToken ct) =>
         (await ReadMemberAsync(userId, ct))?.Locale;
 
-    private Task<PaidJourneyMember?> ReadMemberAsync(Guid userId, CancellationToken ct) =>
-        db.Database.SqlQuery<PaidJourneyMember>($"""
-            SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId", payment."Language" AS "Locale"
+    private Task<PaidJourneyMember?> ReadMemberAsync(Guid userId, CancellationToken ct)
+    {
+        var now = clock.GetUtcNow();
+        return db.Database.SqlQuery<PaidJourneyMember>($"""
+            SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId", payment."Language" AS "Locale",
+                (payment."MembershipPaid" AND payment."MembershipState" = 'active'
+                    AND COALESCE(payment."MembershipExpiresAt",
+                        ((payment."ConfirmedAt" AT TIME ZONE 'UTC') +
+                            CASE WHEN payment."Plan" = 'annual' THEN INTERVAL '12 months'
+                                ELSE INTERVAL '1 month' END) AT TIME ZONE 'UTC') > {now}) AS "MembershipActive"
             FROM app.patient_profiles p
             JOIN LATERAL (
-                SELECT purchase."PaymentId", purchase."Language"
+                SELECT purchase."PaymentId", purchase."Language", purchase."MembershipPaid",
+                    purchase."MembershipState", purchase."MembershipExpiresAt", purchase."ConfirmedAt", purchase."Plan"
                 FROM auth."PaidActivations" purchase
                 WHERE purchase."LinkedUserId" = p.user_id AND purchase."RedeemedAt" IS NOT NULL
                 ORDER BY purchase."RedeemedAt" DESC, purchase."PaymentId" DESC
@@ -57,6 +65,7 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock, IA
             ) payment ON TRUE
             WHERE p.user_id = {userId} AND p.deleted_at IS NULL AND p.status = 'Activo'
             """).SingleOrDefaultAsync(ct);
+    }
 
     public async Task<WellnessJourneySnapshot?> SubmitAsync(
         WellnessJourneyAccess access, Guid submissionId, string draftHash, string draftJson, CancellationToken ct)

@@ -26,7 +26,7 @@ Auth mantiene el formulario de activación y crea la cuenta, los dos recibos y e
 
 - GET */api/v1/me/account-legal-consents?locale=es* devuelve la variante resuelta, la habilitación y los documentos vigentes con su recibo y fecha cuando correspondan. Solo la audiencia móvil autenticada puede usarlo. La identidad se toma de la sesión.
 - POST */api/v1/me/account-legal-consents/acceptances* recibe *versionId*, *locale* e *idempotencyKey*. Devuelve el recibo. Una versión reemplazada o una variante distinta devuelve 409 con un código recuperable. Una publicación incompleta devuelve 503.
-- El recorrido de membresía de demostración usa el idioma registrado al activar, tanto en estos endpoints como en el control de acceso a objetivo y generación. El idioma resuelto se devuelve al cliente para que envíe la misma variante.
+- El recorrido de membresía de demostración usa el idioma registrado al activar, tanto en estos endpoints como en el control de acceso a objetivo y generación. El idioma resuelto se devuelve al cliente para que envíe la misma variante. El acceso a objetivo y generación exige una membresía activa y los recibos vigentes de la cuenta.
 - Activar primero el contrato de API y comprobar la disponibilidad de ambos documentos antes de activar la interfaz de reaceptación. El estado deshabilitado devuelve una lista vacía y el acceso de demostración conserva su comprobación propia.
 
 ## Pruebas
