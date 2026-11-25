@@ -20,10 +20,20 @@ public sealed class Year365ReportStore(AppDbContext db) : IYear365ReportStore
             .ToArrayAsync(ct);
 
     public async Task<IReadOnlyList<Year365StoredEvent>> ListEventsAsync(
-        Guid patientId, int firstDay, int lastDay, CancellationToken ct) =>
-        await db.Motor365EngineEvents.AsNoTracking()
-            .Where(item => item.PersonId == patientId && item.Day >= firstDay && item.Day <= lastDay)
+        Guid patientId, int firstDay, int lastDay, CancellationToken ct)
+    {
+        var events = db.Motor365EngineEvents.AsNoTracking()
+            .Where(item => item.PersonId == patientId && item.Day >= firstDay && item.Day <= lastDay);
+
+        // Cada revisión republica decisiones anteriores. Mostrar la última versión del evento fechado.
+        return await events.Where(item => item.Id == events
+                .Where(revision => revision.Day == item.Day && revision.Kind == item.Kind)
+                .OrderByDescending(revision => revision.PlanVersion).ThenByDescending(revision => revision.ParamsVersion)
+                .ThenByDescending(revision => revision.OccurredAt).ThenByDescending(revision => revision.Id)
+                .Select(revision => revision.Id)
+                .First())
             .OrderBy(item => item.Day).ThenBy(item => item.OccurredAt).ThenBy(item => item.Id)
             .Select(item => new Year365StoredEvent(item.Id, item.Day, item.Kind))
             .ToArrayAsync(ct);
+    }
 }

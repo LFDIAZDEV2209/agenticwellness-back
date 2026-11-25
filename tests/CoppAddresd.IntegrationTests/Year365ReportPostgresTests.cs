@@ -3,12 +3,16 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text.Json;
+using CoppAddresd.Api.Configuration;
 using CoppAddresd.Api.Constants;
 using CoppAddresd.Api.Controllers;
 using CoppAddresd.Api.Middleware;
+using CoppAddresd.Application.Features.Motor365;
 using CoppAddresd.Application.Features.Wellness.Year365;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Application.Services;
+using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Wellness365;
 using CoppAddresd.Infrastructure.Persistence;
 using CoppAddresd.Infrastructure.Repositories;
@@ -33,6 +37,7 @@ public sealed partial class NutritionPlanWorkflowTests
     {
         await using var db = Context();
         var patient = await PatientAsync(db);
+        patient.Timezone = "America/Bogota";
         var other = await PatientAsync(db);
         var withoutProgram = await PatientAsync(db);
         var professional = NutritionProfessional(patient.Id);
@@ -45,7 +50,11 @@ public sealed partial class NutritionPlanWorkflowTests
             new Motor365DailyLog { PersonId = patient.Id, Day = 3, LogDate = first.AddDays(2), Adherence = 0m, Energy = 3 },
             new Motor365DailyLog { PersonId = patient.Id, Day = 5, LogDate = first.AddDays(4), Adherence = 0.8m, Energy = 3, WeightKg = 73m },
             new Motor365DailyLog { PersonId = other.Id, Day = 4, LogDate = first.AddDays(3), Adherence = 1m, Energy = 3 });
-        var version = new Motor365EngineParams { Version = 1, ParametersJson = "{}", ChangedBy = patient.Id, Reason = "Fixture" };
+        var version = new Motor365EngineParams
+        {
+            Version = 1, ParametersJson = JsonSerializer.Serialize(WellnessParameters.Default, JsonSerializerOptions.Web),
+            ChangedBy = patient.UserId!.Value, Reason = "Fixture"
+        };
         var item = new Motor365EngineEvent
         {
             Id = Guid.NewGuid(), PersonId = patient.Id, Day = 4, PlanVersion = 1, ParamsVersion = 1,
@@ -55,6 +64,7 @@ public sealed partial class NutritionPlanWorkflowTests
         db.Motor365EngineParams.Add(version);
         db.Motor365EngineEvents.Add(item);
         await db.SaveChangesAsync();
+        await SeedYear365MotorConsentAsync(db, patient);
 
         var signingKey = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32));
         var builder = WebApplication.CreateSlimBuilder();
@@ -82,9 +92,11 @@ public sealed partial class NutritionPlanWorkflowTests
                 RoleClaimType = "role"
             };
         });
-        builder.Services.AddAuthorization();
+        builder.Services.AddMotor365Api();
         await using var app = builder.Build();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
+        app.UseWhen(context => context.Request.Path.StartsWithSegments("/v1"),
+            branch => branch.UseMiddleware<Motor365Errors>());
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
@@ -98,8 +110,11 @@ public sealed partial class NutritionPlanWorkflowTests
         {
             var claims = new List<Claim>
             {
-                new("sub", Guid.NewGuid().ToString()), new("professional_id", professional.Id.ToString())
+                new("sub", audience == "app" ? patient.UserId!.Value.ToString() : Guid.NewGuid().ToString()),
+                new("professional_id", professional.Id.ToString())
             };
+            if (audience == "app")
+                claims.Add(new(ClaimTypes.NameIdentifier, patient.UserId!.Value.ToString()));
             if (mayView)
                 claims.Add(new("permission", PermissionCodes.ProgramProfile360View));
             if (mayExport)
@@ -179,18 +194,78 @@ public sealed partial class NutritionPlanWorkflowTests
         using var english = await Get(patient.Id, Token("erp", mayExport: true), suffix: "/export/csv", lang: "en");
         Assert.Contains("Scheduled breaks", await english.Content.ReadAsStringAsync());
 
-        db.Motor365DailyLogs.Add(new Motor365DailyLog
+        async Task<HttpResponseMessage> CloseDay(int day, int energy = 3)
         {
-            PersonId = patient.Id, Day = 4, LogDate = first.AddDays(3), Adherence = 0.60m, Energy = 3, WaistCm = 82.3m
-        });
-        await db.SaveChangesAsync();
+            using var request = new HttpRequestMessage(HttpMethod.Put, $"/v1/people/{patient.Id}/logs/{day}");
+            request.Headers.Authorization = new("Bearer", Token("app"));
+            request.Content = JsonContent.Create(new MotorLogInput(0.60m, 8, energy, 0, [], null, 82.3m, 0));
+            return await http.SendAsync(request);
+        }
+
+        // February 13 in UTC is still program day 14 in Bogotá.
+        using var futureClose = await CloseDay(15);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, futureClose.StatusCode);
+        using var close = await CloseDay(4);
+        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
+        var revision = (await close.Content.ReadFromJsonAsync<MotorLogResult>())!.Ver;
+        using var retry = await CloseDay(4);
+        Assert.Equal(HttpStatusCode.OK, retry.StatusCode);
+        Assert.Equal(revision, (await retry.Content.ReadFromJsonAsync<MotorLogResult>())!.Ver);
+        var storedClose = await db.Motor365DailyLogs.AsNoTracking()
+            .SingleAsync(log => log.PersonId == patient.Id && log.Day == 4);
+        Assert.Equal(first.AddDays(3), storedClose.LogDate);
+
+        var weeklyDecisions = db.Motor365EngineEvents.AsNoTracking()
+            .Where(entry => entry.PersonId == patient.Id && entry.Day == 14 && entry.Kind == "sin");
+        Assert.Single(await weeklyDecisions.ToArrayAsync());
+
+        using var correction = await CloseDay(4, energy: 4);
+        Assert.Equal(HttpStatusCode.OK, correction.StatusCode);
+        var decisions = await weeklyDecisions.OrderByDescending(entry => entry.PlanVersion).ToArrayAsync();
+        Assert.Equal(2, decisions.Length);
+        var latestDecision = decisions[0];
         using var refreshed = await Get(patient.Id, Token("erp"));
         Assert.Equal(HttpStatusCode.OK, refreshed.StatusCode);
         var updatedReport = (await refreshed.Content.ReadFromJsonAsync<Year365ReportResponse>())!.Report!;
         Assert.Equal(60m, updatedReport.Days.Single(day => day.Day == 4).AdherencePercent);
         Assert.Equal(3, updatedReport.Summary.RecordedDays);
         Assert.Equal(new Year365Measurement(first.AddDays(3), 82.3m), updatedReport.Summary.Waist);
+        Assert.Equal(new Year365Event(latestDecision.Id, 14, first.AddDays(13), "sin"),
+            Assert.Single(updatedReport.Events, entry => entry.Day == 14 && entry.Kind == "sin"));
+        var decisionDay = updatedReport.Days.Single(day => day.Day == 14);
+        Assert.Null(decisionDay.WeightKg);
+        Assert.Null(decisionDay.WaistCm);
         await app.StopAsync();
+    }
+
+    private static async Task SeedYear365MotorConsentAsync(AppDbContext db, PatientProfile patient)
+    {
+        foreach (var code in new[] { "paid-demo-terms-es", "paid-demo-privacy-es" })
+        {
+            var document = new LegalDocument { Id = Guid.NewGuid(), Code = code, Title = "Synthetic QA" };
+            var version = new LegalDocumentVersion
+            {
+                Id = Guid.NewGuid(), Document = document, Major = 1, IsPublished = true, Content = "Synthetic QA"
+            };
+            db.LegalDocumentVersions.Add(version);
+            await db.SaveChangesAsync();
+            document.CurrentVersionId = version.Id;
+            var receipt = new LegalDocumentAcceptance
+            {
+                Id = Guid.NewGuid(), UserId = patient.UserId!.Value, LegalDocumentVersionId = version.Id,
+                Scope = code, Locale = "es", DisclosureId = "synthetic", DisclosureSnapshot = "{}",
+                IdempotencyKey = Guid.NewGuid(), AcceptedAt = DateTime.UtcNow
+            };
+            db.LegalDocumentAcceptances.Add(receipt);
+            db.Motor365Consents.Add(new() { PersonId = patient.Id, AcceptanceId = receipt.Id, RecordedAt = DateTimeOffset.UtcNow });
+        }
+        db.Motor365Screenings.Add(new()
+        {
+            PersonId = patient.Id, SubmissionId = Guid.NewGuid(), RecordedAt = DateTimeOffset.UtcNow,
+            ParQ1 = 0, ParQ2 = 0, ParQ3 = 0, ParQ4 = 0, ParQ5 = 0, ParQ6 = 0, ParQ7 = 0,
+            Nqs1 = 0, Nqs2 = 0, Nqs3 = 0, Nqs4 = 0, Nqs5 = 0, Nqs6 = 0
+        });
+        await db.SaveChangesAsync();
     }
 
     private static Motor365Person CreateYear365Person(Guid patientId, DateOnly date) => new()
@@ -202,6 +277,6 @@ public sealed partial class NutritionPlanWorkflowTests
 
     private sealed class Year365TestClock : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => new(2028, 2, 5, 18, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => new(2028, 2, 13, 3, 0, 0, TimeSpan.Zero);
     }
 }
