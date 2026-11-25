@@ -19,6 +19,7 @@ public sealed record WellnessProfile(
     int CurrentDay,
     uint Seed)
 {
+    public WellnessParameters Parameters { get; init; } = WellnessParameters.Default;
     public WellnessPace Pace { get; init; } = WellnessPace.Moderate;
     public IReadOnlyDictionary<int, WellnessDailyLog> Logs { get; init; } =
         new Dictionary<int, WellnessDailyLog>();

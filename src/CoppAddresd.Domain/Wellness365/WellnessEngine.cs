@@ -10,7 +10,7 @@ public static class WellnessEngine
         10 * weightKg + 6.25 * profile.HeightCm - 5 * profile.Age +
         (profile.Sex == WellnessSex.Male ? 5 : -161);
 
-    public static int CalorieFloor(WellnessProfile profile) => profile.Sex == WellnessSex.Male ? 1500 : 1200;
+    public static int CalorieFloor(WellnessProfile profile) => profile.Sex == WellnessSex.Male ? profile.Parameters.FloorMale : profile.Parameters.FloorFemale;
 
     public static double BodyMassIndex(WellnessProfile profile, double weightKg) =>
         weightKg / Math.Pow(profile.HeightCm / 100, 2);
@@ -47,7 +47,7 @@ public static class WellnessEngine
         IReadOnlyList<int>? swaps = null) =>
         new(day, WellnessNutrition.BuildDay(profile, day.Targets, day.Day, swaps, day.SimpleMenu));
 
-    public static WellnessSimulation Simulate(WellnessProfile profile)
+    public static WellnessSimulation Simulate(WellnessProfile profile, CancellationToken ct = default)
     {
         var days = new WellnessDay[PlanLength];
         var events = new List<WellnessEvent>();
@@ -67,6 +67,7 @@ public static class WellnessEngine
 
         for (var index = 0; index < days.Length; index++)
         {
+            ct.ThrowIfCancellationRequested();
             var day = index + 1;
             var week = (day + 6) / 7;
             var dow = index % 7;
@@ -96,7 +97,7 @@ public static class WellnessEngine
                     new("Meta de peso alcanzada: el motor pasa a fase Mantener.",
                         "Target weight reached: engine moves to Maintain phase.")));
             }
-            var mode = WellnessRules.Mode(profile.Goal, week, reached);
+            var mode = WellnessRules.Mode(profile.Goal, week, reached, profile.Parameters);
             if (mode != lastMode)
             {
                 if (day > 1)
@@ -115,7 +116,7 @@ public static class WellnessEngine
                 Math.Max(-cap, Math.Min(cap, adjustment)), 10));
             var daily = DailyRules(day, previous, previous2, ref pauseUntil, ref hunger);
             var exercise = WellnessExercise.ForDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost);
-            var macros = MacroTargets(profile.Goal, mode, weight, kcal, exercise.Training);
+            var macros = MacroTargets(profile.Goal, mode, weight, kcal, exercise.Training, profile.Parameters);
 
             var past = day < profile.CurrentDay;
             var hasLog = profile.Logs.TryGetValue(day, out var recorded);
@@ -156,7 +157,7 @@ public static class WellnessEngine
             if (day % 7 == 0 && day >= 14)
             {
                 var decision = WellnessAdjustments.Weekly(profile.Goal, days.AsSpan(index - 13, 14),
-                    waistHistory[^1] - waistHistory[^3], cap, ref hunger);
+                    waistHistory[^1] - waistHistory[^3], cap, ref hunger, profile.Parameters);
                 adjustment += decision.CalorieDelta ?? 0;
                 events.Add(decision);
             }
@@ -165,15 +166,15 @@ public static class WellnessEngine
         return new(Array.AsReadOnly(days), events.AsReadOnly(), reached);
     }
 
-    private static WellnessMacros MacroTargets(WellnessGoal goal, WellnessMode mode, double weight, double kcal, bool train)
+    private static WellnessMacros MacroTargets(WellnessGoal goal, WellnessMode mode, double weight, double kcal, bool train, WellnessParameters parameters)
     {
-        var protein = WellnessRules.Round(Math.Min(WellnessRules.ProteinCap, WellnessRules.Goal(goal).Protein) * weight);
-        var share = train && mode != WellnessMode.Maintain ? WellnessRules.TrainingFatShare : WellnessRules.RestFatShare;
+        var protein = WellnessRules.Round(Math.Min(parameters.ProCap, parameters.Pro.For(goal)) * weight);
+        var share = train && mode != WellnessMode.Maintain ? parameters.Fat.Train : parameters.Fat.Rest;
         var fat = WellnessRules.Round(kcal * share / 9);
         var carbs = WellnessRules.Round((kcal - 4 * protein - 9 * fat) / 4);
-        if (carbs < WellnessRules.MinimumCarbs)
+        if (carbs < parameters.CarbMin)
         {
-            carbs = WellnessRules.MinimumCarbs;
+            carbs = parameters.CarbMin;
             fat = WellnessRules.Round((kcal - 4 * protein - 4 * carbs) / 9);
         }
         return new(kcal, protein, carbs, fat);
