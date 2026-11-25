@@ -117,6 +117,10 @@ public static class DependencyInjection
         services.Configure<CoppAddresd.Application.Features.LegalDocuments.LegalConsentSettings>(
             configuration.GetSection(CoppAddresd.Application.Features.LegalDocuments.LegalConsentSettings.SectionName));
         services.AddScoped<ILegalConsentService, LegalConsentService>();
+        services.Configure<CoppAddresd.Application.Features.LegalDocuments.AccountLegalConsentSettings>(
+            configuration.GetSection(CoppAddresd.Application.Features.LegalDocuments.AccountLegalConsentSettings.SectionName));
+        services.AddScoped<IAccountLegalConsentService, AccountLegalConsentService>();
+        services.AddScoped<LegalAcceptanceHistory>();
         services.AddTransient<AiConsentHttpHandler>();
         services.AddScoped<IWellnessRepository, WellnessRepository>();
         services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();

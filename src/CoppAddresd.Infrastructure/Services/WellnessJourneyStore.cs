@@ -1,3 +1,5 @@
+using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Domain.Exceptions;
 using CoppAddresd.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,8 +18,9 @@ public sealed record WellnessJourneySnapshot(
 
 public sealed record WellnessJourneyClaim(Guid GenerationId, Guid LeaseId, int Attempts);
 
-public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock)
+public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock, IAccountLegalConsentService accountConsents)
 {
+    private sealed record PaidJourneyMember(Guid PatientId, Guid PaymentId, string Locale, bool MembershipActive);
     private const string Pending = "pending";
     private const string Running = "running";
     private const string Ready = "ready";
@@ -25,24 +28,27 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock)
 
     public async Task<WellnessJourneyAccess?> GetAccessAsync(Guid userId, CancellationToken ct)
     {
-        // La prueba usa la misma base PostgreSQL de Auth y API. La identidad se
-        // toma del JWT y la vigencia se resuelve contra las versiones publicadas.
+        var member = await ReadMemberAsync(userId, ct);
+        if (member is null) return null;
+        try
+        {
+            var status = await accountConsents.GetJourneyStatusAsync(userId, member.Locale, ct);
+            return new(member.PatientId, member.PaymentId, !status.AcceptanceRequired, member.MembershipActive);
+        }
+        catch (AccountLegalConsentException error) when (error.StatusCode == 503)
+        {
+            return new(member.PatientId, member.PaymentId, false, member.MembershipActive);
+        }
+    }
+
+    public async Task<string?> GetLegalLocaleAsync(Guid userId, CancellationToken ct) =>
+        (await ReadMemberAsync(userId, ct))?.Locale;
+
+    private Task<PaidJourneyMember?> ReadMemberAsync(Guid userId, CancellationToken ct)
+    {
         var now = clock.GetUtcNow();
-        return await db.Database.SqlQuery<WellnessJourneyAccess>($"""
-            SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId",
-                (
-                    SELECT count(*) = 2
-                    FROM erp.legal_documents d
-                    JOIN erp.legal_document_versions v
-                        ON v.id = d.current_version_id AND v.document_id = d.id AND v.is_published
-                    WHERE d.code IN ('paid-demo-privacy-' || payment."Language", 'paid-demo-terms-' || payment."Language")
-                    AND EXISTS (
-                        SELECT 1
-                        FROM app.legal_document_acceptances a
-                        WHERE a.user_id = p.user_id AND a.legal_document_version_id = v.id
-                            AND a.scope = d.code AND a.locale = payment."Language" AND a.withdrawn_at IS NULL
-                    )
-                ) AS "ConsentCurrent",
+        return db.Database.SqlQuery<PaidJourneyMember>($"""
+            SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId", payment."Language" AS "Locale",
                 (payment."MembershipPaid" AND payment."MembershipState" = 'active'
                     AND COALESCE(payment."MembershipExpiresAt",
                         ((payment."ConfirmedAt" AT TIME ZONE 'UTC') +

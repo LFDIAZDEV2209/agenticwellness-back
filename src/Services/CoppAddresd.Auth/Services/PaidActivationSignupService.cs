@@ -41,7 +41,9 @@ public sealed partial class PaidActivationSignupService(
         var normalized = users.NormalizeEmail(activation.Email);
         if (await db.Users.AsNoTracking().AnyAsync(user => user.NormalizedEmail == normalized, ct))
             return new(activation.PaymentId, "sign_in_required", activation.Email);
-        var documents = await ReadDocumentsAsync(activation.Language, lockPublication: false, ct);
+        var codes = settings.LegalDocumentsFor(activation.Language);
+        IReadOnlyList<PaidSetupDocument> documents = codes is null
+            ? [] : await ReadDocumentsAsync(codes, lockPublication: false, ct);
         return new(activation.PaymentId, "setup_required", activation.Email, documents);
     }
 
@@ -66,8 +68,11 @@ public sealed partial class PaidActivationSignupService(
         if (activation.LinkedUserId is not null)
             return new(Linked(activation));
 
-        var documents = await ReadDocumentsAsync(activation.Language, lockPublication: true, ct);
-        if (documents.Count != 2)
+        var codes = settings.LegalDocumentsFor(activation.Language);
+        if (codes is null)
+            return new(null, "consent_unavailable");
+        var documents = await ReadDocumentsAsync(codes, lockPublication: true, ct);
+        if (documents.Count != 2 || documents.Any(document => string.IsNullOrWhiteSpace(document.Content)))
             return new(null, "consent_unavailable");
         if (request.VersionIds.Count != 2 || !request.VersionIds.ToHashSet()
                 .SetEquals(documents.Select(document => document.VersionId)))
@@ -114,6 +119,7 @@ public sealed partial class PaidActivationSignupService(
             """, ct);
         foreach (var document in documents)
         {
+            var scope = document.Code == codes.Terms ? "account-terms" : "account-privacy";
             var disclosureId = Convert.ToHexStringLower(SHA256.HashData(
                 Encoding.UTF8.GetBytes($"{document.Code}:{document.VersionId:D}")));
             var metadata = JsonSerializer.Serialize(new { source = "paid-journey-demo", ip, userAgent });
@@ -121,7 +127,7 @@ public sealed partial class PaidActivationSignupService(
                 INSERT INTO app.legal_document_acceptances
                     (id, user_id, legal_document_version_id, scope, locale, disclosure_id,
                      disclosure_snapshot, idempotency_key, accepted_at)
-                VALUES ({Guid.NewGuid()}, {user.Id}, {document.VersionId}, {document.Code}, {activation.Language},
+                VALUES ({Guid.NewGuid()}, {user.Id}, {document.VersionId}, {scope}, {activation.Language},
                         {disclosureId}, CAST({metadata} AS jsonb), {Guid.NewGuid()}, {now})
                 """, ct);
         }
@@ -136,20 +142,18 @@ public sealed partial class PaidActivationSignupService(
         new(activation.PaymentId, "linked", activation.Email, AppUrl: settings.AppUrl);
 
     private async Task<List<PaidSetupDocument>> ReadDocumentsAsync(
-        string language, bool lockPublication, CancellationToken ct)
+        PaidAccountLegalDocumentCodes codes, bool lockPublication, CancellationToken ct)
     {
-        var privacy = $"paid-demo-privacy-{language}";
-        var terms = $"paid-demo-terms-{language}";
         if (lockPublication)
             await db.Database.ExecuteSqlInterpolatedAsync($"""
                 SELECT id FROM erp.legal_documents
-                WHERE code IN ({privacy}, {terms}) ORDER BY code FOR SHARE
+                WHERE code IN ({codes.Privacy}, {codes.Terms}) ORDER BY code FOR SHARE
                 """, ct);
         return await db.Database.SqlQuery<PaidSetupDocument>($"""
             SELECT d.code AS "Code", d.title AS "Title", v.content AS "Content", v.id AS "VersionId"
             FROM erp.legal_documents d
             JOIN erp.legal_document_versions v ON v.id = d.current_version_id AND d.id = v.document_id
-            WHERE d.code IN ({privacy}, {terms}) AND v.is_published
+            WHERE d.code IN ({codes.Privacy}, {codes.Terms}) AND v.is_published
             ORDER BY d.code
             """).ToListAsync(ct);
     }

@@ -156,6 +156,8 @@ public static class PermissionCodes
     // Documentos Legales
     public const string LegalDocumentsView = "LegalDocuments.View";
     public const string LegalDocumentsManage = "LegalDocuments.Manage";
+    public const string LegalAcceptancesView = "LegalAcceptances.View";
+    public const string LegalAcceptancesExport = "LegalAcceptances.Export";
 
     // Financiero: acceso a información financiera sin acceso clínico.
     public const string FinanceView = "Finance.View";
@@ -284,6 +286,8 @@ public static class PermissionCodes
         yield return NutritionApprove;
         yield return LegalDocumentsView;
         yield return LegalDocumentsManage;
+        yield return LegalAcceptancesView;
+        yield return LegalAcceptancesExport;
         yield return FinanceView;
         yield return FinanceManage;
         yield return ReportsView;

@@ -89,7 +89,7 @@ public sealed class LegalConsentService(AppDbContext db, IOptionsMonitor<LegalCo
             || request.DisclosureId?.Length != 64)
             throw new AiConsentException("CONSENT_REQUEST_INVALID", request.Scope ?? "", 400);
         Locale(request.Locale);
-        return MutateAsync(userId, async () =>
+        return LegalAcceptanceTransaction.RunAsync(db, userId, async () =>
         {
             var prior = await db.LegalDocumentAcceptances.AsNoTracking()
                 .SingleOrDefaultAsync(x => x.UserId == userId && x.IdempotencyKey == request.IdempotencyKey, ct);
@@ -119,9 +119,10 @@ public sealed class LegalConsentService(AppDbContext db, IOptionsMonitor<LegalCo
 
     public async Task WithdrawAsync(Guid userId, Guid receiptId, CancellationToken ct)
     {
-        await MutateAsync(userId, async () =>
+        await LegalAcceptanceTransaction.RunAsync(db, userId, async () =>
         {
-            var row = await db.LegalDocumentAcceptances.SingleOrDefaultAsync(x => x.Id == receiptId && x.UserId == userId, ct)
+            var row = await db.LegalDocumentAcceptances.SingleOrDefaultAsync(x => x.Id == receiptId && x.UserId == userId
+                && LegalConsentScopes.All.Contains(x.Scope), ct)
                 ?? throw new NotFoundException("Consent receipt not found.");
             if (row.WithdrawnAt is null)
             {
@@ -163,17 +164,4 @@ public sealed class LegalConsentService(AppDbContext db, IOptionsMonitor<LegalCo
             .Select(x => x.UserId).SingleOrDefaultAsync(ct);
         await EnsureUserAsync(userId ?? Guid.Empty, scope, ct);
     }
-
-    private Task<T> MutateAsync<T>(Guid userId, Func<Task<T>> action, CancellationToken ct)
-        => db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-        {
-            db.ChangeTracker.Clear();
-            if (!db.Database.IsRelational()) return await action();
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
-            if (db.Database.IsNpgsql())
-                await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({userId.ToString()}, 0))", ct);
-            var result = await action();
-            await transaction.CommitAsync(ct);
-            return result;
-        });
 }

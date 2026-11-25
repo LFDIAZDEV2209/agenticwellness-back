@@ -15,4 +15,5 @@ public enum AuditAction
     AdaptationApplied = 4,
     /// <summary>Desestimación clínica de una propuesta de asignación, sin activar el programa.</summary>
     ProgramAssignmentDismissed = 5,
+    LegalAcceptanceHistoryExport = 6,
 }
