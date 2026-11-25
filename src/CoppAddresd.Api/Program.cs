@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using CoppAddresd.Api.Authorization;
 using CoppAddresd.Api.BackgroundJobs;
+using CoppAddresd.Api.Configuration;
 using CoppAddresd.Api.Extensions;
 using CoppAddresd.Api.Middleware;
 using CoppAddresd.Api.Security;
@@ -9,6 +10,7 @@ using CoppAddresd.Api.Seeders;
 using CoppAddresd.Infrastructure;
 using CoppAddresd.Infrastructure.HealthChecks;
 using CoppAddresd.Infrastructure.Persistence;
+using CoppAddresd.Infrastructure.Services;
 using CoppAddresd.WhatsApp;
 using CoppAddresd.WhatsApp.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -82,6 +84,11 @@ builder.Services.AddProgramAssignmentSettings(
 );
 builder.Services.AddCoppAddresdApplicationServices(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+var wellnessJourneyDemo = WellnessJourneyDemoOptions.From(builder.Configuration, builder.Environment);
+builder.Services.AddSingleton(wellnessJourneyDemo);
+builder.Services.AddScoped<WellnessJourneyStore>();
+if (wellnessJourneyDemo.Enabled && !args.Contains("--migrate"))
+    builder.Services.AddHostedService<WellnessJourneyDemoWorker>();
 builder.Services.AddWhatsApp(builder.Configuration, migrationsOnly: args.Contains("--migrate"));
 
 // Las tres consultas EF se registran SIEMPRE: los handlers MediatR que las

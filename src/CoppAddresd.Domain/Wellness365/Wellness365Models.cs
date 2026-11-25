@@ -64,7 +64,13 @@ public sealed record WellnessMealItem(char Role, string FoodId, double Grams);
 public sealed record WellnessMeal(int TemplateIndex, WellnessText Name,
     IReadOnlyList<WellnessMealItem> Items, WellnessMacros Totals);
 public sealed record WellnessMenu(IReadOnlyList<WellnessMeal> Meals, WellnessMacros Totals, double Deviation);
-public sealed record WellnessPlanDay(WellnessDay Recommendation, WellnessMenu Menu);
+public sealed record WellnessPlanDay(WellnessDay Recommendation, WellnessMenu Menu)
+{
+    [JsonPropertyName("engine_ver")]
+    public string EngineVersion { get; init; } = WellnessEngine.ReferenceVersion;
+    [JsonPropertyName("params_version")]
+    public int ParametersVersion { get; init; } = WellnessEngine.ReferenceParametersVersion;
+}
 
 public sealed record WellnessExerciseDefinition(
     string Id,
@@ -74,6 +80,14 @@ public sealed record WellnessExerciseDefinition(
     [property: JsonPropertyName("min")] int MinimumLevel,
     [property: JsonPropertyName("ic")] string Icon,
     string How);
+public sealed record WellnessExerciseGuide(WellnessExerciseInstructions Es, WellnessExerciseInstructions En);
+public sealed record WellnessExerciseInstructions(
+    [property: JsonPropertyName("n")] string Name,
+    [property: JsonPropertyName("s")] IReadOnlyList<string> Steps,
+    [property: JsonPropertyName("b")] string Breathing,
+    [property: JsonPropertyName("m")] string CommonMistakes,
+    [property: JsonPropertyName("e")] string Easier,
+    [property: JsonPropertyName("h")] string Harder);
 public sealed record WellnessPhase(WellnessText Name, int FirstWeek, int LastWeek, int Level);
 public sealed record WellnessStrengthDose(int Sets, int Reps, int RestSeconds, int HoldSeconds, string RepsInReserve);
 public sealed record WellnessExerciseItem(string Id, string Tag, bool NewlyUnlocked, int Minutes,
@@ -81,8 +95,21 @@ public sealed record WellnessExerciseItem(string Id, string Tag, bool NewlyUnloc
 public sealed record WellnessExerciseDay(char Type, WellnessText Name, int Level, int Minutes,
     bool Deload, int Week, int Boost, WellnessPhase Phase, IReadOnlyList<WellnessExerciseItem> Items, bool Training);
 
-public sealed record WellnessEvent(int Day, string Kind, double? CalorieDelta, double? RatePercent, WellnessText Message);
-public sealed record WellnessSimulation(IReadOnlyList<WellnessDay> Days, IReadOnlyList<WellnessEvent> Events, bool TargetReached);
+public sealed record WellnessEvent(int Day, string Kind, double? CalorieDelta, double? RatePercent, WellnessText Message)
+{
+    [JsonPropertyName("engine_ver")]
+    public string EngineVersion { get; init; } = WellnessEngine.ReferenceVersion;
+    [JsonPropertyName("params_version")]
+    public int ParametersVersion { get; init; } = WellnessEngine.ReferenceParametersVersion;
+}
+
+public sealed record WellnessSimulation(IReadOnlyList<WellnessDay> Days, IReadOnlyList<WellnessEvent> Events, bool TargetReached)
+{
+    [JsonPropertyName("engine_ver")]
+    public string EngineVersion { get; init; } = WellnessEngine.ReferenceVersion;
+    [JsonPropertyName("params_version")]
+    public int ParametersVersion { get; init; } = WellnessEngine.ReferenceParametersVersion;
+}
 
 public sealed record WellnessDay(
     int Day, int Week, int DayOfWeek, WellnessMode Mode, WellnessMacros Targets, int FiberGrams,

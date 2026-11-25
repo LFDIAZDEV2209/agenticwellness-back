@@ -2,6 +2,8 @@
 
 ## Estado
 
+**Retirado del despliegue automático desde el 25 de noviembre de 2026.** Con el apagado en AWS, Citas del ERP y de la app quedarán fuera de servicio. Consulta el [ADR de retiro controlado](../../decisions/2026-11-25-retiro-telemedicine.md).
+
 Fases implementadas:
 
 - **Fase 0 — Scaffold**: microservicio `src/Services/CoppAddresd.Telemedicine` (puerto **5130** http / 7130 https), Clean Architecture por carpetas (precedente: Auth Service), JWT del Auth Service (mismo secret/issuer/audiences), Swagger, `/health`.

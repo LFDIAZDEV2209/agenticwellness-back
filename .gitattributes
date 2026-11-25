@@ -1,6 +1,10 @@
 # Conserva el SQL nutricional identico al generador, incluso con autocrlf en Windows.
 src/CoppAddresd.Infrastructure/Migrations/Seed/AddNutritionFoodCatalog.sql text eol=lf
 
+# Conserva los bytes de los catálogos originales v5.2 al verificar sus hashes.
+src/CoppAddresd.Domain/Wellness365/Reference/catalog.json text eol=lf
+src/CoppAddresd.Domain/Wellness365/Reference/guide.json text eol=lf
+
 # Evidencia QA: los hashes corresponden a UTF-8/LF también en Windows.
 docs/modules/program-progress/QA-4.11.md text eol=lf
 docs/modules/program-progress/evidence/4.11/** text eol=lf

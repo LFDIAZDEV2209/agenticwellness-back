@@ -8,8 +8,9 @@ const app=process.env.COP_E2E_APP_DIR??path.resolve('../antares-paciente');
 const require=createRequire(path.join(app,'package.json'));
 const {chromium}=require('playwright');const {expect}=require('playwright/test');
 const out=process.env.COP_E2E_OUTPUT,db=process.env.COP_E2E_DATABASE,auth=process.env.COP_E2E_AUTH_URL;
+const postgresContainer=process.env.COP_E2E_POSTGRES_CONTAINER??'copp-qa-postgres-20261013';
 assert(out?.startsWith('/tmp/'));assert(/^copp_review_[a-z0-9_]+$/.test(db??''));assert.equal(auth,'http://127.0.0.1:5125');
-const sql=query=>execFileSync('docker',['--context','default','exec','copp-qa-postgres-20261013','psql','-U','postgres','-d',db,'-v','ON_ERROR_STOP=1','-Atc',query],{encoding:'utf8'}).trim();
+const sql=query=>execFileSync('docker',['--context','default','exec',postgresContainer,'psql','-U','postgres','-d',db,'-v','ON_ERROR_STOP=1','-Atc',query],{encoding:'utf8'}).trim();
 const browser=await chromium.launch(),results=[];
 const scenarios=[['phone-only','QA-OTP-NO-EMAIL','123456'],['expired-code','QA-OTP-EXPIRED','000000'],['wrong-code','QA-OTP-WRONG','999999'],['invalid-saved-email','QA-OTP-BAD-EMAIL','123456']];
 for(const [scenario,document,code] of scenarios.filter(row=>!process.env.COP_E2E_SCENARIO||row[0]===process.env.COP_E2E_SCENARIO)){
@@ -28,7 +29,7 @@ for(const [scenario,document,code] of scenarios.filter(row=>!process.env.COP_E2E
   const pending=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/auth/verify-otp'&&response.request().method()==='POST');
   await page.getByRole('button',{name:'Verificar y entrar',exact:true}).click();const response=await pending;const body=await response.json();verification={status:response.status(),detail:body.detail};
   if(scenario==='phone-only'){
-   assert.equal(response.status(),200,JSON.stringify(verification));await expect(page.getByRole('heading',{name:'Tus datos',exact:true})).toBeVisible();
+   assert.equal(response.status(),200,JSON.stringify(verification));await expect(page.getByRole('heading',{name:'Correo',exact:true})).toBeVisible();
    const row=JSON.parse(sql(`SELECT json_build_object('emailMissing',u."Email" IS NULL,'phoneVerified',u."PhoneNumberConfirmed",'emailVerified',u."EmailConfirmed",'username',u."UserName",'phone',u."PhoneNumber",'userId',u."Id") FROM auth."Users" u JOIN app.patient_profiles p ON p.user_id=u."Id" WHERE p.document_number='${document}';`));
    assert.equal(row.emailMissing,true);assert.equal(row.phoneVerified,true);assert.equal(row.emailVerified,false);assert.match(row.username,/^patient-[a-f0-9]{32}$/);assert.equal(row.phone,'+12025550101');const jwt=JSON.parse(Buffer.from(body.accessToken.split('.')[1],'base64url').toString());assert.equal(jwt.sub??jwt.nameid??jwt['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],row.userId);assert(!('email' in jwt));assert(!('http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress' in jwt));
   }else if(scenario==='expired-code'){
