@@ -5,7 +5,7 @@ namespace CoppAddresd.Infrastructure.Sos;
 /// <summary>Texto estático coincide con el alta de plantilla Meta. Parámetros siempre de snapshot.</summary>
 public static class SosWhatsAppTemplate
 {
-    public const string Body = "Alerta SOS: {{1}} necesita tu ayuda.\n\nDirección: {{2}}\nMapa: {{3}}\nAlerta: {{4}}\n\nÚltimas lecturas registradas: {{5}}\n\nComunícate ahora para confirmar cómo se encuentra. Recibes este aviso porque eres su contacto de emergencia. Copp Adresd.";
+    public const string Body = "Alerta SOS: {{1}} necesita tu ayuda.\n\nDirección: {{2}}\nMapa: {{3}}\nAlerta: {{4}}\n\nÚltimas lecturas registradas: {{5}}\n\nComunícate ahora para confirmar cómo se encuentra. Recibes este aviso porque eres su contacto de emergencia. Agentic Wellness IA.";
     public static string[] Parameters(SosAlert alert, string patientName, string? link)
     {
         var readings=SosMessageFormatting.ReportedVitals(alert);

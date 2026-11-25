@@ -9,12 +9,18 @@ namespace CoppAddresd.Auth.Configuration;
 public class EmailSettings
 {
     public const string SectionName = "Email";
+    internal const string DefaultBrandName = "Agentic Wellness IA";
 
     public string Provider { get; set; } = "Log";
 
     public string From { get; set; } = "no-reply@coppaddresd.com";
 
-    public string FromName { get; set; } = "CoppAddresd";
+    public string FromName { get; set; } = DefaultBrandName;
+
+    internal static string ResolveBrandName(string? name) =>
+        name?.Trim().ToUpperInvariant() is null or "" or "COPPADDRESD" or "COPPADRESD" or "COPP ADRESD" or "COPP-ADRESD" or "ANTARES"
+            ? DefaultBrandName
+            : name!;
 
     /// <summary>Base URL del frontend para enlaces (ej. http://localhost:3000).</summary>
     public string FrontendUrl { get; set; } = "http://localhost:3000";

@@ -1,5 +1,7 @@
 # Idioma de notificaciones push y propiedad del dispositivo
 
+Los recordatorios y las plantillas iniciales del catálogo de notificaciones usan **Agentic Wellness IA** como marca en los textos de ES y EN. Las versiones ya registradas de las plantillas de Tests de Salud se administran mediante el editor y su flujo de publicación.
+
 Cada fila de `app.device_tokens` tiene un campo `language` (`es` o `en`). Aplica
 la migración `20261106142633_AddDeviceTokenLanguage` antes de dirigir tráfico a
 la nueva API. La columna añadida usa `es` por defecto para los registros existentes

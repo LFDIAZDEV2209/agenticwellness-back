@@ -260,7 +260,7 @@ public static class SosVoiceTemplate
                 : $"Dirección aproximada registrada con esta alerta: {address}. No es seguimiento en tiempo real. Confirma la dirección al comunicarte. ";
 
         var message =
-            $"Alerta de emergencia de Copp Adresd. {identity} activó una alerta SOS y necesita ayuda inmediata. "
+            $"Alerta de emergencia de Agentic Wellness IA. {identity} activó una alerta SOS y necesita ayuda inmediata. "
             + location
             + (vitals is null ? string.Empty : vitals + " ")
             + (hasGps ? "Si recibiste el SMS o correo, consulta también el mapa compartido. " : string.Empty)

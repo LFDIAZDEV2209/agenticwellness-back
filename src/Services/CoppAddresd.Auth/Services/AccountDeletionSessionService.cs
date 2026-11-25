@@ -240,12 +240,12 @@ public class AccountDeletionSessionService : IAccountDeletionSessionService
             var date = purgeAfter?.ToString("yyyy-MM-dd") ?? "-";
             await _emailSender.SendAsync(new EmailMessage(
                 user.Email,
-                "COPP-ADRESD: solicitud de eliminación de cuenta / account deletion request",
+                "Agentic Wellness IA: solicitud de eliminación de cuenta / account deletion request",
                 $"<p>Hola {System.Net.WebUtility.HtmlEncode(user.FirstName)},</p>"
-                + "<p>Recibimos la solicitud de eliminar tu cuenta de la app COPP-ADRESD. Tu acceso ya está bloqueado "
+                + "<p>Recibimos la solicitud de eliminar tu cuenta de la app Agentic Wellness IA. Tu acceso ya está bloqueado "
                 + $"y tus datos de identificación se borrarán de forma definitiva a partir del {date}.</p>"
                 + "<p>Si no fuiste tú, contáctanos de inmediato.</p><hr>"
-                + "<p>We received a request to delete your COPP-ADRESD app account. Your access is already blocked "
+                + "<p>We received a request to delete your Agentic Wellness IA app account. Your access is already blocked "
                 + $"and your identifying data will be permanently erased on or after {date}. "
                 + "If this was not you, contact us immediately.</p>"), ct);
         }

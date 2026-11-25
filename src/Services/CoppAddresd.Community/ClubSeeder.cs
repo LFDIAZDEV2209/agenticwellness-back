@@ -59,7 +59,7 @@ public static class ClubSeeder
         // Perfil de sistema (lo crea CommunitySeeder, que corre antes en Program).
         var systemProfile = await db.Profiles.FirstOrDefaultAsync(p => p.IsSystem, ct)
             ?? throw new InvalidOperationException(
-                "ClubSeeder requiere el perfil de sistema 'Equipo Copp Adresd' (lo crea CommunitySeeder).");
+                "ClubSeeder requiere el perfil de sistema 'Equipo Agentic Wellness IA' (lo crea CommunitySeeder).");
 
         // Clubes oficiales de sistema (Fase 10) + membresías y posts de los
         // pacientes de prueba: idempotentes por slug/perfil, corren siempre
@@ -115,7 +115,7 @@ public static class ClubSeeder
 
         // ─── CLUBES DE SISTEMA (antiguos PostDestination) ──────────────
         SeedSystemClub(db, systemProfile, "comunidad-adres", "Comunidad ADRES",
-            "Comunidad oficial del programa COPP-ADRESD: anuncios, información y acompañamiento general.",
+            "Comunidad oficial del programa Agentic Wellness IA: anuncios, información y acompañamiento general.",
             "Salud", ClubVisibility.Publico, 5000);
         SeedSystemClub(db, systemProfile, "reto-caminata", "Reto Caminata",
             "Club del reto de caminata: 10.000 pasos diarios, retos mensuales y grupos por ciudad.",

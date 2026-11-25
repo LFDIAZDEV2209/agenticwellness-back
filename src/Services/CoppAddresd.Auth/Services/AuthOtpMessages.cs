@@ -32,8 +32,8 @@ public static class AuthOtpMessages
         var heading = locale == "en" ? "Confirm your identity" : "Confirma tu identidad";
         var intro =
             locale == "en"
-                ? $"Hello {firstName}, use this single-use code to sign in to Copp Adresd."
-                : $"Hola {firstName}, usa este código de un solo uso para entrar a Copp Adresd.";
+                ? $"Hello {firstName}, use this single-use code to sign in to Agentic Wellness IA."
+                : $"Hola {firstName}, usa este código de un solo uso para entrar a Agentic Wellness IA.";
         var footer =
             locale == "en"
                 ? "This code is personal and single-use. If you open the app from another device, request a new one."
@@ -66,8 +66,8 @@ public static class AuthOtpMessages
         var heading = locale == "en" ? "Reset your password" : "Recupera tu contraseña";
         var intro =
             locale == "en"
-                ? "Use this code to create a new password for your Copp Adresd account."
-                : "Usa este código para crear una nueva contraseña de tu cuenta Copp Adresd.";
+                ? "Use this code to create a new password for your Agentic Wellness IA account."
+                : "Usa este código para crear una nueva contraseña de tu cuenta Agentic Wellness IA.";
         var footer =
             locale == "en"
                 ? "Choose a password with uppercase, lowercase, a number and a symbol. Never share this code."

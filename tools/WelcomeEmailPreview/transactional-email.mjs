@@ -13,7 +13,7 @@ const { chromium } = playwrightRoot
 const output = await mkdtemp(join(tmpdir(), 'copp-transactional-mail-'));
 const templates = {
   'BIEN-01': ['Descargar la app', 'Download the app', '/download'],
-  'ACT-01': ['Abrir Copp Adresd', 'Open Copp Adresd', '/platform'],
+  'ACT-01': ['Abrir Agentic Wellness IA', 'Open Agentic Wellness IA', '/platform'],
   'ACT-02': ['Descargar la app', 'Download the app', '/download'],
   'PWD-01': ['Crear nueva contraseña', 'Create a new password', '/reset'],
   'NUT-01': ['Ver mi plan completo', 'View my full plan', '/nutrition'],

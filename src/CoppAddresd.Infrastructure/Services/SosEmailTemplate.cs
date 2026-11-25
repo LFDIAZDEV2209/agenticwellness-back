@@ -8,7 +8,7 @@ namespace CoppAddresd.Infrastructure.Services;
 public static class SosEmailTemplate
 {
     // Sin PII en el asunto: los transportes pueden registrarlo para diagnóstico.
-    public const string Subject = "Alerta SOS | Copp Adresd";
+    public const string Subject = "Alerta SOS | Agentic Wellness IA";
 
     public static string BuildHtml(SosAlert alert, string? locationUrl = null)
     {
@@ -46,13 +46,13 @@ public static class SosEmailTemplate
             ? "<br>Dirección: Amazon Location · <a href=\"https://docs.aws.amazon.com/location/latest/developerguide/data-attribution.html\" style=\"color:#53657f\">Fuentes de datos</a>" : "";
         return $$"""
             <!doctype html><html lang="es">
-            <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Alerta SOS · Copp Adresd</title></head>
+            <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Alerta SOS · Agentic Wellness IA</title></head>
             <body style="margin:0;padding:0;background:#f1f5f8;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%">
               <div style="display:none;max-height:0;overflow:hidden;opacity:0">{{name}} necesita tu ayuda.</div>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f8;border-collapse:collapse"><tr><td align="center" style="padding:20px 12px">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;table-layout:fixed;background:#ffffff;border:1px solid #dfe6ee;border-top:4px solid #035d4d;border-radius:16px;border-spacing:0;overflow:hidden">
                   <tr><td style="padding:22px 22px 18px">
-                    <p style="margin:0 0 20px;color:#142855;font-size:17px;font-weight:700">Copp Adresd</p>
+                    <p style="margin:0 0 20px;color:#142855;font-size:17px;font-weight:700">Agentic Wellness IA</p>
                     <p style="margin:0 0 10px;color:#aa372f;font-size:11px;font-weight:700;letter-spacing:1px">ALERTA SOS</p>
                     <h1 style="margin:0 0 10px;color:#142855;font-size:24px;line-height:1.3;letter-spacing:-.4px;overflow-wrap:anywhere;word-break:break-word">{{name}} necesita tu ayuda</h1>
                     <p style="margin:0 0 10px;color:#53657f;font-size:14px;line-height:1.6">Comunícate ahora para confirmar cómo se encuentra.</p>
@@ -76,7 +76,7 @@ public static class SosEmailTemplate
     public static string BuildText(SosAlert alert, string? locationUrl = null)
     {
         var text = new StringBuilder("Alerta SOS: ")
-            .Append(SosMessageFormatting.FullName(alert.Patient, "Tu contacto")).Append(" necesita tu ayuda.\nCopp Adresd\n")
+            .Append(SosMessageFormatting.FullName(alert.Patient, "Tu contacto")).Append(" necesita tu ayuda.\nAgentic Wellness IA\n")
             .Append("Alerta activada: ").Append(SosMessageFormatting.FormatMessageTime(alert.CreatedAt));
         var phone = SosMessageFormatting.PatientPhone(alert.Patient);
         if (phone is not null) text.Append("\nLlamar: ").Append(phone);
