@@ -16,13 +16,29 @@ public sealed class AccountLegalConsentService(AppDbContext db, IOptionsMonitor<
 {
     private static readonly JsonSerializerOptions MetadataJson = new(JsonSerializerDefaults.Web);
 
-    public async Task<AccountLegalConsentStatus> GetStatusAsync(Guid userId, string locale, CancellationToken ct)
+    public Task<AccountLegalConsentStatus> GetStatusAsync(Guid userId, string locale, CancellationToken ct)
     {
         ValidateSubject(userId, locale);
         var config = settings.CurrentValue;
-        if (!config.EnforcementEnabled) return new(locale, false, []);
+        return config.EnforcementEnabled
+            ? GetPublishedStatusAsync(userId, locale, Codes(config, locale), ct)
+            : Task.FromResult(new AccountLegalConsentStatus(locale, false, []));
+    }
 
-        var current = await ReadPublishedAsync(Codes(config, locale), locale, lockPublication: false, ct);
+    public Task<AccountLegalConsentStatus> GetJourneyStatusAsync(Guid userId, string locale, CancellationToken ct)
+    {
+        ValidateSubject(userId, locale);
+        var config = settings.CurrentValue;
+        var codes = config.EnforcementEnabled || config.Documents.Count != 0
+            ? Codes(config, locale)
+            : new AccountLegalDocumentCodes { Terms = $"paid-demo-terms-{locale}", Privacy = $"paid-demo-privacy-{locale}" };
+        return GetPublishedStatusAsync(userId, locale, codes, ct);
+    }
+
+    private async Task<AccountLegalConsentStatus> GetPublishedStatusAsync(Guid userId, string locale,
+        AccountLegalDocumentCodes codes, CancellationToken ct)
+    {
+        var current = await ReadPublishedAsync(codes, locale, lockPublication: false, ct);
         var termsId = current[0].Document.VersionId;
         var privacyId = current[1].Document.VersionId;
         var legacyTerms = CompatibleDemoScope(current[0]);

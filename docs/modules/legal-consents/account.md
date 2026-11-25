@@ -10,7 +10,9 @@ El catálogo de Documentos legales del ERP determina la versión vigente de cada
 | AccountLegalConsents:Documents:en:Terms | Código de Términos en inglés. |
 | AccountLegalConsents:Documents:en:Privacy | Código de Privacidad en inglés. |
 
-La activación simulada usa los códigos de las semillas de prueba que correspondan al entorno. Para la habilitación con clientes reales, usar los códigos aprobados de ambos documentos en el ERP.
+La activación simulada usa los códigos de las semillas de prueba cuando el mapa está vacío y la comprobación está apagada. Al configurar el mapa o habilitar la comprobación, Auth requiere los dos códigos explícitos del idioma. Para la habilitación con clientes reales, usar los códigos aprobados de ambos documentos en el ERP.
+
+Auth mantiene el formulario de activación y crea la cuenta, los dos recibos y el vínculo en la misma transacción. La web recibe un conflicto si publica una versión nueva durante el trámite. Volver a cargar el documento permite completar el mismo alta con los identificadores vigentes.
 
 ## Recibo y vigencia
 
