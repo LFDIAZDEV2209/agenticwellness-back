@@ -85,7 +85,7 @@ public sealed class ProgramAdaptationEngine : IProgramAdaptationEngine
             Payload: JsonSerializer.SerializeToElement(
                 new { xpThreshold = DifficultyChangeXpThreshold, suggestedDirection = "increase" }
             ),
-            Reason: $"El paciente superó los {DifficultyChangeXpThreshold} XP; se sugiere subir la dificultad del programa (AC-16).",
+            Reason: $"La persona superó los {DifficultyChangeXpThreshold} XP; se sugiere subir la dificultad del programa (AC-16).",
             RequiresApproval: true
         );
 

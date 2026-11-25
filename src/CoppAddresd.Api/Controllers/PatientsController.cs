@@ -231,7 +231,7 @@ public class PatientsController(
             || IsOutsideActiveClinic(patient)
             || await IsOutsideOwnScopeAsync(patient.Id, ownProfessionalId, ct)
         )
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         return Ok(patient);
     }
@@ -392,7 +392,7 @@ public class PatientsController(
 
         var (_, ownProfessionalId) = await ResolvePatientScopeAsync(ct);
         if (!await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         var command = new UpdatePatientCommand(
             id,
@@ -435,7 +435,7 @@ public class PatientsController(
 
         var updated = await mediator.Send(command, ct);
         if (updated is null)
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         return Ok(updated);
     }
@@ -457,14 +457,14 @@ public class PatientsController(
 
         var (_, ownProfessionalId) = await ResolvePatientScopeAsync(ct);
         if (!await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         var result = await mediator.Send(
             new UpdatePatientStatusCommand(id, request.Status, context.UserId),
             ct
         );
         if (result is null)
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         return Ok(result);
     }
@@ -477,11 +477,11 @@ public class PatientsController(
 
         var (_, ownProfessionalId) = await ResolvePatientScopeAsync(ct);
         if (!await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         var deleted = await mediator.Send(new DeletePatientCommand(id, context.UserId), ct);
         if (!deleted)
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         return NoContent();
     }
@@ -497,7 +497,7 @@ public class PatientsController(
     {
         var (allowed, ownProfessionalId) = await ResolvePatientScopeAsync(ct);
         if (!allowed || !await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         return Ok(await mediator.Send(new ListPatientAssignmentsQuery(id), ct));
     }
@@ -519,7 +519,7 @@ public class PatientsController(
 
         var (fullScope, ownProfessionalId) = await ResolvePatientScopeAsync(ct);
         if (!fullScope || !await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         // Regla de escalada: con alcance propio solo se permite asignarse a sí
         // mismo; la asignación de otros profesionales es administrativa.
@@ -549,7 +549,7 @@ public class PatientsController(
 
         var (fullScope, ownProfessionalId) = await ResolvePatientScopeAsync(ct);
         if (!fullScope || !await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         if (ownProfessionalId is not null && professionalId != ownProfessionalId.Value)
             return Forbid();
@@ -577,7 +577,7 @@ public class PatientsController(
             return Forbid();
 
         if (!await CanAccessPatientAsync(id, ownProfessionalId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         return Ok(await mediator.Send(new ListPatientMeasurementsQuery(id), ct));
     }

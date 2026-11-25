@@ -94,7 +94,7 @@ public sealed class ProgramProgressSeeder(
         await SeedProgramTemplateAsync(
             "program-coppaddresd-83-days",
             "Programa COPP-ADRESD (83 días / 12 semanas)",
-            "Plantilla del programa de 83 días (12 semanas) para pacientes Copp Adresd.",
+            "Plantilla del programa de 83 días (12 semanas) para personas Copp Adresd.",
             12,
             ct
         );

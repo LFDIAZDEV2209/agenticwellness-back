@@ -69,7 +69,7 @@ public sealed class GetMetricsHistoryQueryHandler(
         if (!await repository.HasActiveEnrollmentAsync(request.PatientId, ct))
         {
             throw new NotFoundException(
-                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {request.PatientId}.");
+                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {request.PatientId}.");
         }
 
         var days = request.Days <= 0 ? GetMetricsHistoryQuery.DefaultDays : Math.Clamp(request.Days, GetMetricsHistoryQuery.MinDays, GetMetricsHistoryQuery.MaxDays);
@@ -85,7 +85,7 @@ public sealed class GetMetricsHistoryQueryHandler(
             {
                 var context = await repository.GetMetricsHistoryContextAsync(request.PatientId, token)
                     ?? throw new NotFoundException(
-                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {request.PatientId}.");
+                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {request.PatientId}.");
 
                 return BuildCachePayload(context);
             },

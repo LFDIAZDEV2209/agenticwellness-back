@@ -10,7 +10,7 @@ public sealed class CreateDocumentCommandValidator : AbstractValidator<CreateDoc
         // El paciente es obligatorio salvo al crear una versión (parentDocumentId):
         // en ese caso paciente y clínica se heredan del documento raíz.
         RuleFor(x => x.PatientId).NotEmpty()
-            .WithMessage("El documento requiere un paciente.")
+            .WithMessage("El documento requiere una persona.")
             .When(x => x.ParentDocumentId is null);
         RuleFor(x => x.DocumentTypeId).NotEmpty().WithMessage("El tipo de documento es requerido.");
         RuleFor(x => x.Title).NotEmpty().MaximumLength(200);

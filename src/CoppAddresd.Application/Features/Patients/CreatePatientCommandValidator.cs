@@ -122,6 +122,6 @@ public sealed class CreatePatientCommandValidator : AbstractValidator<CreatePati
 
         validator.RuleFor(status)
             .Must(v => PatientOptions.IsAllowed(PatientOptions.Statuses, v))
-            .WithMessage("El estado del paciente no es un valor válido.");
+            .WithMessage("El estado de la persona no es un valor válido.");
     }
 }

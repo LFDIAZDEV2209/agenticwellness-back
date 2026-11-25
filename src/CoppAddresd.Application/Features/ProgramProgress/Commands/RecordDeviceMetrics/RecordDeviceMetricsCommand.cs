@@ -111,7 +111,7 @@ public sealed class RecordDeviceMetricsCommandHandler(
         )
         {
             throw new NotFoundException(
-                "NO_ACTIVE_ENROLLMENT: se requiere una inscripción activa del paciente."
+                "NO_ACTIVE_ENROLLMENT: se requiere una inscripción activa de la persona."
             );
         }
 

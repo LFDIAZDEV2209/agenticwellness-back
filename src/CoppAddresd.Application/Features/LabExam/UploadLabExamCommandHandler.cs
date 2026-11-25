@@ -154,7 +154,7 @@ public class UploadLabExamCommandHandler
         ct.ThrowIfCancellationRequested();
         ValidateInput(request);
         var patient = await _patientRepository.GetByUserIdAsync(request.UserId, ct)
-            ?? throw new NotFoundException("No existe un perfil de paciente para este archivo.");
+            ?? throw new NotFoundException("No existe un perfil de persona para este archivo.");
 
         // El catálogo existente ofrece OTHER; no se inventa un subtipo de examen.
         var originalExtension = Path.GetExtension(request.FileName).ToLowerInvariant();

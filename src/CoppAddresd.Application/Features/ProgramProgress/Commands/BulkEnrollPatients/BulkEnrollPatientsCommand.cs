@@ -52,7 +52,7 @@ public sealed class BulkEnrollPatientsCommandValidator : AbstractValidator<BulkE
             .NotEmpty()
             .WithMessage("La lista de patientIds es requerida.")
             .Must(ids => ids.Count <= 100)
-            .WithMessage("El lote no puede exceder 100 pacientes por request.");
+            .WithMessage("Solo se admiten hasta 100 personas por solicitud.");
 
         RuleForEach(x => x.PatientIds)
             .NotEmpty()

@@ -115,7 +115,7 @@ public class SosController(
                 return Conflict(
                     new
                     {
-                        message = "El paciente ya tiene una alerta SOS activa.",
+                        message = "La persona ya tiene una alerta SOS activa.",
                         alertId = result.Alert?.Id,
                     }
                 );

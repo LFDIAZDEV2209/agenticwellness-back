@@ -28,10 +28,10 @@ public static class CommunityContentSeeder
     /// (<c>CommunityDemoSeeder</c>): mismo documento → mismo Id de usuario.</summary>
     private static readonly IReadOnlyList<DemoMember> Members =
     [
-        new("1000000001", "Valentina Ríos", "Paciente hipertensa desde 2021. Me encanta caminar y cocinar saludable."),
+        new("1000000001", "Valentina Ríos", "Vivo con hipertensión desde 2021. Me encanta caminar y cocinar saludable."),
         new("1000000002", "Andrés Cárdenas", "Sobreviví a un infarto en 2022. Ahora corro 5K y llevo la dieta al pie de la letra."),
-        new("1000000003", "Carolina Mendoza", "Nutricionista y paciente de corazón. Fan del programa INFINITO."),
-        new("1000000004", "Jorge Herrera", "Hipertenso diagnosticado en 2023. Aprendiendo a bajar la sal, no el ánimo."),
+        new("1000000003", "Carolina Mendoza", "Nutricionista y amante del bienestar. Fan del programa INFINITO."),
+        new("1000000004", "Jorge Herrera", "Vivo con hipertensión desde 2023. Aprendiendo a bajar la sal, no el ánimo."),
         new("1000000005", "Luisa Fernández", "Madre, cardiópata y optimista. Aquí para compartir y aprender."),
         new("1000000006", "Miguel Ángel Peña", "Ex-fumador desde marzo. El COPP-ADRESD me cambió la vida."),
         new("1000000007", "Diana Ospina", "Enfermera jubilada. Vigilo mi presión a diario y ayudo a otros a hacerlo."),
@@ -94,7 +94,7 @@ public static class CommunityContentSeeder
     private static readonly IReadOnlyList<CommentSeed> Comments =
     [
         new("1000000001", "¡Bienvenidos a la Comunidad Copp Adresd! 👋 Este espacio es de todos: comparte tus avances, dudas y recetas. Reglas simples: respeto ante todo, nada de consejos médicos personalizados y mucho ánimo. ¡Empecemos! 💜",
-            "1000000003", "¡Me encanta! Ojalá hubiera existido esto cuando me diagnosticaron. 💜", 230,
+            "1000000003", "¡Me encanta! Ojalá hubiera tenido este apoyo al empezar a cuidar mi salud. 💜", 230,
             [
                 new("1000000001", "¡Bienvenida, Carolina! Gracias por sumarte.", 225),
             ]),

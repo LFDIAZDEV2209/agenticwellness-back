@@ -58,7 +58,7 @@ public sealed class CompleteTaskCommandHandler(
         {
             throw new UnprocessableEntityException(
                 $"DATE_OUTSIDE_ACTIVE_WEEK: la fecha {request.LocalDate:yyyy-MM-dd} es futura " +
-                $"(hoy local del paciente: {todayLocal:yyyy-MM-dd}).");
+                $"(hoy local de la persona: {todayLocal:yyyy-MM-dd}).");
         }
 
         var input = new CompleteTaskInput(

@@ -135,7 +135,7 @@ public class DocumentsController(
             return Forbid();
 
         if (await IsPatientOutsideActiveClinic(request.PatientId, ct))
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
 
         var result = await mediator.Send(new CreateDocumentUploadIntentCommand(
             request.PatientId,
@@ -163,7 +163,7 @@ public class DocumentsController(
         if (request.ParentDocumentId is null)
         {
             if (request.PatientId is not { } patientId || await IsPatientOutsideActiveClinic(patientId, ct))
-                return NotFound(new { message = "Paciente no encontrado" });
+                return NotFound(new { message = "Persona no encontrada" });
         }
         else
         {

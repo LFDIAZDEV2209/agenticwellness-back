@@ -90,7 +90,7 @@ public sealed class UpdatePatientCommandHandler(
                 if (existingDocuments is { Count: > 0 })
                 {
                     throw new BusinessRuleViolationException(
-                        $"Ya existe un paciente con el documento '{documentNumber}'.");
+                        $"Ya existe una persona con el documento '{documentNumber}'.");
                 }
             }
         }

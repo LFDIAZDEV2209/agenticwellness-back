@@ -69,7 +69,7 @@ public sealed class GetMyMetricsHistoryQueryHandler(
         if (patient is null)
         {
             throw new NotFoundException(
-                "No existe un perfil de paciente para el usuario autenticado."
+                "No existe un perfil de persona para el usuario autenticado."
             );
         }
 

@@ -8,7 +8,7 @@ que omite el idioma conserva su preferencia. Los valores explícitos se recortan
 y convierten a minúsculas; otros valores se rechazan (422). La base de datos
 también exige uno de los dos valores admitidos.
 
-La app del paciente envía su idioma actual al registrar el dispositivo y actualiza
+La app de la persona envía su idioma actual al registrar el dispositivo y actualiza
 el token existente cuando cambia el idioma o la cuenta, usando el JWT vigente.
 Esta actualización no solicita permisos, añade escuchas ni vuelve a registrar el
 dispositivo con el complemento nativo. Las solicitudes se serializan para impedir
@@ -52,9 +52,9 @@ las plantillas redactadas en inglés. Si falta el inglés, se genera a partir de
 plantilla redactada sin renderizar y de las etiquetas de tests e indicadores que
 esta utiliza, conservando los códigos de indicadores. Antes de interpolar se
 comprueba el conjunto de marcadores y sus repeticiones. No se envían nombres de
-pacientes, documentos, teléfonos ni destinatarios al traductor de plantillas.
+personas, documentos, teléfonos ni destinatarios al traductor de plantillas.
 Un envío en inglés sin plantilla ni mensaje redactado de regla falla explícitamente,
-en lugar de traducir una alerta del paciente ya renderizada. Se registran el idioma
+en lugar de traducir una alerta de la persona ya renderizada. Se registran el idioma
 y el cuerpo efectivamente enviados; las plantillas fuente se conservan.
 
 La validación usa sustitutos de FCM, SMS y la entrega de mensajes de comunidad.

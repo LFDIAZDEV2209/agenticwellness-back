@@ -136,7 +136,7 @@ public sealed class NutritionCaseStore(AppDbContext db) : INutritionCaseStore
                     catch (DbUpdateConcurrencyException)
                     {
                         throw new BusinessRuleViolationException(
-                            "La prescripción cambió; vuelve a cargar la revisión."
+                            "La recomendación cambió; vuelve a cargar la revisión."
                         );
                     }
                 },

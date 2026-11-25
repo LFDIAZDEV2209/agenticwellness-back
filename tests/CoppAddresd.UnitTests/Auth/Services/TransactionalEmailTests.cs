@@ -51,6 +51,25 @@ public sealed class TransactionalEmailTests
         Assert.DoesNotContain("NA-PASSWORD-NA", es.PlainTextBody);
     }
 
+    [Theory]
+    [InlineData("es-CO", "Consulta a tu profesional de la salud antes de cambiar, pausar o retomar las indicaciones de tu plan.")]
+    [InlineData("en-US", "Check with your health professional before changing, pausing, or resuming any part of your plan.")]
+    public void InventoryReminder_RendersTheReviewedCallout(string language, string callout)
+    {
+        var mail = TransactionalEmailTemplate.Build(new("INV-01", Recipient, language, Values()), new());
+
+        Assert.Contains(callout, mail.PlainTextBody);
+        Assert.Contains(callout, WebUtility.HtmlDecode(mail.HtmlBody));
+    }
+
+    [Theory]
+    [InlineData("es-CO", "Personas")]
+    [InlineData("en-US", "People")]
+    public void WelcomePermissionLabels_LocalizesThePeopleModule(string language, string label)
+    {
+        Assert.Equal(label, WelcomePermissionLabels.Module("Patients", language));
+    }
+
     [Fact]
     public void Renderer_EncodesUntrustedVariablesAndTruncatesByTextElement()
     {

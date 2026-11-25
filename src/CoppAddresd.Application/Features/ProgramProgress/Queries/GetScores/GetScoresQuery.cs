@@ -29,12 +29,12 @@ public sealed class GetScoresQueryHandler(
         var health = await repository.GetOrComputeHealthScoreAsync(
             request.PatientId, ScoreTrigger.OnRead, ct: ct)
             ?? throw new NotFoundException(
-                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {request.PatientId}.");
+                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {request.PatientId}.");
 
         var transformation = await repository.GetOrComputeTransformationScoreAsync(
             request.PatientId, ScoreTrigger.OnRead, ct: ct)
             ?? throw new NotFoundException(
-                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {request.PatientId}.");
+                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {request.PatientId}.");
 
         return new ScoresResponseDto(health, transformation);
     }
