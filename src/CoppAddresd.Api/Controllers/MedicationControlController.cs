@@ -218,7 +218,7 @@ public sealed partial class MedicationControlController(MedicationControlService
     }
     private Task<Guid> SelfAsync(CancellationToken ct)
     {
-        if (!IsApplication("app")) throw new ForbiddenException("Se requiere acceso a la aplicación de pacientes.");
+        if (!IsApplication("app")) throw new ForbiddenException("Se requiere acceso a la aplicación para personas usuarias.");
         return medications.EnsureSelfAsync(ActorId, ct);
     }
     private Task StaffAsync(Guid patientId, string permission, CancellationToken ct)

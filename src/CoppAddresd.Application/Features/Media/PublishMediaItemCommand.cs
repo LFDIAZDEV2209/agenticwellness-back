@@ -135,7 +135,7 @@ public sealed class PublishMediaItemCommandHandler(
         {
             throw new UnprocessableEntityException(
                 $"El archivo no existe en el storage en la clave '{entity.StorageKey}'. "
-                    + "No se puede publicar un medio sin binario físico (el paciente recibiría 'Contenido no disponible')."
+                    + "No se puede publicar un medio sin binario físico (la persona recibiría 'Contenido no disponible')."
             );
         }
 

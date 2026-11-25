@@ -31,7 +31,7 @@ public sealed class AssignPatientProfessionalCommandHandler(
     {
         if (!await repository.ExistsAsync(request.PatientId, ct))
         {
-            throw new NotFoundException("Paciente no encontrado.");
+            throw new NotFoundException("Persona no encontrada.");
         }
 
         // El profesional debe existir y tener extensión clínica (erp.professionals).
@@ -85,7 +85,7 @@ public sealed class RemovePatientProfessionalCommandHandler(
     {
         if (!await repository.ExistsAsync(request.PatientId, ct))
         {
-            throw new NotFoundException("Paciente no encontrado.");
+            throw new NotFoundException("Persona no encontrada.");
         }
 
         await repository.RemoveProfessionalAsync(request.PatientId, request.ProfessionalId, ct);
@@ -120,7 +120,7 @@ public sealed class ListPatientAssignmentsQueryHandler(
     {
         if (!await repository.ExistsAsync(request.PatientId, ct))
         {
-            throw new NotFoundException("Paciente no encontrado.");
+            throw new NotFoundException("Persona no encontrada.");
         }
 
         return await repository.ListAssignmentsAsync(request.PatientId, ct);

@@ -21,7 +21,7 @@ public sealed class ClinicalContextService(
     public async Task<ClinicalContextDto> ConsolidateAsync(Guid patientId, CancellationToken ct = default)
     {
         var patient = await patients.GetByIdAsync(patientId, ct)
-            ?? throw new NotFoundException($"Paciente {patientId} no encontrado");
+            ?? throw new NotFoundException($"No se encontró a la persona {patientId}");
 
         // Mediciones clínicas consolidadas: el repositorio devuelve la serie
         // ordenada por observación descendente; la primera por métrica gana.

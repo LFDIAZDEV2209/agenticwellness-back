@@ -23,7 +23,7 @@ public sealed partial class ProgramRepository : IVitaTaskWriter
     internal async Task<CompleteTaskResult> RecordVitaCheckInAsync(VitaCaptureProposal proposal, CancellationToken ct)
     {
         if (dbContext.Database.CurrentTransaction is null)
-            throw new InvalidOperationException("El check-in de Vita requiere la transacción del paciente.");
+            throw new InvalidOperationException("El check-in de Vita requiere la transacción de la persona.");
         var program = proposal.Data.Program!;
         var enrollment = await dbContext.ProgramEnrollments.FromSqlInterpolated(
             $"SELECT * FROM app.program_enrollments WHERE id = {program.EnrollmentId} FOR UPDATE").FirstOrDefaultAsync(ct);

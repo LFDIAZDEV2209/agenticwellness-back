@@ -13,13 +13,13 @@ public static class BulkPatientContentPlanner
         IReadOnlyList<ProgramWeek> weeks, Guid actorId, DateTimeOffset now, CancellationToken ct)
     {
         if (visiblePatients.Any(p => !enrollments.Any(e => e.PatientId == p)))
-            throw new UnprocessableEntityException("ACTIVE_ENROLLMENT_REQUIRED: todos los pacientes propios deben tener inscripción activa.");
+            throw new UnprocessableEntityException("ACTIVE_ENROLLMENT_REQUIRED: todas las personas a tu cargo deben tener inscripción activa.");
         var applied = new HashSet<Guid>(); var started = new HashSet<Guid>(); var updates = new List<PatientPodcastWeekUpdate>();
         var byEnrollment = weeks.ToLookup(w => w.EnrollmentId);
         foreach (var enrollment in enrollments)
         {
             ct.ThrowIfCancellationRequested(); var template = enrollment.Template!;
-            if (to > template.TotalWeeks) throw new UnprocessableEntityException("PROGRAM_WEEK_OUT_OF_RANGE: rango fuera del programa de un paciente propio.");
+            if (to > template.TotalWeeks) throw new UnprocessableEntityException("PROGRAM_WEEK_OUT_OF_RANGE: rango fuera del programa de una persona a tu cargo.");
             var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(now.UtcDateTime, TimeZoneInfo.FindSystemTimeZoneById(enrollment.Timezone)));
             var last = enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(template) - 1);
             var existing = byEnrollment[enrollment.Id].ToDictionary(w => w.WeekNumber);

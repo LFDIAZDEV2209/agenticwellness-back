@@ -778,7 +778,7 @@ public static class ClubSeeder
                     var first = reader.IsDBNull(2) ? "" : reader.GetString(2);
                     var last = reader.IsDBNull(3) ? "" : reader.GetString(3);
                     var display = (first + " " + last).Trim();
-                    result.Add(new TestPatientSeed(doc, userId, string.IsNullOrEmpty(display) ? "Paciente " + doc : display));
+                    result.Add(new TestPatientSeed(doc, userId, string.IsNullOrEmpty(display) ? "Persona " + doc : display));
                 }
                 return result;
             }

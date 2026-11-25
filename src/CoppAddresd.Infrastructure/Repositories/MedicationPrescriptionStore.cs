@@ -78,7 +78,7 @@ public sealed partial class MedicationControlStore
             if (treatment.Origin != "staff_recorded" || treatment.Status == "completed")
                 throw Conflict("Solo se pueden editar pautas asignadas y vigentes.");
             if (treatment.Revision != request.ExpectedRevision)
-                throw Conflict("El tratamiento cambió. Actualiza la ficha.");
+                throw Conflict("El plan de medicación cambió. Actualiza la ficha.");
 
             var effectiveAt = Now;
             var current = await db.MedicationRegimens.Where(x => x.TreatmentId == treatmentId)

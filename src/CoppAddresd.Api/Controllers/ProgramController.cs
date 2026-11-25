@@ -119,7 +119,7 @@ public sealed class ProgramController(
     public async Task<ActionResult<ProgramCompletionResponse>> GetMyCompletion(CancellationToken ct)
     {
         var patientId = await actorContext.ResolvePatientProfileIdAsync(ct);
-        if (patientId is null) return NotFound(new { message = "No existe un perfil de paciente para el usuario autenticado." });
+        if (patientId is null) return NotFound(new { message = "No existe un perfil de persona para el usuario autenticado." });
         return Ok(await mediator.Send(new GetProgramCompletionQuery(patientId.Value), ct));
     }
 
@@ -141,7 +141,7 @@ public sealed class ProgramController(
             return NotFound(
                 new
                 {
-                    message = "NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente.",
+                    message = "NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona.",
                 }
             );
         }
@@ -233,7 +233,7 @@ public sealed class ProgramController(
             return NotFound(
                 new
                 {
-                    message = "NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente.",
+                    message = "NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona.",
                 }
             );
         }
@@ -256,7 +256,7 @@ public sealed class ProgramController(
             return NotFound(
                 new
                 {
-                    message = "NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente.",
+                    message = "NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona.",
                 }
             );
         }
@@ -282,7 +282,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1042,7 +1042,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1073,7 +1073,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1115,7 +1115,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1152,7 +1152,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1186,7 +1186,7 @@ public sealed class ProgramController(
                 new
                 {
                     code = "NO_ACTIVE_ENROLLMENT",
-                    message = "Se requiere perfil de paciente e inscripción activa.",
+                    message = "Se requiere un perfil de persona y una inscripción activa.",
                 }
             );
         if (actorContext.UserId is not { } actorId)
@@ -1224,7 +1224,7 @@ public sealed class ProgramController(
                 new
                 {
                     code = "NO_ACTIVE_ENROLLMENT",
-                    message = "Se requiere perfil de paciente e inscripción activa.",
+                    message = "Se requiere un perfil de persona y una inscripción activa.",
                 }
             );
         if (actorContext.UserId is not { } actorId)
@@ -1256,7 +1256,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1435,7 +1435,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1490,7 +1490,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1531,7 +1531,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1552,7 +1552,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1586,7 +1586,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1660,7 +1660,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1687,7 +1687,7 @@ public sealed class ProgramController(
         if (patientId is null)
         {
             return NotFound(
-                new { message = "No existe un perfil de paciente para el usuario autenticado." }
+                new { message = "No existe un perfil de persona para el usuario autenticado." }
             );
         }
 
@@ -1866,7 +1866,7 @@ public sealed class ProgramController(
         var result = await mediator.Send(new GetBiometriaPatientQuery(id), ct);
         if (result is null)
         {
-            return NotFound(new { message = "Paciente sin inscripción activa" });
+            return NotFound(new { message = "Persona sin inscripción activa" });
         }
         return Ok(result);
     }
@@ -1889,7 +1889,7 @@ public sealed class ProgramController(
     {
         Response.ContentType = "text/csv; charset=utf-8";
         Response.Headers["Content-Disposition"] =
-            $"attachment; filename=biometria-pacientes-{DateTime.UtcNow:yyyyMMdd-HHmm}.csv";
+            $"attachment; filename=biometria-personas-{DateTime.UtcNow:yyyyMMdd-HHmm}.csv";
 
         await Response.WriteAsync("\uFEFF", ct);
         await Response.WriteAsync(
@@ -1983,7 +1983,7 @@ public sealed class ProgramController(
         var result = await mediator.Send(new GetPatientOverviewQuery(patientId), ct);
         if (result is null)
         {
-            return NotFound(new { message = "Paciente sin inscripción activa" });
+            return NotFound(new { message = "Persona sin inscripción activa" });
         }
 
         return Ok(result);
@@ -2010,13 +2010,13 @@ public sealed class ProgramController(
         var scopedPatientIds = await actorContext.ResolveScopedPatientIdsAsync(ct);
         if (scopedPatientIds is not null && !scopedPatientIds.Contains(patientId))
         {
-            return NotFound(new { message = "Paciente sin inscripción activa" });
+            return NotFound(new { message = "Persona sin inscripción activa" });
         }
 
         var result = await mediator.Send(new GetPatientControlsQuery(patientId), ct);
         if (result is null)
         {
-            return NotFound(new { message = "Paciente sin inscripción activa" });
+            return NotFound(new { message = "Persona sin inscripción activa" });
         }
 
         return Ok(result);

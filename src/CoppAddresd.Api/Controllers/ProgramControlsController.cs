@@ -88,7 +88,7 @@ public sealed class ProgramControlsController(
         {
             return NotFound(new
             {
-                message = "Inscripción no encontrada o sin usuario de paciente asociado (no se puede notificar).",
+                message = "No se puede notificar. No se encontró la inscripción o no tiene una cuenta asociada.",
             });
         }
 

@@ -102,7 +102,7 @@ public sealed class UpdateMyPatientProfileCommandHandler(
 
         var patient = await patients.GetByUserIdAsync(request.UserId, ct);
         if (patient is null)
-            return new(false, "No hay un perfil de paciente vinculado a tu cuenta.", null);
+            return new(false, "No hay un perfil de persona vinculado a tu cuenta.", null);
 
         var savedPrimary = EmergencyContactCodec.Deserialize(patient.EmergencyContact);
         if (patient.Status == "Pendiente" && !editsPrimary

@@ -103,7 +103,7 @@ public static class PatientAccountDemoSeeder
                     Id = id,
                     UserName = email,
                     Email = email,
-                    FirstName = profile.FirstName ?? "Paciente",
+                    FirstName = profile.FirstName ?? "Persona",
                     LastName = profile.LastName ?? "Demo",
                     IsActive = true,
                     EmailConfirmed = true,

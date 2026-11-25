@@ -94,7 +94,7 @@ public sealed class ProgramProgressSeeder(
         await SeedProgramTemplateAsync(
             "program-coppaddresd-83-days",
             "Programa Agentic Wellness IA (83 días / 12 semanas)",
-            "Plantilla del programa de 83 días (12 semanas) para pacientes Agentic Wellness IA.",
+            "Plantilla del programa de 83 días (12 semanas) para personas Agentic Wellness IA.",
             12,
             ct
         );

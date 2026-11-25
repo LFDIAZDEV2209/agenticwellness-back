@@ -50,7 +50,7 @@ public sealed class CreateDocumentCommandHandler(
                 throw new NotFoundException("El documento raíz de la nueva versión no existe.");
 
             if (request.PatientId is { } givenPatient && givenPatient != root.PatientId)
-                throw new BusinessRuleViolationException("La nueva versión debe pertenecer al mismo paciente que la versión raíz.");
+                throw new BusinessRuleViolationException("La nueva versión debe pertenecer a la misma persona que la versión raíz.");
 
             patientId = root.PatientId;
             clinicId = root.ClinicId;
@@ -59,17 +59,17 @@ public sealed class CreateDocumentCommandHandler(
         else
         {
             if (request.PatientId is null)
-                throw new UnprocessableEntityException("El documento requiere un paciente.");
+                throw new UnprocessableEntityException("El documento requiere una persona.");
 
             if (!await repository.PatientExistsAsync(request.PatientId.Value, ct))
-                throw new NotFoundException("El paciente no existe.");
+                throw new NotFoundException("La persona no existe.");
 
             // La clínica del documento es la del paciente; el cuerpo nunca la impone.
             clinicId = await repository.GetPatientClinicIdAsync(request.PatientId.Value, ct);
         }
 
         if (patientId is not { } ownerId || !PatientDocumentStorageKeys.IsUploadKey(request.StorageKey, ownerId))
-            throw new BusinessRuleViolationException("La clave de subida no pertenece al paciente del documento.");
+            throw new BusinessRuleViolationException("La clave de subida no pertenece a la persona del documento.");
 
         var now = DateTime.UtcNow;
         var document = new Document

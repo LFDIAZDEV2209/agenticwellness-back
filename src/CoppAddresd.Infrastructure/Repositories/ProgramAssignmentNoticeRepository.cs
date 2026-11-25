@@ -23,8 +23,8 @@ public sealed class ProgramAssignmentNoticeRepository(AppDbContext db) : IProgra
         {
             Id=Guid.NewGuid(), RecommendationId=recommendationId, UserId=user, Kind="professional-ready",
             TitleEs="Asignación de programa pendiente", TitleEn="Program assignment pending",
-            MessageEs=$"El paciente {patientName} completó la evaluación inicial y espera asignación de programa",
-            MessageEn=$"Patient {patientName} completed the initial assessment and is waiting for program assignment",
+            MessageEs=$"{patientName} completó la evaluación inicial y está a la espera de que se le asigne un programa",
+            MessageEn=$"{patientName} completed the initial assessment and is waiting for a program to be assigned",
             Link=$"/program/gestion?view=perfil-360&patient={patientId}", CreatedAt=utcNow, NextAttemptAt=utcNow,
             // El inbox es el canal del ERP: ya está entregado al persistirse, no se envía push extra.
             DeliveredAt=utcNow, PushCompleted=true, ChatCompleted=true,

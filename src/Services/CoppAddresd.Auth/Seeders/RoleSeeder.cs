@@ -414,7 +414,7 @@ public static class RoleSeeder
     [
         (
             "NutritionReviewer",
-            "Nutricionista revisor: valida y aprueba planes de sus pacientes asignados",
+            "Nutricionista revisor: valida y aprueba planes de las personas a su cargo",
             [PermissionCodes.WellnessView, PermissionCodes.WellnessManage,
              PermissionCodes.NutritionPlansApprove, PermissionCodes.NutritionManage, PermissionCodes.NutritionApprove,
                PermissionCodes.PatientsViewOwn,
@@ -529,7 +529,7 @@ public static class RoleSeeder
         ),
         (
             "Professional",
-            "Profesional clínico: atiende pacientes, registra historia clínica y agenda citas (consolida los roles legado Physician/Nutritionist/Psychologist)",
+            "Profesional clínico: atiende personas, registra historia clínica y agenda citas (consolida los roles legado Physician/Nutritionist/Psychologist)",
             [
                 PermissionCodes.PatientsViewOwn,
                 PermissionCodes.PatientsCreate,
@@ -572,7 +572,7 @@ public static class RoleSeeder
         ),
         (
             "Receptionist",
-            "Recepción: agenda, registro de pacientes y documentos",
+            "Recepción: agenda, registro de personas y documentos",
             [
                 PermissionCodes.PatientsView,
                 PermissionCodes.PatientsCreate,
@@ -588,7 +588,7 @@ public static class RoleSeeder
         ),
         (
             "CareCoordinator",
-            "Coordinación de cuidados: seguimiento del paciente",
+            "Coordinación de cuidados: seguimiento de la persona",
             [
                 PermissionCodes.PatientsView,
                 PermissionCodes.DocumentsView,
@@ -614,7 +614,7 @@ public static class RoleSeeder
         ),
         (
             "Auditor",
-            "Auditor: solo lectura de reportes, pacientes, documentos y auditoría",
+            "Auditor: solo lectura de reportes, personas, documentos y auditoría",
             [
                 PermissionCodes.ReportsView,
                 PermissionCodes.PatientsView,

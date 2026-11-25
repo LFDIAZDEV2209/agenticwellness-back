@@ -44,7 +44,7 @@ public sealed class RecordWeightCommandHandler(
     {
         var enrollment = await program.GetEnrollmentAsync(request.EnrollmentId, ct);
         if (enrollment is null || enrollment.PatientId != request.PatientId || enrollment.Status != ProgramEnrollmentStatus.Active)
-            throw new NotFoundException("NO_ACTIVE_ENROLLMENT: se requiere una inscripción activa del paciente.");
+            throw new NotFoundException("NO_ACTIVE_ENROLLMENT: se requiere una inscripción activa de la persona.");
 
         var now = DateTime.UtcNow;
         TimeZoneInfo zone;
@@ -58,7 +58,7 @@ public sealed class RecordWeightCommandHandler(
         // La fecha es la elegida por el paciente en su zona; hora de la captura actual.
         var localObserved = request.Date.ToDateTime(TimeOnly.FromDateTime(localNow), DateTimeKind.Unspecified);
         if (zone.IsInvalidTime(localObserved))
-            throw new UnprocessableEntityException("INVALID_MEASUREMENT_DATE: la hora no existe en la zona del paciente.");
+            throw new UnprocessableEntityException("INVALID_MEASUREMENT_DATE: la hora no existe en la zona de la persona.");
         var observed = request.Date == DateOnly.FromDateTime(localNow) ? now : TimeZoneInfo.ConvertTimeToUtc(localObserved, zone);
         var metric = (await measurements.GetActiveMetricsWithUnitsAsync(ct))
             .SingleOrDefault(m => m.Code == "weight" && m.DefaultUnit is { IsActive: true, Code: "kg" });

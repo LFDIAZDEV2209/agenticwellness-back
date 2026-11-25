@@ -77,7 +77,7 @@ public sealed class CycleReviewHandler(IPatientScopeGuard scope, IPatientScopeAc
     {
         var patient = await scope.EnsureResourceAsync(PatientResource.Cycle, request.CycleId, "Nutrition.Approve", ct);
         var nextPatient = await scope.EnsureResourceAsync(PatientResource.Prescription, request.NextPrescriptionId, "Nutrition.Approve", ct);
-        if (patient != nextPatient) throw new NotFoundException("Prescripción no encontrada.");
+        if (patient != nextPatient) throw new NotFoundException("Recomendación no encontrada.");
         var author = actor.UserId ?? throw new ForbiddenException("Falta identidad profesional.");
         var professionalId = await actor.ProfessionalIdAsync(ct);
         var nutritionActor = new NutritionActor(author, professionalId, actor.IsAdmin, false, true, true);
@@ -96,9 +96,9 @@ public sealed class CycleReviewHandler(IPatientScopeGuard scope, IPatientScopeAc
             if (header.Cycle.Number is null || header.Cycle.EndDate is null || header.Cycle.EndDate >= today)
                 throw new UnprocessableEntityException("El cierre se publica después de terminar el ciclo local.");
             if (header.SuccessorStart is not null) throw new BusinessRuleViolationException("El ciclo ya tiene sucesor publicado.");
-            var next = await store.PrescriptionAsync(request.NextPrescriptionId, writeCt) ?? throw new NotFoundException("Prescripción no encontrada.");
+            var next = await store.PrescriptionAsync(request.NextPrescriptionId, writeCt) ?? throw new NotFoundException("Recomendación no encontrada.");
             if (next.PatientId != patient || next.CycleId == request.CycleId || next.IsPublished)
-                throw new UnprocessableEntityException("El cierre exige un borrador del ciclo siguiente del mismo paciente.");
+                throw new UnprocessableEntityException("El cierre exige un borrador del ciclo siguiente de la misma persona.");
             // Reutiliza validación, fechas, revisión optimista y bitácora del editor existente.
             await cases.ExecuteAsync(new NutritionCaseCommand(NutritionOperation.Approve, patient, next.Id,
                 request.NextPrescriptionRevision, nutritionActor, CriticalConfirmed: true), writeCt);

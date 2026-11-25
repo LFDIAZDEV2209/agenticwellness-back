@@ -198,11 +198,11 @@
     "link": "enlace_inventario",
     "es": {
       "subject": "Inventario bajo: {{dias_restantes}} días de {{medicamento}}",
-      "preheader": "Actualiza tu inventario para no quedarte sin tratamiento.",
+      "preheader": "Actualiza tu inventario para mantener tu plan de medicación.",
       "title": "Tu inventario está bajo",
       "button": "Actualizar inventario",
       "intro": "Te quedan {{cantidad}} unidades de {{medicamento}}, para aproximadamente {{dias_restantes}} días.",
-      "callout": "Antes de cambiar, suspender o reanudar un tratamiento, consulta con tu médico.",
+      "callout": "Consulta a tu profesional de la salud antes de cambiar, pausar o retomar las indicaciones de tu plan.",
       "closing": "Te avisaremos de nuevo cuando sea necesario."
     },
     "en": {
@@ -211,7 +211,7 @@
       "title": "Your inventory is low",
       "button": "Update inventory",
       "intro": "You have {{cantidad}} units of {{medicamento}} left, which should last about {{dias_restantes}} days.",
-      "callout": "Talk to your doctor before changing, stopping, or restarting treatment.",
+      "callout": "Check with your health professional before changing, pausing, or resuming any part of your plan.",
       "closing": "We’ll let you know when another update is needed."
     }
   }

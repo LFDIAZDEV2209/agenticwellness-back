@@ -100,7 +100,7 @@ public sealed class NutritionInboxRepository(AppDbContext db, IPatientScopeGuard
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.InvalidParameterValue)
         {
-            throw new UnprocessableEntityException("La zona horaria del paciente no es válida.");
+            throw new UnprocessableEntityException("La zona horaria de la persona no es válida.");
         }
     }
 }

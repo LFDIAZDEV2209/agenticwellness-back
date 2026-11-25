@@ -154,7 +154,7 @@ public sealed class LeagueRepository(AppDbContext dbContext) : ILeagueRepository
             .AnyAsync(p => p.Id == patientId && p.DeletedAt == null, ct);
         if (!exists)
         {
-            throw new NotFoundException($"Paciente {patientId} no encontrado.");
+            throw new NotFoundException($"No se encontró a la persona {patientId}.");
         }
 
         var storedNickname = string.IsNullOrWhiteSpace(nickname) ? null : nickname.Trim();
@@ -172,7 +172,7 @@ public sealed class LeagueRepository(AppDbContext dbContext) : ILeagueRepository
             );
         if (affected == 0)
         {
-            throw new NotFoundException($"Paciente {patientId} no encontrado.");
+            throw new NotFoundException($"No se encontró a la persona {patientId}.");
         }
 
         return new LeaguePreferencesDto(optIn, storedNickname);

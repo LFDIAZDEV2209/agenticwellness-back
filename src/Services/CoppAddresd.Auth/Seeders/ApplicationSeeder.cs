@@ -35,7 +35,7 @@ public static class ApplicationSeeder
         {
             Code = ApplicationCodes.App,
             Name = "App Móvil",
-            Description = "Aplicación móvil para pacientes y usuarios finales",
+            Description = "Aplicación móvil para usuarios finales",
             IsActive = true
         }, logger, ct);
 
