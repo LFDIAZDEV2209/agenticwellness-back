@@ -124,6 +124,7 @@ public static class PermissionCodes
     public const string MediaDelete = "Media.Delete";
 
     /// <summary>Configuraciones administrativas del módulo Sistema (IA, integraciones, etc.).</summary>
+    public const string PrivacyPublishExport = "Privacy.PublishExport";
     public const string SystemAdminSettings = "System.AdminSettings";
 
     // Wellness
@@ -259,6 +260,7 @@ public static class PermissionCodes
         yield return MediaDelete;
         yield return AuditView;
         yield return SystemAdminSettings;
+        yield return PrivacyPublishExport;
         yield return CommunityView;
         yield return CommunityModerate;
         yield return CommunityProfiles;

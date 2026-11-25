@@ -725,3 +725,8 @@ audiencia ERP y valida la relación activa paciente–profesional.
 
 Plantilla de marca, entrega durable por acceso e instrucciones de pruebas y
 recuperación: [welcome-emails.md](welcome-emails.md).
+
+## Solicitudes de privacidad de datos en el servidor
+
+Ver [KAN-170](../privacy/README.md) para el contrato de recepción, la prueba
+local y las diferencias con el flujo existente de baja de cuenta.
