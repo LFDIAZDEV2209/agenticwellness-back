@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoppAddresd.Infrastructure.Services;
 
-public sealed record WellnessJourneyAccess(Guid PatientId, Guid PaymentId, bool ConsentCurrent);
+public sealed record WellnessJourneyAccess(Guid PatientId, Guid PaymentId, bool ConsentCurrent, bool MembershipActive);
 
 public sealed record WellnessJourneySnapshot(
     Guid GenerationId,
@@ -27,6 +27,7 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock)
     {
         // La prueba usa la misma base PostgreSQL de Auth y API. La identidad se
         // toma del JWT y la vigencia se resuelve contra las versiones publicadas.
+        var now = clock.GetUtcNow();
         return await db.Database.SqlQuery<WellnessJourneyAccess>($"""
             SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId",
                 (
@@ -41,10 +42,16 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock)
                         WHERE a.user_id = p.user_id AND a.legal_document_version_id = v.id
                             AND a.scope = d.code AND a.locale = payment."Language" AND a.withdrawn_at IS NULL
                     )
-                ) AS "ConsentCurrent"
+                ) AS "ConsentCurrent",
+                (payment."MembershipPaid" AND payment."MembershipState" = 'active'
+                    AND COALESCE(payment."MembershipExpiresAt",
+                        ((payment."ConfirmedAt" AT TIME ZONE 'UTC') +
+                            CASE WHEN payment."Plan" = 'annual' THEN INTERVAL '12 months'
+                                ELSE INTERVAL '1 month' END) AT TIME ZONE 'UTC') > {now}) AS "MembershipActive"
             FROM app.patient_profiles p
             JOIN LATERAL (
-                SELECT purchase."PaymentId", purchase."Language"
+                SELECT purchase."PaymentId", purchase."Language", purchase."MembershipPaid",
+                    purchase."MembershipState", purchase."MembershipExpiresAt", purchase."ConfirmedAt", purchase."Plan"
                 FROM auth."PaidActivations" purchase
                 WHERE purchase."LinkedUserId" = p.user_id AND purchase."RedeemedAt" IS NOT NULL
                 ORDER BY purchase."RedeemedAt" DESC, purchase."PaymentId" DESC

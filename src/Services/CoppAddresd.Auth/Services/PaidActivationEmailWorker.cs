@@ -100,7 +100,9 @@ internal sealed class PaidActivationEmailWorker(
 
     private static IQueryable<PaidActivation> Due(AuthDbContext db, DateTime now) =>
         db.PaidActivations.Where(activation =>
-            activation.NextEmailAttemptAt <= now
+            activation.MembershipPaid && activation.MembershipState == "active"
+            && (activation.MembershipExpiresAt ?? activation.ConfirmedAt.AddMonths(activation.Plan == "annual" ? 12 : 1)) > now
+            && activation.NextEmailAttemptAt <= now
             && activation.EmailAttempts < MaxAttempts
             && (activation.EmailLeaseUntil == null || activation.EmailLeaseUntil <= now));
 }

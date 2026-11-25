@@ -29,7 +29,8 @@ public sealed partial class PaidActivationSignupService(
     {
         var activation = await db.PaidActivations.AsNoTracking()
             .SingleOrDefaultAsync(row => row.PaymentId == proof.PaymentId, ct);
-        if (activation is null || !proof.Matches(activation))
+        if (activation is null || !PaidMembershipDemoService.IsActive(activation, DateTime.UtcNow)
+            || !proof.Matches(activation))
             return null;
         if (activation.RedeemedAt is null)
             return new(activation.PaymentId, "welcome", activation.Email);
@@ -59,7 +60,8 @@ public sealed partial class PaidActivationSignupService(
         var activation = await db.PaidActivations
             .FromSqlInterpolated($"""SELECT * FROM auth."PaidActivations" WHERE "PaymentId" = {proof.PaymentId} FOR UPDATE""")
             .SingleOrDefaultAsync(ct);
-        if (activation is null || !proof.OwnsRedeemedSession(activation))
+        if (activation is null || !PaidMembershipDemoService.IsActive(activation, DateTime.UtcNow)
+            || !proof.OwnsRedeemedSession(activation))
             return new(null, "invalid_activation_link");
         if (activation.LinkedUserId is not null)
             return new(Linked(activation));
