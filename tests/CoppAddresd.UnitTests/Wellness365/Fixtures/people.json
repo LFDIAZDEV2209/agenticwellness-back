@@ -1,0 +1,8 @@
+[
+{"id":"laura","sex":"F","age":41,"h":165,"w0":78,"waist0":92,"target":68,"act":2,"goal":"bajar","pace":"m","day":29,"seed":11,"met":-0.03,"adhBase":0.82},
+{"id":"andres","sex":"M","age":27,"h":178,"w0":66,"waist0":80,"target":72,"act":3,"goal":"masa","pace":"s","day":120,"seed":22,"met":0.04,"adhBase":0.78,"fit":1},
+{"id":"camila","sex":"F","age":33,"h":160,"w0":64,"waist0":76,"target":60,"act":3,"goal":"def","pace":"m","day":200,"seed":33,"veg":1,"nolac":1,"fit":1},
+{"id":"mateo","sex":"M","age":38,"h":175,"w0":95,"waist0":105,"target":82,"act":2,"goal":"bajar","pace":"m","day":45,"seed":44,"met":-0.06,"adhBase":0.65,"weigh":0.7,"adhFut":0.8},
+{"id":"sofia","sex":"F","age":29,"h":168,"w0":58,"waist0":70,"target":62,"act":3,"goal":"masa","pace":"s","day":300,"seed":55,"adhBase":0.86,"weigh":0.9},
+{"id":"diego","sex":"M","age":45,"h":182,"w0":105,"waist0":112,"target":90,"act":1,"goal":"bajar","pace":"s","day":12,"seed":66,"adhBase":0.75}
+]
