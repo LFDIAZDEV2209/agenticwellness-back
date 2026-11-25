@@ -40,11 +40,42 @@ public sealed class PasswordResetEmailLink(UserManager<ApplicationUser> users)
         if (parameters.ContainsKey("userId") || parameters.ContainsKey("token"))
             throw new ArgumentException("El destino ya contiene parámetros de restablecimiento.", nameof(destination));
 
-        var token = await users.GeneratePasswordResetTokenAsync(user);
         return QueryHelpers.AddQueryString(target, new Dictionary<string, string?>
         {
             ["userId"] = user.Id.ToString(),
-            ["token"] = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token)),
+            ["token"] = await IssueEncodedTokenAsync(user),
         });
+    }
+
+    internal static Uri? GetPublicDestination(string? value)
+    {
+        if (TransactionalEmailTemplate.HttpsUrl(value) is not { } target)
+            return null;
+
+        var destination = new Uri(target);
+        return destination.AbsolutePath == "/recuperar-cuenta"
+            && destination.Query.Length == 0
+            && destination.Fragment.Length == 0
+            ? destination
+            : null;
+    }
+
+    internal async Task<string> IssuePublicAsync(ApplicationUser user, Uri destination, string language)
+    {
+        if (!user.IsActive || string.IsNullOrWhiteSpace(user.Email))
+            throw new ArgumentException("La cuenta debe estar activa y tener correo.", nameof(user));
+
+        // El fragmento solo se entrega al navegador, sin formar parte de la petición GET.
+        var fragment = QueryString.Create("userId", user.Id.ToString())
+            .Add("token", await IssueEncodedTokenAsync(user))
+            .Add("lang", language)
+            .ToUriComponent()[1..];
+        return new UriBuilder(destination) { Fragment = fragment }.Uri.AbsoluteUri;
+    }
+
+    private async Task<string> IssueEncodedTokenAsync(ApplicationUser user)
+    {
+        var token = await users.GeneratePasswordResetTokenAsync(user);
+        return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
     }
 }

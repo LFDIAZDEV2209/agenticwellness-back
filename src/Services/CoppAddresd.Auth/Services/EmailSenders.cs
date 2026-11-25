@@ -63,11 +63,18 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
         }
         catch (Exception ex) when (message.TemplateCode is not null)
         {
+            if (message.TemplateCode is "PWD-01")
+            {
+                logger.LogWarning("Correo {TemplateCode}: fallo SMTP ({ErrorType})", message.TemplateCode, ex.GetType().Name);
+                throw;
+            }
             logger.LogWarning("Correo {TemplateCode} a {To}: fallo SMTP ({ErrorType})",
                 message.TemplateCode, message.To, ex.GetType().Name);
             throw;
         }
-        if (message.TemplateCode is { } code)
+        if (message.TemplateCode is "PWD-01")
+            logger.LogInformation("Correo {TemplateCode}: aceptado por SMTP", message.TemplateCode);
+        else if (message.TemplateCode is { } code)
             logger.LogInformation("Correo {TemplateCode} a {To}: aceptado por SMTP", code, message.To);
         else
             logger.LogInformation("Correo enviado a {To} (asunto: {Subject})", message.To, message.Subject);
@@ -82,6 +89,11 @@ public class LogEmailSender(ILogger<LogEmailSender> logger) : IEmailSender
 {
     public Task SendAsync(EmailMessage message, CancellationToken ct = default)
     {
+        if (message.TemplateCode == "PWD-01")
+        {
+            logger.LogInformation("Correo PWD-01: simulado");
+            return Task.CompletedTask;
+        }
         if (message.TemplateCode is { } code)
         {
             logger.LogInformation("Correo {TemplateCode} a {To}: simulado", code, message.To);
