@@ -22,6 +22,13 @@ Auth mantiene el formulario de activación y crea la cuenta, los dos recibos y e
 - La escritura serializa por cuenta y bloquea en lectura los documentos que se están aceptando hasta terminar la transacción. Una versión ajena u obsoleta devuelve conflicto. Un reintento de la misma escritura, o la aceptación concurrente de la misma versión, devuelve el recibo existente.
 - La publicación incompleta devuelve indisponibilidad de documentos. La aplicación puede volver a pedir el estado tras la publicación. Los permisos de funciones concretas usan sus ámbitos contextuales y su política existente.
 
+## Estado y aceptación autenticados
+
+- GET */api/v1/me/account-legal-consents?locale=es* devuelve la variante resuelta, la habilitación y los documentos vigentes con su recibo y fecha cuando correspondan. Solo la audiencia móvil autenticada puede usarlo. La identidad se toma de la sesión.
+- POST */api/v1/me/account-legal-consents/acceptances* recibe *versionId*, *locale* e *idempotencyKey*. Devuelve el recibo. Una versión reemplazada o una variante distinta devuelve 409 con un código recuperable. Una publicación incompleta devuelve 503.
+- El recorrido de membresía de demostración usa el idioma registrado al activar, tanto en estos endpoints como en el control de acceso a objetivo y generación. El idioma resuelto se devuelve al cliente para que envíe la misma variante.
+- Activar primero el contrato de API y comprobar la disponibilidad de ambos documentos antes de activar la interfaz de reaceptación. El estado deshabilitado devuelve una lista vacía y el acceso de demostración conserva su comprobación propia.
+
 ## Pruebas
 
 Las pruebas unitarias cubren español, inglés, versiones pendientes, publicación y reintento. La prueba PostgreSQL usa una base desechable y verifica la serialización, los metadatos y el evento de auditoría. Configurar una conexión de pruebas en loopback con el procedimiento descrito en [Consentimientos legales](README.md).

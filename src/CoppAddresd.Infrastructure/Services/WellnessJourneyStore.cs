@@ -28,20 +28,7 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock, IA
 
     public async Task<WellnessJourneyAccess?> GetAccessAsync(Guid userId, CancellationToken ct)
     {
-        // La prueba usa la misma base PostgreSQL de Auth y API. La identidad se
-        // toma del JWT y la vigencia se resuelve contra las versiones publicadas.
-        var member = await db.Database.SqlQuery<PaidJourneyMember>($"""
-            SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId", payment."Language" AS "Locale"
-            FROM app.patient_profiles p
-            JOIN LATERAL (
-                SELECT purchase."PaymentId", purchase."Language"
-                FROM auth."PaidActivations" purchase
-                WHERE purchase."LinkedUserId" = p.user_id AND purchase."RedeemedAt" IS NOT NULL
-                ORDER BY purchase."RedeemedAt" DESC, purchase."PaymentId" DESC
-                LIMIT 1
-            ) payment ON TRUE
-            WHERE p.user_id = {userId} AND p.deleted_at IS NULL AND p.status = 'Activo'
-            """).SingleOrDefaultAsync(ct);
+        var member = await ReadMemberAsync(userId, ct);
         if (member is null) return null;
         try
         {
@@ -53,6 +40,23 @@ public sealed class WellnessJourneyStore(AppDbContext db, TimeProvider clock, IA
             return new(member.PatientId, member.PaymentId, false);
         }
     }
+
+    public async Task<string?> GetLegalLocaleAsync(Guid userId, CancellationToken ct) =>
+        (await ReadMemberAsync(userId, ct))?.Locale;
+
+    private Task<PaidJourneyMember?> ReadMemberAsync(Guid userId, CancellationToken ct) =>
+        db.Database.SqlQuery<PaidJourneyMember>($"""
+            SELECT p.id AS "PatientId", payment."PaymentId" AS "PaymentId", payment."Language" AS "Locale"
+            FROM app.patient_profiles p
+            JOIN LATERAL (
+                SELECT purchase."PaymentId", purchase."Language"
+                FROM auth."PaidActivations" purchase
+                WHERE purchase."LinkedUserId" = p.user_id AND purchase."RedeemedAt" IS NOT NULL
+                ORDER BY purchase."RedeemedAt" DESC, purchase."PaymentId" DESC
+                LIMIT 1
+            ) payment ON TRUE
+            WHERE p.user_id = {userId} AND p.deleted_at IS NULL AND p.status = 'Activo'
+            """).SingleOrDefaultAsync(ct);
 
     public async Task<WellnessJourneySnapshot?> SubmitAsync(
         WellnessJourneyAccess access, Guid submissionId, string draftHash, string draftJson, CancellationToken ct)

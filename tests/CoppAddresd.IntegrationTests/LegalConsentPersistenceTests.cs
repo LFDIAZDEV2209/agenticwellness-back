@@ -1,6 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text.Json;
+using CoppAddresd.Api.Configuration;
+using CoppAddresd.Api.Context;
+using CoppAddresd.Api.Controllers;
 using CoppAddresd.Application.Features.LegalDocuments;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Entities;
@@ -17,7 +21,9 @@ using CoppAddresd.Auth.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -232,6 +238,52 @@ public sealed class LegalConsentPersistenceTests : IAsyncLifetime
         Assert.NotNull(access);
         Assert.Equal(activation.PaymentId, access.PaymentId);
         Assert.True(access.ConsentCurrent);
+
+        var current = Substitute.For<ICurrentContext>();
+        current.UserId.Returns(created.Id);
+        var accountController = new AccountLegalConsentsController(account, current,
+            new(true, false, TimeSpan.Zero), journey)
+        {
+            ControllerContext = new() { HttpContext = new DefaultHttpContext() }
+        };
+        void SetAudience(string audience) => accountController.HttpContext.User =
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim("aud", audience)], "Fixture"));
+        async Task<AccountLegalConsentStatus> AccountStatus(string language)
+        {
+            var response = await accountController.Status(language);
+            return Assert.IsType<AccountLegalConsentStatus>(Assert.IsType<OkObjectResult>(response.Result).Value);
+        }
+
+        SetAudience("erp");
+        Assert.IsType<ForbidResult>((await accountController.Status("es")).Result);
+        Assert.IsType<ForbidResult>((await accountController.Accept(new(latest.Id, "es", Guid.NewGuid()), default)).Result);
+        SetAudience("app");
+        Assert.Equal("es", (await AccountStatus("en")).Locale);
+        Assert.False((await AccountStatus("en")).AcceptanceRequired);
+        var third = new LegalDocumentVersion { Id = Guid.NewGuid(), DocumentId = terms.Id,
+            Major = 3, IsPublished = true, Content = "Third synthetic text." };
+        db.LegalDocumentVersions.Add(third);
+        terms.CurrentVersionId = third.Id;
+        await db.SaveChangesAsync();
+        var afterPublish = await AccountStatus("en");
+        Assert.True(afterPublish.AcceptanceRequired);
+        Assert.Equal(third.Id, Assert.Single(afterPublish.Documents, document => document.ReceiptId is null).Document.VersionId);
+        Assert.False((await journey.GetAccessAsync(created.Id, default))!.ConsentCurrent);
+
+        var wrongLocale = await accountController.Accept(new(third.Id, "en", Guid.NewGuid()), default);
+        Assert.IsType<ConflictObjectResult>(wrongLocale.Result);
+        accountController.HttpContext.Connection.RemoteIpAddress = IPAddress.Parse("192.0.2.20");
+        accountController.Request.Headers.UserAgent = "Fixture app";
+        var acceptedUpdate = await accountController.Accept(new(third.Id, "es", Guid.NewGuid()), default);
+        Assert.IsType<OkObjectResult>(acceptedUpdate.Result);
+        Assert.False((await AccountStatus("es")).AcceptanceRequired);
+        Assert.True((await journey.GetAccessAsync(created.Id, default))!.ConsentCurrent);
+        Assert.Equal(3, await db.LegalDocumentAcceptances.CountAsync());
+
+        current.UserId.Returns(Guid.NewGuid());
+        Assert.All((await AccountStatus("es")).Documents, document => Assert.Null(document.ReceiptId));
+        apiConfig.EnforcementEnabled = false;
+        Assert.Empty((await AccountStatus("es")).Documents);
     }
 
     [NutritionPostgresFact]
