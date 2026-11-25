@@ -52,7 +52,7 @@ public sealed class PatientIntakeQueryHandler(IPatientScopeGuard scope, IPatient
         if (canPhotos) await scope.EnsureAsync(request.PatientId, "Nutrition.PhotosView", ct);
         var read = await reading.ReadAsync(async readCt =>
         {
-            var timezone = await store.TimezoneAsync(request.PatientId, readCt) ?? throw new NotFoundException("Paciente no encontrado.");
+            var timezone = await store.TimezoneAsync(request.PatientId, readCt) ?? throw new NotFoundException("Persona no encontrada.");
             var today = NutritionStateMachine.Today(clock.GetUtcNow(), timezone);
             var end = request.To > today ? today : request.To;
             var total = Math.Max(0, end.DayNumber - request.From.DayNumber + 1);

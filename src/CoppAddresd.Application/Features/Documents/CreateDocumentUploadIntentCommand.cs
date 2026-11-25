@@ -24,7 +24,7 @@ public sealed class CreateDocumentUploadIntentCommandHandler(
         CancellationToken ct)
     {
         if (!await repository.PatientExistsAsync(request.PatientId, ct))
-            throw new NotFoundException("El paciente no existe.");
+            throw new NotFoundException("La persona no existe.");
 
         var type = await repository.GetTypeByIdAsync(request.DocumentTypeId, ct);
         if (type is null || !type.IsActive)

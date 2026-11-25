@@ -22,16 +22,16 @@ public sealed class NutritionWorkspaceQueryHandler(INutritionCaseStore access, I
     public async Task<NutritionWorkspaceView> Handle(NutritionWorkspaceQuery request, CancellationToken ct)
     {
         if (request.Actor.UserId == Guid.Empty || !request.Actor.CanView && !request.Actor.CanManage && !request.Actor.CanApprove) throw new ForbiddenException("Se requiere permiso de Nutrición.");
-        if (!await access.CanAccessAsync(request.PatientId, request.Actor, ct)) throw new NotFoundException("Paciente no encontrado.");
+        if (!await access.CanAccessAsync(request.PatientId, request.Actor, ct)) throw new NotFoundException("Persona no encontrada.");
         if (request.HistoryPage < 1 || request.HistoryPageSize is < 1 or > 100 || (long)(request.HistoryPage - 1) * request.HistoryPageSize > int.MaxValue)
             throw new ValidationException("Paginación de historial inválida.");
-        var identity = await workspace.IdentityAsync(request.PatientId, ct) ?? throw new NotFoundException("Paciente no encontrado.");
-        var context = await access.GetContextAsync(request.PatientId, ct) ?? throw new NotFoundException("Paciente no encontrado.");
+        var identity = await workspace.IdentityAsync(request.PatientId, ct) ?? throw new NotFoundException("Persona no encontrada.");
+        var context = await access.GetContextAsync(request.PatientId, ct) ?? throw new NotFoundException("Persona no encontrada.");
         var today = NutritionStateMachine.Today(clock.GetUtcNow(), identity.Timezone);
         var profile = await cases.ReadMeasuredProfileAsync(request.PatientId, context, ct);
         var id = request.PrescriptionId ?? await workspace.LatestPrescriptionIdAsync(request.PatientId, ct);
         var review = id is { } key ? await prescriptions.GetByIdAsync(key, ct) : null;
-        if (request.PrescriptionId is not null && review?.PatientId != request.PatientId) throw new NotFoundException("Prescripción no encontrada.");
+        if (request.PrescriptionId is not null && review?.PatientId != request.PatientId) throw new NotFoundException("Recomendación no encontrada.");
         var current = await prescriptions.GetCurrentPublishedAsync(request.PatientId, today, ct);
         NutritionView? reviewView = review is null ? null : await cases.ReadViewAsync(review, context, ct);
         var currentView = current is null ? null : current.Id == review?.Id ? reviewView : await cases.ReadViewAsync(current, context, ct);

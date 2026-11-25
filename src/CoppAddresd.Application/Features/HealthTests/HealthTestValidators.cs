@@ -83,10 +83,10 @@ public sealed class AssignBatteryCommandValidator : AbstractValidator<AssignBatt
 {
     public AssignBatteryCommandValidator()
     {
-        RuleFor(x => x.PatientIds).NotEmpty().WithMessage("Debe indicar al menos un paciente.");
+        RuleFor(x => x.PatientIds).NotEmpty().WithMessage("Debe indicar al menos una persona.");
         RuleFor(x => x.PatientIds)
             .Must(ids => ids.Distinct().Count() == ids.Count)
-            .WithMessage("No se repiten pacientes en la asignación.")
+            .WithMessage("No se repiten personas en la asignación.")
             .When(x => x.PatientIds is { Count: > 0 });
     }
 }

@@ -56,8 +56,8 @@ public sealed class SosDispatchersTests
         var alert = NewAlert();
         var result = await dispatcher.DispatchAsync(alert);
         Assert.Equal(SosChannelStatus.Enviado, result.Status); Assert.Equal(2, result.Recipients);
-        await fcm.Received(1).SendAsync("en-device", "🚨 Active SOS alert", "A patient activated an emergency SOS alert. Review it immediately in the platform.", null, Arg.Any<CancellationToken>());
-        await fcm.Received(1).SendAsync("es-device", "🚨 Alerta SOS activa", "Un paciente activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma.", null, Arg.Any<CancellationToken>());
+        await fcm.Received(1).SendAsync("en-device", "🚨 Active SOS alert", "A person activated an emergency SOS alert. Review it immediately in the platform.", null, Arg.Any<CancellationToken>());
+        await fcm.Received(1).SendAsync("es-device", "🚨 Alerta SOS activa", "Una persona activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma.", null, Arg.Any<CancellationToken>());
         _dedupe.GetByKeyAsync($"sos:push:{alert.Id}:{user}", Arg.Any<CancellationToken>()).Returns(new NotificationDedupeKey { PushStatus="enviado" });
         await dispatcher.DispatchAsync(alert);
         Assert.Equal(2, fcm.ReceivedCalls().Count());

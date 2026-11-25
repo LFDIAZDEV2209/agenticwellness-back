@@ -119,7 +119,7 @@ public sealed class MedicationMonitoringController(MedicationControlService poli
             if (value.Length > 0 && "=+-@\t\r\n".Contains(value[0])) value = "'" + value;
             return "\"" + value.Replace("\"", "\"\"") + "\"";
         }
-        var csv = new StringBuilder("Paciente,Medicamento,Cantidad,Unidad,Programada,Estado,Registrada,Plan asignado\r\n");
+        var csv = new StringBuilder("Persona,Medicamento,Cantidad,Unidad,Programada,Estado,Registrada,Plan asignado\r\n");
         foreach (var item in week.Doses) {
             var d = item.Dose;
             csv.AppendLine(string.Join(',', new[] {week.Patient.Name, d.Name, d.Dosage.ToString(CultureInfo.InvariantCulture), d.Unit,

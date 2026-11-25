@@ -65,7 +65,7 @@ public sealed class PushLanguageTests
     }
 
     [Theory]
-    [InlineData("🚨 Alerta SOS activa", "Un paciente activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma.", "🚨 Active SOS alert", "A patient activated an emergency SOS alert. Review it immediately in the platform.")]
+    [InlineData("🚨 Alerta SOS activa", "Una persona activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma.", "🚨 Active SOS alert", "A person activated an emergency SOS alert. Review it immediately in the platform.")]
     [InlineData("⭐ ¡Nivel 12!", "⭐ ¡Subiste a Nivel 12!", "⭐ Level 12!", "⭐ You reached level 12!")]
     [InlineData("🏆 ¡22 días!", "🏆 ¡22 días! +120 XP · ¡x2 por 48h!", "🏆 22 days!", "🏆 22 days! +120 XP · x2 for 48h!")]
     [InlineData("✅ Día perfecto", "✅ Día perfecto · +25 XP", "✅ Perfect day", "✅ Perfect day · +25 XP")]

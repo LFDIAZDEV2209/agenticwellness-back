@@ -59,7 +59,7 @@ public sealed class GetScoresHistoryQueryHandler(
                 var context =
                     await repository.GetScoresHistoryContextAsync(request.PatientId, token)
                     ?? throw new NotFoundException(
-                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {request.PatientId}."
+                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {request.PatientId}."
                     );
                 return BuildPoints(context);
             },

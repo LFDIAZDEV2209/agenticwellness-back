@@ -16,14 +16,14 @@ internal static class NotificationPreviewSupport
     {
         if (patient is null)
         {
-            return (false, string.Empty, "La alerta no tiene paciente asociado.");
+            return (false, string.Empty, "La alerta no está vinculada a una persona.");
         }
 
         if (channel == NotificationChannel.sms)
         {
             if (string.IsNullOrWhiteSpace(patient.PhoneNumber))
             {
-                return (false, string.Empty, "El paciente no tiene teléfono registrado.");
+                return (false, string.Empty, "La persona no tiene teléfono registrado.");
             }
 
             var dial = string.IsNullOrWhiteSpace(patient.PhoneCountryCode)
@@ -35,7 +35,7 @@ internal static class NotificationPreviewSupport
         // community
         if (patient.UserId is null || patient.UserId == Guid.Empty)
         {
-            return (false, string.Empty, "El paciente no tiene cuenta en la app.");
+            return (false, string.Empty, "La persona no tiene cuenta en la app.");
         }
 
         return (true, patient.UserId.Value.ToString(), null);

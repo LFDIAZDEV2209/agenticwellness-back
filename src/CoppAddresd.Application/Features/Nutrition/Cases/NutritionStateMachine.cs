@@ -24,7 +24,7 @@ public static class NutritionStateMachine
     {
         try { return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(utcNow, TimeZoneInfo.FindSystemTimeZoneById(timezone)).DateTime); }
         catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
-        { throw new UnprocessableEntityException("La zona horaria del paciente no es válida."); }
+        { throw new UnprocessableEntityException("La zona horaria de la persona no es válida."); }
     }
     public static (DateOnly Start, DateOnly End) Dates(DateOnly today, DateOnly? requested, NutritionPrescription? previous,
         NutritionPrescription? predecessor = null)

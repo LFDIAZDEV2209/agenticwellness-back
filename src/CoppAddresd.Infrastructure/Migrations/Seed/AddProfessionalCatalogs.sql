@@ -5,7 +5,7 @@
 -- Profesiones (professional_types).
 INSERT INTO erp.professional_types (code, name, description, sort_order) VALUES
     ('PHYSICIAN', 'Physician (MD/DO)', 'Médico/a con licencia estatal (Doctor of Medicine o Doctor of Osteopathic Medicine).', 1),
-    ('NURSE_PRACTITIONER', 'Nurse Practitioner (NP)', 'Enfermero/a de práctica avanzada con prescripción.', 2),
+    ('NURSE_PRACTITIONER', 'Nurse Practitioner (NP)', 'Profesional de enfermería de práctica avanzada con facultad para emitir indicaciones.', 2),
     ('PHYSICIAN_ASSISTANT', 'Physician Assistant (PA)', 'Asistente médico con licencia bajo supervisión de un médico.', 3),
     ('REGISTERED_NURSE', 'Registered Nurse (RN)', 'Enfermero/a registrado/a.', 4),
     ('LICENSED_PRACTICAL_NURSE', 'Licensed Practical Nurse (LPN)', 'Enfermero/a práctico/a licenciado/a.', 5),
@@ -18,14 +18,14 @@ INSERT INTO erp.professional_types (code, name, description, sort_order) VALUES
     ('EXERCISE_PHYSIOLOGIST', 'Exercise Physiologist', 'Fisiólogo/a del ejercicio.', 12),
     ('HEALTH_COACH', 'Certified Health Coach (NBC-HWC)', 'Coach de salud certificado/a (National Board).', 13),
     ('PHARMACIST', 'Pharmacist (PharmD)', 'Farmacéutico/a.', 14),
-    ('CARE_COORDINATOR', 'Care Coordinator', 'Coordinador/a de atención al paciente.', 15),
+    ('CARE_COORDINATOR', 'Care Coordinator', 'Coordinación de la atención de la persona.', 15),
     ('COMMUNITY_HEALTH_WORKER', 'Community Health Worker', 'Trabajador/a de salud comunitaria.', 16),
     ('MEDICAL_ASSISTANT', 'Medical Assistant', 'Asistente médico/a de consulta.', 17)
 ON CONFLICT (code) DO NOTHING;
 
 -- Especialidades (specialties).
 INSERT INTO erp.specialties (code, name, category, description, sort_order) VALUES
-    ('OBESITY_MEDICINE', 'Obesity Medicine', 'Medicina', 'Tratamiento integral de la obesidad (certificación ABOM).', 1),
+    ('OBESITY_MEDICINE', 'Obesity Medicine', 'Medicina', 'Acompañamiento integral en obesidad (certificación ABOM).', 1),
     ('BARIATRIC_SURGERY', 'Bariatric Surgery', 'Medicina', 'Cirugía bariátrica y metabólica.', 2),
     ('ENDOCRINOLOGY', 'Endocrinology & Diabetes', 'Medicina', 'Endocrinología y metabolismo (diabetes, tiroides).', 3),
     ('FAMILY_MEDICINE', 'Family Medicine', 'Medicina', 'Medicina familiar y atención primaria.', 4),
@@ -39,7 +39,7 @@ INSERT INTO erp.specialties (code, name, category, description, sort_order) VALU
     ('CARDIOLOGY', 'Cardiology', 'Medicina', 'Cardiología clínica y preventiva.', 12),
     ('GASTROENTEROLOGY', 'Gastroenterology', 'Medicina', 'Gastroenterología y hepatología.', 13),
     ('SLEEP_MEDICINE', 'Sleep Medicine', 'Medicina', 'Medicina del sueño (apnea obstructiva).', 14),
-    ('CLINICAL_NUTRITION', 'Clinical Nutrition', 'Nutrición', 'Nutrición clínica y dietoterapia.', 15),
+    ('CLINICAL_NUTRITION', 'Clinical Nutrition', 'Nutrición', 'Orientación nutricional y acompañamiento alimentario.', 15),
     ('PEDIATRIC_NUTRITION', 'Pediatric Nutrition', 'Nutrición', 'Nutrición pediátrica.', 16),
     ('SPORTS_NUTRITION', 'Sports Nutrition', 'Nutrición', 'Nutrición deportiva.', 17),
     ('BEHAVIORAL_HEALTH', 'Behavioral Health', 'Salud mental', 'Salud conductual y manejo de hábitos.', 18),
@@ -49,10 +49,10 @@ INSERT INTO erp.specialties (code, name, category, description, sort_order) VALU
     ('MEDSURG_NURSING', 'Medical-Surgical Nursing', 'Enfermería', 'Enfermería médico-quirúrgica.', 22),
     ('COMMUNITY_HEALTH_NURSING', 'Community Health Nursing', 'Enfermería', 'Enfermería de salud comunitaria.', 23),
     ('PHYSICAL_THERAPY', 'Physical Therapy', 'Terapia', 'Fisioterapia y rehabilitación funcional.', 24),
-    ('OCCUPATIONAL_THERAPY', 'Occupational Therapy', 'Terapia', 'Terapia ocupacional.', 25),
-    ('CARE_COORDINATION', 'Care Coordination', 'Coordinación', 'Coordinación de cuidados y navegación del paciente.', 26),
+    ('OCCUPATIONAL_THERAPY', 'Occupational Therapy', 'Terapia', 'Apoyo a la autonomía en actividades diarias.', 25),
+    ('CARE_COORDINATION', 'Care Coordination', 'Coordinación', 'Coordinación de cuidados y orientación de la persona.', 26),
     ('HEALTH_EDUCATION', 'Health Education', 'Coordinación', 'Educación para la salud y promoción.', 27),
-    ('EXERCISE_PHYSIOLOGY', 'Exercise Physiology', 'Fitness', 'Fisiología del ejercicio y prescripción de actividad física.', 28),
+    ('EXERCISE_PHYSIOLOGY', 'Exercise Physiology', 'Fitness', 'Fisiología del ejercicio y recomendaciones de actividad física.', 28),
     ('WELLNESS_COACHING', 'Wellness Coaching', 'Fitness', 'Coaching de bienestar y hábitos saludables.', 29),
     ('URGENT_CARE', 'Urgent Care', 'Medicina', 'Atención prioritaria de urgencias no vitales.', 30)
 ON CONFLICT (code) DO NOTHING;
