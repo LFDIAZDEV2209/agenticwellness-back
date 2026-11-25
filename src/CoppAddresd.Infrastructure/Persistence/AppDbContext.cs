@@ -2,6 +2,7 @@ using CoppAddresd.Domain.Entities;
 using CoppAddresd.Domain.Entities.FoodAi;
 using CoppAddresd.Domain.Entities.HealthTests;
 using CoppAddresd.Domain.Entities.ProgramProgress;
+using CoppAddresd.Domain.Wellness365;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoppAddresd.Infrastructure.Persistence;
@@ -14,6 +15,16 @@ namespace CoppAddresd.Infrastructure.Persistence;
 /// </summary>
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public DbSet<Motor365Person> Motor365People => Set<Motor365Person>();
+    public DbSet<Motor365Consent> Motor365Consents => Set<Motor365Consent>();
+    public DbSet<Motor365Screening> Motor365Screenings => Set<Motor365Screening>();
+    public DbSet<Motor365DailyLog> Motor365DailyLogs => Set<Motor365DailyLog>();
+    public DbSet<Motor365EngineParams> Motor365EngineParams => Set<Motor365EngineParams>();
+    public DbSet<Motor365PlanSnapshot> Motor365PlanSnapshots => Set<Motor365PlanSnapshot>();
+    public DbSet<Motor365EngineEvent> Motor365EngineEvents => Set<Motor365EngineEvent>();
+    public DbSet<Motor365AuditLog> Motor365AuditLog => Set<Motor365AuditLog>();
+    public DbSet<Motor365ProfessionalReview> Motor365ProfessionalReviews => Set<Motor365ProfessionalReview>();
+
     public DbSet<NutritionCycle> NutritionCycles => Set<NutritionCycle>();
     public DbSet<NutritionIntakeDayReview> NutritionIntakeDayReviews => Set<NutritionIntakeDayReview>();
     public DbSet<NutritionIntakeRequest> NutritionIntakeRequests => Set<NutritionIntakeRequest>();
