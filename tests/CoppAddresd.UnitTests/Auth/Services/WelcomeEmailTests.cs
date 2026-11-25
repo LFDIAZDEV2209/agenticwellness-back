@@ -54,7 +54,7 @@ public sealed class WelcomeEmailTests
             Assert.DoesNotContain("Android", mail.HtmlBody);
         Assert.DoesNotContain("apps.apple.com", mail.HtmlBody);
         Assert.Contains($"src=\"{Settings.WelcomeLogoUrl}\"", mail.HtmlBody);
-        Assert.Contains("COPP-ADRESD", mail.HtmlBody);
+        Assert.Contains("Agentic Wellness IA", mail.HtmlBody);
         Assert.Empty(mail.InlineImages ?? []);
     }
 
@@ -78,7 +78,7 @@ public sealed class WelcomeEmailTests
                 AndroidDownloadUrl = "https://play.google.com/store/apps/details?id=example",
             }
         );
-        Assert.Equal("Welcome to Copp Adresd", mail.Subject);
+        Assert.Equal("Welcome to Agentic Wellness IA", mail.Subject);
         Assert.DoesNotContain("<script>", mail.HtmlBody);
         Assert.Contains("&lt;script&gt;", mail.HtmlBody);
         Assert.DoesNotContain("javascript:", mail.HtmlBody);

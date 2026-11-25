@@ -6,6 +6,7 @@ namespace CoppAddresd.Infrastructure.Services.Email;
 public sealed class EmailOptions
 {
     public const string SectionName = "Email";
+    internal const string DefaultBrandName = "Agentic Wellness IA";
 
     /// <summary>
     /// Email provider type: "Log" (local mock/logging), "Smtp" (standard SMTP / Outlook), or "None".
@@ -51,7 +52,12 @@ public sealed class EmailOptions
     /// <summary>
     /// Default sender display name.
     /// </summary>
-    public string FromName { get; set; } = "COPP-ADRESD";
+    public string FromName { get; set; } = DefaultBrandName;
+
+    internal static string ResolveBrandName(string? name) =>
+        name?.Trim().ToUpperInvariant() is null or "" or "COPPADDRESD" or "COPPADRESD" or "COPP ADRESD" or "COPP-ADRESD" or "ANTARES"
+            ? DefaultBrandName
+            : name!;
 
     /// <summary>
     /// Timeout in milliseconds for SMTP operations. Default is 10000ms (10 seconds).

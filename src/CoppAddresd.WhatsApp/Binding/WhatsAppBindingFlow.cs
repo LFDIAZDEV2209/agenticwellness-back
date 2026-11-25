@@ -12,14 +12,14 @@ namespace CoppAddresd.WhatsApp.Binding;
 public sealed class WhatsAppBindingFlow(WhatsAppDbContext db, ISender mediator, IPatientBindingQuery patients,
     IWhatsAppOtpClient auth, TimeProvider clock)
 {
-    public const string Guide = "Puedes vincular este número sin contraseña: envía VINCULAR y después tu número de documento. Te enviaremos un código por SMS al teléfono registrado. También puedes registrarte en la app ANTARES. Nunca envíes contraseñas.";
+    public const string Guide = "Puedes vincular este número sin contraseña: envía VINCULAR y después tu número de documento. Te enviaremos un código por SMS al teléfono registrado. También puedes registrarte en la app Agentic Wellness IA. Nunca envíes contraseñas.";
     internal static string GuideInApp(string language) =>
         language == "en"
-            ? "This number isn't linked. Open the ANTARES app to register or check the phone number on your account."
-            : "Este número no está vinculado. Abre la app ANTARES para registrarte o verificar el teléfono asociado a tu cuenta.";
+            ? "This number isn't linked. Open the Agentic Wellness IA app to register or check the phone number on your account."
+            : "Este número no está vinculado. Abre la app Agentic Wellness IA para registrarte o verificar el teléfono asociado a tu cuenta.";
 
     private const string Limit = "Alcanzaste el límite de 2 envíos por hora. Intenta cuando se libere la ventana de una hora.";
-    private const string Unavailable = "No pudimos completar la vinculación. Inténtalo más tarde enviando VINCULAR o usa la app ANTARES.";
+    private const string Unavailable = "No pudimos completar la vinculación. Inténtalo más tarde enviando VINCULAR o usa la app Agentic Wellness IA.";
 
     public async Task HandleAsync(WhatsAppRawEvent input, CancellationToken ct)
     {
@@ -51,7 +51,7 @@ public sealed class WhatsAppBindingFlow(WhatsAppDbContext db, ISender mediator, 
         if (command is "cancelar" or "cancel")
         {
             session.State = BindingState.Ended;
-            await FinishAsync(session, input, "Vinculación cancelada. Puedes registrarte en la app ANTARES o enviar VINCULAR cuando quieras.", ct);
+            await FinishAsync(session, input, "Vinculación cancelada. Puedes registrarte en la app Agentic Wellness IA o enviar VINCULAR cuando quieras.", ct);
             return;
         }
         if (command is "vincular" or "link")
@@ -81,7 +81,7 @@ public sealed class WhatsAppBindingFlow(WhatsAppDbContext db, ISender mediator, 
         }
         if (command.Contains("contrasena") || command.Contains("password"))
         {
-            await FinishAsync(session, input, "No envíes contraseñas. Para vincularte usa solo tu documento y el código SMS solicitado, o la app ANTARES.", ct);
+            await FinishAsync(session, input, "No envíes contraseñas. Para vincularte usa solo tu documento y el código SMS solicitado, o la app Agentic Wellness IA.", ct);
             return;
         }
         if (session.State == BindingState.AwaitingCode)

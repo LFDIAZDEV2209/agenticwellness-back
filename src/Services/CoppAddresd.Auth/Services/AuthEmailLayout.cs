@@ -1,4 +1,5 @@
 using System.Text.Encodings.Web;
+using CoppAddresd.Auth.Configuration;
 
 namespace CoppAddresd.Auth.Services;
 
@@ -33,14 +34,14 @@ internal static class AuthEmailLayout
         var safeFooter = HtmlEncoder.Default.Encode(footer);
         var expiry = isEn ? $"Expires in {minutes} minutes." : $"Vence en {minutes} minutos.";
         var security = isEn
-            ? "If you did not request this code, ignore this email. Nobody from Copp Adresd will ask you for it."
-            : "Si no solicitaste este código, ignora este correo. Nadie de Copp Adresd te lo va a pedir.";
+            ? "If you did not request this code, ignore this email. Nobody from Agentic Wellness IA will ask you for it."
+            : "Si no solicitaste este código, ignora este correo. Nadie de Agentic Wellness IA te lo va a pedir.";
         var label = isEn ? "YOUR VERIFICATION CODE" : "TU CÓDIGO DE VERIFICACIÓN";
         var preheader = isEn
-            ? $"Your Copp Adresd code is {code}. It expires in {minutes} minutes."
-            : $"Tu código de Copp Adresd es {code}. Vence en {minutes} minutos.";
+            ? $"Your Agentic Wellness IA code is {code}. It expires in {minutes} minutes."
+            : $"Tu código de Agentic Wellness IA es {code}. Vence en {minutes} minutos.";
         var tagline = isEn ? "Prevention · Wellbeing · Health" : "Prevención · Bienestar · Salud";
-        var brand = isEn ? "COPP ADRESD" : "COPP ADRESD";
+        const string brand = EmailSettings.DefaultBrandName;
 
         return $"""
 <!doctype html>
@@ -110,7 +111,7 @@ internal static class AuthEmailLayout
         <tr>
           <td style="background:{NavyDeep};padding:18px 34px;">
             <p style="margin:0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;letter-spacing:1.8px;color:#a9c6bf;">{tagline}</p>
-            <p style="margin:4px 0 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;color:#7f9bb4;">© {DateTime.UtcNow.Year} Copp Adresd</p>
+            <p style="margin:4px 0 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;color:#7f9bb4;">© {DateTime.UtcNow.Year} Agentic Wellness IA</p>
           </td>
         </tr>
       </table>

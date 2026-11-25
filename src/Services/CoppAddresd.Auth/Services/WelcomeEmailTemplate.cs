@@ -27,14 +27,14 @@ public static class WelcomeEmailTemplate
     {
         var en = content.Language?.StartsWith("en", StringComparison.OrdinalIgnoreCase) == true;
         string T(string es, string english) => en ? english : es;
-        var subject = T("Bienvenido a Copp Adresd", "Welcome to Copp Adresd");
+        var subject = T("Bienvenido a Agentic Wellness IA", "Welcome to Agentic Wellness IA");
         var name = string.IsNullOrWhiteSpace(content.FirstName)
             ? ""
             : ", " + content.FirstName.Trim();
         var intro = content.IsPatientOnboarding
             ? T(
-                "Tu registro en Copp Adresd está listo. Sigue estos pasos para entrar a la app.",
-                "Your Copp Adresd registration is ready. Follow these steps to sign in to the app."
+                "Tu registro en Agentic Wellness IA está listo. Sigue estos pasos para entrar a la app.",
+                "Your Agentic Wellness IA registration is ready. Follow these steps to sign in to the app."
             )
             : T(
                 "Tu cuenta está lista. Aquí tienes tus accesos y los pasos para comenzar.",
@@ -131,14 +131,14 @@ public static class WelcomeEmailTemplate
                     "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\"><tr><td height=\"30\" style=\"height:30px;border-top:1px solid #dfe9e8\"></td></tr></table>"
                 );
             sections.Append(
-                Heading(T("Copp Adresd, también en tu móvil", "Copp Adresd on your phone"))
+                Heading(T("Agentic Wellness IA, también en tu móvil", "Agentic Wellness IA on your phone"))
             );
             var instruction = T(
                 "En la app, ingresa tu número de identificación y confirma el código que recibirás en tu contacto registrado.",
                 "In the app, enter your identification number and confirm the code sent to your registered contact."
             );
             sections.Append(Paragraph(instruction));
-            plain.AppendLine($"\nApp Copp Adresd\n{instruction}");
+            plain.AppendLine($"\nApp Agentic Wellness IA\n{instruction}");
             foreach (
                 var (platform, configured) in new[]
                 {
@@ -192,7 +192,7 @@ public static class WelcomeEmailTemplate
             <tr><td bgcolor="#142855" style="padding:16px 24px;background:#142855">
             <table role="presentation" cellspacing="0" cellpadding="0"><tr>
             {{logoCell}}
-            <td class="brand-name" style="font-size:16px;font-weight:700;letter-spacing:1.2px;color:#ffffff;vertical-align:middle">COPP-ADRESD</td>
+            <td class="brand-name" style="font-size:16px;font-weight:700;letter-spacing:1.2px;color:#ffffff;vertical-align:middle">Agentic Wellness IA</td>
             </tr></table></td></tr>
             <tr><td class="hero-pad" align="center" bgcolor="#edf6f3" style="padding:42px 38px;background:#edf6f3;color:#142855">
             <h1 class="mail-heading" style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:46px;line-height:1.12;font-weight:700;letter-spacing:-1.3px;color:#142855;overflow-wrap:anywhere;word-break:break-word">{{E(
@@ -210,7 +210,7 @@ public static class WelcomeEmailTemplate
                 unexpected
             )}}</p>
             </td></tr>
-            <tr><td style="padding:20px 24px;text-align:center;font-size:11px;letter-spacing:1px;color:#52677b">COPP-ADRESD</td></tr>
+            <tr><td style="padding:20px 24px;text-align:center;font-size:11px;letter-spacing:1px;color:#52677b">Agentic Wellness IA</td></tr>
             </table></td></tr></table></body></html>
             """;
         return new EmailMessage(

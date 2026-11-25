@@ -40,7 +40,7 @@ public sealed class MedicationWhatsAppChannel(WhatsAppDbContext db, IWhatsAppMes
         var instructions = Clean(occurrence.Instructions, english ? "See your plan in the app" : "Consulta tu plan en la app");
         var result = await sender.SendQuickReplyTemplateAsync(link.WaId, template, english ? "en_US" : "es",
             [Clean(link.FirstName, english ? "there" : "paciente"),
-             Clean($"{occurrence.Dose.Name}, {quantity} {occurrence.Dose.Unit}", "Copp Adresd"),
+             Clean($"{occurrence.Dose.Name}, {quantity} {occurrence.Dose.Unit}", "Agentic Wellness IA"),
              local.ToString("HH:mm", culture), instructions],
             [$"med-dose:taken:{deliveryId:N}", $"med-dose:snooze:{deliveryId:N}", $"med-dose:omitted:{deliveryId:N}"], ct);
         if (!result.Succeeded)

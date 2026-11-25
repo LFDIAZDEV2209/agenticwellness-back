@@ -24,10 +24,10 @@ public sealed class TransactionalEmailTests
     private static readonly string[] Codes = ["BIEN-01", "ACT-01", "ACT-02", "PWD-01", "NUT-01", "NUT-02", "INV-01"];
 
     [Theory]
-    [InlineData("BIEN-01", "Bienvenido a Copp Adresd, Ana. Tu acceso ya está listo", "Welcome to Copp Adresd, Ana. Your account is ready")]
-    [InlineData("ACT-01", "Tu cuenta de Copp Adresd está activa", "Your Copp Adresd account is active")]
+    [InlineData("BIEN-01", "Bienvenido a Agentic Wellness IA, Ana. Tu acceso ya está listo", "Welcome to Agentic Wellness IA, Ana. Your account is ready")]
+    [InlineData("ACT-01", "Tu cuenta de Agentic Wellness IA está activa", "Your Agentic Wellness IA account is active")]
     [InlineData("ACT-02", "Ana, te falta un paso para empezar", "Ana, you’re one step away from getting started")]
-    [InlineData("PWD-01", "Restablece tu contraseña de Copp Adresd", "Reset your Copp Adresd password")]
+    [InlineData("PWD-01", "Restablece tu contraseña de Agentic Wellness IA", "Reset your Agentic Wellness IA password")]
     [InlineData("NUT-01", "Ana, tu plan nutricional ya está listo", "Ana, your nutrition plan is ready")]
     [InlineData("NUT-02", "Tu plan nutricional fue actualizado", "Your nutrition plan was updated")]
     [InlineData("INV-01", "Inventario bajo: 6 días de A", "Low inventory: 6 days of A left")]
@@ -49,6 +49,20 @@ public sealed class TransactionalEmailTests
         Assert.DoesNotContain("NA-DOSE-NA", en.HtmlBody);
         Assert.DoesNotContain("NA-LOGIN-CODE-NA", en.HtmlBody);
         Assert.DoesNotContain("NA-PASSWORD-NA", es.PlainTextBody);
+    }
+
+    [Fact]
+    public void Renderer_RebrandsExactLegacyNameAndPreservesCustomSender()
+    {
+        var content = new TransactionalEmailContent("ACT-01", Recipient, "en", Values());
+        var settings = new EmailSettings();
+        settings.Transactional.Name = " CoppAddresd ";
+
+        Assert.Equal("Your Agentic Wellness IA account is active", TransactionalEmailTemplate.Build(content, settings).Subject);
+
+        settings.Transactional.Name = "Equipo de prueba";
+
+        Assert.Equal("Your Equipo de prueba account is active", TransactionalEmailTemplate.Build(content, settings).Subject);
     }
 
     [Fact]
@@ -143,6 +157,7 @@ public sealed class TransactionalEmailTests
         var settings = new EmailSettings
         {
             From = "sender@example.invalid", SmtpHost = "127.0.0.1", SmtpUseSsl = false,
+            FromName = "CoppAddresd",
             SmtpPort = ((IPEndPoint)listener.LocalEndpoint).Port
         };
         var sender = new SmtpEmailSender(Options.Create(settings), NullLogger<SmtpEmailSender>.Instance);
@@ -151,6 +166,9 @@ public sealed class TransactionalEmailTests
             var inbox = Capture(listener, timeout.Token);
             await sender.SendAsync(TransactionalEmailTemplate.Build(new(code, Recipient, null, Values()), settings), timeout.Token);
             var mime = await inbox;
+            var senderHeader = mime.Split('\n').Single(line => line.StartsWith("From: ", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains("Agentic Wellness IA", senderHeader);
+            Assert.Contains("sender@example.invalid", senderHeader);
             Assert.Contains("Content-Type: multipart/alternative", mime, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Content-Type: text/plain", mime, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Content-Type: text/html", mime, StringComparison.OrdinalIgnoreCase);
