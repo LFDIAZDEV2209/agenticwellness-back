@@ -14,6 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.14" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
@@ -33,5 +34,9 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="CoppAddresd.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/Year365/Year365ReportSans.ttf" LogicalName="Year365ReportSans.ttf" />
+    <EmbeddedResource Include="Resources/Year365/OFL.txt" LogicalName="Year365ReportSans-OFL.txt" />
   </ItemGroup>
 </Project>
