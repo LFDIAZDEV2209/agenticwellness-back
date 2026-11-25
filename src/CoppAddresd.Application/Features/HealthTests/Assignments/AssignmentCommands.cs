@@ -234,7 +234,7 @@ public sealed class AssignTestCommandHandler(
     {
         if (!await repository.PatientExistsAsync(request.PatientId, ct))
         {
-            throw new InvalidOperationException("El paciente no existe.");
+            throw new InvalidOperationException("La persona no existe.");
         }
 
         var version = await repository.GetVersionByIdAsync(request.VersionId, ct);

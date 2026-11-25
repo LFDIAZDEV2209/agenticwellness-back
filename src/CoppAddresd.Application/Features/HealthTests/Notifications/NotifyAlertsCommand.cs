@@ -373,7 +373,7 @@ public sealed class NotifyAlertsCommandHandler(
         IReadOnlyDictionary<string, string>? localized = null
     ) =>
         new(
-            PatientName(patient) ?? (language == NotificationLanguage.en ? "Patient" : "Paciente"),
+            PatientName(patient) ?? (language == NotificationLanguage.en ? "Person" : "Persona"),
             patient?.DocumentNumber,
             HealthTestTemplateLocalization.DisplayLabel(alert.Rule?.Name, language, localized),
             HealthTestTemplateLocalization.DisplayLabel(alert.Result?.Label ?? alert.Rule?.Name, language, localized),
@@ -438,7 +438,7 @@ public sealed class SendTestNotificationCommandHandler(
         }
 
         var context = new HealthTestNotificationRenderContext(
-            patient is null ? (request.Language == NotificationLanguage.en ? "Test patient" : "Paciente de prueba") : $"{patient.FirstName} {patient.LastName}".Trim(),
+            patient is null ? (request.Language == NotificationLanguage.en ? "Test user" : "Persona de prueba") : $"{patient.FirstName} {patient.LastName}".Trim(),
             patient?.DocumentNumber,
             request.Language == NotificationLanguage.en ? "Example test" : "Test de ejemplo",
             template.IndicatorCode ?? (request.Language == NotificationLanguage.en ? "Example indicator" : "Indicador de ejemplo"),

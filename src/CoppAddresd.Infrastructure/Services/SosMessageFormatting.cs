@@ -18,7 +18,7 @@ internal static class SosMessageFormatting
     private static readonly TimeSpan ColombiaOffset = TimeSpan.FromHours(-5);
 
     /// <summary>Nombre completo (nombre + apellidos) con fallback.</summary>
-    public static string FullName(PatientProfile? patient, string fallback = "Un paciente")
+    public static string FullName(PatientProfile? patient, string fallback = "Una persona")
     {
         if (patient is null)
         {
@@ -34,7 +34,7 @@ internal static class SosMessageFormatting
     }
 
     /// <summary>Primer nombre con fallback, para el llamado a la acción.</summary>
-    public static string FirstName(PatientProfile? patient, string fallback = "el paciente")
+    public static string FirstName(PatientProfile? patient, string fallback = "la persona")
     {
         var first = patient?.FirstName is { } value ? SingleLine(value) : null;
         return string.IsNullOrWhiteSpace(first) ? fallback : first;
@@ -158,7 +158,7 @@ internal static class SosMessageFormatting
         var code = label switch { "Pulso" => "HR", "Oxígeno" => "SPO2", _ => "SBP" };
         var reading = SosVitalsSnapshot.Read(alert.VitalsSnapshotJson).FirstOrDefault(x => x.MetricCode == code);
         var origin = reading?.Source switch { "device" => "Dispositivo", "professional" => "Profesional",
-            "patient" => "Registro del paciente", "lab" => "Laboratorio", _ => "Reportado por la app" };
+            "patient" => "Registro de la persona", "lab" => "Laboratorio", _ => "Reportado por la app" };
         return origin + " · " + (reading?.ObservedAt is { } time ? FormatMessageTime(time) + " · " + ReadingAge(time, alert.CreatedAt) : "Hora de medición no disponible");
     }
 

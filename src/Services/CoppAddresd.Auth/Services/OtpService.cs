@@ -643,7 +643,7 @@ public class OtpService : IOtpService
                 patient.Id,
                 errors
             );
-            throw new InvalidOperationException("No se pudo crear la cuenta del paciente");
+            throw new InvalidOperationException("No se pudo crear la cuenta de la persona");
         }
 
         await LinkPatientAsync(patient.Id, user.Id, ct);

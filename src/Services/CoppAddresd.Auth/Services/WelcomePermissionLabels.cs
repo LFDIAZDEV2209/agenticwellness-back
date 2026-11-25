@@ -10,7 +10,7 @@ public static class WelcomePermissionLabels
         ["Users"] = "Usuarios",
         ["Roles"] = "Roles",
         ["Permissions"] = "Permisos",
-        ["Patients"] = "Pacientes",
+        ["Patients"] = "Personas",
         ["Employees"] = "Empleados",
         ["Professionals"] = "Profesionales",
         ["Organizations"] = "Organizaciones",
@@ -49,10 +49,13 @@ public static class WelcomePermissionLabels
         ["AdminSettings"] = "Configurar el sistema",
     };
 
-    public static string Module(string module, string? lang) =>
-        lang?.StartsWith("en", StringComparison.OrdinalIgnoreCase) == true
-            ? module
-            : Modules.GetValueOrDefault(module, module);
+    public static string Module(string module, string? lang)
+    {
+        if (lang?.StartsWith("en", StringComparison.OrdinalIgnoreCase) != true)
+            return Modules.GetValueOrDefault(module, module);
+
+        return string.Equals(module, "Patients", StringComparison.OrdinalIgnoreCase) ? "People" : module;
+    }
 
     public static string Action(string code, string fallback, string? lang)
     {

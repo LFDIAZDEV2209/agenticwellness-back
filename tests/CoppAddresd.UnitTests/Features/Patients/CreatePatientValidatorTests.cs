@@ -75,7 +75,7 @@ public class CreatePatientValidatorTests
 
         Assert.False(result.IsValid);
         var error = Assert.Single(result.Errors, e => e.PropertyName == "Status");
-        Assert.Equal("El estado del paciente no es un valor válido.", error.ErrorMessage);
+        Assert.Equal("El estado de la persona no es un valor válido.", error.ErrorMessage);
         Assert.DoesNotContain(result.Errors, e => e.PropertyName == string.Empty);
     }
 

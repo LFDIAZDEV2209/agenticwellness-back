@@ -10,7 +10,7 @@ public sealed class PatientScopeGuard(IPatientScopeActor actor, IPatientScopeSto
     public async Task<Guid> EnsureSelfAsync(Guid userId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (userId == Guid.Empty || actor.UserId != userId) throw new ForbiddenException("Se requiere la identidad del paciente autenticado.");
+        if (userId == Guid.Empty || actor.UserId != userId) throw new ForbiddenException("Se requiere la identidad de la persona autenticada.");
         return await store.SelfPatientAsync(userId, ct) ?? throw Missing();
     }
 

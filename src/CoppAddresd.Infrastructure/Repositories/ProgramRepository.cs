@@ -152,7 +152,7 @@ public sealed partial class ProgramRepository(
                     $"SELECT * FROM app.patient_profiles WHERE id = {patientId} FOR UPDATE").SingleAsync(ct);
                 if (await dbContext.ProgramEnrollments.AsNoTracking().AnyAsync(e => e.PatientId == patientId
                     && (e.Status == ProgramEnrollmentStatus.Active || e.Status == ProgramEnrollmentStatus.PendingAssignment), ct))
-                    throw new BusinessRuleViolationException("PATIENT_ALREADY_ENROLLED: el paciente ya tiene una inscripción activa o pendiente.");
+                    throw new BusinessRuleViolationException("PATIENT_ALREADY_ENROLLED: la persona ya tiene una inscripción activa o pendiente.");
                 var template =
                     await dbContext
                         .ProgramTemplates.AsNoTracking()
@@ -245,7 +245,7 @@ public sealed partial class ProgramRepository(
             {
                 await transaction.RollbackAsync(ct);
                 throw new BusinessRuleViolationException(
-                    "PATIENT_ALREADY_ENROLLED: el paciente ya tiene una inscripción activa."
+                    "PATIENT_ALREADY_ENROLLED: la persona ya tiene una inscripción activa."
                 );
             }
             catch
@@ -4319,7 +4319,7 @@ public sealed partial class ProgramRepository(
         {
             throw new UnprocessableEntityException(
                 $"INVALID_PERIOD: periodEndLocalDate {overrideEnd:yyyy-MM-dd} es futura "
-                    + $"(hoy local del paciente: {todayLocal:yyyy-MM-dd})."
+                    + $"(hoy local de la persona: {todayLocal:yyyy-MM-dd})."
             );
         }
 
@@ -4798,7 +4798,7 @@ public sealed partial class ProgramRepository(
         {
             throw new UnprocessableEntityException(
                 $"INVALID_PERIOD: periodEndLocalDate {overrideEnd:yyyy-MM-dd} es futura "
-                    + $"(hoy local del paciente: {todayLocal:yyyy-MM-dd})."
+                    + $"(hoy local de la persona: {todayLocal:yyyy-MM-dd})."
             );
         }
 
@@ -5259,7 +5259,7 @@ public sealed partial class ProgramRepository(
         var fingerprint = clientRequestId is null ? null : NutritionIntakeRequestFingerprint.Create(mealCode, localDate, intake);
         var ownsTransaction = expectedEnrollmentId is null;
         if (!ownsTransaction && dbContext.Database.CurrentTransaction is null)
-            throw new InvalidOperationException("El registro de Vita requiere la transacción del paciente.");
+            throw new InvalidOperationException("El registro de Vita requiere la transacción de la persona.");
         return ownsTransaction
             ? await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(_ => PersistAsync(), ct)
             : await PersistAsync();
@@ -5315,7 +5315,7 @@ public sealed partial class ProgramRepository(
                     throw new BusinessRuleViolationException("VITA_CAPTURE_ENROLLMENT_CHANGED");
                 if (enrollment is null)
                     throw new NotFoundException(
-                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {patientId}."
+                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {patientId}."
                     );
 
                 // Plantilla de hábito del código de comida (des/alm/mer/cen/agua).
@@ -5336,7 +5336,7 @@ public sealed partial class ProgramRepository(
                 {
                     throw new UnprocessableEntityException(
                         $"INVALID_DATE: la fecha {logDate:yyyy-MM-dd} es futura "
-                            + $"(hoy local del paciente: {todayLocal:yyyy-MM-dd})."
+                            + $"(hoy local de la persona: {todayLocal:yyyy-MM-dd})."
                     );
                 }
 
@@ -5600,7 +5600,7 @@ public sealed partial class ProgramRepository(
                         )
                         .FirstOrDefaultAsync(ct)
                     ?? throw new NotFoundException(
-                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {patientId}."
+                        $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {patientId}."
                     );
 
                 var template =
@@ -5617,7 +5617,7 @@ public sealed partial class ProgramRepository(
                 {
                     throw new UnprocessableEntityException(
                         $"INVALID_DATE: la fecha {logDate:yyyy-MM-dd} es futura "
-                            + $"(hoy local del paciente: {todayLocal:yyyy-MM-dd})."
+                            + $"(hoy local de la persona: {todayLocal:yyyy-MM-dd})."
                     );
                 }
 
@@ -5736,7 +5736,7 @@ public sealed partial class ProgramRepository(
         {
             throw new UnprocessableEntityException(
                 $"INVALID_PERIOD: periodEndLocalDate {overrideEnd:yyyy-MM-dd} es futura "
-                    + $"(hoy local del paciente: {todayLocal:yyyy-MM-dd})."
+                    + $"(hoy local de la persona: {todayLocal:yyyy-MM-dd})."
             );
         }
 
@@ -5928,7 +5928,7 @@ public sealed partial class ProgramRepository(
         {
             throw new UnprocessableEntityException(
                 $"INVALID_PERIOD: periodEndLocalDate {overrideEnd:yyyy-MM-dd} es futura "
-                    + $"(hoy local del paciente: {todayLocal:yyyy-MM-dd})."
+                    + $"(hoy local de la persona: {todayLocal:yyyy-MM-dd})."
             );
         }
 
@@ -8581,7 +8581,7 @@ public sealed partial class ProgramRepository(
             .Select(p => new { p.Id, Name = (p.FirstName + " " + p.LastName).Trim() })
             .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
 
-        string Name(Guid id) => patientNames.TryGetValue(id, out var n) ? n : "Paciente";
+        string Name(Guid id) => patientNames.TryGetValue(id, out var n) ? n : "Persona";
 
         var enrollmentIds = activeEnrollments.Select(e => e.Id).ToList();
 
@@ -9299,7 +9299,7 @@ public sealed partial class ProgramRepository(
             .Select(p => new { p.Id, Name = (p.FirstName + " " + p.LastName).Trim() })
             .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
 
-        string Name(Guid id) => patientNames.TryGetValue(id, out var n) ? n : "Paciente";
+        string Name(Guid id) => patientNames.TryGetValue(id, out var n) ? n : "Persona";
 
         // Tendencia 8 semanas: adherencia por semana × misión.
         // Denominador = pacientes activos × días de la semana (semana en curso
@@ -9591,7 +9591,7 @@ public sealed partial class ProgramRepository(
             .Select(p => new { p.Id, Name = (p.FirstName + " " + p.LastName).Trim() })
             .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
 
-        string Name(Guid id) => patientNames.TryGetValue(id, out var n) ? n : "Paciente";
+        string Name(Guid id) => patientNames.TryGetValue(id, out var n) ? n : "Persona";
 
         var streakData = await dbContext
             .StreakStates.AsNoTracking()
@@ -9777,7 +9777,7 @@ public sealed partial class ProgramRepository(
                 .Where(p => p.Id == enrollment.PatientId)
                 .Select(p => (p.FirstName + " " + p.LastName).Trim())
                 .FirstOrDefaultAsync(ct)
-            ?? "Paciente";
+            ?? "Persona";
 
         var template = await dbContext
             .ProgramTemplates.AsNoTracking()
@@ -10705,7 +10705,7 @@ public sealed partial class ProgramRepository(
 
             if (reasons.Count > 0 && alerts.Count < 4)
             {
-                var name = patientNames.TryGetValue(pid, out var pn2) ? pn2.Name : "Paciente";
+                var name = patientNames.TryGetValue(pid, out var pn2) ? pn2.Name : "Persona";
                 alerts.Add(
                     new BiometriaAlert(pid, name, string.Join(", ", reasons), imc, glucosa, icc)
                 );

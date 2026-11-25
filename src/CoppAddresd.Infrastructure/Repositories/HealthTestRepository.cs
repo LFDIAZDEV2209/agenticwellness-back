@@ -851,7 +851,7 @@ public sealed class HealthTestRepository(AppDbContext dbContext) : IHealthTestRe
                 alerts.Add(
                     new CoppAddresd.Application.Features.HealthTests.HealthTestsGeoAlertDto(
                         pid,
-                        names.GetValueOrDefault(pid, "Paciente"),
+                        names.GetValueOrDefault(pid, "Persona"),
                         sev == CoppAddresd.Domain.Enums.HealthTests.HealthTestSeverity.critical
                             ? "Riesgo crítico"
                             : "Riesgo alto",
@@ -1045,7 +1045,7 @@ public sealed class HealthTestRepository(AppDbContext dbContext) : IHealthTestRe
 
             foreach (var pid in highRiskPatientIds)
             {
-                var name = alertPatients.FirstOrDefault(x => x.Id == pid)?.Name ?? "Paciente";
+                var name = alertPatients.FirstOrDefault(x => x.Id == pid)?.Name ?? "Persona";
                 var sev = patientRisk[pid];
                 alerts.Add(
                     new CoppAddresd.Application.Features.HealthTests.HealthTestsGeoAlertDto(

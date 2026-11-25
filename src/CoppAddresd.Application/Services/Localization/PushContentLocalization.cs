@@ -48,8 +48,8 @@ public static class PushContentLocalization
     private static readonly IReadOnlyDictionary<string, string> Reviewed = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["🚨 Alerta SOS activa"] = "🚨 Active SOS alert",
-        ["Un paciente activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma."] =
-            "A patient activated an emergency SOS alert. Review it immediately in the platform.",
+        ["Una persona activó su alerta SOS de emergencia. Revísala de inmediato en la plataforma."] =
+            "A person activated an emergency SOS alert. Review it immediately in the platform.",
         ["✅ Día perfecto"] = "✅ Perfect day",
         ["💊 ¡Nutriobiótico!"] = "💊 Nutriobiotic!",
         ["💬 ¡Llegaste al día 7!"] = "💬 You reached day 7!",

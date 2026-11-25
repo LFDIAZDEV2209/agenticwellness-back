@@ -35,7 +35,7 @@ public sealed class GetLeagueQueryHandler(
     {
         var context = await repository.GetLeagueContextAsync(request.PatientId, ct)
             ?? throw new NotFoundException(
-                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para el paciente {request.PatientId}.");
+                $"NO_ACTIVE_ENROLLMENT: no existe una inscripción activa para la persona {request.PatientId}.");
 
         var key = CacheKeys.League(context.StateCode);
         var cohort = await cache.GetOrCreateAsync(

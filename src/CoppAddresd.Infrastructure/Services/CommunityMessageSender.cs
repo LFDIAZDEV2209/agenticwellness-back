@@ -48,7 +48,7 @@ public sealed class CommunityMessageSender(
                 false,
                 null,
                 null,
-                SkipReason: "El paciente no tiene cuenta en la comunidad."
+                SkipReason: "La persona no tiene cuenta en la comunidad."
             );
         }
 

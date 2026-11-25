@@ -345,7 +345,7 @@ public class HealthTestsController(
             && !await repository.PatientBelongsToProfessionalAsync(patientId, ownId, ct)
         )
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         return Ok(
@@ -382,7 +382,7 @@ public class HealthTestsController(
             && !await repository.PatientBelongsToProfessionalAsync(patientId, ownId, ct)
         )
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         var detail = await mediator.Send(new GetEvaluationDetailQuery(patientId, evaluationId), ct);
@@ -407,7 +407,7 @@ public class HealthTestsController(
             && !await repository.PatientBelongsToProfessionalAsync(patientId, ownId, ct)
         )
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         return Ok(await mediator.Send(new GetEvaluationCommentsQuery(patientId, evaluationId), ct));
@@ -430,7 +430,7 @@ public class HealthTestsController(
             && !await repository.PatientBelongsToProfessionalAsync(patientId, ownId, ct)
         )
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         return Ok(await mediator.Send(new ListResultsByPatientQuery(patientId), ct));
@@ -499,7 +499,7 @@ public class HealthTestsController(
             && !await repository.PatientBelongsToProfessionalAsync(pId, ownId, ct)
         )
         {
-            return NotFound(new { message = "Paciente no encontrado" });
+            return NotFound(new { message = "Persona no encontrada" });
         }
 
         return Ok(

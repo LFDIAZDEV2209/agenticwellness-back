@@ -67,7 +67,7 @@ public static class PatientSummaryFacts
             $"Hay {d.NutritionRecords} registros de comida en {d.NutritionDays} días del intervalo. Son registros, no una medida de cumplimiento del plan."));
         if (d.ExerciseCompletions > 0) facts.Add(new("exercise.completions", "exercise", $"Hay {d.ExerciseCompletions} tareas de ejercicio registradas como completadas en el intervalo."));
         if (d.PodcastCompletions > 0) facts.Add(new("podcasts.completions", "podcasts", $"Hay {d.PodcastCompletions} tareas de podcast registradas como completadas en el intervalo."));
-        if (d.CompletedTests > 0) facts.Add(new("tests.completed", "tests", $"Hay {d.CompletedTests} evaluaciones de tests completadas en el intervalo. No se incluyen sus respuestas ni diagnósticos."));
+        if (d.CompletedTests > 0) facts.Add(new("tests.completed", "tests", $"Hay {d.CompletedTests} evaluaciones de tests completadas en el intervalo. No se incluye el detalle de las evaluaciones."));
         if (d.Measurements > 0) facts.Add(new("measurements.recorded", "measurements", $"Hay {d.Measurements} mediciones clínicas observadas y registradas en el intervalo. No se infiere normalidad ni cambio clínico."));
         return facts;
     }

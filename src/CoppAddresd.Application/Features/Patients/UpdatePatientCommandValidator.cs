@@ -11,7 +11,7 @@ public sealed class UpdatePatientCommandValidator : AbstractValidator<UpdatePati
     public UpdatePatientCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("El identificador del paciente es requerido.");
+            .NotEmpty().WithMessage("El identificador de la persona es requerido.");
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("El nombre es requerido.")

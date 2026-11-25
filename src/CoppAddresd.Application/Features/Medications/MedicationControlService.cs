@@ -115,7 +115,7 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
     public Task<MedicationTreatmentDto> UpdateRegimenAsync(Guid patientId, Guid treatmentId, Guid actorId,
         UpdateMedicationRegimenRequest request, CancellationToken ct)
     {
-        if (request.ExpectedRevision < 1) throw Invalid("expectedRevision", "Revisa la revisión del tratamiento.");
+        if (request.ExpectedRevision < 1) throw Invalid("expectedRevision", "Revisa la revisión del plan de medicación.");
         var validated = ValidateTreatment(new(Guid.NewGuid(), null, "Pauta", "medication", request.Dosage,
             request.Unit, request.Route, request.Instructions, request.Times, request.TimeZone,
             request.StartDate, request.EndDate, WeekdayMask: request.WeekdayMask,
@@ -140,7 +140,7 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
         if (request.ProductType is not ("medication" or "vitamin" or "supplement")) errors.Add(new("productType", "Selecciona el tipo de producto."));
         if (request.Dosage <= 0 || request.Dosage > 1000000 || decimal.Round(request.Dosage, 4) != request.Dosage) errors.Add(new("dosage", "Escribe una cantidad positiva con hasta cuatro decimales."));
         if (string.IsNullOrWhiteSpace(request.Unit) || request.Unit.Trim().Length > 40) errors.Add(new("unit", "Escribe una unidad de hasta 40 caracteres."));
-        if (request.RxCui is not null && string.IsNullOrWhiteSpace(request.Route)) errors.Add(new("route", "Registra la vía del tratamiento."));
+        if (request.RxCui is not null && string.IsNullOrWhiteSpace(request.Route)) errors.Add(new("route", "Registra la vía de administración indicada."));
         if ((request.Route?.Length ?? 0) > 80) errors.Add(new("route", "La vía admite hasta 80 caracteres."));
         if ((request.Instructions?.Length ?? 0) > 2000) errors.Add(new("instructions", "Las indicaciones admiten hasta 2000 caracteres."));
         if (request.StartDate.Year is < 1900 or > 2100 || request.EndDate < request.StartDate) errors.Add(new("startDate", "Revisa las fechas de vigencia."));
@@ -187,7 +187,7 @@ public sealed class MedicationControlService(IMedicationControlStore store, IPat
         ChangeMedicationStatusRequest request, bool selfService, CancellationToken ct)
     {
         if (request.Status is not ("active" or "paused" or "completed") || (request.ExpectedRevision < 1 || request.Reason?.Length > 500))
-            throw Invalid("status", "Revisa el estado y la revisión del tratamiento.");
+            throw Invalid("status", "Revisa el estado y la revisión del plan de medicación.");
         return store.ChangeStatusAsync(patientId, treatmentId, request with { Reason = request.Reason?.Trim() }, selfService, ct);
     }
 

@@ -82,7 +82,7 @@ public sealed class CreatePatientCommandHandler(
         if (await repository.GetByMedicalRecordNumberAsync(medicalRecordNumber, ct) is not null)
         {
             throw new BusinessRuleViolationException(
-                $"Ya existe un paciente con el número de historia clínica '{medicalRecordNumber}'.");
+                $"Ya existe una persona con el número de historia clínica '{medicalRecordNumber}'.");
         }
 
         // Unicidad de documento (case-insensitive, global): el índice único de
@@ -94,7 +94,7 @@ public sealed class CreatePatientCommandHandler(
             if (existingDocuments is { Count: > 0 })
             {
                 throw new BusinessRuleViolationException(
-                    $"Ya existe un paciente con el documento '{documentNumber}'.");
+                    $"Ya existe una persona con el documento '{documentNumber}'.");
             }
         }
 
@@ -183,7 +183,7 @@ public sealed class CreatePatientCommandHandler(
             entity.Id, entity.FirstName, entity.LastName);
 
         var created = await repository.GetByIdAsync(entity.Id, ct)
-            ?? throw new InvalidOperationException("No se pudo leer el paciente creado.");
+            ?? throw new InvalidOperationException("No se pudo leer el perfil recién creado.");
 
         return PatientDto.FromEntity(created);
     }

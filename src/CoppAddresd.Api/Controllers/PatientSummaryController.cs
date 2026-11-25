@@ -17,7 +17,7 @@ public sealed class PatientSummaryController(IMediator mediator) : ControllerBas
     [HttpGet]
     [PatientScope("patientId", "Program.Profile360View")]
     [PatientScope("patientId", "Program.AiView")]
-    [EndpointSummary("Leer el último resumen IA del paciente sin generar otro")]
+    [EndpointSummary("Leer el último resumen IA de la persona sin generar otro")]
     public async Task<ActionResult<PatientSummaryResult>> Get(Guid patientId, [FromQuery] string language = "es", CancellationToken ct = default)
         => Ok(await mediator.Send(new GetPatientSummary(patientId, language), ct));
 
