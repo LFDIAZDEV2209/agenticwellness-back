@@ -84,6 +84,7 @@ public sealed class WellnessJourneyDemoController(
         return access switch
         {
             null => (null, NotFound(new { code = "journey_unavailable" })),
+            { MembershipActive: false } => (null, StatusCode(StatusCodes.Status403Forbidden, new { code = "membership_inactive" })),
             { ConsentCurrent: false } => (null, StatusCode(StatusCodes.Status403Forbidden, new { code = "consent_required" })),
             _ => (access, null),
         };
