@@ -3,16 +3,16 @@ namespace CoppAddresd.Domain.Wellness365;
 internal static class WellnessAdjustments
 {
     internal static WellnessEvent Weekly(WellnessGoal goal, ReadOnlySpan<WellnessDay> fortnight,
-        double waistChange, double cap, ref int hunger)
+        double waistChange, double cap, ref int hunger, WellnessParameters parameters)
     {
         var end = fortnight[^1];
         var current = Measurements(fortnight[7..]);
         var previous = Measurements(fortnight[..7]);
-        if (current.Count < WellnessRules.MinimumWeighIns || previous.Count < 3)
+        if (current.Count < parameters.WeighMin || previous.Count < 3)
         {
             return new(end.Day, "sin", 0, null,
-                new($"Semana {end.Week}: pesajes insuficientes (<{WellnessRules.MinimumWeighIns}): no se ajusta.",
-                    $"Week {end.Week}: too few weigh-ins (<{WellnessRules.MinimumWeighIns}): no change."));
+                new($"Semana {end.Week}: pesajes insuficientes (<{parameters.WeighMin}): no se ajusta.",
+                    $"Week {end.Week}: too few weigh-ins (<{parameters.WeighMin}): no change."));
         }
 
         var currentWeight = current.Total / current.Count;
@@ -20,9 +20,9 @@ internal static class WellnessAdjustments
         var rate = (currentWeight - previousWeight) / previousWeight * 100;
         double adherenceSum = 0;
         foreach (var day in fortnight[7..]) adherenceSum += day.Log.Adherence;
-        var (delta, message) = RateDecision(goal, end.Mode, rate, adherenceSum / 7);
+        var (delta, message) = RateDecision(goal, end.Mode, rate, adherenceSum / 7, parameters);
 
-        const int step = WellnessRules.AdjustmentStep;
+        var step = parameters.Step;
         if (delta == -step && goal != WellnessGoal.GainMuscle && waistChange <= -.8)
         {
             delta = 0;
@@ -68,15 +68,15 @@ internal static class WellnessAdjustments
     }
 
     private static (int Delta, WellnessText Reason) RateDecision(WellnessGoal goal, WellnessMode mode,
-        double rate, double adherence)
+        double rate, double adherence, WellnessParameters parameters)
     {
-        const int step = WellnessRules.AdjustmentStep;
+        var step = parameters.Step;
         if (mode == WellnessMode.Break)
             return (0, new("Semana de pausa: sin ajuste.", "Break week: no adjustment."));
-        if (adherence < WellnessRules.MinimumAdherence)
+        if (adherence < parameters.AdhMin)
         {
             var percent = WellnessRules.Round(adherence * 100);
-            var min = WellnessRules.Round(WellnessRules.MinimumAdherence * 100);
+            var min = WellnessRules.Round(parameters.AdhMin * 100);
             return (0, new($"Adherencia {percent}% < {min}%: no se ajusta; primero cumplir el plan.",
                 $"Adherence {percent}% < {min}%: no change; follow the plan first."));
         }
@@ -93,22 +93,22 @@ internal static class WellnessAdjustments
             return (0, new($"Mantener: peso estable ({value}%/sem).", $"Maintain: weight steady ({value}%/wk)."));
         }
 
-        var band = WellnessRules.Goal(goal);
+        var band = parameters.Band.For(goal);
         if (goal == WellnessGoal.GainMuscle)
         {
-            if (rate < band.Low)
+            if (rate < band[0])
                 return (step, new($"Ritmo {value}%/sem bajo la banda → +{step} kcal.",
                     $"Rate {value}%/wk below band → +{step} kcal."));
-            if (rate > band.High)
+            if (rate > band[1])
                 return (-step, new($"Ritmo {value}%/sem sobre la banda → −{step} kcal (evitar grasa).",
                     $"Rate {value}%/wk above band → −{step} kcal (limit fat gain)."));
         }
         else
         {
-            if (rate > band.High)
+            if (rate > band[1])
                 return (-step, new($"Ritmo {value}%/sem más lento que la banda → −{step} kcal.",
                     $"Rate {value}%/wk slower than band → −{step} kcal."));
-            if (rate < band.Low)
+            if (rate < band[0])
                 return (step, new($"Ritmo {value}%/sem más rápido que la banda → +{step} kcal (proteger músculo).",
                     $"Rate {value}%/wk faster than band → +{step} kcal (protect muscle)."));
         }

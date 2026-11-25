@@ -83,3 +83,25 @@ La prueba ejecuta los scripts Up y Down de EF sobre prerrequisitos mínimos,
 verifica checks, cruces de paciente, privilegios y trigger de auditoría, y
 compara inventario e historial con el estado anterior. Descartar la BD al
 terminar.
+
+## API v1 (KAN-130)
+
+La API de CoppAddresd publica el OpenAPI del kit adaptado a las identidades
+del backend en `/swagger/motor365/swagger.json`. Los recursos de persona,
+planes, cierres y eventos viven bajo `/v1/people`. Los parámetros, catálogos,
+auditoría y sonda de estado se publican bajo el mismo prefijo. El día se
+calcula con la zona del perfil. El plan anual no incluye menús. El día
+individual devuelve los cuatro menús y la sesión queda vacía cuando está
+en pausa.
+
+El perfil propio se resuelve desde el JWT. El ERP comprueba rol funcional,
+permiso y alcance de paciente. Los términos y la privacidad se verifican
+contra recibos vigentes del backend. Si el formulario requiere revisión,
+se consulta la última decisión vinculada al envío antes de calcular.
+El servidor fija las versiones al publicar cada revisión y mantiene el
+historial de cambios y decisiones.
+
+El flujo de generación asíncrona existente conserva sus rutas y estados.
+La [tabla de operaciones, roles, errores y gates](../../../.ai-coord/KAN130.md)
+documenta el contrato, la prueba optativa en BD efímera y las decisiones de
+integración pendientes.

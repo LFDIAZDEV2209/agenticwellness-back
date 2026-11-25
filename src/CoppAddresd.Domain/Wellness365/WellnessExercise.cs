@@ -49,9 +49,11 @@ public static class WellnessExercise
         ["step"] = 16, ["gob"] = 20, ["rdl"] = 26
     };
 
+    public static IReadOnlyList<WellnessExerciseDefinition> OrderedCatalog { get; } =
+        Array.AsReadOnly(WellnessRules.ReadReference<WellnessExerciseDefinition[]>("catalog.json"));
+
     public static IReadOnlyDictionary<string, WellnessExerciseDefinition> Catalog { get; } =
-        WellnessRules.ReadReference<WellnessExerciseDefinition[]>("catalog.json")
-            .ToFrozenDictionary(x => x.Id, StringComparer.Ordinal);
+        OrderedCatalog.ToFrozenDictionary(x => x.Id, StringComparer.Ordinal);
 
     private static readonly Lazy<FrozenDictionary<string, WellnessExerciseGuide>> GuideCatalog = new(LoadGuides);
 

@@ -5,13 +5,6 @@ namespace CoppAddresd.Domain.Wellness365;
 
 internal static class WellnessRules
 {
-    internal const double MinimumAdherence = .70;
-    internal const int MinimumWeighIns = 4;
-    internal const int AdjustmentStep = 100;
-    internal const int MinimumCarbs = 80;
-    internal const double ProteinCap = 2.2;
-    internal const double TrainingFatShare = .24;
-    internal const double RestFatShare = .28;
     internal const double AdjustmentCap = .12;
 
     internal static double ActivityMultiplier(int level) => level switch
@@ -20,18 +13,9 @@ internal static class WellnessRules
         _ => throw new ArgumentOutOfRangeException(nameof(level))
     };
 
-    internal static (double Slow, double Moderate, double Maximum, double Protein, double Low, double High)
-        Goal(WellnessGoal goal) => goal switch
-        {
-            WellnessGoal.LoseWeight => (.10, .15, .20, 1.6, -.75, -.25),
-            WellnessGoal.GainMuscle => (.05, .10, .15, 1.8, .10, .35),
-            WellnessGoal.Tone => (.05, .10, .12, 2.0, -.50, -.20),
-            _ => throw new ArgumentOutOfRangeException(nameof(goal))
-        };
-
     internal static double TargetShare(WellnessProfile profile)
     {
-        var goal = Goal(profile.Goal);
+        var goal = profile.Parameters.Pct.For(profile.Goal);
         return profile.Pace switch
         {
             WellnessPace.Slow => goal.Slow,
@@ -41,12 +25,12 @@ internal static class WellnessRules
         };
     }
 
-    internal static WellnessMode Mode(WellnessGoal goal, int week, bool reached) =>
+    internal static WellnessMode Mode(WellnessGoal goal, int week, bool reached, WellnessParameters parameters) =>
         reached ? WellnessMode.Maintain : (goal switch
         {
-            WellnessGoal.LoseWeight => week % 9 == 0,
-            WellnessGoal.GainMuscle => week % 13 == 0,
-            WellnessGoal.Tone => (week - 1) % 12 >= 10,
+            WellnessGoal.LoseWeight => week % parameters.BreakEvery.Lose == 0,
+            WellnessGoal.GainMuscle => week % parameters.BreakEvery.Gain == 0,
+            WellnessGoal.Tone => (week - 1) % parameters.BreakEvery.Tone >= parameters.DefCut,
             _ => throw new ArgumentOutOfRangeException(nameof(goal))
         }) ? WellnessMode.Break : WellnessMode.Main;
 

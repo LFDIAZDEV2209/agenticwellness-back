@@ -112,6 +112,7 @@ builder.Services.AddScoped<
 builder.Services.ConfigureCors(builder.Configuration);
 builder.Services.ConfigureJwtAuthentication(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMotor365Api();
 
 // Solo el enlace público de ubicación tiene este límite; el protocolo SOS
 // autenticado conserva sus cuotas y su ruta de activación existentes.
@@ -227,6 +228,7 @@ builder.Services.AddHostedService<ProgramAssignmentHostedService>();
 builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
 builder.Services.AddSwaggerGen(options =>
 {
+    Motor365Api.ConfigureMotor365OpenApi(options);
     options.SwaggerDoc(
         "v1",
         new OpenApiInfo
@@ -297,6 +299,8 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = Forward
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/v1"),
+    branch => branch.UseMiddleware<Motor365Errors>());
 
 if (app.Environment.IsDevelopment())
 {
@@ -304,8 +308,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "CoppAddresd API v1");
+        options.SwaggerEndpoint("/swagger/motor365/swagger.json", "Motor 365 v1");
     });
 }
+
+if (!app.Environment.IsDevelopment())
+    app.UseWhen(context => context.Request.Path.Equals("/swagger/motor365/swagger.json"),
+        branch => branch.UseSwagger());
 
 app.UseCors(ApplicationServiceExtensions.CorsPolicyName);
 app.UseHttpsRedirection();
