@@ -61,6 +61,8 @@ public static class PermissionCodes
     // Documentos Legales
     public const string LegalDocumentsView = "LegalDocuments.View";
     public const string LegalDocumentsManage = "LegalDocuments.Manage";
+    public const string LegalAcceptancesView = "LegalAcceptances.View";
+    public const string LegalAcceptancesExport = "LegalAcceptances.Export";
 
     // Store
     public const string StoreView = "Store.View";
@@ -142,6 +144,8 @@ public static class PermissionCodes
         HealthTestsNotify,
         LegalDocumentsView,
         LegalDocumentsManage,
+        LegalAcceptancesView,
+        LegalAcceptancesExport,
         StoreView,
         StoreManage,
         MediaView,

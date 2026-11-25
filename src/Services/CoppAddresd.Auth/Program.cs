@@ -10,6 +10,7 @@ using CoppAddresd.Auth.Security;
 using CoppAddresd.Auth.Seeders;
 using CoppAddresd.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,40 @@ builder.Services.Configure<PatientAccountDemoSettings>(
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection(EmailSettings.SectionName)
 );
+var emailProvider = builder.Configuration["Email:Provider"] ?? "Log";
+var paidActivationDemo = PaidActivationDemoSettings.Read(
+    builder.Configuration, builder.Environment, emailProvider);
+builder.Services.AddSingleton(paidActivationDemo);
+builder.Services.AddSingleton<PaidActivationLinks>();
+builder.Services.AddScoped<PaidActivationService>();
+builder.Services.AddScoped<PaidActivationSignupService>();
+if (paidActivationDemo.WebOrigin is not null)
+    builder.Services.AddHostedService<PaidActivationEmailWorker>();
+var passwordResetDestination = PasswordResetEmailLink.GetPublicDestination(
+    builder.Configuration["Email:PasswordResetUrl"]
+);
+var keyRingPath = builder.Configuration["DataProtection:KeyRingPath"];
+var hasPersistentKeyRing = !string.IsNullOrWhiteSpace(keyRingPath)
+    && Path.IsPathFullyQualified(keyRingPath)
+    && Directory.Exists(keyRingPath);
+if (!builder.Environment.IsDevelopment()
+    && (!hasPersistentKeyRing
+        || !emailProvider.Equals("Smtp", StringComparison.OrdinalIgnoreCase)
+        || string.IsNullOrWhiteSpace(builder.Configuration["Email:SmtpHost"])))
+{
+    passwordResetDestination = null;
+}
+if ((passwordResetDestination is not null || paidActivationDemo.WebOrigin is not null) && hasPersistentKeyRing)
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("CoppAddresd.Auth")
+        .PersistKeysToFileSystem(new DirectoryInfo(keyRingPath!));
+}
+builder.Services.AddSingleton(new PasswordResetEmailQueue(passwordResetDestination));
+builder.Services.AddScoped<EmailPasswordResetService>();
+if (passwordResetDestination is not null)
+    builder.Services.AddHostedService<PasswordResetEmailWorker>();
+
 builder.Services.Configure<TwilioSettings>(
     builder.Configuration.GetSection(TwilioSettings.SectionName)
 );
@@ -166,7 +201,6 @@ builder.Services.AddScoped<
 >();
 
 // Correos transaccionales: "Log" en dev (imprime en el logger), "Smtp" en prod.
-var emailProvider = builder.Configuration["Email:Provider"] ?? "Log";
 if (emailProvider.Equals("Smtp", StringComparison.OrdinalIgnoreCase))
 {
     builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();

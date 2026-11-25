@@ -27,10 +27,24 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
     public DbSet<UserPreference> UserPreferences => Set<UserPreference>();
     public DbSet<AccountDeletionHandoff> AccountDeletionHandoffs => Set<AccountDeletionHandoff>();
     public DbSet<AccountDeletionSession> AccountDeletionSessions => Set<AccountDeletionSession>();
+    public DbSet<PaidActivation> PaidActivations => Set<PaidActivation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<PaidActivation>(b =>
+        {
+            b.ToTable("PaidActivations", "auth");
+            b.HasKey(x => x.PaymentId);
+            b.Property(x => x.PaymentId).ValueGeneratedNever();
+            b.Property(x => x.Email).HasMaxLength(254).IsRequired();
+            b.Property(x => x.Plan).HasMaxLength(7).IsRequired();
+            b.Property(x => x.Language).HasMaxLength(2).IsRequired();
+            b.HasIndex(x => x.NextEmailAttemptAt).HasFilter("\"NextEmailAttemptAt\" IS NOT NULL");
+            b.HasOne<ApplicationUser>().WithMany()
+                .HasForeignKey(x => x.LinkedUserId).OnDelete(DeleteBehavior.SetNull);
+        });
 
         builder.Entity<WelcomeEmailDelivery>(b =>
         {
@@ -68,6 +82,10 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
             b.ToTable("Users", "auth");
             b.Property(u => u.FirstName).HasMaxLength(100).IsRequired();
             b.Property(u => u.LastName).HasMaxLength(100).IsRequired();
+            b.HasIndex(u => u.NormalizedEmail)
+                .HasDatabaseName("UX_Users_NormalizedEmail")
+                .IsUnique()
+                .HasFilter("\"NormalizedEmail\" IS NOT NULL");
             b.HasIndex(u => u.PurgeAfter).HasFilter("\"PurgeAfter\" IS NOT NULL AND \"PurgedAt\" IS NULL");
         });
 

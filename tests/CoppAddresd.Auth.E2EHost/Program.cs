@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
 using CoppAddresd.Auth.Data;
+using CoppAddresd.Auth.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -34,6 +35,9 @@ sealed class AuthFactory : WebApplicationFactory<AuthDbContext>
         {
             services.RemoveAll<ITwilioRestClient>();
             services.AddSingleton<ITwilioRestClient, IsolatedVerifyClient>();
+            if (Environment.GetEnvironmentVariable("COP_E2E_EXPIRE_RESET_LINKS") == "true")
+                services.Configure<PasswordResetEmailTokenOptions>(
+                    options => options.TokenLifespan = TimeSpan.Zero);
         });
     }
 }

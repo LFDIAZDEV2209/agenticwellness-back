@@ -72,6 +72,11 @@ public sealed class ExceptionHandlingMiddleware(
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(new { code = ex.Code, scope = ex.Scope }, context.RequestAborted);
         }
+        catch (AccountLegalConsentException ex)
+        {
+            context.Response.StatusCode = ex.StatusCode;
+            await context.Response.WriteAsJsonAsync(new { code = ex.Code }, context.RequestAborted);
+        }
         catch (VitaAttachmentException ex)
         {
             context.Response.StatusCode = ex.Status;
