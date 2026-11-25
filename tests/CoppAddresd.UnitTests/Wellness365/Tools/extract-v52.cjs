@@ -27,7 +27,7 @@ const people = require(path.join(kit, 'test/people.json'));
 const defaults = { ver: 1, log: {}, weigh: .8, adhFut: .85, adhBase: .8, met: 0, fit: 0, pace: 'm' };
 const read = file => readFileSync(path.join(kit, file));
 for (const file of ['people.json', 'golden.json']) writeFileSync(path.join(fixtures, file), read(`test/${file}`));
-writeFileSync(path.join(catalog, 'catalog.json'), read('engine/catalog.json'));
+for (const file of ['catalog.json', 'guide.json']) writeFileSync(path.join(catalog, file), read(`engine/${file}`));
 const foods = Object.fromEntries(Object.entries(engine.FD).map(
   ([id, [es, en, kcal, protein, carbs, fat, group, unitGrams, unitEs, unitEn]]) =>
     [id, { es, en, kcal, protein, carbs, fat, group, unitGrams, unitEs, unitEn }]

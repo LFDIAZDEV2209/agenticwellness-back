@@ -53,6 +53,10 @@ public static class WellnessExercise
         WellnessRules.ReadReference<WellnessExerciseDefinition[]>("catalog.json")
             .ToFrozenDictionary(x => x.Id, StringComparer.Ordinal);
 
+    private static readonly Lazy<FrozenDictionary<string, WellnessExerciseGuide>> GuideCatalog = new(LoadGuides);
+
+    public static IReadOnlyDictionary<string, WellnessExerciseGuide> Guides => GuideCatalog.Value;
+
     public static int UnlockWeek(string id) => Unlocks[id];
 
     public static WellnessPhase PhaseForWeek(int week) =>
@@ -67,6 +71,20 @@ public static class WellnessExercise
     })[dayOfWeek];
 
     public static bool IsTrainingDay(char type) => type is not ('M' or 'R');
+
+    private static FrozenDictionary<string, WellnessExerciseGuide> LoadGuides()
+    {
+        var guides = WellnessRules.ReadReference<Dictionary<string, WellnessExerciseGuide>>("guide.json");
+        if (guides.Count != Catalog.Count || guides.Keys.Any(id => !Catalog.ContainsKey(id)))
+            throw new InvalidOperationException("Los identificadores de la guía y el catálogo de ejercicio no coinciden.");
+
+        return guides.ToFrozenDictionary(pair => pair.Key,
+            pair => new WellnessExerciseGuide(ReadOnlySteps(pair.Value.Es), ReadOnlySteps(pair.Value.En)),
+            StringComparer.Ordinal);
+
+        static WellnessExerciseInstructions ReadOnlySteps(WellnessExerciseInstructions instructions) =>
+            instructions with { Steps = Array.AsReadOnly(instructions.Steps.ToArray()) };
+    }
 
     public static WellnessExerciseDay ForDay(WellnessProfile profile, int day, bool swapForPain = false,
         int levelDelta = 0, int boost = 0)
