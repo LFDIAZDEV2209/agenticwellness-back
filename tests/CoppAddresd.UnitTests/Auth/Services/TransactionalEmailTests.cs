@@ -95,8 +95,8 @@ public sealed class TransactionalEmailTests
     }
 
     [Theory]
-    [InlineData("es-CO", "es", "Bienvenido a Copp Adresd", "Activa tu membresía")]
-    [InlineData("en-US", "en", "Welcome to Copp Adresd", "Activate your membership")]
+    [InlineData("es-CO", "es", "Bienvenido a Agentic Wellness IA", "Activa tu membresía")]
+    [InlineData("en-US", "en", "Welcome to Agentic Wellness IA", "Activate your membership")]
     public void PaidActivationDemo_StylesTheSameLinkInBothAlternatives(string locale, string lang, string subject, string cta)
     {
         const string link = "http://127.0.0.1:5196/activate#paymentId=fixture&token=test";
