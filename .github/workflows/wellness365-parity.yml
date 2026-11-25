@@ -14,8 +14,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "10.0.x"
       - name: Comparar el motor C# con la referencia v5.2
         run: dotnet test tests/CoppAddresd.UnitTests -c Release --nologo --filter 'FullyQualifiedName~CoppAddresd.UnitTests.Wellness365'
+      - name: Mostrar cambios de referencia en el resumen
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 tests/CoppAddresd.UnitTests/Wellness365/Tools/report-fixture-diff.py "$PR_BASE_SHA" >> "$GITHUB_STEP_SUMMARY"
