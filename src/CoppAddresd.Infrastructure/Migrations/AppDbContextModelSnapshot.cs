@@ -11778,7 +11778,7 @@ namespace CoppAddresd.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_motor365_daily_log_sleep", "sleep_hours BETWEEN 0 AND 24");
 
-                            t.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio']::text[]");
+                            t.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio','nauseas']::text[]");
 
                             t.HasCheckConstraint("ck_motor365_daily_log_waist", "waist_cm > 0 AND waist_cm <= 500");
 

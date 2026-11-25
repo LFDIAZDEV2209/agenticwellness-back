@@ -1,8 +1,13 @@
+using CoppAddresd.Api.Controllers;
+using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Application.Services;
 using CoppAddresd.Api.Features.Wellness365;
 using CoppAddresd.Application.Features.Wellness365;
 using CoppAddresd.Domain.Wellness365;
 
-var app = WebApplication.CreateBuilder(args).Build();
+var builder = WebApplication.CreateBuilder(args);
+var fixtureAuth = new FixturePlanAuth();
+fixtureAuth.Configure(builder.Services);
 var clock = new FixtureClock();
 var service = new WellnessPlanService(clock);
 var logs = new Dictionary<int, WellnessDailyLog>();
@@ -11,6 +16,24 @@ var calendar = service.Activate("America/Bogota");
 var fixtureConnection = Environment.GetEnvironmentVariable("COP_KAN131_TEST_DB_CONNECTION");
 var postgres = fixtureConnection is null ? null : new FixturePostgres(fixtureConnection);
 var patientId = Guid.Empty;
+builder.Services.AddControllers().AddApplicationPart(typeof(Motor365PlanController).Assembly);
+builder.Services.AddScoped<IPatientScopeStore>(_ => new FixturePatientScope(() => patientId));
+builder.Services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
+builder.Services.AddScoped(_ => new WellnessPlanService(clock));
+
+if (postgres is not null)
+{
+    builder.Services.AddScoped(_ => postgres.Open());
+    builder.Services.AddSingleton<TimeProvider>(clock);
+    builder.Services.AddScoped<IAccountLegalConsentService, FixtureAccountConsent>();
+    builder.Services.AddScoped<CoppAddresd.Infrastructure.Services.WellnessJourneyStore>();
+    builder.Services.AddScoped<IWellnessPlanGate, CoppAddresd.Infrastructure.Repositories.WellnessPlanGate>();
+    builder.Services.AddScoped<IWellnessPlanStore, CoppAddresd.Infrastructure.Repositories.WellnessPlanStore>();
+}
+var app = builder.Build();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 app.MapGet("/fixture", () => Results.Content("""
     <!doctype html><html lang="es"><meta charset="utf-8"><title>Contrato Motor 365</title>
@@ -64,6 +87,13 @@ app.MapPut("/fixture/zone", async (ZoneChange change, CancellationToken ct) =>
     else
         calendar = service.ChangeTimeZone(calendar, change.TimeZone);
     return Results.NoContent();
+});
+
+app.MapGet("/fixture/session/{client}", (string client) => new
+{
+    accessToken = fixtureAuth.Token(client),
+    userId = client == "app" ? FixturePlanAuth.AppUser : FixturePlanAuth.ErpUser,
+    patientId,
 });
 
 app.MapGet("/fixture/persistence-stats", async (CancellationToken ct) =>

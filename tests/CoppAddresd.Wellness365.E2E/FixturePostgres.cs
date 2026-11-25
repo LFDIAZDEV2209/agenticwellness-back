@@ -33,7 +33,12 @@ sealed class FixturePostgres
             await db.Database.ExecuteSqlRawAsync("""
                 CREATE SCHEMA app;
                 CREATE SCHEMA erp;
-                CREATE TABLE app.patient_profiles (id uuid PRIMARY KEY, timezone varchar(64), date_of_birth date, deleted_at timestamptz);
+                CREATE SCHEMA auth;
+                CREATE TABLE app.patient_profiles (id uuid PRIMARY KEY, user_id uuid, status text,
+                    timezone varchar(64), date_of_birth date, deleted_at timestamptz);
+                CREATE TABLE auth."PaidActivations" ("PaymentId" uuid PRIMARY KEY, "Language" text,
+                    "LinkedUserId" uuid, "RedeemedAt" timestamptz, "MembershipState" text, "MembershipPaid" boolean,
+                    "MembershipExpiresAt" timestamptz, "ConfirmedAt" timestamptz, "Plan" text);
                 CREATE TABLE app.legal_document_acceptances (id uuid PRIMARY KEY);
                 CREATE TABLE erp.professionals (id uuid PRIMARY KEY);
                 CREATE TABLE app.wellness_journey_generations (id uuid PRIMARY KEY, patient_id uuid REFERENCES app.patient_profiles);
@@ -42,15 +47,20 @@ sealed class FixturePostgres
                 """, ct);
             var ids = db.Database.GetMigrations().ToArray();
             var motor = Array.FindIndex(ids, id => id.EndsWith("_AddMotor365Persistence", StringComparison.Ordinal));
-            var calendarMigration = ids.Single(id => id.EndsWith("_AddMotor365Calendar", StringComparison.Ordinal));
-            var sql = db.GetService<IMigrator>().GenerateScript(ids[motor - 1], calendarMigration);
+            var latest = ids.Single(id => id.EndsWith("_AllowMotor365NauseaObservation", StringComparison.Ordinal));
+            var sql = db.GetService<IMigrator>().GenerateScript(ids[motor - 1], latest);
             await db.Database.ExecuteSqlRawAsync(sql, ct);
         }
 
         var id = Guid.NewGuid();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO app.patient_profiles (id, timezone, date_of_birth)
-            VALUES ({id}, {calendar.TimeZoneId}, '1990-01-01')
+            UPDATE app.patient_profiles SET deleted_at = now() WHERE user_id = {FixturePlanAuth.AppUser};
+            INSERT INTO app.patient_profiles (id, user_id, status, timezone, date_of_birth)
+            VALUES ({id}, {FixturePlanAuth.AppUser}, 'Activo', {calendar.TimeZoneId}, '1990-01-01');
+            INSERT INTO auth."PaidActivations" VALUES ({id}, 'es', {FixturePlanAuth.AppUser},
+                now(), 'active', {scenario.Block != "membership_inactive"}, '2030-01-01Z', '2025-01-01Z', 'annual');
+            INSERT INTO app.wellness_journey_generations (id, patient_id) VALUES ({id}, {id})
+
             """, ct);
         db.Motor365People.Add(new Motor365Person
         {
@@ -58,6 +68,13 @@ sealed class FixturePostgres
             InitialWeightKg = 80, InitialWaistCm = 85, ActivityLevel = 2,
             Goal = WellnessGoal.LoseWeight, TargetWeightKg = (decimal)(scenario.Target ?? 70),
             StartDate = calendar.StartDate
+        });
+        db.Motor365Screenings.Add(new Motor365Screening
+        {
+            PersonId = id, SubmissionId = id, ParQ1 = scenario.Block == "doctor" ? (short)1 : (short)0,
+            ParQ2 = 0, ParQ3 = 0, ParQ4 = 0, ParQ5 = 0, ParQ6 = 0, ParQ7 = 0,
+            Nqs1 = 0, Nqs2 = 0, Nqs3 = 0, Nqs4 = 0, Nqs5 = 0,
+            Nqs6 = scenario.Block == "unanswered" ? null : (short)0
         });
         await db.SaveChangesAsync(ct);
         return id;

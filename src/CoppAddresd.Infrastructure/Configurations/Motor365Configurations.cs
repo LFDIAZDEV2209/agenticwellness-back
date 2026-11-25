@@ -136,7 +136,7 @@ internal sealed class Motor365DailyLogConfiguration : IEntityTypeConfiguration<M
             table.HasCheckConstraint("ck_motor365_daily_log_day", "day BETWEEN 1 AND 365");
             table.HasCheckConstraint("ck_motor365_daily_log_adherence", "adherence BETWEEN 0 AND 1");
             table.HasCheckConstraint("ck_motor365_daily_log_sleep", "sleep_hours BETWEEN 0 AND 24");
-            table.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio']::text[]");
+            table.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio','nauseas']::text[]");
             table.HasCheckConstraint("ck_motor365_daily_log_energy", "energy BETWEEN 1 AND 5");
             table.HasCheckConstraint("ck_motor365_daily_log_pain", "pain BETWEEN 0 AND 10");
             table.HasCheckConstraint("ck_motor365_daily_log_weight", "weight_kg > 0 AND weight_kg <= 1000");

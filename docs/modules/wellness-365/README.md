@@ -1,9 +1,10 @@
 # Motor 365 · Día local y estado del plan
 
 [KAN-131](https://diomedescerda.atlassian.net/browse/KAN-131) agrega el
-servicio de aplicación, la persistencia de calendario y cierre, y el
-mapeo de errores HTTP compartido. No monta rutas públicas ni cambia el
-prototipo de Inicio.
+servicio de aplicación y la persistencia de calendario y cierre. Este tramo
+de [KAN-130](https://diomedescerda.atlassian.net/browse/KAN-130) conecta la
+lectura autenticada a Inicio de App y a Perfil 360 del ERP. No cambia el
+worker de generación ni publica recomendaciones de ejercicio o nutrición.
 
 ## Calendario y registros
 
@@ -62,18 +63,28 @@ recibir un registro de un plan ya iniciado, como en el contrato del kit.
 
 ## Integración y verificación
 
-[KAN-130](https://diomedescerda.atlassian.net/browse/KAN-130) debe autenticar
-la solicitud y resolver el actor y el paciente según el alcance de App/ERP
-antes de invocar `IWellnessPlanStore`. El consumidor pasa a `ReadAsync`
-el resultado de la compuerta legal y del cuestionario, resuelto desde los
-datos persistidos. El punto de entrada real usa el `TimeProvider` del
-servidor. `AddMotor365Calendar` agrega el ancla sobre las tablas de
+La app lee `GET /api/v1/people/me/plan` y registra el cierre por
+`PUT /api/v1/people/me/logs/{day}`. El cierre conserva el ordinal recibido
+del servidor cuando queda pendiente y se reintenta en la misma cuenta.
+El ERP lee `GET /api/v1/people/{personId}/plan` con
+`Program.Profile360View` y el alcance clínico del paciente. Ambos pueden
+leer un día específico con `/plan/{day}`; el ERP no puede escribir cierres.
+El resumen expone día local, estado, racha y pesaje registrado. No expone
+las recomendaciones calculadas. La lectura comprueba membresía,
+consentimientos vigentes y el cuestionario persistido con revisión
+profesional cuando corresponde. Cerrar el día requiere membresía y
+consentimientos vigentes.
+
+`AddMotor365Calendar` agrega el ancla sobre las tablas de
 [KAN-134](https://diomedescerda.atlassian.net/browse/KAN-134), sin reescribir
 filas o modificar la migración aplicada. El rollback conserva los cierres
 y elimina solo el ancla de la que depende el calendario después de un
 cambio de zona.
 
-Este cambio no habilita el motor para pacientes ni resuelve las diferencias
+Estas rutas consumen filas reales de `app.person` y `app.screening`.
+No convierten la generación de demostración ni aprovisionan pacientes.
+El alta de perfiles reales y la publicación de menús y sesiones quedan
+fuera de este tramo. Tampoco se resuelven las diferencias
 del kit registradas en el [ADR](../../decisions/2026-11-24-motor-365-dotnet.md#diferencias-detectadas-entre-la-guía-y-la-referencia-ejecutable).
 
 Las pruebas usan un host aislado, un reloj controlado y datos sintéticos.
@@ -99,3 +110,18 @@ El host aplica solo el tramo de migraciones del Motor 365 sobre
 prerrequisitos sintéticos. La prueba vacía el estado en memoria, vuelve
 a leer el calendario y el pesaje de PostgreSQL y verifica dos intentos
 concurrentes del mismo cierre y sus efectos de auditoría.
+
+### Prueba de los dos clientes
+
+Con la base efímera anterior, definir además `COP_KAN130_APP_DIR` y
+`COP_KAN130_ERP_DIR` con los checkouts locales de los clientes y sus
+dependencias instaladas. Playwright inicia Vite, Next y el host de pruebas.
+Sustituye la restauración de sesión y las consultas ajenas al Motor 365 por
+datos sintéticos, pero pasa JWT firmados a las rutas reales del controlador.
+El día y el cierre se leen y escriben en PostgreSQL. No prueba Gateway,
+el proveedor de identidad, recibos legales publicados ni cuentas reales.
+
+`AllowMotor365NauseaObservation` conserva el síntoma náuseas del formulario
+existente como observación. No añade una regla al motor. Al revertir, la
+restricción anterior se aplica a nuevas escrituras sin borrar registros ya
+guardados con esa observación.

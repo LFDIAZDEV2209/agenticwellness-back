@@ -11,7 +11,7 @@ public sealed record WellnessPlanPerson(WellnessProfile Profile, WellnessPlanCal
     WellnessBlock? EligibilityBlock);
 
 public sealed record WellnessPlanStatus(string State, string? Code = null, WellnessText? Message = null);
-public sealed record WellnessPlanDayView(int Day, int Today, DateOnly StartDate, string TimeZoneId, bool Real,
+public sealed record WellnessPlanDayView(int Day, int Today, DateOnly TodayLocalDate, DateOnly StartDate, string TimeZoneId, bool Real,
     WellnessPlanStatus Status, string LogStatus, double? Adherence, double? MeasuredWeightKg, int Streak,
     WellnessExerciseDay? Exercise, WellnessMenu Menu, IReadOnlyList<WellnessText> Reasons,
     [property: JsonPropertyName("engine_ver")] string EngineVersion,

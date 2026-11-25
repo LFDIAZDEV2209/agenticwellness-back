@@ -48,7 +48,8 @@ public sealed class WellnessPlanService
         var block = FindBlock(person);
         if (block is not null) return Failed<WellnessPlanDayView>(WellnessPlanErrorCode.PlanLocked, block);
         var calendar = person.Calendar!;
-        var today = Today(calendar, _clock.GetUtcNow());
+        var localDate = LocalDate(_clock.GetUtcNow(), TimeZoneInfo.FindSystemTimeZoneById(calendar.TimeZoneId));
+        var today = Today(calendar, localDate);
         if (requestedDay is null) day = today;
         if (day > today) return Failed<WellnessPlanDayView>(WellnessPlanErrorCode.FutureDay);
 
@@ -64,7 +65,7 @@ public sealed class WellnessPlanService
         var showMeasurement = recorded || (_demo && day < today);
         var streak = recommendation.Streak ?? (day > 1 ? timeline.Days[day - 2].Streak : null) ?? 0;
 
-        return new(new WellnessPlanDayView(day, today, calendar.StartDate, calendar.TimeZoneId, !_demo,
+        return new(new WellnessPlanDayView(day, today, localDate, calendar.StartDate, calendar.TimeZoneId, !_demo,
             status, logStatus, logStatus == "open" ? null : recommendation.Log.Adherence,
             showMeasurement ? recommendation.Log.MeasuredWeightKg : null, streak,
             recommendation.Paused ? null : recommendation.Exercise, plan.Menu, recommendation.Reasons,
@@ -104,12 +105,12 @@ public sealed class WellnessPlanService
         int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out day) &&
         day is >= 1 and <= WellnessEngine.PlanLength;
 
-    private static int Today(WellnessPlanCalendar calendar, DateTimeOffset now)
-    {
-        var local = LocalDate(now, TimeZoneInfo.FindSystemTimeZoneById(calendar.TimeZoneId));
-        return Math.Clamp(calendar.AnchorDay + local.DayNumber - calendar.AnchorLocalDate.DayNumber,
+    private static int Today(WellnessPlanCalendar calendar, DateTimeOffset now) =>
+        Today(calendar, LocalDate(now, TimeZoneInfo.FindSystemTimeZoneById(calendar.TimeZoneId)));
+
+    private static int Today(WellnessPlanCalendar calendar, DateOnly local) =>
+        Math.Clamp(calendar.AnchorDay + local.DayNumber - calendar.AnchorLocalDate.DayNumber,
             1, WellnessEngine.PlanLength);
-    }
 
     private static DateOnly LocalDate(DateTimeOffset now, TimeZoneInfo zone) =>
         DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, zone).DateTime);

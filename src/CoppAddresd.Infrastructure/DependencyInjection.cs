@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
         services.AddScoped<WellnessPlanService>();
         services.AddScoped<IWellnessPlanStore, WellnessPlanStore>();
+        services.AddScoped<IWellnessPlanGate, WellnessPlanGate>();
         services.Configure<CoppAddresd.Application.Features.Medications.MedicationControlSettings>(
             configuration.GetSection(CoppAddresd.Application.Features.Medications.MedicationControlSettings.SectionName));
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationControlStore, MedicationControlStore>();
