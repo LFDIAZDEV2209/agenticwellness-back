@@ -11926,6 +11926,19 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("birth_year");
 
+                    b.Property<DateOnly?>("CalendarAnchorDate")
+                        .HasColumnType("date")
+                        .HasColumnName("calendar_anchor_date");
+
+                    b.Property<int?>("CalendarAnchorDay")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_anchor_day");
+
+                    b.Property<string>("CalendarTimeZoneId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("calendar_timezone_id");
+
                     b.Property<string>("EngineVer")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -11998,6 +12011,8 @@ namespace CoppAddresd.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_motor365_person_activity", "activity_level BETWEEN 1 AND 4");
 
                             t.HasCheckConstraint("ck_motor365_person_birth_year", "birth_year BETWEEN 1900 AND EXTRACT(YEAR FROM start_date)");
+
+                            t.HasCheckConstraint("ck_motor365_person_calendar", "(calendar_timezone_id IS NULL AND calendar_anchor_date IS NULL AND calendar_anchor_day IS NULL) OR (calendar_timezone_id IS NOT NULL AND btrim(calendar_timezone_id) <> '' AND calendar_anchor_date IS NOT NULL AND calendar_anchor_day IS NOT NULL AND calendar_anchor_day BETWEEN 1 AND 365)");
 
                             t.HasCheckConstraint("ck_motor365_person_fitness", "fitness_level BETWEEN 0 AND 3");
 
