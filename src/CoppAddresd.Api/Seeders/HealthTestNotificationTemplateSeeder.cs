@@ -75,8 +75,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "Riesgo crítico (SMS)",
             "Critical risk (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu resultado de [indicador] fue [valor] (severidad [severidad]). Agenda tu cita de seguimiento en la app (Citas) o acude a urgencias si tienes síntomas intensos. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your [indicador] result was [valor] ([severidad] risk). Book your follow-up appointment in the app (Appointments) or go to the ER if you have severe symptoms. — CoppAddresd Team",
+            "Agentic Wellness IA: [paciente], tu resultado de [indicador] fue [valor] (severidad [severidad]). Agenda tu cita de seguimiento en la app (Citas) o acude a urgencias si tienes síntomas intensos. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your [indicador] result was [valor] ([severidad] risk). Book your follow-up appointment in the app (Appointments) or go to the ER if you have severe symptoms. — Agentic Wellness IA Team",
             HealthTestSeverity.critical
         ),
         // ── Riesgo alto ─────────────────────────────────────────────────────
@@ -112,8 +112,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "Riesgo alto (SMS)",
             "High risk (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu [indicador] fue [valor] (severidad [severidad]). Agenda tu cita de seguimiento en la app (Citas) y revisa tu alimentación y actividad. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your [indicador] was [valor] ([severidad] risk). Book your follow-up appointment in the app (Appointments) and review your diet and activity. — CoppAddresd Team",
+            "Agentic Wellness IA: [paciente], tu [indicador] fue [valor] (severidad [severidad]). Agenda tu cita de seguimiento en la app (Citas) y revisa tu alimentación y actividad. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your [indicador] was [valor] ([severidad] risk). Book your follow-up appointment in the app (Appointments) and review your diet and activity. — Agentic Wellness IA Team",
             HealthTestSeverity.high
         ),
         // ── Riesgo medio ────────────────────────────────────────────────────
@@ -149,8 +149,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "Riesgo medio (SMS)",
             "Moderate risk (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu [indicador] fue [valor] (severidad [severidad]). Agenda una cita de control en la app (Citas) y cuida tu alimentación y actividad. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your [indicador] was [valor] ([severidad] risk). Book a check-up appointment in the app (Appointments) and take care of your diet and activity. — CoppAddresd Team",
+            "Agentic Wellness IA: [paciente], tu [indicador] fue [valor] (severidad [severidad]). Agenda una cita de control en la app (Citas) y cuida tu alimentación y actividad. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your [indicador] was [valor] ([severidad] risk). Book a check-up appointment in the app (Appointments) and take care of your diet and activity. — Agentic Wellness IA Team",
             HealthTestSeverity.moderate
         ),
         // ── ORP (riesgo cardiometabólico) ───────────────────────────────────
@@ -190,8 +190,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "ORP elevado (SMS)",
             "Elevated ORP (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu índice ORP fue [valor] (riesgo elevado). Agenda tu cita de seguimiento en la app (Citas) y cuida tu alimentación y actividad. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your ORP index was [valor] (elevated risk). Book your follow-up appointment in the app (Appointments) and take care of your diet and activity. — CoppAddresd Team",
+            "Agentic Wellness IA: [paciente], tu índice ORP fue [valor] (riesgo elevado). Agenda tu cita de seguimiento en la app (Citas) y cuida tu alimentación y actividad. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your ORP index was [valor] (elevated risk). Book your follow-up appointment in the app (Appointments) and take care of your diet and activity. — Agentic Wellness IA Team",
             IndicatorCode: "ORP"
         ),
         // ── Adherencia al programa ──────────────────────────────────────────
@@ -227,8 +227,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "Adherencia baja (SMS)",
             "Low adherence (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu adherencia al programa fue [valor]. Retoma tu plan en la app y agenda una cita en Citas. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your program adherence was [valor]. Get back to your plan in the app and book an appointment in Appointments. — CoppAddresd Team",
+            "Agentic Wellness IA: [paciente], tu adherencia al programa fue [valor]. Retoma tu plan en la app y agenda una cita en Citas. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your program adherence was [valor]. Get back to your plan in the app and book an appointment in Appointments. — Agentic Wellness IA Team",
             IndicatorCode: "ADHERENCIA"
         ),
         // ── Apnea del sueño ─────────────────────────────────────────────────
@@ -264,8 +264,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "Sospecha de apnea (SMS)",
             "Suspected apnea (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu tamizaje de sueño reportó [valor] señales de riesgo de apnea. Agenda una cita en la app (Citas) para valorar un estudio de sueño. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your sleep screening reported [valor] apnea risk signals. Book an appointment in the app (Appointments) to assess a sleep study. — CoppAddresd Team",
+            "Agentic Wellness IA: [paciente], tu tamizaje de sueño reportó [valor] señales de riesgo de apnea. Agenda una cita en la app (Citas) para valorar un estudio de sueño. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your sleep screening reported [valor] apnea risk signals. Book an appointment in the app (Appointments) to assess a sleep study. — Agentic Wellness IA Team",
             IndicatorCode: "APNEA"
         ),
         // ── Recordatorio general ────────────────────────────────────────────
@@ -300,8 +300,8 @@ public sealed class HealthTestNotificationTemplateSeeder(
             "Recordatorio de salud (SMS)",
             "Health reminder (SMS)",
             NotificationChannel.sms,
-            "CoppAddresd: [paciente], tu [indicador] fue [valor]. Agenda tu próxima cita de control en la app (Citas) y continúa con tu plan. — Equipo CoppAddresd",
-            "CoppAddresd: [paciente], your [indicador] was [valor]. Book your next check-up in the app (Appointments) and continue with your plan. — CoppAddresd Team"
+            "Agentic Wellness IA: [paciente], tu [indicador] fue [valor]. Agenda tu próxima cita de control en la app (Citas) y continúa con tu plan. — Equipo Agentic Wellness IA",
+            "Agentic Wellness IA: [paciente], your [indicador] was [valor]. Book your next check-up in the app (Appointments) and continue with your plan. — Agentic Wellness IA Team"
         ),
     ];
 

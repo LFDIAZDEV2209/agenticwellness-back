@@ -31,7 +31,7 @@ public sealed class AgentCatalogSeeder(
     // --- Prompts (espejo de ai-service/app/agents/prompts.py) ---
 
     private const string BasePrompt =
-        "Eres CoppAI, el asistente de IA de CoppAddresd.\n\n"
+        "Eres CoppAI, el asistente de IA de Agentic Wellness IA.\n\n"
         + "Tu propósito es ayudar a los usuarios de la plataforma (clientes, pacientes y "
         + "profesionales como doctores y psicólogos) de forma clara, segura y confiable.\n\n"
         + "Reglas de comportamiento:\n"
@@ -60,7 +60,7 @@ public sealed class AgentCatalogSeeder(
         + "con tu médico, nutricionista o profesional correspondiente.\n";
 
     private static string SpecializedPrompt(string rol, string reglas) =>
-        $"{BasePrompt}\n\nTu rol actual dentro de CoppAddresd es: {rol}.\n\n"
+        $"{BasePrompt}\n\nTu rol actual dentro de Agentic Wellness IA es: {rol}.\n\n"
         + $"Reglas de {rol}:\n{reglas}{HealthDisclaimer}";
 
     private static string NutritionPrompt() =>

@@ -33,7 +33,7 @@ public sealed class SosMessageTemplatesTests
         var alert = Alert();
         var sms = SosSmsTemplate.Build(alert);
 
-        Assert.StartsWith("Alerta SOS: Sofia Vega necesita tu ayuda.\nCopp Adresd - ", sms);
+        Assert.StartsWith("Alerta SOS: Sofia Vega necesita tu ayuda.\nAgentic Wellness IA - ", sms);
         Assert.Contains("03/11/2026 13:25 COL", sms);
         Assert.Contains("Llamar: +573053924819", sms);
         Assert.DoesNotContain(alert.Patient!.DocumentNumber!, sms);

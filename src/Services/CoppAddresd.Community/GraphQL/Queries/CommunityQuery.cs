@@ -84,7 +84,7 @@ var profile = await db.Profiles
         {
             Id = Guid.NewGuid(),
             UserId = userId.Value,
-            DisplayName = DisplayNameFromClaims(http) ?? "Miembro Copp Adresd",
+            DisplayName = DisplayNameFromClaims(http) ?? "Miembro Agentic Wellness IA",
             Status = ProfileStatus.Active,
             CreatedAt = DateTime.UtcNow,
         };

@@ -30,7 +30,7 @@ public class SmtpEmailSender(IOptions<EmailSettings> settings, ILogger<SmtpEmail
 
         using var mail = new MailMessage
         {
-            From = new MailAddress(_settings.From, _settings.FromName),
+            From = new MailAddress(_settings.From, EmailSettings.ResolveBrandName(_settings.FromName)),
             To = { message.To },
             Subject = message.Subject,
             BodyEncoding = Encoding.UTF8,

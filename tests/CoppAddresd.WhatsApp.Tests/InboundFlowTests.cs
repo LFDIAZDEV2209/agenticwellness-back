@@ -156,7 +156,7 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
 
         Assert.True(await harness.ProcessAsync());
         Assert.Empty(harness.Requests);
-        Assert.Contains("app ANTARES", Assert.Single(harness.Sent));
+        Assert.Contains("app Agentic Wellness IA", Assert.Single(harness.Sent));
         await using var db = fixture.CreateDb();
         Assert.Equal("agent_identity_unavailable", (await db.RawEvents.SingleAsync()).ErrorCode);
     }
@@ -303,7 +303,7 @@ public sealed class InboundFlowTests(PostgresFixture fixture) : IClassFixture<Po
 
         Assert.True(await harness.ProcessAsync());
         var reply = Assert.Single(harness.Sent);
-        Assert.Contains("app ANTARES", reply);
+        Assert.Contains("app Agentic Wellness IA", reply);
         Assert.DoesNotContain("SMS", reply);
         Assert.Empty(harness.Requests);
         await using var db = fixture.CreateDb();

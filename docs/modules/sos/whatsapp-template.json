@@ -5,7 +5,7 @@
   "components": [
     {
       "type": "BODY",
-      "text": "Alerta SOS: {{1}} necesita tu ayuda.\n\nDirección: {{2}}\nMapa: {{3}}\nAlerta: {{4}}\n\nÚltimas lecturas registradas: {{5}}\n\nComunícate ahora para confirmar cómo se encuentra. Recibes este aviso porque eres su contacto de emergencia. Copp Adresd.",
+      "text": "Alerta SOS: {{1}} necesita tu ayuda.\n\nDirección: {{2}}\nMapa: {{3}}\nAlerta: {{4}}\n\nÚltimas lecturas registradas: {{5}}\n\nComunícate ahora para confirmar cómo se encuentra. Recibes este aviso porque eres su contacto de emergencia. Agentic Wellness IA.",
       "example": {
         "body_text": [
           [

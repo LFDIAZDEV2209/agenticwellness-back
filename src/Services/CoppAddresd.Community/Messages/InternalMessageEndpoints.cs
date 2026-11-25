@@ -175,7 +175,7 @@ public static class InternalMessageEndpoints
             Id = Guid.NewGuid(),
             UserId = userId,
             DisplayName = string.IsNullOrWhiteSpace(displayName)
-                ? "Miembro ANTARES"
+                ? "Miembro Agentic Wellness IA"
                 : displayName!.Trim(),
             Status = ProfileStatus.Active,
             CreatedAt = DateTime.UtcNow,

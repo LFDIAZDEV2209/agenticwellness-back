@@ -34,12 +34,12 @@ public sealed class ProgramAccompanimentQuery(AppDbContext db) : IProgramAccompa
                 && !db.HealthTestEvaluations.Any(e => e.AssignmentId == a.Id && e.PatientId == a.PatientId && e.Status == HealthTestEvaluationStatus.completed))
             .Select(a => new { a.Id, a.PatientId }).ToListAsync(ct);
         List<ProgramReminderReason> reasons = pending.Select(a => new ProgramReminderReason(a.PatientId, ReminderKind.evaluacion,
-            $"evaluation:{a.Id:N}", "Tu evaluación inicial del programa está pendiente. Complétala en la app ANTARES.",
-            "Your initial program assessment is pending. Complete it in the ANTARES app.", a.Id)).ToList();
+            $"evaluation:{a.Id:N}", "Tu evaluación inicial del programa está pendiente. Complétala en la app Agentic Wellness IA.",
+            "Your initial program assessment is pending. Complete it in the Agentic Wellness IA app.", a.Id)).ToList();
         foreach (var enrollment in enrollments.Where(e => e.CurrentStreak > 0 && e.LastActiveDate == today.AddDays(-1)))
             reasons.Add(new(enrollment.PatientId, ReminderKind.racha, $"streak:{enrollment.Id:N}:{today:yyyy-MM-dd}",
-                $"Tu racha de {enrollment.CurrentStreak} días tiene actividad pendiente hoy. Revisa tu programa en ANTARES.",
-                $"Your {enrollment.CurrentStreak}-day streak has activity pending today. Check your ANTARES program."));
+                $"Tu racha de {enrollment.CurrentStreak} días tiene actividad pendiente hoy. Revisa tu programa en Agentic Wellness IA.",
+                $"Your {enrollment.CurrentStreak}-day streak has activity pending today. Check your Agentic Wellness IA program."));
         var enrollmentIds = enrollments.Select(e => e.Id).ToArray();
         var templates = enrollments.Select(e => e.TemplateId).Distinct().ToArray();
         var weeks = await db.ProgramWeeks.AsNoTracking().Where(w => enrollmentIds.Contains(w.EnrollmentId)
@@ -64,8 +64,8 @@ public sealed class ProgramAccompanimentQuery(AppDbContext db) : IProgramAccompa
             var title = published[item.MediaId!.Value];
             if (title.Length > 200) title = title[..200];
             reasons.Add(new(item.PatientId, ReminderKind.podcast, $"podcast:{item.Id:N}:{today:yyyy-MM-dd}:{item.MediaId:N}",
-                $"Tienes pendiente el podcast asignado «{title}». Escúchalo en la app ANTARES.",
-                $"Your assigned podcast “{title}” is pending. Listen in the ANTARES app."));
+                $"Tienes pendiente el podcast asignado «{title}». Escúchalo en la app Agentic Wellness IA.",
+                $"Your assigned podcast “{title}” is pending. Listen in the Agentic Wellness IA app."));
         }
         return new(enrollments.Select(e => e.PatientId).ToHashSet(), reasons);
     }
