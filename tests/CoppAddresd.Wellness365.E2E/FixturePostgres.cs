@@ -69,7 +69,7 @@ sealed class FixturePostgres
         {
             PatientId = id, Sex = WellnessSex.Female, BirthYear = 1990, HeightCm = 170,
             InitialWeightKg = 80, InitialWaistCm = 85, ActivityLevel = 2,
-            Goal = WellnessGoal.LoseWeight, TargetWeightKg = (decimal)(scenario.Target ?? 70),
+            Goal = scenario.Goal, TargetWeightKg = (decimal)(scenario.Target ?? (scenario.Goal == WellnessGoal.GainMuscle ? 85 : 70)),
             StartDate = calendar.StartDate
         });
         db.Motor365Screenings.Add(new Motor365Screening

@@ -106,6 +106,29 @@ La [tabla de operaciones, roles, errores y gates](../../../.ai-coord/KAN130.md)
 documenta el contrato, la prueba optativa en BD efímera y las decisiones de
 integración pendientes.
 
+### Sesión de ejercicio del día (KAN-125)
+
+`GET /api/v1/people/me/plan` y la lectura equivalente por paciente para ERP
+incluyen `exercise`, con el patrón, la fase nominal, cuatro ejercicios, minutos
+por ejercicio, dosis de fuerza, descripciones y guías ES/EN. Un plan pausado
+devuelve `exercise: null`. La app no reconstruye una sesión local cuando existe
+un plan del Motor 365. Los desbloqueos, la fase y la descarga se calculan por
+la semana real del plan. El día 365 pertenece a la semana 52.
+
+El plan anual `/v1/people/{id}/plan` conserva el formato compacto. En el plan
+real, una racha puede variar la rotación, pero nunca adelantar un desbloqueo.
+La dosis de masa usa las mismas series por nivel que los otros objetivos, con
+RIR 1–2. Se conserva la simulación original del kit para la paridad v5.2. Los
+snapshots anteriores a la revisión de esta política se reconstruyen en la siguiente
+lectura anual sin cambiar los catálogos, las versiones de parámetros ni el esquema.
+
+Para reproducir el recorrido, instalar las dependencias de la app y del host
+de pruebas. Desde `tests/CoppAddresd.Wellness365.E2E`, configurar
+`COP_KAN130_APP_DIR` con la ruta absoluta al checkout de la app y
+`COP_KAN131_TEST_DB_CONNECTION` con PostgreSQL efímero, como se describe abajo.
+Ejecutar `npm run test:exercise`. Se comprueban 365 días para cada objetivo y
+la pantalla de ejercicio de la app en español e inglés.
+
 ## Caché y observabilidad (KAN-128)
 
 El plan anual busca la PK de `app.plan_snapshot` con la versión actual del

@@ -185,7 +185,8 @@ app.MapPut("/fixture/logs/{day}", async (string day, LogInput value, Cancellatio
 app.Run();
 
 sealed record Scenario(bool Person = true, bool DemoHost = false, bool? Real = null, string? Block = null,
-    DateOnly? StartDate = null, DateTimeOffset? Instant = null, string? TimeZone = null, double? Target = null, bool Postgres = false);
+    DateOnly? StartDate = null, DateTimeOffset? Instant = null, string? TimeZone = null, double? Target = null,
+    bool Postgres = false, WellnessGoal Goal = WellnessGoal.LoseWeight);
 sealed record ClockChange(DateTimeOffset Instant);
 sealed record ZoneChange(string TimeZone);
 sealed record LogInput(double Adherence, double? Weight, int Pain = 0);

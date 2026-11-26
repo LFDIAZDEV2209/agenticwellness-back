@@ -5,7 +5,7 @@ const erp = process.env.COP_KAN130_ERP_DIR;
 
 module.exports = defineConfig({
   workers: 1,
-  testIgnore: 'kan128.spec.cjs',
+  testIgnore: ['kan128.spec.cjs', 'exercise.spec.cjs'],
   use: { baseURL: 'http://127.0.0.1:51361' },
   webServer: [{
     command: 'dotnet run --no-launch-profile --urls http://127.0.0.1:51361',

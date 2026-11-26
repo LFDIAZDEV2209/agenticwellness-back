@@ -130,8 +130,10 @@ public static class WellnessEngine
             var cap = tdee * WellnessRules.AdjustmentCap;
             var kcal = Math.Max(CalorieFloor(profile), WellnessRules.RoundTo(baseCalories +
                 Math.Max(-cap, Math.Min(cap, adjustment)), 10));
-            var daily = DailyRules(day, previous, previous2, ref pauseUntil, ref hunger);
-            var exercise = WellnessExercise.ForDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost);
+            var daily = DailyRules(day, previous, previous2, ref pauseUntil, ref hunger, reference: !recordedOnly);
+            var exercise = recordedOnly
+                ? WellnessExercise.ForDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost)
+                : WellnessExercise.ForReferenceDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost);
             var macros = MacroTargets(profile.Goal, mode, weight, kcal, exercise.Training, profile.Parameters);
 
             var past = day < profile.CurrentDay;
@@ -208,7 +210,7 @@ public static class WellnessEngine
         int Boost, IReadOnlyList<WellnessText> Reasons);
 
     private static DailyAdjustment DailyRules(int day, WellnessDay? previous, WellnessDay? previous2,
-        ref int pauseUntil, ref int hunger)
+        ref int pauseUntil, ref int hunger, bool reference)
     {
         var reasons = new List<WellnessText>();
         var simple = previous?.Log.Adherence < .6 && previous2?.Log.Adherence < .6;
@@ -250,20 +252,27 @@ public static class WellnessEngine
             if (streak >= 14)
             {
                 boost = 2;
-                reasons.Add(new($"Racha de {streak} días: desbloqueas ejercicios más difíciles antes de lo previsto.",
-                    $"{streak}-day streak: harder exercises unlock earlier than planned."));
+                reasons.Add(reference
+                    ? new($"Racha de {streak} días: desbloqueas ejercicios más difíciles antes de lo previsto.",
+                        $"{streak}-day streak: harder exercises unlock earlier than planned.")
+                    : new($"Racha de {streak} días: tu rutina rota entre ejercicios ya desbloqueados.",
+                        $"{streak}-day streak: your routine rotates among exercises already unlocked."));
             }
             else if (streak >= 7)
             {
                 boost = 1;
-                reasons.Add(new($"Racha de {streak} días: la progresión avanza una semana.",
-                    $"{streak}-day streak: progression moves up one week."));
+                reasons.Add(reference
+                    ? new($"Racha de {streak} días: la progresión avanza una semana.",
+                        $"{streak}-day streak: progression moves up one week.")
+                    : new($"Racha de {streak} días: tu rutina rota entre ejercicios ya desbloqueados.",
+                        $"{streak}-day streak: your routine rotates among exercises already unlocked."));
             }
             else if (streak == 0 && day > 14)
             {
                 boost = -1;
-                reasons.Add(new("Racha rota: retomamos con carga un poco menor para volver sin lesiones.",
-                    "Streak broken: restart with slightly lower load to return safely."));
+                if (reference)
+                    reasons.Add(new("Racha rota: retomamos con carga un poco menor para volver sin lesiones.",
+                        "Streak broken: restart with slightly lower load to return safely."));
             }
 
             var symptoms = previous.Log.Symptoms;
