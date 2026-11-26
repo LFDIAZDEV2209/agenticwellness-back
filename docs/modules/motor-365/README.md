@@ -106,6 +106,38 @@ La [tabla de operaciones, roles, errores y gates](../../../.ai-coord/KAN130.md)
 documenta el contrato, la prueba optativa en BD efímera y las decisiones de
 integración pendientes.
 
+## Energía del plan (KAN-123)
+
+El motor calcula BMR por Mifflin–St Jeor con el peso del día: `10 × kg
++ 6.25 × cm − 5 × edad`, más 5 para M o menos 161 para F. El TDEE multiplica
+ese resultado por 1.2, 1.375, 1.55 o 1.725 para las actividades 1 a 4. En
+fase principal, bajar resta 10/15/20 %, masa suma 5/10/15 % y definir resta
+5/10/12 % según el ritmo. Mantenimiento parte del TDEE sin ese porcentaje.
+La meta suma el ajuste acotado a ±12 % del TDEE del día, se redondea a la
+decena más cercana (empates hacia arriba) y respeta los pisos predeterminados
+de 1200 kcal (F) y 1500 kcal (M).
+
+Para una persona y un día comparables, con el resto fijo y BMR positivo, el
+objetivo no disminuye al subir la actividad, el peso o la altura. Al subir
+el ritmo, no sube para bajar/definir y no baja para masa. El piso y el
+redondeo pueden producir empates. No se presupone monotonía entre días con
+distintos registros, ajustes o fases.
+
+El plan real decide mantenimiento a partir del pesaje observado al cierre:
+para bajar/definir acepta `peso ≤ meta + 0.05` y para masa `peso ≥ meta − 0.05`.
+Compara en decimal para incluir exactamente el límite registrado. El ajuste
+se vuelve a acotar aunque cambie el TDEE sin un nuevo ajuste semanal. La
+simulación del kit mantiene su comportamiento de referencia.
+
+Para ejecutar la suite del navegador contra los endpoints canónicos y un
+PostgreSQL local efímero, desde `tests/CoppAddresd.Wellness365.E2E`:
+
+```bash
+npm ci
+npx playwright install chromium
+COP_KAN131_TEST_DB_CONNECTION='<conexión a copp_motor365_test_* en puerto local no estándar>' npm run test:kan123
+```
+
 ## Caché y observabilidad (KAN-128)
 
 El plan anual busca la PK de `app.plan_snapshot` con la versión actual del
@@ -114,7 +146,9 @@ alcance, los recibos vigentes y la elegibilidad. El contenido debe coincidir
 con el envío, motor, edad y día efectivo. Los cierres y cambios de perfil
 avanzan la revisión. Publicar parámetros invalida las lecturas siguientes
 sin modificar el perfil. Cambiar el día o la edad efectiva reemplaza el
-artefacto de la misma clave. El formato anterior se trata como miss.
+artefacto de la misma clave. Un payload sin la revisión interna vigente
+del cálculo energético se trata como miss y se reconstruye bajo demanda,
+sin alterar la versión pública del motor.
 
 En un miss anual la API calcula y guarda la proyección. El día individual
 y los cierres evalúan solo la línea temporal hasta hoy. Los cierres guardan

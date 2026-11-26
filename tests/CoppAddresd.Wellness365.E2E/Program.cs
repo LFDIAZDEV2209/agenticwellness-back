@@ -53,11 +53,18 @@ app.MapControllers();
 
 app.MapGet("/fixture", () => Results.Content("""
     <!doctype html><html lang="es"><meta charset="utf-8"><title>Contrato Motor 365</title>
-    <label>Día del plan <input name="day"></label><button>Consultar</button>
+    <label>Día del plan <input name="day"></label><button id="read-calendar">Consultar</button>
     <p role="status"></p><p id="weight"></p>
+    <fieldset>
+      <legend>Energía del Motor 365</legend>
+      <label>Día para energía <input name="energy-day" type="number" min="1" max="365" value="1"></label>
+      <button id="read-energy">Leer energía</button>
+      <p aria-live="polite" id="energy-result"></p>
+      <p id="energy-adjustment"></p>
+    </fieldset>
     <script>
-    document.querySelector('button').onclick = async () => {
-      const day = document.querySelector('input').value;
+    document.querySelector('#read-calendar').onclick = async () => {
+      const day = document.querySelector('[name="day"]').value;
       const path = '/fixture/plan' + (day ? '/' + encodeURIComponent(day) : '');
       const r = await fetch(path);
       const data = await r.json();
@@ -66,6 +73,22 @@ app.MapGet("/fixture", () => Results.Content("""
         : [r.status, data.error, data.status?.code].filter(Boolean).join(' ');
       document.querySelector('#weight').textContent = data.measuredWeightKg == null
         ? 'Sin pesaje' : data.measuredWeightKg + ' kg';
+    };
+    document.querySelector('#read-energy').onclick = async () => {
+      const output = document.querySelector('#energy-result');
+      const adjustment = document.querySelector('#energy-adjustment');
+      output.textContent = 'Consultando…';
+      adjustment.textContent = '';
+      const session = await (await fetch('/fixture/session/app', { cache: 'no-store' })).json();
+      const day = document.querySelector('[name="energy-day"]').value;
+      const r = await fetch('/v1/people/' + session.patientId + '/plan/' + encodeURIComponent(day), {
+        headers: { Authorization: 'Bearer ' + session.accessToken },
+      });
+      const data = await r.json();
+      output.textContent = r.ok
+        ? 'Día ' + data.d + ' · ' + data.kc + ' kcal · ' + data.mode
+        : r.status + ' ' + data.code;
+      if (r.ok) adjustment.textContent = 'Ajuste: ' + data.adjK.toFixed(5) + ' kcal';
     };
     </script></html>
     """, "text/html; charset=utf-8"));
@@ -146,6 +169,10 @@ if (postgres is not null && Environment.GetEnvironmentVariable("COP_KAN128_DIAGN
 
 app.MapGet("/fixture/persistence-stats", async (CancellationToken ct) =>
     scenario.Postgres ? Results.Ok(await postgres!.StatsAsync(patientId, ct)) : Results.NotFound());
+
+app.MapPut("/fixture/kan123/legacy-snapshot", async (CancellationToken ct) =>
+    scenario.Postgres && await postgres!.RestoreLegacyEnergySnapshotAsync(patientId, ct)
+        ? Results.NoContent() : Results.NotFound());
 
 WellnessPlanPerson? Person() => !scenario.Person ? null : new(
     new(WellnessSex.Female, 35, 170, 80, 85, scenario.Target ?? 70, 2, WellnessGoal.LoseWeight, 365, 123)
