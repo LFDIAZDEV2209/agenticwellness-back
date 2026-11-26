@@ -50,7 +50,7 @@ sealed class FixturePostgres
                 """, ct);
             var ids = db.Database.GetMigrations().ToArray();
             var motor = Array.FindIndex(ids, id => id.EndsWith("_AddMotor365Persistence", StringComparison.Ordinal));
-            var latest = ids.Single(id => id.EndsWith("_AllowMotor365NauseaObservation", StringComparison.Ordinal));
+            var latest = ids.Single(id => id.EndsWith("_AddMotor365PauseDays", StringComparison.Ordinal));
             var sql = db.GetService<IMigrator>().GenerateScript(ids[motor - 1], latest);
             await db.Database.ExecuteSqlRawAsync(sql, ct);
         }
@@ -72,7 +72,10 @@ sealed class FixturePostgres
             FitnessLevel = scenario.Fit ?? 0,
             InitialWeightKg = 80, InitialWaistCm = 85, ActivityLevel = 2,
             Goal = WellnessGoal.LoseWeight, TargetWeightKg = (decimal)(scenario.Target ?? 70),
-            StartDate = calendar.StartDate
+            StartDate = calendar.StartDate,
+            CalendarTimeZoneId = calendar.TimeZoneId,
+            CalendarAnchorDate = calendar.AnchorLocalDate,
+            CalendarAnchorDay = calendar.AnchorDay
         });
         db.Motor365Screenings.Add(new Motor365Screening
         {

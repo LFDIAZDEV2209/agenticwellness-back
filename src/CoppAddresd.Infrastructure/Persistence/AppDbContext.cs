@@ -22,6 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Motor365EngineParams> Motor365EngineParams => Set<Motor365EngineParams>();
     public DbSet<Motor365PlanSnapshot> Motor365PlanSnapshots => Set<Motor365PlanSnapshot>();
     public DbSet<Motor365EngineEvent> Motor365EngineEvents => Set<Motor365EngineEvent>();
+    public DbSet<Motor365PauseDay> Motor365PauseDays => Set<Motor365PauseDay>();
     public DbSet<Motor365AuditLog> Motor365AuditLog => Set<Motor365AuditLog>();
     public DbSet<Motor365ProfessionalReview> Motor365ProfessionalReviews => Set<Motor365ProfessionalReview>();
 

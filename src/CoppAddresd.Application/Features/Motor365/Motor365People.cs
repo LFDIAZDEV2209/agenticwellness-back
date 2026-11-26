@@ -103,11 +103,14 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 || newSubmission || (profileChanged && screening is not null);
             var logbook = data.Logs.ToDictionary(log => log.Day);
             var day = Day(person, local);
-            var logsChanged = false;
+            int? firstChangedDay = null;
             foreach (var (number, log) in input.Log ?? [])
-                logsChanged |= ApplyLog(person, day, logbook, number, log);
+            {
+                if (ApplyLog(person, day, logbook, number, log))
+                    firstChangedDay = Math.Min(firstChangedDay ?? number, number);
+            }
 
-            var changed = created || replacesScreening || logsChanged || receipt != data.Receipts ||
+            var changed = created || replacesScreening || firstChangedDay.HasValue || receipt != data.Receipts ||
                 profileChanged;
 
             if (input.SubmissionId is { } key && await store.HasSubmissionAsync(subject.Id, key, token))
@@ -135,7 +138,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             data = new(person, screening, approved, receipt, logbook.Values.ToArray(), data.BirthDate);
             var status = Status(person, data, day);
             if (status.Ok)
-                adjustments = await PublishEventsAsync(person, data, day, now, token);
+                adjustments = await PublishRevisionAsync(person, data, day, firstChangedDay ?? day, now, token);
             Audit(subject.Id, created ? "person.create" : request.Id.HasValue ? "person.update" : "person.upsert", now);
             return new(new(subject.Id, status, screening?.SubmissionId, person.PlanVersion), created);
         }, ct);
@@ -298,7 +301,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 person.PlanVersion++;
                 var revision = data with { Logs = logs.Values.ToArray() };
                 if (Status(person, revision, day).Ok)
-                    adjustments = await PublishEventsAsync(person, revision, day, now, token);
+                    adjustments = await PublishRevisionAsync(person, revision, day, request.Day, now, token);
                 Audit(person.PatientId, "log.put", now);
             }
             return new MotorLogResult(true, person.PlanVersion);
@@ -339,7 +342,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         return (subject, data.Person ?? throw new MotorException("person_not_found"), data);
     }
 
-    private async Task<int> PublishEventsAsync(Motor365Person person, MotorData data, int day, DateTimeOffset now, CancellationToken ct)
+    private async Task<int> PublishRevisionAsync(
+        Motor365Person person, MotorData data, int day, int firstObservedDay, DateTimeOffset now, CancellationToken ct)
     {
         var parameters = await store.FindParamsAsync(null, ct);
         if (parameters is null)
@@ -358,6 +362,15 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 RatePercent = (decimal?)e.RatePercent, MessageEs = view.Es, MessageEn = view.En, OccurredAt = now,
             };
         }));
+        // Las fechas previas a una revisión conservan la decisión que ya quedó registrada.
+        var pauseDays = calculation.Result.Days
+            .Where(item => item.Day >= firstObservedDay && item.Day <= day)
+            .Select(item => new Motor365PauseDay
+            {
+                PersonId = person.PatientId, Day = item.Day, Date = person.StartDate.AddDays(item.Day - 1),
+                Scheduled = item.Mode == WellnessMode.Break, SafetyExercise = item.Paused, PlanVersion = person.PlanVersion
+            }).ToArray();
+        await store.SavePauseDaysAsync(person.PatientId, pauseDays, ct);
         return calculation.Result.Events.Count(e => e.Day == day && e.Kind == "ajuste");
     }
 

@@ -125,6 +125,7 @@ public static class DependencyInjection
         services.AddScoped<LegalAcceptanceHistory>();
         services.AddTransient<AiConsentHttpHandler>();
         services.AddScoped<IWellnessRepository, WellnessRepository>();
+        services.AddScoped<IYear365ReportStore, Year365ReportStore>();
         services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
         services.AddScoped<IEffectiveDayContentStore, EffectiveDayContentStore>();
         services.AddScoped<CoppAddresd.Application.Features.ProgramProgress.Queries.GetRoutineUsage.IProgramRoutineUsageStore, ProgramRoutineUsageStore>();

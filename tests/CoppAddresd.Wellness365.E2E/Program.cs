@@ -42,6 +42,7 @@ if (postgres is not null)
     builder.Services.AddScoped<IWellnessPlanGate, CoppAddresd.Infrastructure.Repositories.WellnessPlanGate>();
     builder.Services.AddScoped<IMotor365Actor, FixtureMotorActor>();
     builder.Services.AddScoped<IMotor365Store, Motor365Store>();
+    builder.Services.AddScoped<IYear365ReportStore, Year365ReportStore>();
     builder.Services.AddScoped<MotorPeople>();
 }
 var app = builder.Build();

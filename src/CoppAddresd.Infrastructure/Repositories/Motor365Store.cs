@@ -169,5 +169,27 @@ public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalC
             """, ct);
     }
     public void AddEvents(IEnumerable<Motor365EngineEvent> events) => db.Motor365EngineEvents.AddRange(events);
+
+    public async Task SavePauseDaysAsync(Guid personId, IReadOnlyList<Motor365PauseDay> days, CancellationToken ct)
+    {
+        if (days.Count == 0) return;
+        var firstDay = days[0].Day;
+        var lastDay = days[^1].Day;
+        var previous = await db.Motor365PauseDays
+            .Where(x => x.PersonId == personId && x.Day >= firstDay && x.Day <= lastDay)
+            .ToDictionaryAsync(x => x.Day, ct);
+        foreach (var day in days)
+        {
+            if (previous.TryGetValue(day.Day, out var existing))
+            {
+                existing.Scheduled = day.Scheduled;
+                existing.SafetyExercise = day.SafetyExercise;
+                existing.PlanVersion = day.PlanVersion;
+            }
+            else
+                db.Motor365PauseDays.Add(day);
+        }
+    }
+
     public void AddAudit(Motor365AuditLog entry) => db.Motor365AuditLog.Add(entry);
 }
