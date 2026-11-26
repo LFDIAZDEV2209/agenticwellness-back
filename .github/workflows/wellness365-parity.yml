@@ -12,6 +12,18 @@ jobs:
   wellness365-parity:
     name: Wellness 365 golden parity
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: motor_qa
+          POSTGRES_PASSWORD: motor_qa
+          POSTGRES_DB: copp_motor365_test_kan129
+        ports:
+          - 55440:5432
+        options: >-
+          --health-cmd "pg_isready -U motor_qa -d copp_motor365_test_kan129"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v7
         with:
@@ -21,6 +33,18 @@ jobs:
           dotnet-version: "10.0.x"
       - name: Comparar el motor C# con la referencia v5.2
         run: dotnet test tests/CoppAddresd.UnitTests -c Release --nologo --filter 'FullyQualifiedName~CoppAddresd.UnitTests.Wellness365'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tests/CoppAddresd.Wellness365.E2E/package-lock.json
+      - name: Verificar paridad y reglas del Motor 365 por HTTP
+        working-directory: tests/CoppAddresd.Wellness365.E2E
+        env:
+          COP_KAN131_TEST_DB_CONNECTION: Host=127.0.0.1;Port=55440;Username=motor_qa;Password=motor_qa;Database=copp_motor365_test_kan129
+        run: |
+          npm ci
+          npm run test:kan129
       - name: Mostrar cambios de referencia en el resumen
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         env:

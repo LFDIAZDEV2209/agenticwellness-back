@@ -1,6 +1,11 @@
 {
   "name": "copp-wellness365-e2e",
   "private": true,
-  "scripts": { "test": "playwright test", "test:exercise": "playwright test --config playwright.exercise.config.cjs", "test:kan128": "playwright test --config playwright.kan128.config.cjs" },
+  "scripts": {
+    "test": "playwright test",
+    "test:exercise": "playwright test --config playwright.exercise.config.cjs",
+    "test:kan128": "playwright test --config playwright.kan128.config.cjs",
+    "test:kan129": "playwright test --config playwright.kan129.config.cjs"
+  },
   "devDependencies": { "@playwright/test": "1.62.1" }
 }
