@@ -15,19 +15,25 @@ public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalC
     public Task<T> InTransactionAsync<T>(bool write, Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
         ExecuteAsync(write ? IsolationLevel.Serializable : IsolationLevel.RepeatableRead, write, operation, ct);
 
-    public async Task<T> InPlanReadAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct)
+    public Task<T> InPlanReadAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
+        ExecuteWithVersionRetryAsync(IsolationLevel.RepeatableRead, operation, ct);
+
+    public Task<T> InConditionalLogWriteAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
+        ExecuteWithVersionRetryAsync(IsolationLevel.Serializable, operation, ct);
+
+    private async Task<T> ExecuteWithVersionRetryAsync<T>(IsolationLevel isolation,
+        Func<CancellationToken, Task<T>> operation, CancellationToken ct)
     {
         const int maxRetries = 2;
         for (var retry = 0; ; retry++)
         {
             try
             {
-                return await ExecuteAsync(IsolationLevel.RepeatableRead, saveChanges: true, operation, ct);
+                return await ExecuteAsync(isolation, saveChanges: true, operation, ct);
             }
             catch (MotorException ex) when (ex.Code == "version_conflict" && retry < maxRetries && !ct.IsCancellationRequested)
             {
-                // Dos lectores pueden fijar la misma ancla. Volver a cargarla tras el rollback,
-                // sin conservar las entidades rastreadas por la transacción anterior.
+                // Reload the winning revision after the conflicting transaction rolls back.
                 db.ChangeTracker.Clear();
             }
         }

@@ -194,6 +194,35 @@ COP_KAN131_TEST_DB_CONNECTION='<conexión a copp_motor365_test_* en puerto local
 COP_KAN130_APP_DIR='<checkout app>' COP_KAN130_ERP_DIR='<checkout ERP>' npm run test:kan127
 ```
 
+### Sincronización de Antares y Perfil 360 (KAN-153)
+
+`GET /api/v1/people/me/plan?includeSync=true` para Antares y
+`GET /api/v1/people/{id}/plan?includeSync=true` para el ERP incluyen `sync`.
+El ERP conserva la política `Program.Profile360View` y el alcance por persona.
+En Antares, la API resuelve el vínculo con la sesión y valida el acceso al plan.
+La respuesta ordinaria permanece disponible sin el parámetro.
+
+El plan contiene `today`, `todayLocalDate`, `timeZoneId`, `engine_ver` y
+`params_version`. La proyección opcional incorpora `personId` y hasta 28 días
+del historial por defecto, indicando `fromDay` y `throughDay`. En la vista anual
+de Antares se solicita `historyDays=365`. Los cierres incluyen fechas
+persistidas, adherencia, mediciones y ejercicio, con `null` para mediciones
+ausentes. Los eventos usan la proyección canónica del motor con los mismos
+parámetros del plan. Las listas vacías indican que no hay entradas en la ventana.
+La variante `/plan/{day}` termina la ventana en el día solicitado.
+El informe Año 365 sigue usando su lectura histórica mensual.
+
+La cola de Antares envía `PUT /api/v1/people/{personId}/logs/{day}?createIfAbsent=true`
+con el identificador recibido del plan. El servidor verifica que siga siendo la
+persona vinculada a la sesión. Si falta la fila, registra el cierre. Si los
+hechos normalizados coinciden con la fila, devuelve el mismo `204` sin nueva
+revisión. Si difieren, responde `409 log_already_recorded` y Antares vuelve a
+consultar el plan del día en conflicto. La operación usa la transacción
+serializable y la clave persona/día existentes. Un conflicto transaccional
+reinicia la lectura desde la fila confirmada, con hasta dos reintentos.
+Las correcciones de los consumidores existentes conservan su operación
+ordinaria. Desplegar el backend antes del cliente que envía este modo.
+
 ## Caché y observabilidad (KAN-128)
 
 El plan anual busca la PK de `app.plan_snapshot` con la versión actual del

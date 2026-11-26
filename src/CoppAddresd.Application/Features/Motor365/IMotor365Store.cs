@@ -14,6 +14,7 @@ public interface IMotor365Store
     Task<T> InTransactionAsync<T>(bool write, Func<CancellationToken, Task<T>> operation, CancellationToken ct);
     // Vista consistente de entradas. La única escritura permitida es el ancla de calendario.
     Task<T> InPlanReadAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct);
+    Task<T> InConditionalLogWriteAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct);
     Task<MotorSubject?> FindSubjectAsync(Guid patientId, CancellationToken ct);
     Task<MotorData> LoadAsync(Guid id, bool tracked, CancellationToken ct);
     Task<bool> HasSubmissionAsync(Guid id, Guid submission, CancellationToken ct);

@@ -139,7 +139,12 @@ app.MapPut("/fixture/profile-zone", async (ZoneChange change, CancellationToken 
 app.MapGet("/fixture/session/{client}", (string client) => new
 {
     accessToken = fixtureAuth.Token(client),
-    userId = client == "app" ? FixturePlanAuth.AppUser : FixturePlanAuth.ErpUser,
+    userId = client switch
+    {
+        "app" => FixturePlanAuth.AppUser,
+        "app-unlinked" => FixturePlanAuth.UnlinkedAppUser,
+        _ => FixturePlanAuth.ErpUser,
+    },
     patientId,
 });
 

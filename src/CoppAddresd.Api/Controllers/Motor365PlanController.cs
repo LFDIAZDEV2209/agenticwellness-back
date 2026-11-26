@@ -24,7 +24,8 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IResult> Get(string personId, string? day, CancellationToken ct)
+    public async Task<IResult> Get(string personId, string? day, CancellationToken ct, [FromQuery] bool includeSync = false,
+        [FromQuery, Range(1, 365)] int historyDays = 28)
     {
         var (patientId, failure) = await ResolveAsync(personId, write: false, ct);
         if (failure is not null) return failure;
@@ -36,7 +37,11 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
             if (!int.TryParse(day, out var number)) return new WellnessPlanError(WellnessPlanErrorCode.BadDay).ToHttpResult();
             requested = number;
         }
-        try { return Results.Ok(Motor365DayResponse.From(await people.ReadCalendarDayAsync(patientId, requested, ct))); }
+        try
+        {
+            return Results.Ok(Motor365DayResponse.From(
+                await people.ReadCalendarDayAsync(patientId, requested, ct, includeSync ? historyDays : null)));
+        }
         catch (MotorException ex) { return MotorError(ex); }
     }
 
@@ -49,7 +54,7 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IResult> Close(string personId, string day, [FromBody] Motor365ClosureRequest request,
-        CancellationToken ct)
+        CancellationToken ct, [FromQuery] bool createIfAbsent = false)
     {
         var (patientId, failure) = await ResolveAsync(personId, write: true, ct);
         if (failure is not null) return failure;
@@ -64,7 +69,7 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         {
             await people.CloseDayAsync(new(patientId, number,
                 new(input.Adherence, input.SleepHours, input.Energy, input.Pain, input.Symptoms.ToArray(),
-                    input.WeightKg, input.WaistCm, input.CompletedExercise ? 1 : 0)), ct);
+                    input.WeightKg, input.WaistCm, input.CompletedExercise ? 1 : 0), createIfAbsent), ct);
             return Results.NoContent();
         }
         catch (MotorException ex) { return MotorError(ex); }
@@ -101,7 +106,7 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         "plan_locked" when ex.Status is { Code: { } code, Message: { } message } =>
             Locked(new(code, new(message.Es, message.En))),
         "forbidden" => Results.Forbid(),
-        "version_conflict" => Results.Conflict(new { error = ex.Code }),
+        "version_conflict" or "log_already_recorded" => Results.Conflict(new { error = ex.Code }),
         "service_unavailable" => Results.StatusCode(StatusCodes.Status503ServiceUnavailable),
         _ => throw ex
     };
@@ -116,11 +121,14 @@ public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocal
     [property: JsonPropertyName("engine_ver")] string EngineVersion,
     [property: JsonPropertyName("params_version")] int ParametersVersion)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MotorSyncSnapshot? Sync { get; init; }
+
     internal static Motor365DayResponse From(MotorCalendarDay day) =>
-        new(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
+        new Motor365DayResponse(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
             day.Adherence, day.MeasuredWeightKg, day.Streak, day.Exercise, day.Nutrition,
             CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
-            day.ParametersVersion);
+            day.ParametersVersion) { Sync = day.Sync };
 }
 
 public sealed record Motor365ClosureRequest(
