@@ -106,7 +106,7 @@ public static class WellnessEngine
 
             var targetCheckWeight = recordedOnly ? observedWeight : weight;
             if (!reached && day > 1 && profile.TargetWeightKg is { } target && target != 0 &&
-                (gain ? targetCheckWeight >= target - .05 : targetCheckWeight <= target + .05))
+                HasReachedTarget(targetCheckWeight, target, gain, recordedOnly))
             {
                 reached = true;
                 events.Add(new(day, "meta", null, null,
@@ -128,8 +128,11 @@ public static class WellnessEngine
             var tdee = BasalMetabolicRate(profile, weight) * activity;
             var baseCalories = mode == WellnessMode.Main ? tdee * (gain ? 1 + share : 1 - share) : tdee;
             var cap = tdee * WellnessRules.AdjustmentCap;
-            var kcal = Math.Max(CalorieFloor(profile), WellnessRules.RoundTo(baseCalories +
-                Math.Max(-cap, Math.Min(cap, adjustment)), 10));
+            var cappedAdjustment = Math.Max(-cap, Math.Min(cap, adjustment));
+            // El TDEE puede bajar entre cierres. La API real también acota el
+            // acumulado que publica y que recibe el siguiente ajuste semanal.
+            if (recordedOnly) adjustment = cappedAdjustment;
+            var kcal = Math.Max(CalorieFloor(profile), WellnessRules.RoundTo(baseCalories + cappedAdjustment, 10));
             var daily = DailyRules(day, previous, previous2, ref pauseUntil, ref hunger, reference: !recordedOnly);
             var exercise = recordedOnly
                 ? WellnessExercise.ForDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost)
@@ -190,6 +193,15 @@ public static class WellnessEngine
         }
 
         return new(Array.AsReadOnly(days), events.AsReadOnly(), reached);
+    }
+
+    private static bool HasReachedTarget(double weight, double target, bool gain, bool recordedOnly)
+    {
+        // Los pesos registrados son decimales. No perder el empate de 0.05 kg
+        // al representarlos en binario, sin cambiar la simulación del kit.
+        if (!recordedOnly) return gain ? weight >= target - .05 : weight <= target + .05;
+        var difference = (decimal)weight - (decimal)target;
+        return gain ? difference >= -.05m : difference <= .05m;
     }
 
     private static WellnessMacros MacroTargets(WellnessGoal goal, WellnessMode mode, double weight, double kcal, bool train, WellnessParameters parameters)

@@ -114,6 +114,16 @@ sealed class FixturePostgres
             .Select(x => x.ParamsVersion).Order().ToArrayAsync(ct);
     }
 
+    public async Task<bool> RestoreLegacyEnergySnapshotAsync(Guid patientId, CancellationToken ct)
+    {
+        await using var db = Open();
+        return await db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE app.plan_snapshot
+            SET plan_json = jsonb_set(plan_json - 'energyCalculationRevision', ARRAY['plan','days','21','adjK'], '-200')
+            WHERE person_id = {patientId}
+            """, ct) == 1;
+    }
+
     public async Task<Guid[]> SeedCohortAsync(Guid template, CancellationToken ct)
     {
         // Entradas sintéticas sin snapshots, con un titular y dos recibos por persona.
