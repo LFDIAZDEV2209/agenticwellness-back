@@ -336,7 +336,7 @@ jobs:
         if: matrix.service == 'api'
         timeout-minutes: 21
         env:
-          MIGRATION_SERVICE: cooppadresd-${{ matrix.service }}
+          MIGRATION_SERVICE: agenticwellness-${{ matrix.service }}
           MIGRATION_TASK_DEFINITION: ${{ steps.taskdef.outputs.arn }}
         run: bash scripts/ecs-migrate-task.sh
 
@@ -351,7 +351,7 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster "${{ env.ECS_CLUSTER }}" \
-            --service "cooppadresd-${{ matrix.service }}" \
+            --service "agenticwellness-${{ matrix.service }}" \
             --task-definition "${{ steps.taskdef.outputs.arn }}" \
             --region "${{ env.AWS_REGION }}"
 
@@ -359,7 +359,7 @@ jobs:
         timeout-minutes: 20
         shell: bash
         run: |
-          SERVICE="cooppadresd-${{ matrix.service }}"
+          SERVICE="agenticwellness-${{ matrix.service }}"
           TD_ARN="${{ steps.taskdef.outputs.arn }}"
           DEADLINE=$((SECONDS + 1200))
           MISS_COUNT=0
@@ -424,7 +424,7 @@ jobs:
         timeout-minutes: 5
         shell: bash
         run: |
-          BASE="https://erp.coppadresd.com"
+          BASE="https://erp.agenticwellness.ai"
           case "${{ matrix.service }}" in
             auth)
               WARM_PATH="/api/auth/login"
@@ -463,11 +463,11 @@ jobs:
         run: |
           TASKS=$(aws ecs list-tasks \
             --cluster "${{ env.ECS_CLUSTER }}" \
-            --service-name "cooppadresd-${{ matrix.service }}" \
+            --service-name "agenticwellness-${{ matrix.service }}" \
             --region "${{ env.AWS_REGION }}" --query "taskArns" --output text)
           TASKS_STOPPED=$(aws ecs list-tasks \
             --cluster "${{ env.ECS_CLUSTER }}" \
-            --service-name "cooppadresd-${{ matrix.service }}" \
+            --service-name "agenticwellness-${{ matrix.service }}" \
             --desired-status STOPPED \
             --region "${{ env.AWS_REGION }}" --query "taskArns[0:2]" --output text)
           TASKS="$TASKS $TASKS_STOPPED"
