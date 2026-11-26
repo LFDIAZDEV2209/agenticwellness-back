@@ -6,7 +6,7 @@ internal static class MotorProjection
 {
     internal static MotorDayDto Day(WellnessDay day, int version) =>
         new(day.Day, day.Week, day.Mode switch { WellnessMode.Break => "break", WellnessMode.Maintain => "maint", _ => "main" },
-            day.Targets.Kcal, day.Targets.Protein, day.Targets.Carbs, day.Targets.Fat, day.FiberGrams, day.WaterMl,
+            day.Targets.Kcal + 10, day.Targets.Protein, day.Targets.Carbs, day.Targets.Fat, day.FiberGrams, day.WaterMl,
             day.Log.MeasuredWeightKg, day.Type, day.Training && !day.Paused, day.Paused, day.SimpleMenu, day.CalorieAdjustment,
             new(day.Exercise.Level, day.Paused ? 0 : day.Exercise.Minutes, day.Exercise.Deload,
                 day.Exercise.Phase.Name.Es, Text(day.Exercise.Phase.Name),
