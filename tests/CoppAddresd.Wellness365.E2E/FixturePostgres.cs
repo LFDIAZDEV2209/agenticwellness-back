@@ -56,10 +56,11 @@ sealed class FixturePostgres
         }
 
         var id = Guid.NewGuid();
+        var birth = scenario.Age is { } age ? calendar.StartDate.AddYears(-age) : new DateOnly(1990, 1, 1);
         await db.Database.ExecuteSqlInterpolatedAsync($"""
             UPDATE app.patient_profiles SET deleted_at = now() WHERE user_id = {FixturePlanAuth.AppUser};
             INSERT INTO app.patient_profiles (id, user_id, status, first_name, last_name, timezone, date_of_birth)
-            VALUES ({id}, {FixturePlanAuth.AppUser}, 'Activo', 'Persona', 'QA', {calendar.TimeZoneId}, '1990-01-01');
+            VALUES ({id}, {FixturePlanAuth.AppUser}, 'Activo', 'Persona', 'QA', {calendar.TimeZoneId}, {birth});
             INSERT INTO auth."PaidActivations" VALUES ({id}, 'es', {FixturePlanAuth.AppUser},
                 now(), 'active', {scenario.Block != "membership_inactive"}, '2030-01-01Z', '2025-01-01Z', 'annual');
             INSERT INTO app.wellness_journey_generations (id, patient_id) VALUES ({id}, {id})
@@ -67,7 +68,8 @@ sealed class FixturePostgres
             """, ct);
         db.Motor365People.Add(new Motor365Person
         {
-            PatientId = id, Sex = WellnessSex.Female, BirthYear = 1990, HeightCm = 170,
+            PatientId = id, Sex = WellnessSex.Female, BirthYear = birth.Year, HeightCm = 170,
+            FitnessLevel = scenario.Fit ?? 0,
             InitialWeightKg = 80, InitialWaistCm = 85, ActivityLevel = 2,
             Goal = WellnessGoal.LoseWeight, TargetWeightKg = (decimal)(scenario.Target ?? 70),
             StartDate = calendar.StartDate
