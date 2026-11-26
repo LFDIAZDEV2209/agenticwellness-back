@@ -4,6 +4,24 @@ namespace CoppAddresd.Application.Features.Motor365;
 
 internal static class MotorProjection
 {
+    private static readonly string[] MealIds = ["breakfast", "lunch", "snack", "dinner"];
+
+    internal static MotorMealPlanDto MealPlan(WellnessProfile profile, WellnessDay day)
+    {
+        var menu = WellnessNutrition.BuildPublishedDay(profile, day);
+        var slots = WellnessNutrition.BuildOptions(profile, day, menu);
+        return new(profile.Vegetarian, profile.LactoseFree, day.SimpleMenu, MealTotals(menu.Totals),
+            slots.Select((slot, i) => new MotorMenuSlot(MealIds[i], Text(menu.Meals[i].Name), slot.TargetKcal,
+                slot.Options.Select(dish => new MotorMenuDish(dish.TemplateIndex, dish.Items.Select(item =>
+                {
+                    var food = WellnessNutrition.Catalog[item.FoodId];
+                    return new MotorMenuIngredient(item.FoodId, new(food.Es, food.En), item.Grams);
+                }).ToArray(), MealTotals(dish.Totals))).ToArray())).ToArray());
+    }
+
+    private static MotorMealTotals MealTotals(WellnessMacros macros) =>
+        new(macros.Kcal, macros.Protein, macros.Carbs, macros.Fat);
+
     internal static MotorExerciseSessionDto? ExerciseSession(WellnessDay day)
     {
         if (day.Paused) return null;
@@ -32,14 +50,18 @@ internal static class MotorProjection
                     e.Strength?.RepsInReserve)).ToArray()),
             day.Reasons.Select(Reason).ToArray(), WellnessEngine.ReferenceVersion, version);
 
-    internal static MotorDayDto WithMenu(WellnessPlanDay plan, int version) => Day(plan.Recommendation, version) with
+    internal static MotorDayDto WithMenu(WellnessProfile profile, WellnessDay day, int version)
     {
-        Menu = plan.Menu.Meals.Select(m => new MotorMealDto(m.Name.Es, Text(m.Name),
-            m.Items.Select(i => new MotorFoodPortion(i.Role, i.FoodId, i.Grams)).ToArray(),
-            Round(m.Totals.Kcal), Round(m.Totals.Protein), Round(m.Totals.Carbs), Round(m.Totals.Fat))).ToArray(),
-        Totals = new(plan.Menu.Totals.Kcal, plan.Menu.Totals.Protein, plan.Menu.Totals.Carbs, plan.Menu.Totals.Fat),
-        DeviationPct = plan.Menu.Deviation,
-    };
+        var menu = WellnessNutrition.BuildPublishedDay(profile, day);
+        return Day(day, version) with
+        {
+            Menu = menu.Meals.Select(m => new MotorMealDto(m.Name.Es, Text(m.Name),
+                m.Items.Select(i => new MotorFoodPortion(i.Role, i.FoodId, i.Grams)).ToArray(),
+                Round(m.Totals.Kcal), Round(m.Totals.Protein), Round(m.Totals.Carbs), Round(m.Totals.Fat))).ToArray(),
+            Totals = new(menu.Totals.Kcal, menu.Totals.Protein, menu.Totals.Carbs, menu.Totals.Fat),
+            DeviationPct = menu.Deviation,
+        };
+    }
 
     internal static MotorEventDto Event(WellnessEvent e, int version)
     {

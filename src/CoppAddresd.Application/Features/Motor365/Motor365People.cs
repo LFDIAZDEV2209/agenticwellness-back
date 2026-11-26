@@ -42,7 +42,7 @@ public sealed class GetMotorDayHandler(MotorPeople people) : IRequestHandler<Get
 {
     public Task<MotorDayDto> Handle(GetMotorDay request, CancellationToken ct) =>
         people.CalculateAsync(request.Id, (_, calculation) => MotorProjection.WithMenu(
-            WellnessEngine.PlanDay(calculation.Profile, calculation.Result.Days[request.Day - 1]), calculation.Version), ct, request.Day,
+            calculation.Profile, calculation.Result.Days[request.Day - 1], calculation.Version), ct, request.Day,
             includeProjections: false, operation: "day");
 }
 
@@ -273,7 +273,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     private Task<T> MeasureAsync<T>(string operation, Guid id, Func<Task<T>> work) =>
         telemetry is null ? work() : telemetry.MeasureAsync(operation, id, work);
 
-    public Task<MotorCalendarDay> ReadCalendarDayAsync(Guid id, int? day, CancellationToken ct, int? historyDays = null) =>
+    public Task<MotorCalendarDay> ReadCalendarDayAsync(Guid id, int? day, CancellationToken ct, int? historyDays = null, bool includeMenu = false) =>
         CalculateAsync(id, (view, computation) =>
         {
             var value = computation.Result.Days[(day ?? view.Day) - 1];
@@ -288,6 +288,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                     value.FiberGrams, value.WaterMl))
             {
                 Sync = historyDays is { } window ? ProjectSync(view, computation, value.Day, window) : null,
+                MealPlan = includeMenu ? MotorProjection.MealPlan(computation.Profile, value) : null,
             };
         }, ct, day, "Program.Profile360View", includeProjections: false);
 

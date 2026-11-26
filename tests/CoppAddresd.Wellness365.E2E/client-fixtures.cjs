@@ -8,10 +8,10 @@ async function connectClients(appContext, app, erpContext, erp, {
     localStorage.setItem('copp.wellness-privacy.audit.v1.' + at + '.00000000.fixture',
       JSON.stringify({ actor: userId, action: 'accepted', at, acceptedAt: at, scope: 'sensitive-data', version: '2026-11-25-draft.1' }));
   }, { userId: app.userId, at: instant ?? new Date().toISOString(), origin: appOrigin });
-  await erpContext.addInitScript(origin => {
+  await erpContext?.addInitScript(origin => {
     if (location.origin === origin) localStorage.setItem('copp_lang', 'es');
   }, erpOrigin);
-  await Promise.all([[appContext, app], [erpContext, erp]].map(([context, session]) =>
+  await Promise.all([[appContext, app], ...(erpContext ? [[erpContext, erp]] : [])].map(([context, session]) =>
     context.route('**/api/**', async route => {
       const req = route.request();
       const url = new URL(req.url());

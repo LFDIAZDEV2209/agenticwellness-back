@@ -9,6 +9,8 @@ public sealed record WellnessFood(
 
 public static class WellnessNutrition
 {
+    private const double MenuTolerance = .08;
+
     private sealed record ReferenceData(Dictionary<string, WellnessFood> Foods, string[][][] Templates);
     private sealed record Slot(char Role, string[] Options, int? FixedGrams);
     private sealed class Portion(char role, string id, double grams)
@@ -101,13 +103,73 @@ public static class WellnessNutrition
         return new(Array.AsReadOnly(meals), total, (total.Kcal - target.Kcal) / target.Kcal);
     }
 
+    // La API mantiene las porciones de referencia cuando ya cumplen la tolerancia.
+    public static WellnessMenu BuildPublishedDay(WellnessProfile profile, WellnessDay day)
+    {
+        var menu = BuildDay(profile, day.Targets, day.Day, simple: day.SimpleMenu);
+        if (Math.Abs(menu.Deviation) <= MenuTolerance) return menu;
+
+        var meals = menu.Meals.Select((meal, i) =>
+            FitEnergy(meal, day.Targets.Kcal * MealTypes[i].Share)).ToArray();
+        var totals = meals.Aggregate(WellnessMacros.Zero, (sum, meal) => sum + meal.Totals);
+        return new(meals, totals, (totals.Kcal - day.Targets.Kcal) / day.Targets.Kcal);
+    }
+
+    public static IReadOnlyList<WellnessMealOptions> BuildOptions(WellnessProfile profile, WellnessDay day, WellnessMenu menu) =>
+        menu.Meals.Select((meal, index) =>
+        {
+            var templates = Templates.Value[index];
+            var options = new List<WellnessMeal> { meal };
+            var seen = new HashSet<string>(StringComparer.Ordinal) { Signature(meal) };
+            for (var step = 1; step < templates.Length; step++)
+            {
+                var next = (meal.TemplateIndex + step) % templates.Length;
+                var portions = BuildMeal(profile, templates[next], meal.Totals);
+                var items = portions.Select(p => new WellnessMealItem(p.Role, p.Id, p.Grams)).ToArray();
+                var candidate = FitEnergy(new(next, meal.Name, items, Sum(items)), meal.Totals.Kcal);
+                var total = menu.Totals;
+                var before = meal.Totals;
+                var after = candidate.Totals;
+                var kcal = total.Kcal - before.Kcal + after.Kcal;
+                if (Math.Abs(kcal - day.Targets.Kcal) > day.Targets.Kcal * MenuTolerance ||
+                    !Close(total.Kcal, kcal) ||
+                    !Close(total.Protein, total.Protein - before.Protein + after.Protein) ||
+                    !Close(total.Carbs, total.Carbs - before.Carbs + after.Carbs) ||
+                    !Close(total.Fat, total.Fat - before.Fat + after.Fat) ||
+                    !seen.Add(Signature(candidate))) continue;
+
+                options.Add(candidate);
+                if (day.SimpleMenu) break;
+            }
+            return new WellnessMealOptions(day.Targets.Kcal * MealTypes[index].Share, options.AsReadOnly());
+        }).ToArray();
+
+    private static bool Close(double before, double after) =>
+        Math.Abs(before - after) <= Math.Min(before, after) * MenuTolerance;
+
+    private static string Signature(WellnessMeal meal) =>
+        string.Join(',', meal.Items.Select(item => item.FoodId).Order(StringComparer.Ordinal));
+
+    private static WellnessMacros Sum(IEnumerable<WellnessMealItem> items) =>
+        items.Aggregate(WellnessMacros.Zero, (sum, item) => sum + MacrosFor(item.FoodId, item.Grams));
+
+    private static WellnessMeal FitEnergy(WellnessMeal meal, double kcal)
+    {
+        var scale = kcal / meal.Totals.Kcal;
+        var items = meal.Items.Select(item => item with
+        {
+            Grams = Math.Max(.1, WellnessRules.RoundTo(item.Grams * scale, .1))
+        }).ToArray();
+        return meal with { Items = items, Totals = Sum(items) };
+    }
+
     private static WellnessMacros[] Calculate(Portion[][] portions) => portions.Select(meal =>
         meal.Aggregate(WellnessMacros.Zero, (sum, item) => sum + MacrosFor(item.Id, item.Grams))).ToArray();
 
     private static Portion[] BuildMeal(WellnessProfile profile, Slot[] template, WellnessMacros target)
     {
         var items = template.Select(slot => new Portion(slot.Role,
-            slot.Options.FirstOrDefault(id => IsAllowed(id, profile)) ?? slot.Options[^1],
+            slot.Options.First(id => IsAllowed(id, profile)),
             slot.FixedGrams ?? (slot.Role is 'P' or 'C' ? 120 : 8))).ToArray();
 
         for (var i = 0; i < 6; i++)

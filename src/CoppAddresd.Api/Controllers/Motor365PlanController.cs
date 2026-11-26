@@ -25,7 +25,7 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IResult> Get(string personId, string? day, CancellationToken ct, [FromQuery] bool includeSync = false,
-        [FromQuery, Range(1, 365)] int historyDays = 28)
+        [FromQuery, Range(1, 365)] int historyDays = 28, [FromQuery] bool includeMenu = false)
     {
         var (patientId, failure) = await ResolveAsync(personId, write: false, ct);
         if (failure is not null) return failure;
@@ -40,7 +40,7 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         try
         {
             return Results.Ok(Motor365DayResponse.From(
-                await people.ReadCalendarDayAsync(patientId, requested, ct, includeSync ? historyDays : null)));
+                await people.ReadCalendarDayAsync(patientId, requested, ct, includeSync ? historyDays : null, includeMenu)));
         }
         catch (MotorException ex) { return MotorError(ex); }
     }
@@ -124,11 +124,14 @@ public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocal
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MotorSyncSnapshot? Sync { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MotorMealPlanDto? MealPlan { get; init; }
+
     internal static Motor365DayResponse From(MotorCalendarDay day) =>
         new Motor365DayResponse(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
             day.Adherence, day.MeasuredWeightKg, day.Streak, day.Exercise, day.Nutrition,
             CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
-            day.ParametersVersion) { Sync = day.Sync };
+            day.ParametersVersion) { Sync = day.Sync, MealPlan = day.MealPlan };
 }
 
 public sealed record Motor365ClosureRequest(
