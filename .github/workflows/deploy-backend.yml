@@ -160,7 +160,7 @@ jobs:
     env:
       AWS_REGION: us-east-2
       ECR_REGISTRY: 933629770820.dkr.ecr.us-east-2.amazonaws.com
-      ECS_CLUSTER: cooppadresd-cluster
+      ECS_CLUSTER: agenticwellness-cluster
     strategy:
       fail-fast: false
       matrix:
@@ -253,7 +253,7 @@ jobs:
         env:
           DEMO_REMINDERS_ONLY: ${{ vars.MEDICATION_DEMO_REMINDERS_ONLY_DEV || 'false' }}
         run: |
-          TD_NAME="cooppadresd-${{ matrix.service }}"
+          TD_NAME="agenticwellness-${{ matrix.service }}"
           TASK_DEF_JSON=$(aws ecs describe-task-definition --task-definition "$TD_NAME" --region "${{ env.AWS_REGION }}" --query "taskDefinition" --output json)
           NEW_IMAGE="${{ env.ECR_REGISTRY }}/${{ steps.svc.outputs.ecr }}:${{ github.sha }}"
           EXTRA_ENV='${{ steps.svc.outputs.extra_env }}'
