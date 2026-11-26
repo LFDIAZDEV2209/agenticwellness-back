@@ -29,9 +29,14 @@ test('JWT app y ERP comparten el día y solo la persona puede guardar el cierre'
   expect((await call(current, erp.accessToken)).status).toBe(403);
   expect((await call(patient + '/plan', unassigned.accessToken)).status).toBe(404);
   expect((await call(people + '/e6148d60-f781-4b58-b2ae-8ab6ef31b263/plan', app.accessToken)).status).toBe(404);
-  const self = await call(current, app.accessToken);
+  // Las primeras lecturas de un perfil sin ancla llegan juntas desde ambos clientes.
+  const initial = await Promise.all(Array.from({ length: 6 }, (_, i) => i % 2 === 0
+    ? call(current, app.accessToken) : call(patient + '/plan', erp.accessToken)));
+  const diagnostics = JSON.stringify(initial.map(({ status, body }) => [status, body?.error]));
+  expect(initial.map(({ status }) => status), diagnostics).toEqual(Array(6).fill(200));
+  const [self] = initial;
   expect(self).toMatchObject({ status: 200, body: { today: 1, todayLocalDate: '2026-01-01', status: { state: 'active' } } });
-  expect(await call(patient + '/plan', erp.accessToken)).toEqual(self);
+  for (const result of initial) expect(result).toEqual(self);
   await expect(page.getByRole('status')).toHaveText('Día 1 · active');
   const canonical = '/v1/people/' + app.patientId;
   expect(await call(canonical + '/plan/1', app.accessToken)).toMatchObject({ status: 200, body: { d: 1, w: null } });

@@ -166,6 +166,34 @@ npx playwright install chromium
 COP_KAN131_TEST_DB_CONNECTION='<conexión a copp_motor365_test_* en puerto local no estándar>' npm run test:kan123
 ```
 
+## Nutrición del día (KAN-127)
+
+El plan real calcula proteína de 1.6/1.8/2.0 g por kg para bajar/masa/definir,
+con un máximo de 2.2 g/kg incluso después del redondeo. La grasa parte de
+24 % de las kcal si hay entrenamiento y de 28 % en descanso o mantenimiento.
+El carbohidrato usa las kcal restantes. Para mantener un mínimo de 80 g,
+primero se reduce la grasa y, si ni con cero grasa alcanza, se ajusta la
+proteína al presupuesto restante. El motor valida que la suma 4P + 4C + 9F
+no se aparte más de 3 % de la meta. La fibra tiene un piso de 25 g y se
+calcula a razón de 14 g por 1000 kcal, redondeada al gramo. El agua usa
+35 ml/kg y se redondea al múltiplo de 250 ml más cercano.
+
+`GET /api/v1/people/{personId}/plan[/{day}]` devuelve
+`nutrition: { kcal, proteinG, carbsG, fatG, fiberG, waterMl }` para el día
+servido, con los mismos permisos y compuertas del calendario. Nutrición en
+la app y Perfil 360 en ERP usan este bloque para mostrar las metas. Los
+totales de platos y el registro de agua de la app no son las metas.
+
+Para repetir la prueba de extremo a extremo desde
+`tests/CoppAddresd.Wellness365.E2E`, instala dependencias de Node de los
+tres checkouts y Chromium de Playwright. Usa una base PostgreSQL local
+efímera y ambos clientes que consumen el campo `nutrition`.
+
+```sh
+COP_KAN131_TEST_DB_CONNECTION='<conexión a copp_motor365_test_* en puerto local no estándar>' \
+COP_KAN130_APP_DIR='<checkout app>' COP_KAN130_ERP_DIR='<checkout ERP>' npm run test:kan127
+```
+
 ## Caché y observabilidad (KAN-128)
 
 El plan anual busca la PK de `app.plan_snapshot` con la versión actual del
@@ -175,7 +203,7 @@ con el envío, motor, edad y día efectivo. Los cierres y cambios de perfil
 avanzan la revisión. Publicar parámetros invalida las lecturas siguientes
 sin modificar el perfil. Cambiar el día o la edad efectiva reemplaza el
 artefacto de la misma clave. Un payload sin la revisión interna vigente
-del cálculo energético se trata como miss y se reconstruye bajo demanda,
+del cálculo energético o nutricional se trata como miss y se reconstruye bajo demanda,
 sin alterar la versión pública del motor.
 
 En un miss anual la API calcula y guarda la proyección. El día individual
@@ -193,8 +221,10 @@ entradas y el día. Las revisiones históricas existentes no se eliminan por
 este cambio. La persistencia de la caché no es requisito para devolver el
 plan calculado si falla su escritura. Las lecturas de planes usan
 `REPEATABLE READ` para ver entradas y versiones coherentes y solo guardan
-cambios del ancla de calendario. Las escrituras de datos de negocio
-conservan el aislamiento serializable.
+cambios del ancla de calendario. Ante un conflicto al actualizar el ancla,
+la lectura reintenta hasta dos veces con un estado nuevo. Las escrituras
+de datos de negocio conservan el aislamiento serializable y no se reintentan
+por esta regla.
 
 El meter y la fuente de trazas se llaman `CoppAddresd.Motor365`. La latencia y
 los errores se separan por operación (`annual`, `day`, `calendar`, `events` y

@@ -171,6 +171,10 @@ if (postgres is not null && Environment.GetEnvironmentVariable("COP_KAN128_DIAGN
 app.MapGet("/fixture/persistence-stats", async (CancellationToken ct) =>
     scenario.Postgres ? Results.Ok(await postgres!.StatsAsync(patientId, ct)) : Results.NotFound());
 
+app.MapPut("/fixture/kan127/legacy-snapshot", async (CancellationToken ct) =>
+    scenario.Postgres && await postgres!.RestoreLegacyNutritionSnapshotAsync(patientId, ct)
+        ? Results.NoContent() : Results.NotFound());
+
 app.MapPut("/fixture/kan123/legacy-snapshot", async (CancellationToken ct) =>
     scenario.Postgres && await postgres!.RestoreLegacyEnergySnapshotAsync(patientId, ct)
         ? Results.NoContent() : Results.NotFound());

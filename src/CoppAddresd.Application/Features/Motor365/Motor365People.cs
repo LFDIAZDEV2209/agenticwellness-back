@@ -66,6 +66,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     IMotor365SnapshotQueue? snapshots = null, Motor365Telemetry? telemetry = null)
 {
     private const int EnergyCalculationRevision = 1;
+    private const int NutritionCalculationRevision = 1;
 
     public async Task<MotorPersonWrite> WriteAsync(WriteMotorPerson request, CancellationToken ct)
     {
@@ -210,7 +211,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                     PersonId = id, PlanVersion = plan.Ver, ParamsVersion = plan.ParamsVersion,
                     SubmissionId = inputs.data.Screening!.SubmissionId, EngineVer = plan.EngineVersion,
                     GeneratedAt = inputs.capturedAt,
-                    PlanJson = JsonSerializer.Serialize(new SnapshotPayload(plan, age, EnergyCalculationRevision, ExercisePolicyVersion,
+                    PlanJson = JsonSerializer.Serialize(new SnapshotPayload(plan, age, EnergyCalculationRevision,
+                        ExercisePolicyVersion, NutritionCalculationRevision,
                         [receipts.Terms.Id, receipts.Privacy.Id]), JsonSerializerOptions.Web),
                 }, ct);
             }
@@ -232,7 +234,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             var payload = JsonSerializer.Deserialize<SnapshotPayload>(snapshot.PlanJson, JsonSerializerOptions.Web);
             return payload is
                 { Plan: { Days.Count: WellnessEngine.PlanLength } plan, ConsentReceiptIds: [var terms, var privacy],
-                    EnergyCalculationRevision: EnergyCalculationRevision, ExercisePolicy: ExercisePolicyVersion } &&
+                    EnergyCalculationRevision: EnergyCalculationRevision, ExercisePolicy: ExercisePolicyVersion,
+                    NutritionCalculationRevision: NutritionCalculationRevision } &&
                 payload.Age == age &&
                 terms == receipts.Terms.Id && privacy == receipts.Privacy.Id &&
                 plan.Id == person.PatientId && plan.Today == day && plan.Ver == person.PlanVersion &&
@@ -244,7 +247,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
 
     private const int ExercisePolicyVersion = 1;
     private sealed record SnapshotPayload(MotorPlanDto Plan, int? Age, int EnergyCalculationRevision, int ExercisePolicy,
-        Guid[] ConsentReceiptIds);
+        int NutritionCalculationRevision, Guid[] ConsentReceiptIds);
 
     internal Task<T> CalculateAsync<T>(Guid id, Func<MotorView, MotorCalculation, T> project, CancellationToken ct,
         int? requestedDay = null, string? readPermission = null, bool includeProjections = true, string operation = "calendar") =>
@@ -280,7 +283,9 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             return new MotorCalendarDay(value.Day, view.Day, view.Person.TodayLocalDate, view.Person.StartDate,
                 view.Person.TimeZoneId, state, recorded ? "recorded" : value.Past ? "missing" : "open",
                 recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak,
-                computation.Version, MotorProjection.ExerciseSession(value));
+                computation.Version, MotorProjection.ExerciseSession(value),
+                new(value.Targets.Kcal, value.Targets.Protein, value.Targets.Carbs, value.Targets.Fat,
+                    value.FiberGrams, value.WaterMl));
         }, ct, day, "Program.Profile360View", includeProjections: false);
 
     private static void ValidateRequestedDay(int? requested, int today)
