@@ -1,13 +1,13 @@
 async function connectClients(appContext, app, erpContext, erp, {
   api = 'http://127.0.0.1:51361', instant, requests = [], onMotorResponse, onMotorRequest,
-  appOrigin = 'http://127.0.0.1:51362', erpOrigin = 'http://127.0.0.1:51363',
+  language = 'es', appOrigin = 'http://127.0.0.1:51362', erpOrigin = 'http://127.0.0.1:51363',
 } = {}) {
-  await appContext.addInitScript(({ userId, at, origin }) => {
+  await appContext.addInitScript(({ userId, at, origin, language }) => {
     if (location.origin !== origin) return;
-    localStorage.setItem('antares_lang', 'es');
+    localStorage.setItem('antares_lang', language);
     localStorage.setItem('copp.wellness-privacy.audit.v1.' + at + '.00000000.fixture',
       JSON.stringify({ actor: userId, action: 'accepted', at, acceptedAt: at, scope: 'sensitive-data', version: '2026-11-25-draft.1' }));
-  }, { userId: app.userId, at: instant ?? new Date().toISOString(), origin: appOrigin });
+  }, { userId: app.userId, at: instant ?? new Date().toISOString(), origin: appOrigin, language });
   await erpContext?.addInitScript(origin => {
     if (location.origin === origin) localStorage.setItem('copp_lang', 'es');
   }, erpOrigin);

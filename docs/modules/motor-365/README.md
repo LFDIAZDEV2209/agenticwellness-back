@@ -347,3 +347,45 @@ un snapshot caliente no evita la revocación de consentimiento. La traza
 de la respuesta contiene un seudónimo, no el identificador del paciente.
 El reporte se adjunta como `kan128-load.json`. La corrida local no valida
 capacidad ni exportación de telemetría de un entorno desplegado.
+
+## Ajustes diarios con cierres reales (KAN-132)
+
+La recomendación del día local usa el cierre confirmado del ordinal anterior.
+Dos cierres consecutivos bajo el 60 % simplifican el menú. Los días sin
+cierre cortan la racha, no cuentan como baja adherencia y no generan por sí
+solos un aviso de racha rota. Después del día 14, un cierre bajo que
+interrumpe una racha reduce la carga del día siguiente.
+
+- Se baja un nivel (hasta el mínimo) por menos de 5,5 horas de sueño,
+  energía de 2 o menos, o cansancio. No se suman reducciones. El dolor
+  moderado limita la sesión a ejercicios de bajo impacto. Desde 7, el
+  ejercicio queda en pausa durante los dos días siguientes al cierre.
+- Un cierre con mareo pausa el ejercicio del día siguiente. Si ya se había
+  registrado mareo en el mismo plan, el mensaje sugiere consultar a un
+  profesional. No se emite un diagnóstico ni se contacta a terceros.
+- Mareo y hambre impiden bajar la meta diaria frente al día anterior y
+  vetan un recorte semanal que se aplicaría a ese día. Si costó dormir,
+  la cena pasa del 25 % al 20 % de la energía diaria y la diferencia se
+  traslada al almuerzo. El aviso sugiere adelantar la cena sin fijar una hora.
+- Una racha de 7 o 14 cierres con al menos el 60 % de adherencia adelanta
+  la progresión de dosis una o dos semanas. La semana, la fase visible,
+  la descarga y los desbloqueos del catálogo siguen el calendario. La
+  pausa, el bajo impacto y la reducción de carga prevalecen sobre el avance.
+
+El calendario autenticado y el detalle `/v1/people/{id}/plan/{day}`
+exponen los motivos bilingües en `why` y la sugerencia de cena en
+`lighterDinner`. Ausencia de ajustes significa `why: []`. No se incluyen
+los valores crudos de sueño, energía, dolor ni la lista de síntomas en
+estos campos. La simulación de referencia v5.2 no cambia.
+
+La prueba Playwright de KAN-132 comprueba el cierre confirmado en Antares
+y abre el día siguiente desde otra sesión de navegador. Con la base
+efímera y el checkout de Antares configurados como en la
+[guía de pruebas de Wellness 365](../wellness-365/README.md#prueba-de-los-dos-clientes),
+ejecutar desde `tests/CoppAddresd.Wellness365.E2E`:
+
+```sh
+npx playwright test -c playwright.kan132.config.cjs
+```
+
+Esta prueba no necesita el ERP.

@@ -45,7 +45,9 @@ public static class WellnessEngine
 
     public static WellnessPlanDay PlanDay(WellnessProfile profile, WellnessDay day,
         IReadOnlyList<int>? swaps = null) =>
-        new(day, WellnessNutrition.BuildDay(profile, day.Targets, day.Day, swaps, day.SimpleMenu));
+        new(day, day.LighterDinner
+            ? WellnessNutrition.BuildPublishedDay(profile, day, swaps)
+            : WellnessNutrition.BuildDay(profile, day.Targets, day.Day, swaps, day.SimpleMenu));
 
     public static WellnessSimulation Simulate(WellnessProfile profile, CancellationToken ct = default) =>
         RunTimeline(profile, PlanLength, recordedOnly: false, ct);
@@ -78,6 +80,7 @@ public static class WellnessEngine
         var points = 0;
         var streak = 0;
         var pauseUntil = 0;
+        var hadDizziness = false;
         var hunger = 0;
 
         for (var index = 0; index < days.Length; index++)
@@ -133,7 +136,15 @@ public static class WellnessEngine
             // acumulado que publica y que recibe el siguiente ajuste semanal.
             if (recordedOnly) adjustment = cappedAdjustment;
             var kcal = Math.Max(CalorieFloor(profile), WellnessRules.RoundTo(baseCalories + cappedAdjustment, 10));
-            var daily = DailyRules(day, previous, previous2, ref pauseUntil, ref hunger, reference: !recordedOnly);
+            // Solo los cierres reales disparan reglas de síntomas o adherencia.
+            var daily = recordedOnly
+                ? RecordedDailyRules(day, previous, previous2, ref hadDizziness)
+                : ReferenceDailyRules(day, previous, previous2, ref pauseUntil, ref hunger);
+            // El veto diario se añade al contador de hambre acumulada que ya usa el ajuste semanal.
+            if (recordedOnly && previous is { HasRecordedLog: true } && previous.Log.Symptoms.Contains("hambre"))
+                hunger++;
+            if (daily.BlockFoodCut && previous is not null)
+                kcal = Math.Max(kcal, previous.Targets.Kcal);
             var exercise = recordedOnly
                 ? WellnessExercise.ForDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost)
                 : WellnessExercise.ForReferenceDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost);
@@ -181,12 +192,14 @@ public static class WellnessEngine
                 (int)WellnessRules.RoundTo(35 * startWeight, 250), WellnessRules.Fixed(startWeight, 2),
                 exercise.Training, exercise.Type, daily.Simple, daily.Paused, daily.Reasons, daily.LevelDelta,
                 daily.SwapForPain, (int)WellnessRules.Round(tdee), adjustment, exercise, log, past,
-                day == profile.CurrentDay, WellnessRules.Fixed(weight, 2), waist, recordedPoints, recordedStreak);
+                day == profile.CurrentDay, WellnessRules.Fixed(weight, 2), waist, recordedPoints, recordedStreak)
+            { LighterDinner = daily.LighterDinner, HasRecordedLog = hasLog };
 
             if (day % 7 == 0 && day >= 14)
             {
                 var decision = WellnessAdjustments.Weekly(profile.Goal, days.AsSpan(index - 13, 14),
-                    waistHistory[^1] - waistHistory[^3], cap, ref hunger, profile.Parameters);
+                    waistHistory[^1] - waistHistory[^3], cap, ref hunger, profile.Parameters,
+                    recordedOnly && recorded is not null && BlocksFoodCut(recorded));
                 adjustment += decision.CalorieDelta ?? 0;
                 events.Add(decision);
             }
@@ -231,10 +244,10 @@ public static class WellnessEngine
     }
 
     private sealed record DailyAdjustment(bool Simple, bool Paused, bool SwapForPain, int LevelDelta,
-        int Boost, IReadOnlyList<WellnessText> Reasons);
+        int Boost, IReadOnlyList<WellnessText> Reasons, bool BlockFoodCut = false, bool LighterDinner = false);
 
-    private static DailyAdjustment DailyRules(int day, WellnessDay? previous, WellnessDay? previous2,
-        ref int pauseUntil, ref int hunger, bool reference)
+    private static DailyAdjustment ReferenceDailyRules(int day, WellnessDay? previous, WellnessDay? previous2,
+        ref int pauseUntil, ref int hunger)
     {
         var reasons = new List<WellnessText>();
         var simple = previous?.Log.Adherence < .6 && previous2?.Log.Adherence < .6;
@@ -276,27 +289,20 @@ public static class WellnessEngine
             if (streak >= 14)
             {
                 boost = 2;
-                reasons.Add(reference
-                    ? new($"Racha de {streak} días: desbloqueas ejercicios más difíciles antes de lo previsto.",
-                        $"{streak}-day streak: harder exercises unlock earlier than planned.")
-                    : new($"Racha de {streak} días: tu rutina rota entre ejercicios ya desbloqueados.",
-                        $"{streak}-day streak: your routine rotates among exercises already unlocked."));
+                reasons.Add(new($"Racha de {streak} días: desbloqueas ejercicios más difíciles antes de lo previsto.",
+                    $"{streak}-day streak: harder exercises unlock earlier than planned."));
             }
             else if (streak >= 7)
             {
                 boost = 1;
-                reasons.Add(reference
-                    ? new($"Racha de {streak} días: la progresión avanza una semana.",
-                        $"{streak}-day streak: progression moves up one week.")
-                    : new($"Racha de {streak} días: tu rutina rota entre ejercicios ya desbloqueados.",
-                        $"{streak}-day streak: your routine rotates among exercises already unlocked."));
+                reasons.Add(new($"Racha de {streak} días: la progresión avanza una semana.",
+                    $"{streak}-day streak: progression moves up one week."));
             }
             else if (streak == 0 && day > 14)
             {
                 boost = -1;
-                if (reference)
-                    reasons.Add(new("Racha rota: retomamos con carga un poco menor para volver sin lesiones.",
-                        "Streak broken: restart with slightly lower load to return safely."));
+                reasons.Add(new("Racha rota: retomamos con carga un poco menor para volver sin lesiones.",
+                    "Streak broken: restart with slightly lower load to return safely."));
             }
 
             var symptoms = previous.Log.Symptoms;
@@ -319,6 +325,91 @@ public static class WellnessEngine
 
         return new(simple, paused, swapForPain, levelDelta, boost, reasons.AsReadOnly());
     }
+
+    private static DailyAdjustment RecordedDailyRules(int day, WellnessDay? previous, WellnessDay? previous2,
+        ref bool hadDizziness)
+    {
+        // Los días proyectados nunca leen cierres futuros del perfil.
+        var yesterday = previous is { HasRecordedLog: true } ? previous.Log : null;
+        var earlier = previous2 is { HasRecordedLog: true } ? previous2.Log : null;
+        var reasons = new List<WellnessText>();
+        var symptoms = yesterday?.Symptoms ?? [];
+        var severePain = yesterday?.Pain >= 7;
+        var continuingPause = earlier?.Pain >= 7;
+        var dizziness = symptoms.Contains("mareo");
+        var paused = severePain || continuingPause || dizziness;
+        var lowImpact = !paused && yesterday?.Pain >= 4;
+        var poorRest = yesterday is not null && (yesterday.SleepHours < 5.5 || yesterday.Energy <= 2);
+        var fatigue = symptoms.Contains("fatiga");
+        var lighterDinner = symptoms.Contains("insomnio");
+        var simple = yesterday?.Adherence < .6 && earlier?.Adherence < .6;
+        var brokenStreak = day > 14 && yesterday?.Adherence < .6 && previous2?.Streak > 0;
+        var gentle = poorRest || fatigue || brokenStreak;
+        var streak = previous?.Streak ?? 0;
+        var boost = 0;
+
+        if (severePain)
+            reasons.Add(new("Por el dolor que registraste, el ejercicio queda en pausa dos días.",
+                "Your workout is on hold for two days because of the pain you logged."));
+        else if (continuingPause)
+            reasons.Add(new("Continúa la pausa de ejercicio por el dolor que registraste.",
+                "Your workout is still on hold because of the pain you logged."));
+        if (dizziness)
+        {
+            reasons.Add(new("Por el mareo que registraste, hoy no hay ejercicio y no reducimos la comida.",
+                "Because you logged dizziness, there is no workout today and we're not cutting back your food."));
+            reasons.Add(hadDizziness
+                ? new("Como volviste a registrar mareo, consulta a un profesional de salud.",
+                    "Because you logged dizziness again, check in with a health professional.")
+                : new("Si vuelve el mareo, consulta a un profesional de salud.",
+                    "If the dizziness comes back, check in with a health professional."));
+            hadDizziness = true;
+        }
+        else if (symptoms.Contains("hambre"))
+            reasons.Add(new("Por el hambre que registraste, hoy no reducimos la comida.",
+                "Because you logged hunger, we're not cutting back your food today."));
+
+        if (lowImpact)
+            reasons.Add(new("Por el dolor que registraste, hoy solo hay ejercicios de bajo impacto.",
+                "Because of the pain you logged, today's workout uses only low-impact exercises."));
+        if (!paused)
+        {
+            if (poorRest)
+                reasons.Add(new("Por el sueño o la energía que registraste, el ejercicio de hoy es más suave.",
+                    "Today's workout is gentler because of the sleep or energy you logged."));
+            else if (fatigue)
+                reasons.Add(new("Por el cansancio que registraste, el ejercicio de hoy es más suave.",
+                    "Today's workout is gentler because you logged feeling tired."));
+            if (brokenStreak)
+            {
+                boost = -1;
+                reasons.Add(new("Al retomar después de tu racha, la carga de ejercicio es un poco menor.",
+                    "Your workout is a little lighter as you get back to it after your streak."));
+            }
+            else if (!gentle && !lowImpact)
+            {
+                boost = streak >= 14 ? 2 : streak >= 7 ? 1 : 0;
+                if (boost == 2)
+                    reasons.Add(new("Por tu racha, la progresión de ejercicio se adelanta dos semanas.",
+                        "Your streak moves your workout progression ahead by two weeks."));
+                else if (boost == 1)
+                    reasons.Add(new("Por tu racha, la progresión de ejercicio se adelanta una semana.",
+                        "Your streak moves your workout progression ahead by one week."));
+            }
+        }
+        if (lighterDinner)
+            reasons.Add(new("Si te costó dormir, elige una cena más temprana y ligera.",
+                "If you had trouble sleeping, try an earlier, lighter dinner."));
+        if (simple)
+            reasons.Add(new("Tras dos días con menos del 60 % del plan completado, verás un menú más simple.",
+                "After two days below 60% plan completion, today's menu has fewer choices."));
+
+        return new(simple, paused, lowImpact, !paused && gentle ? -1 : 0, boost, reasons.AsReadOnly(),
+            yesterday is not null && BlocksFoodCut(yesterday), lighterDinner);
+    }
+
+    private static bool BlocksFoodCut(WellnessDailyLog log) =>
+        log.Symptoms.Contains("mareo") || log.Symptoms.Contains("hambre");
 
     private readonly record struct DailyRolls(double Adherence, double Sleep, double Energy,
         double Pain, double ExerciseAndWeigh, double WeightNoise);

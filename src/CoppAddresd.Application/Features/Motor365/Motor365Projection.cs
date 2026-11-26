@@ -48,7 +48,7 @@ internal static class MotorProjection
                 day.Paused ? [] : day.Exercise.Items.Select(e => new MotorExerciseItemDto(e.Id, e.Minutes,
                     e.Strength?.Sets, e.Strength?.Reps, e.Strength?.RestSeconds, e.Strength?.HoldSeconds,
                     e.Strength?.RepsInReserve)).ToArray()),
-            day.Reasons.Select(Reason).ToArray(), WellnessEngine.ReferenceVersion, version);
+            Reasons(day), WellnessEngine.ReferenceVersion, version) { LighterDinner = day.LighterDinner };
 
     internal static MotorDayDto WithMenu(WellnessProfile profile, WellnessDay day, int version)
     {
@@ -71,18 +71,8 @@ internal static class MotorProjection
         return new(e.Day, e.Kind, e.CalorieDelta, e.RatePercent, text.Es, text.En, WellnessEngine.ReferenceVersion, version);
     }
 
-    private static MotorText Reason(WellnessText value) => value.En switch
-    {
-        var s when s.StartsWith("Severe pain", StringComparison.Ordinal) || s.StartsWith("Dizziness", StringComparison.Ordinal)
-            => new("La sesión de ejercicio está en pausa.", "Your exercise session is paused."),
-        var s when s.StartsWith("Pain 4+", StringComparison.Ordinal)
-            => new("La sesión de hoy usa ejercicios de bajo impacto.", "Today's session uses low-impact exercises."),
-        var s when s.StartsWith("Insomnia", StringComparison.Ordinal)
-            => new("Se tuvo en cuenta tu registro de descanso.", "Your rest entry was taken into account."),
-        var s when s.StartsWith("Streak broken", StringComparison.Ordinal)
-            => new("La sesión de hoy tiene una carga más ligera.", "Today's session uses a lighter workload."),
-        _ => Text(value),
-    };
+    internal static IReadOnlyList<MotorText> Reasons(WellnessDay day) =>
+        day.Reasons.Select(Text).ToArray();
 
     private static MotorText Text(WellnessText t) => new(t.Es, t.En);
     private static double Round(double n) => Math.Floor(n + .5);

@@ -60,7 +60,11 @@ public static class WellnessNutrition
     }
 
     public static WellnessMenu BuildDay(WellnessProfile profile, WellnessMacros target, int day,
-        IReadOnlyList<int>? swaps = null, bool simple = false)
+        IReadOnlyList<int>? swaps = null, bool simple = false) =>
+        BuildMenu(profile, target, day, swaps, simple, lighterDinner: false);
+
+    private static WellnessMenu BuildMenu(WellnessProfile profile, WellnessMacros target, int day,
+        IReadOnlyList<int>? swaps, bool simple, bool lighterDinner)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(day, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(day, WellnessEngine.PlanLength);
@@ -73,7 +77,7 @@ public static class WellnessNutrition
             var index = simple ? 0 : (int)((day + i * 2L + swap) % templates.Length);
             ArgumentOutOfRangeException.ThrowIfNegative(index, nameof(swaps));
             indices[i] = index;
-            var share = MealTypes[i].Share;
+            var share = MealShare(i, lighterDinner);
             portions[i] = BuildMeal(profile, templates[index],
                 new(target.Kcal * share, target.Protein * share, target.Carbs * share, target.Fat * share));
         }
@@ -104,13 +108,14 @@ public static class WellnessNutrition
     }
 
     // La API mantiene las porciones de referencia cuando ya cumplen la tolerancia.
-    public static WellnessMenu BuildPublishedDay(WellnessProfile profile, WellnessDay day)
+    public static WellnessMenu BuildPublishedDay(WellnessProfile profile, WellnessDay day,
+        IReadOnlyList<int>? swaps = null)
     {
-        var menu = BuildDay(profile, day.Targets, day.Day, simple: day.SimpleMenu);
-        if (Math.Abs(menu.Deviation) <= MenuTolerance) return menu;
+        var menu = BuildMenu(profile, day.Targets, day.Day, swaps, day.SimpleMenu, day.LighterDinner);
+        if (!day.LighterDinner && Math.Abs(menu.Deviation) <= MenuTolerance) return menu;
 
         var meals = menu.Meals.Select((meal, i) =>
-            FitEnergy(meal, day.Targets.Kcal * MealTypes[i].Share)).ToArray();
+            FitEnergy(meal, day.Targets.Kcal * MealShare(i, day.LighterDinner))).ToArray();
         var totals = meals.Aggregate(WellnessMacros.Zero, (sum, meal) => sum + meal.Totals);
         return new(meals, totals, (totals.Kcal - day.Targets.Kcal) / day.Targets.Kcal);
     }
@@ -141,8 +146,12 @@ public static class WellnessNutrition
                 options.Add(candidate);
                 if (day.SimpleMenu) break;
             }
-            return new WellnessMealOptions(day.Targets.Kcal * MealTypes[index].Share, options.AsReadOnly());
+            return new WellnessMealOptions(day.Targets.Kcal * MealShare(index, day.LighterDinner), options.AsReadOnly());
         }).ToArray();
+
+    // Mueve cinco puntos de la cena al almuerzo sin reducir la meta diaria.
+    private static double MealShare(int index, bool lighterDinner) =>
+        lighterDinner ? index switch { 1 => .40, 3 => .20, _ => MealTypes[index].Share } : MealTypes[index].Share;
 
     private static bool Close(double before, double after) =>
         Math.Abs(before - after) <= Math.Min(before, after) * MenuTolerance;

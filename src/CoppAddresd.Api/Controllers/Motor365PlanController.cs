@@ -127,11 +127,14 @@ public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocal
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MotorMealPlanDto? MealPlan { get; init; }
 
+    public IReadOnlyList<MotorText> Why { get; init; } = [];
+    public bool LighterDinner { get; init; }
+
     internal static Motor365DayResponse From(MotorCalendarDay day) =>
         new Motor365DayResponse(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
             day.Adherence, day.MeasuredWeightKg, day.Streak, day.Exercise, day.Nutrition,
             CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
-            day.ParametersVersion) { Sync = day.Sync, MealPlan = day.MealPlan };
+            day.ParametersVersion) { Sync = day.Sync, MealPlan = day.MealPlan, Why = day.Why, LighterDinner = day.LighterDinner };
 }
 
 public sealed record Motor365ClosureRequest(
