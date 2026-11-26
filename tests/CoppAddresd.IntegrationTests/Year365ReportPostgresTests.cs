@@ -229,12 +229,45 @@ public sealed partial class NutritionPlanWorkflowTests
         var updatedReport = (await refreshed.Content.ReadFromJsonAsync<Year365ReportResponse>())!.Report!;
         Assert.Equal(60m, updatedReport.Days.Single(day => day.Day == 4).AdherencePercent);
         Assert.Equal(3, updatedReport.Summary.RecordedDays);
+        Assert.Equal(46.7m, updatedReport.Summary.AdherencePercent);
         Assert.Equal(new Year365Measurement(first.AddDays(3), 82.3m), updatedReport.Summary.Waist);
+        Assert.Null(updatedReport.Summary.ScheduledPauseDays);
+        Assert.Null(updatedReport.Summary.SafetyExercisePauseDays);
         Assert.Equal(new Year365Event(latestDecision.Id, 14, first.AddDays(13), "sin"),
             Assert.Single(updatedReport.Events, entry => entry.Day == 14 && entry.Kind == "sin"));
         var decisionDay = updatedReport.Days.Single(day => day.Day == 14);
         Assert.Null(decisionDay.WeightKg);
         Assert.Null(decisionDay.WaistCm);
+
+        var exportToken = Token("erp", mayExport: true);
+        using var refreshedCsv = await Get(patient.Id, exportToken, suffix: "/export/csv");
+        Assert.Equal(HttpStatusCode.OK, refreshedCsv.StatusCode);
+        Assert.True(refreshedCsv.Headers.CacheControl?.NoStore);
+        var refreshedCsvText = await refreshedCsv.Content.ReadAsStringAsync();
+        Assert.Contains("\"2028-02\",\"Días con registro\",\"3\",\"días\"", refreshedCsvText);
+        Assert.Contains("\"2028-02\",\"Adherencia\",\"46.7\",\"%\"", refreshedCsvText);
+        Assert.Contains("\"2028-02\",\"Cintura\",\"82.3\",\"cm\",\"2028-02-02\"", refreshedCsvText);
+        Assert.Contains("\"2028-02\",\"Pausas programadas\",\"Sin dato\"", refreshedCsvText);
+        Assert.Contains("\"2028-02\",\"Pausas de ejercicio\",\"Sin dato\"", refreshedCsvText);
+
+        using var refreshedPdf = await Get(patient.Id, exportToken, suffix: "/export/pdf");
+        Assert.Equal(HttpStatusCode.OK, refreshedPdf.StatusCode);
+        Assert.True(refreshedPdf.Headers.CacheControl?.NoStore);
+        using var refreshedDocument = PdfDocument.Open(await refreshedPdf.Content.ReadAsByteArrayAsync());
+        var refreshedPdfText = refreshedDocument.GetPage(1).Text;
+        Assert.Contains("2028-02", refreshedPdfText);
+        Assert.Contains("3 días", refreshedPdfText);
+        Assert.Contains("46.7 %", refreshedPdfText);
+        Assert.Contains("82.3 cm", refreshedPdfText);
+        Assert.Contains("2028-02-02", refreshedPdfText);
+        Assert.DoesNotContain(patient.Id.ToString(), refreshedPdfText);
+
+        using var priorMonthCsv = await Get(patient.Id, exportToken, month: "2028-01", suffix: "/export/csv");
+        Assert.Equal(HttpStatusCode.OK, priorMonthCsv.StatusCode);
+        var priorMonthCsvText = await priorMonthCsv.Content.ReadAsStringAsync();
+        Assert.Contains("\"2028-01\",\"Adherencia\",\"Sin dato\"", priorMonthCsvText);
+        Assert.Contains("\"2028-01\",\"Cintura\",\"Sin dato\"", priorMonthCsvText);
+        Assert.DoesNotContain("2028-02", priorMonthCsvText);
         await app.StopAsync();
     }
 
