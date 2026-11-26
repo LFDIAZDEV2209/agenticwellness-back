@@ -534,6 +534,27 @@ feedback desde el snapshot canónico. AI lo obtiene del ExecutionTracker real de
 mensaje de texto; legado/voz sin correlación conservan null. BACK lo proyecta
 directamente, sin inferir por texto/orden ni consultar una ejecución por mensaje.
 
+### Verificar que un stream terminó en Agentic Wellness (KAN-185)
+
+En ECS → `agenticwellness-api` → Logs, filtrar por `VitaVoiceProxyOutcome`.
+El proxy emite un evento por solicitud que llegó al controlador autenticado,
+con ID de petición del servidor, estado HTTP, duración y resultado. El evento
+no añade credenciales, cabeceras de sesión ni texto de la conversación al log.
+
+- `completed` requiere que el proxy haya escrito y enviado el evento terminal
+  SSE `data: [DONE]` y llegado a EOF sin error ni cancelación. No prueba por sí
+  solo que ElevenLabs reprodujo el audio.
+- `incomplete` significa que el stream cerró sin el evento terminal completo,
+  aunque el estado enviado haya sido 200. `client_aborted`, `timeout`,
+  `transport_error`, `upstream_rejected`, `invalid_content_type` e
+  `invalid_context` tampoco acreditan finalización.
+
+Para QA, registrar la hora del turno y su zona, la versión efectiva en
+ElevenLabs y si hubo respuesta audible después del saludo, en sesiones nuevas
+separadas para ES y EN. Cotejar los dos turnos con sus respectivos eventos
+`completed` y comprobar que no hubo `503 paused`. `RequestPipelineEnd` del
+cliente HTTP interno con 200 solo confirma cabeceras recibidas.
+
 ### Limpieza del historial (ampliación autorizada)
 
 `DELETE /api/v1/threads/{threadId}/messages` permite al propietario del JWT
