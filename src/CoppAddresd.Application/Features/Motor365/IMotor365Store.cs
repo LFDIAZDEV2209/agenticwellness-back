@@ -29,6 +29,7 @@ public interface IMotor365Store
     void AddParams(Motor365EngineParams parameters);
     Task<Motor365PlanSnapshot?> ReadSnapshotAsync(Guid personId, int planVersion, int paramsVersion, CancellationToken ct);
     Task SaveSnapshotAsync(Motor365PlanSnapshot snapshot, CancellationToken ct);
+    Task<IReadOnlyList<Motor365EngineEvent>> ReadWeeklyEventsAsync(Guid personId, int planVersion, int paramsVersion, CancellationToken ct);
     void AddEvents(IEnumerable<Motor365EngineEvent> events);
     Task SavePauseDaysAsync(Guid personId, IReadOnlyList<Motor365PauseDay> days, CancellationToken ct);
     void AddAudit(Motor365AuditLog entry);

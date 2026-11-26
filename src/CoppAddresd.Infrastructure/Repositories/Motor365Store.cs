@@ -189,6 +189,13 @@ public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalC
             WHERE existing.generated_at <= excluded.generated_at
             """, ct);
     }
+    public async Task<IReadOnlyList<Motor365EngineEvent>> ReadWeeklyEventsAsync(
+        Guid personId, int planVersion, int paramsVersion, CancellationToken ct) =>
+        await db.Motor365EngineEvents.AsNoTracking()
+            .Where(e => e.PersonId == personId && e.PlanVersion == planVersion && e.ParamsVersion == paramsVersion &&
+                (e.Kind == "sin" || e.Kind == "ajuste"))
+            .ToListAsync(ct);
+
     public void AddEvents(IEnumerable<Motor365EngineEvent> events) => db.Motor365EngineEvents.AddRange(events);
 
     public async Task SavePauseDaysAsync(Guid personId, IReadOnlyList<Motor365PauseDay> days, CancellationToken ct)

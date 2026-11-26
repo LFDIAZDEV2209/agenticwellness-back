@@ -41,6 +41,7 @@ public sealed record WellnessDailyLog(
     double? MeasuredWeightKg, bool CompletedExercise)
 {
     public IReadOnlyList<string> Symptoms { get; init; } = [];
+    public decimal? MeasuredWaistCm { get; init; }
 }
 
 public sealed record WellnessText(string Es, string En);

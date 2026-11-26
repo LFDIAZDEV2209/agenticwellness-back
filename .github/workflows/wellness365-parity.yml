@@ -49,6 +49,7 @@ jobs:
           npm run test:kan129
           # KAN-129 ya compiló el mismo host en Release.
           COP_KAN124_NO_BUILD=1 npm run test:kan124
+          COP_KAN133_NO_BUILD=1 npm run test:kan133
       - name: Mostrar cambios de referencia en el resumen
         if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.checkout.outcome == 'success' }}
         env:

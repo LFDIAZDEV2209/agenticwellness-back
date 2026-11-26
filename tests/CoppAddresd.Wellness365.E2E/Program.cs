@@ -173,6 +173,9 @@ if (postgres is not null && Environment.GetEnvironmentVariable("COP_KAN128_DIAGN
     }
 }
 
+app.MapGet("/fixture/weekly-events", async (CancellationToken ct) =>
+    scenario.Postgres ? Results.Ok(await postgres!.WeeklyEventsAsync(patientId, ct)) : Results.NotFound());
+
 app.MapGet("/fixture/persistence-stats", async (CancellationToken ct) =>
     scenario.Postgres ? Results.Ok(await postgres!.StatsAsync(patientId, ct)) : Results.NotFound());
 

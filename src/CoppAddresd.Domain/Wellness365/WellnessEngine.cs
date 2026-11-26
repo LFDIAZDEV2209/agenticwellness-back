@@ -153,7 +153,11 @@ public static class WellnessEngine
             var startWeight = weight;
             weight += (eaten - effectiveTdee) / (gain && eaten > effectiveTdee ? 6500 : 7700);
             double? waist = null;
-            if (day % 7 == 0)
+            if (recordedOnly)
+            {
+                waist = (double?)recorded?.MeasuredWaistCm;
+            }
+            else if (day % 7 == 0)
             {
                 var noise = past || hasLog ? (random.Next() - .5) * .6 : 0;
                 var waistTrend = profile.InitialWaistCm + (weight - profile.InitialWeightKg) * .9 -
@@ -183,10 +187,15 @@ public static class WellnessEngine
                 daily.SwapForPain, (int)WellnessRules.Round(tdee), adjustment, exercise, log, past,
                 day == profile.CurrentDay, WellnessRules.Fixed(weight, 2), waist, recordedPoints, recordedStreak);
 
-            if (day % 7 == 0 && day >= 14)
+            // En producción, un cierre de semana aún abierto no publica una decisión.
+            if (day % 7 == 0 && day >= 14 &&
+                (!recordedOnly || day < profile.CurrentDay || (day == profile.CurrentDay && hasLog)))
             {
-                var decision = WellnessAdjustments.Weekly(profile.Goal, days.AsSpan(index - 13, 14),
-                    waistHistory[^1] - waistHistory[^3], cap, ref hunger, profile.Parameters);
+                var fortnight = days.AsSpan(index - 13, 14);
+                var decision = recordedOnly
+                    ? WellnessAdjustments.WeeklyRecorded(profile, fortnight, cap)
+                    : WellnessAdjustments.Weekly(profile.Goal, fortnight,
+                        waistHistory[^1] - waistHistory[^3], cap, ref hunger, profile.Parameters);
                 adjustment += decision.CalorieDelta ?? 0;
                 events.Add(decision);
             }
@@ -307,7 +316,7 @@ public static class WellnessEngine
                 reasons.Add(new("Mareo reportado: sin ejercicio hoy y no se baja la comida. Si se repite, consulta a un profesional de salud.",
                     "Dizziness reported: no exercise today and no calorie cut. If it repeats, see a health professional."));
             }
-            if (symptoms.Contains("hambre")) hunger++;
+            if (reference && symptoms.Contains("hambre")) hunger++;
             if (symptoms.Contains("fatiga") && levelDelta == 0)
             {
                 levelDelta = -1;

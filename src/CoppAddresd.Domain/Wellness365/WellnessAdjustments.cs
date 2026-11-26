@@ -54,6 +54,87 @@ internal static class WellnessAdjustments
             new($"Semana {end.Week}: {message.Es}", $"Week {end.Week}: {message.En}"));
     }
 
+    internal static WellnessEvent WeeklyRecorded(WellnessProfile profile, ReadOnlySpan<WellnessDay> fortnight, double cap)
+    {
+        var end = fortnight[^1];
+        var parameters = profile.Parameters;
+        var current = RecordedMeasurements(fortnight[7..]);
+        var previous = RecordedMeasurements(fortnight[..7]);
+        if (current.Count < parameters.WeighMin || previous.Count < 3)
+            return Decision(0, null, new(
+                $"Pesajes insuficientes: se necesitan {parameters.WeighMin} esta semana y 3 la anterior.",
+                $"Too few weigh-ins: need {parameters.WeighMin} this week and 3 the week before."));
+
+        // Comparar medias sin redondearlas, y conservar los límites exactos de las bandas.
+        var rate = (double)(100m * (current.Total * previous.Count - previous.Total * current.Count) /
+                            (previous.Total * current.Count));
+        decimal adherence = 0;
+        int hungerDays = 0;
+        foreach (var day in fortnight[7..])
+        {
+            adherence += (decimal)day.Log.Adherence;
+            if (day.Log.Symptoms.Contains("hambre")) hungerDays++;
+        }
+        var adherenceRatio = (double)(adherence / 7);
+        var (delta, reason) = RateDecision(profile.Goal, end.Mode, rate, adherenceRatio, parameters);
+        // Estas dos guardas también impiden un recorte por cintura en masa.
+        if (end.Mode == WellnessMode.Break || adherenceRatio < parameters.AdhMin)
+            return Decision(0, rate, reason);
+
+        var step = parameters.Step;
+        var waistChange = RecordedWaistChange(profile, fortnight[7..]);
+        if (profile.Goal == WellnessGoal.GainMuscle && end.Mode == WellnessMode.Main && waistChange >= 1.2m)
+        {
+            delta = -step;
+            reason = new("Cintura: subió al menos 1.2 cm en 14 días.", "Waist increased by at least 1.2 cm over 14 days.");
+        }
+        if (delta < 0)
+        {
+            if (waistChange <= -.8m)
+                return Decision(0, rate, new("La cintura bajó al menos 0.8 cm en 14 días.", "Waist decreased by at least 0.8 cm over 14 days."));
+            if (hungerDays >= 2)
+                return Decision(0, rate, new("Hambre reportada en al menos dos días: no se recorta.", "Hunger recorded on at least two days: no cut."));
+            // El cierre de hoy afectaría la meta desde mañana.
+            if (end.Log.Symptoms.Contains("mareo"))
+                return Decision(0, rate, new("Se mantiene la meta por el último registro.", "The latest entry keeps the target unchanged."));
+        }
+        if (delta != 0 && Math.Abs(end.CalorieAdjustment + delta) > cap)
+            return Decision(0, rate, new("Se alcanzó el tope de ajuste.", "Adjustment cap reached."));
+        return Decision(delta, rate, reason);
+
+        WellnessEvent Decision(int change, double? value, WellnessText message) =>
+            new(end.Day, change == 0 ? "sin" : "ajuste", change, value is { } r ? WellnessRules.Fixed(r, 2) : null,
+                new($"Semana {end.Week}: {message.Es}", $"Week {end.Week}: {message.En}"));
+    }
+
+    private static decimal? RecordedWaistChange(WellnessProfile profile, ReadOnlySpan<WellnessDay> currentWeek)
+    {
+        for (var i = currentWeek.Length - 1; i >= 0; i--)
+        {
+            var day = currentWeek[i];
+            if (day.Log.MeasuredWaistCm is not { } current) continue;
+            var baselineDay = day.Day - 14;
+            if (baselineDay == 0) return current - (decimal)profile.InitialWaistCm;
+            if (baselineDay > 0 && profile.Logs.TryGetValue(baselineDay, out var baseline) &&
+                baseline.MeasuredWaistCm is { } measured)
+                return current - measured;
+        }
+        return null;
+    }
+
+    private static (int Count, decimal Total) RecordedMeasurements(ReadOnlySpan<WellnessDay> days)
+    {
+        int count = 0;
+        decimal total = 0;
+        foreach (var day in days)
+        {
+            if (day.Log.MeasuredWeightKg is not { } weight) continue;
+            count++;
+            total += (decimal)weight;
+        }
+        return (count, total);
+    }
+
     private static (int Count, double Total) Measurements(ReadOnlySpan<WellnessDay> days)
     {
         var count = 0;

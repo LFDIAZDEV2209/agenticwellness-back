@@ -181,6 +181,16 @@ sealed class FixturePostgres
             $"UPDATE app.patient_profiles SET timezone = {zone} WHERE id = {patientId}", ct);
     }
 
+    public async Task<object> WeeklyEventsAsync(Guid patientId, CancellationToken ct)
+    {
+        await using var db = Open();
+        return await db.Motor365EngineEvents
+            .Where(x => x.PersonId == patientId && (x.Kind == "sin" || x.Kind == "ajuste"))
+            .OrderBy(x => x.Day)
+            .Select(x => new { d = x.Day, k = x.Kind, delta = x.CalorieDelta, rate = x.RatePercent, x.PlanVersion, x.ParamsVersion })
+            .ToArrayAsync(ct);
+    }
+
     public async Task<object> StatsAsync(Guid patientId, CancellationToken ct)
     {
         await using var db = Open();

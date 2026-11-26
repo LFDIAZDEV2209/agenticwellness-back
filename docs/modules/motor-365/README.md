@@ -347,3 +347,34 @@ un snapshot caliente no evita la revocación de consentimiento. La traza
 de la respuesta contiene un seudónimo, no el identificador del paciente.
 El reporte se adjunta como `kan128-load.json`. La corrida local no valida
 capacidad ni exportación de telemetría de un entorno desplegado.
+
+### KAN-133 · Decisiones semanales en modo real
+
+- A partir del día 14 y cada siete días, se decide al registrar el último día
+  de la semana o al constatar que ese día ya pasó. La meta resultante se usa
+  desde el día siguiente. Una semana aún abierta no tiene evento.
+- La tasa usa dos medias semanales de pesajes medidos. Se requieren ≥4 en la
+  semana actual y ≥3 en la anterior. La adherencia se promedia en los siete
+  días, con el valor de día faltante de KAN-131, y el hambre se cuenta solo en
+  los registros de la semana actual, incluido su cierre.
+- La cintura compara el último par de medidas reales separado por 14 días.
+  La cintura inicial sirve de línea base del día 0. Si no existe un par,
+  la cintura no modifica la decisión. Pausa y adherencia tienen prioridad
+  sobre la regla de masa. Un recorte tampoco se aplica si el último día
+  registra mareo. El límite acumulado sigue siendo ±12 % del TDEE.
+- El cierre guarda el evento en `app.engine_event` dentro de su transacción.
+  Si no hubo cierre, consultar eventos después de la semana materializa la
+  decisión pendiente. Los reintentos de la misma revisión no duplican eventos.
+  Una corrección del registro crea una nueva versión y el historial de ERP
+  refleja la revisión vigente. La referencia simulada conserva el comportamiento
+  del kit para las pruebas golden.
+- `GET /api/v1/people/{personId}/weekly-events` devuelve solo las decisiones
+  semanales (el contrato usa `k` para el tipo) con razones ES/EN, delta y tasa
+  opcional. El ERP requiere el mismo permiso y alcance que Perfil 360. La API
+  canónica conserva `GET /v1/people/{id}/events` para todos los tipos de evento.
+
+Con PostgreSQL efímero, exporta `COP_KAN131_TEST_DB_CONNECTION` como en KAN-129
+y ejecuta `npm run test:kan133` desde `tests/CoppAddresd.Wellness365.E2E`.
+Para incluir el recorrido de Perfil 360 en Chromium, instala sus dependencias,
+configura `COP_KAN130_ERP_DIR` con la ruta absoluta del checkout de ERP y
+ejecuta `npx playwright install chromium` en el directorio de la suite.

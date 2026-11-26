@@ -26,9 +26,11 @@ public sealed class Year365ReportStore(AppDbContext db) : IYear365ReportStore
         var events = db.Motor365EngineEvents.AsNoTracking()
             .Where(item => item.PersonId == patientId && item.Day >= firstDay && item.Day <= lastDay);
 
-        // Cada revisión republica decisiones anteriores. Mostrar la última versión del evento fechado.
+        // "sin" y "ajuste" son resultados alternativos de una sola decisión semanal.
         return await events.Where(item => item.Id == events
-                .Where(revision => revision.Day == item.Day && revision.Kind == item.Kind)
+                .Where(revision => revision.Day == item.Day && (revision.Kind == item.Kind ||
+                    ((item.Kind == "sin" || item.Kind == "ajuste") &&
+                     (revision.Kind == "sin" || revision.Kind == "ajuste"))))
                 .OrderByDescending(revision => revision.PlanVersion).ThenByDescending(revision => revision.ParamsVersion)
                 .ThenByDescending(revision => revision.OccurredAt).ThenByDescending(revision => revision.Id)
                 .Select(revision => revision.Id)

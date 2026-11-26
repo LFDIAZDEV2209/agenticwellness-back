@@ -45,6 +45,27 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         catch (MotorException ex) { return MotorError(ex); }
     }
 
+    [HttpGet("weekly-events")]
+    [EndpointSummary("Consultar las decisiones semanales del Motor 365")]
+    [ProducesResponseType<IReadOnlyList<MotorEventDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IResult> GetWeeklyEvents(string personId, CancellationToken ct)
+    {
+        var (patientId, failure) = await ResolveAsync(personId, write: false, ct);
+        if (failure is not null) return failure;
+        var block = await gate.CheckAsync(patientId, ct);
+        if (block is not null) return Locked(block);
+        try
+        {
+            return Results.Ok(await people.ReadEventsAsync(patientId, ct, weeklyOnly: true));
+        }
+        catch (MotorException ex) { return MotorError(ex); }
+    }
+
     [HttpPut("logs/{day}"), Authorize(Policy = PatientWritePolicy)]
     [EndpointSummary("Guardar el cierre de un día del Motor 365 para la persona autenticada")]
     [RequestSizeLimit(4096)]
