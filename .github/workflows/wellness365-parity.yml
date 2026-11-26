@@ -20,12 +20,13 @@ jobs:
           POSTGRES_PASSWORD: motor_qa
           POSTGRES_DB: copp_motor365_test_kan129
         ports:
-          - 55440:5432
+          - 5432/tcp
         options: >-
           --health-cmd "pg_isready -U motor_qa -d copp_motor365_test_kan129"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v7
+        id: checkout
         with:
           fetch-depth: 0
       - uses: actions/setup-dotnet@v6
@@ -41,12 +42,13 @@ jobs:
       - name: Verificar paridad y reglas del Motor 365 por HTTP
         working-directory: tests/CoppAddresd.Wellness365.E2E
         env:
-          COP_KAN131_TEST_DB_CONNECTION: Host=127.0.0.1;Port=55440;Username=motor_qa;Password=motor_qa;Database=copp_motor365_test_kan129
+          COP_KAN131_TEST_DB_CONNECTION: >-
+            Host=127.0.0.1;Port=${{ job.services.postgres.ports['5432'] }};Username=motor_qa;Password=motor_qa;Database=copp_motor365_test_kan129
         run: |
           npm ci
           npm run test:kan129
       - name: Mostrar cambios de referencia en el resumen
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.checkout.outcome == 'success' }}
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: python3 tests/CoppAddresd.UnitTests/Wellness365/Tools/report-fixture-diff.py "$PR_BASE_SHA" >> "$GITHUB_STEP_SUMMARY"
