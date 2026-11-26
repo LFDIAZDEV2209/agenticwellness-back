@@ -51,7 +51,7 @@ sealed class FixturePlanActor(IHttpContextAccessor http) : IPatientScopeActor
     public bool IsAdmin => false;
     public Task<Guid?> ProfessionalIdAsync(CancellationToken ct) => Task.FromResult(UserId);
     public Task<bool> HasPermissionAsync(string permission, CancellationToken ct) =>
-        Task.FromResult((permission is "Program.Profile360View" or "Wellness.View") &&
+        Task.FromResult((permission is "Program.Profile360View" or "Program.Export" or "Wellness.View") &&
             http.HttpContext?.User.HasClaim("allowed", "yes") == true);
 }
 

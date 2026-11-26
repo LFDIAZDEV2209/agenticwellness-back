@@ -1,4 +1,5 @@
 using System.Globalization;
+using CoppAddresd.Application.Features.Wellness365;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Exceptions;
 using CoppAddresd.Domain.Wellness365;
@@ -35,9 +36,12 @@ public sealed record Year365Summary(
     int? SafetyExercisePauseDays = null);
 
 public sealed record Year365Event(Guid Id, int Day, DateOnly Date, string Kind);
-public sealed record Year365Program(DateOnly StartDate, string? TimeZone);
+public sealed record Year365Program(
+    DateOnly StartDate, string? TimeZone, string? CalendarTimeZone = null,
+    DateOnly? CalendarAnchorDate = null, int? CalendarAnchorDay = null);
 public sealed record Year365DailyLog(int Day, DateOnly Date, decimal Adherence, decimal? WeightKg, decimal? WaistCm);
 public sealed record Year365StoredEvent(Guid Id, int Day, string Kind);
+public sealed record Year365PauseCounts(int? Scheduled, int? SafetyExercise);
 
 public sealed record GetYear365ReportQuery(Guid PatientId, string? Month) : IRequest<Year365ReportResponse>;
 
@@ -55,11 +59,13 @@ public sealed class GetYear365ReportQueryHandler(
 
         var start = program.StartDate;
         var end = start.AddDays(WellnessEngine.PlanLength - 1);
-        var today = GetLocalToday(program.TimeZone);
+        var now = clock.GetUtcNow();
+        var today = GetLocalToday(program.TimeZone, now);
+        var cutoff = CalendarCutoff(program, today, now);
         var logs = await store.ListDailyLogsAsync(request.PatientId, ct);
         var logsByDate = IndexLogs(start, end, logs);
         var latest = logs.Count == 0 ? start : logs.Max(x => x.Date);
-        var selectedDate = today ?? latest;
+        var selectedDate = cutoff ?? latest;
         var month = requestedMonth ?? FirstOfMonth(selectedDate < start ? start : selectedDate > end ? end : selectedDate);
         if (month < FirstOfMonth(start) || month > FirstOfMonth(end))
             throw InvalidMonth("El mes está fuera del programa.");
@@ -74,7 +80,7 @@ public sealed class GetYear365ReportQueryHandler(
             var date = firstDate.AddDays(offset);
             var log = logsByDate.GetValueOrDefault(date);
             return new Year365Day(
-                firstDay + offset, date, today.HasValue ? date > today.Value : null,
+                firstDay + offset, date, cutoff.HasValue ? date > cutoff.Value : null,
                 log?.Adherence * 100, log?.WeightKg, log?.WaistCm);
         }).ToArray();
 
@@ -83,16 +89,35 @@ public sealed class GetYear365ReportQueryHandler(
         for (var current = FirstOfMonth(start); current <= FirstOfMonth(end); current = current.AddMonths(1))
             months.Add(MonthKey(current));
 
-        var summary = Summarize(days, logsByDate, firstDate, lastDate, today);
+        var pauseEnd = cutoff.HasValue && cutoff.Value < lastDate ? cutoff.Value : lastDate;
+        var pauses = pauseEnd >= firstDate
+            ? await store.CountPauseDaysAsync(request.PatientId, firstDate, pauseEnd, ct)
+            : new Year365PauseCounts(null, null);
+        var summary = Summarize(days, logsByDate, firstDate, lastDate, cutoff) with
+        {
+            ScheduledPauseDays = pauses.Scheduled,
+            SafetyExercisePauseDays = pauses.SafetyExercise
+        };
         return new(new Year365Report(
             start, end, today, months, MonthKey(month), days, summary,
             events.Select(x => new Year365Event(x.Id, x.Day, start.AddDays(x.Day - 1), x.Kind)).ToArray()));
     }
 
-    private DateOnly? GetLocalToday(string? timeZone)
+    private static DateOnly? CalendarCutoff(Year365Program program, DateOnly? today, DateTimeOffset now)
+    {
+        if (program.CalendarAnchorDate is not { } anchorDate || program.CalendarAnchorDay is not { } anchorDay ||
+            program.CalendarTimeZone is not { } timeZone || GetLocalToday(timeZone, now) is not { } calendarDate)
+            return today;
+
+        // El ordinal se mantiene cuando cambia la zona. Los registros conservan su fecha nominal.
+        var calendar = new WellnessPlanCalendar(program.StartDate, timeZone, anchorDate, anchorDay);
+        return program.StartDate.AddDays(WellnessPlanService.Today(calendar, calendarDate) - 1);
+    }
+
+    private static DateOnly? GetLocalToday(string? timeZone, DateTimeOffset now)
     {
         if (!string.IsNullOrWhiteSpace(timeZone) && TimeZoneInfo.TryFindSystemTimeZoneById(timeZone, out var zone))
-            return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(), zone).DateTime);
+            return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, zone).DateTime);
         return null;
     }
 

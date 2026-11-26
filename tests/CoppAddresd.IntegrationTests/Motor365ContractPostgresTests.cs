@@ -67,10 +67,14 @@ public sealed class Motor365ContractPostgresTests
                     "MigrationId" varchar(150) PRIMARY KEY, "ProductVersion" varchar(32) NOT NULL);
                 """, ct);
             var ids = db.Database.GetMigrations().ToArray();
-            var position = Array.FindIndex(ids, x => x.EndsWith("_AddMotor365Persistence", StringComparison.Ordinal));
-            Assert.True(position > 0);
-            await db.Database.ExecuteSqlRawAsync(db.GetService<IMigrator>().GenerateScript(ids[position - 1], ids[position],
-                MigrationsSqlGenerationOptions.NoTransactions), ct);
+            foreach (var name in new[] { "AddMotor365Persistence", "AddMotor365Calendar",
+                         "AllowMotor365NauseaObservation", "AddMotor365PauseDays" })
+            {
+                var position = Array.FindIndex(ids, x => x.EndsWith("_" + name, StringComparison.Ordinal));
+                Assert.True(position > 0, name);
+                await db.Database.ExecuteSqlRawAsync(db.GetService<IMigrator>().GenerateScript(ids[position - 1], ids[position],
+                    MigrationsSqlGenerationOptions.NoTransactions), ct);
+            }
             await db.Database.ExecuteSqlInterpolatedAsync($"""
                 INSERT INTO app.patient_profiles (id, user_id, first_name, last_name, timezone, status)
                 VALUES ({patient}, {user}, 'Prueba', 'Motor', 'America/Bogota', 'Activo')

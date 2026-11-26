@@ -50,7 +50,7 @@ sealed class FixturePostgres
                 """, ct);
             var ids = db.Database.GetMigrations().ToArray();
             var motor = Array.FindIndex(ids, id => id.EndsWith("_AddMotor365Persistence", StringComparison.Ordinal));
-            var latest = ids.Single(id => id.EndsWith("_AllowMotor365NauseaObservation", StringComparison.Ordinal));
+            var latest = ids.Single(id => id.EndsWith("_AddMotor365PauseDays", StringComparison.Ordinal));
             var sql = db.GetService<IMigrator>().GenerateScript(ids[motor - 1], latest);
             await db.Database.ExecuteSqlRawAsync(sql, ct);
         }

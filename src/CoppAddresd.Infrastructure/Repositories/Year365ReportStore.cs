@@ -11,7 +11,8 @@ public sealed class Year365ReportStore(AppDbContext db) : IYear365ReportStore
         (from person in db.Motor365People.AsNoTracking()
          join patient in db.PatientProfiles.AsNoTracking() on person.PatientId equals patient.Id
          where person.PatientId == patientId
-         select new Year365Program(person.StartDate, patient.Timezone)).SingleOrDefaultAsync(ct);
+         select new Year365Program(person.StartDate, patient.Timezone, person.CalendarTimeZoneId,
+             person.CalendarAnchorDate, person.CalendarAnchorDay)).SingleOrDefaultAsync(ct);
 
     public async Task<IReadOnlyList<Year365DailyLog>> ListDailyLogsAsync(Guid patientId, CancellationToken ct) =>
         await db.Motor365DailyLogs.AsNoTracking()
@@ -36,4 +37,12 @@ public sealed class Year365ReportStore(AppDbContext db) : IYear365ReportStore
             .Select(item => new Year365StoredEvent(item.Id, item.Day, item.Kind))
             .ToArrayAsync(ct);
     }
+
+    public async Task<Year365PauseCounts> CountPauseDaysAsync(
+        Guid patientId, DateOnly firstDate, DateOnly lastDate, CancellationToken ct) =>
+        await db.Motor365PauseDays.AsNoTracking()
+            .Where(item => item.PersonId == patientId && item.Date >= firstDate && item.Date <= lastDate)
+            .GroupBy(_ => 1)
+            .Select(days => new Year365PauseCounts(days.Count(day => day.Scheduled), days.Count(day => day.SafetyExercise)))
+            .SingleOrDefaultAsync(ct) ?? new(null, null);
 }

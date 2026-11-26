@@ -11912,6 +11912,45 @@ namespace CoppAddresd.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365PauseDay", b =>
+                {
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer")
+                        .HasColumnName("day");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("effective_date");
+
+                    b.Property<int>("PlanVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("plan_version");
+
+                    b.Property<bool>("SafetyExercise")
+                        .HasColumnType("boolean")
+                        .HasColumnName("safety_exercise");
+
+                    b.Property<bool>("Scheduled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("scheduled");
+
+                    b.HasKey("PersonId", "Day");
+
+                    b.HasIndex("PersonId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("engine_pause_day", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor365_pause_day", "day BETWEEN 1 AND 365");
+
+                            t.HasCheckConstraint("ck_motor365_pause_plan_version", "plan_version >= 1");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365Person", b =>
                 {
                     b.Property<Guid>("PatientId")
@@ -14341,6 +14380,15 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .HasForeignKey("ParamsVersion", "EngineVer")
                         .HasPrincipalKey("Version", "EngineVer")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365PauseDay", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

@@ -20,6 +20,8 @@ public sealed class Year365ReportTests
     {
         store.FindProgramAsync(patient, default).Returns(new Year365Program(start, "America/Bogota"));
         store.ListDailyLogsAsync(patient, default).Returns(logs);
+        store.CountPauseDaysAsync(patient, Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), default)
+            .Returns(new Year365PauseCounts(null, null));
     }
 
     [Fact]
@@ -97,6 +99,29 @@ public sealed class Year365ReportTests
         Assert.Null(result.Today);
         Assert.Null(result.Summary.StreakDays);
         Assert.All(result.Days, day => Assert.Null(day.Future));
+    }
+
+    [Fact]
+    public async Task CalendarAnchorKeepsTheOfficialOrdinalAcrossTheMonthBoundary()
+    {
+        Seed();
+        var localDate = new DateOnly(2028, 2, 1);
+        var nominalDate = new DateOnly(2028, 1, 31);
+        store.FindProgramAsync(patient, default)
+            .Returns(new Year365Program(start, "Asia/Tokyo", "Asia/Tokyo", localDate, 33));
+        store.CountPauseDaysAsync(patient, new DateOnly(2028, 1, 1), nominalDate, default)
+            .Returns(new Year365PauseCounts(1, 0));
+        var handler = CreateHandler(new DateTimeOffset(2028, 2, 1, 1, 0, 0, TimeSpan.Zero));
+
+        var january = (await handler.Handle(new(patient, null), default)).Report!;
+        Assert.Equal(localDate, january.Today);
+        Assert.Equal("2028-01", january.Month);
+        Assert.False(january.Days[^1].Future);
+        Assert.Equal(1, january.Summary.ScheduledPauseDays);
+
+        var february = (await handler.Handle(new(patient, "2028-02"), default)).Report!;
+        Assert.True(february.Days[0].Future);
+        Assert.Null(february.Summary.ScheduledPauseDays);
     }
 
     [Theory]

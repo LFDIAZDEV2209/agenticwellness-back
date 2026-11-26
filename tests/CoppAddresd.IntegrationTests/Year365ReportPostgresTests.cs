@@ -10,6 +10,7 @@ using CoppAddresd.Api.Controllers;
 using CoppAddresd.Api.Middleware;
 using CoppAddresd.Application.Features.Motor365;
 using CoppAddresd.Application.Features.Wellness.Year365;
+using CoppAddresd.Application.Features.Wellness365;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Application.Services;
 using CoppAddresd.Domain.Entities;
@@ -78,7 +79,8 @@ public sealed partial class NutritionPlanWorkflowTests
         builder.Services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
         builder.Services.AddScoped<IYear365ReportStore, Year365ReportStore>();
         builder.Services.AddScoped(_ => Context());
-        builder.Services.AddSingleton<TimeProvider>(new Year365TestClock());
+        var clock = new Year365TestClock();
+        builder.Services.AddSingleton<TimeProvider>(clock);
         builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(GetYear365ReportQuery).Assembly));
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
@@ -93,6 +95,9 @@ public sealed partial class NutritionPlanWorkflowTests
             };
         });
         builder.Services.AddMotor365Api();
+        builder.Services.AddSingleton<IWellnessPlanGate, Year365TestGate>();
+        builder.Services.AddAuthorizationBuilder().AddPolicy(Motor365PlanController.PatientWritePolicy,
+            policy => policy.RequireAuthenticatedUser().RequireClaim("aud", "app"));
         await using var app = builder.Build();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.UseWhen(context => context.Request.Path.StartsWithSegments("/v1"),
@@ -154,6 +159,8 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Null(report.Days[1].AdherencePercent);
         Assert.Equal(2, report.Summary.RecordedDays);
         Assert.Equal(40m, report.Summary.AdherencePercent);
+        Assert.Null(report.Summary.ScheduledPauseDays);
+        Assert.Null(report.Summary.SafetyExercisePauseDays);
         Assert.Equal(new Year365Event(item.Id, 4, new DateOnly(2028, 2, 2), "modo"), Assert.Single(report.Events));
         Assert.Equal(new Year365Measurement(new DateOnly(2028, 2, 3), 73m), report.Summary.Weight);
 
@@ -194,11 +201,29 @@ public sealed partial class NutritionPlanWorkflowTests
         using var english = await Get(patient.Id, Token("erp", mayExport: true), suffix: "/export/csv", lang: "en");
         Assert.Contains("Scheduled breaks", await english.Content.ReadAsStringAsync());
 
-        async Task<HttpResponseMessage> CloseDay(int day, int energy = 3)
+        const string motorPath = "/api/v1/people/me";
+        using (var request = new HttpRequestMessage(HttpMethod.Get, $"{motorPath}/plan"))
         {
-            using var request = new HttpRequestMessage(HttpMethod.Put, $"/v1/people/{patient.Id}/logs/{day}");
             request.Headers.Authorization = new("Bearer", Token("app"));
-            request.Content = JsonContent.Create(new MotorLogInput(0.60m, 8, energy, 0, [], null, 82.3m, 0));
+            using var response = await http.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var snapshot = (await response.Content.ReadFromJsonAsync<Motor365DayResponse>())!;
+            Assert.Equal(14, snapshot.Today);
+            Assert.Equal(new DateOnly(2028, 2, 12), snapshot.TodayLocalDate);
+            Assert.Equal("America/Bogota", snapshot.TimeZoneId);
+        }
+        using (var request = new HttpRequestMessage(HttpMethod.Get, $"{motorPath}/plan"))
+        {
+            request.Headers.Authorization = new("Bearer", Token("erp", mayExport: true));
+            using var response = await http.SendAsync(request);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        async Task<HttpResponseMessage> CloseDay(int day, int energy = 3, int pain = 0)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Put, $"{motorPath}/logs/{day}");
+            request.Headers.Authorization = new("Bearer", Token("app"));
+            request.Content = JsonContent.Create(new Motor365ClosureRequest(0.60m, 8, energy, pain, [], null, 82.3m, false));
             return await http.SendAsync(request);
         }
 
@@ -206,11 +231,13 @@ public sealed partial class NutritionPlanWorkflowTests
         using var futureClose = await CloseDay(15);
         Assert.Equal(HttpStatusCode.UnprocessableEntity, futureClose.StatusCode);
         using var close = await CloseDay(4);
-        Assert.Equal(HttpStatusCode.OK, close.StatusCode);
-        var revision = (await close.Content.ReadFromJsonAsync<MotorLogResult>())!.Ver;
+        Assert.Equal(HttpStatusCode.NoContent, close.StatusCode);
+        async Task<int> Version() => await db.Motor365People.AsNoTracking().Where(row => row.PatientId == patient.Id)
+            .Select(row => row.PlanVersion).SingleAsync();
+        var revision = await Version();
         using var retry = await CloseDay(4);
-        Assert.Equal(HttpStatusCode.OK, retry.StatusCode);
-        Assert.Equal(revision, (await retry.Content.ReadFromJsonAsync<MotorLogResult>())!.Ver);
+        Assert.Equal(HttpStatusCode.NoContent, retry.StatusCode);
+        Assert.Equal(revision, await Version());
         var storedClose = await db.Motor365DailyLogs.AsNoTracking()
             .SingleAsync(log => log.PersonId == patient.Id && log.Day == 4);
         Assert.Equal(first.AddDays(3), storedClose.LogDate);
@@ -220,7 +247,7 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Single(await weeklyDecisions.ToArrayAsync());
 
         using var correction = await CloseDay(4, energy: 4);
-        Assert.Equal(HttpStatusCode.OK, correction.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, correction.StatusCode);
         var decisions = await weeklyDecisions.OrderByDescending(entry => entry.PlanVersion).ToArrayAsync();
         Assert.Equal(2, decisions.Length);
         var latestDecision = decisions[0];
@@ -231,8 +258,8 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Equal(3, updatedReport.Summary.RecordedDays);
         Assert.Equal(46.7m, updatedReport.Summary.AdherencePercent);
         Assert.Equal(new Year365Measurement(first.AddDays(3), 82.3m), updatedReport.Summary.Waist);
-        Assert.Null(updatedReport.Summary.ScheduledPauseDays);
-        Assert.Null(updatedReport.Summary.SafetyExercisePauseDays);
+        Assert.Equal(0, updatedReport.Summary.ScheduledPauseDays);
+        Assert.Equal(0, updatedReport.Summary.SafetyExercisePauseDays);
         Assert.Equal(new Year365Event(latestDecision.Id, 14, first.AddDays(13), "sin"),
             Assert.Single(updatedReport.Events, entry => entry.Day == 14 && entry.Kind == "sin"));
         var decisionDay = updatedReport.Days.Single(day => day.Day == 14);
@@ -247,8 +274,8 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Contains("\"2028-02\",\"Días con registro\",\"3\",\"días\"", refreshedCsvText);
         Assert.Contains("\"2028-02\",\"Adherencia\",\"46.7\",\"%\"", refreshedCsvText);
         Assert.Contains("\"2028-02\",\"Cintura\",\"82.3\",\"cm\",\"2028-02-02\"", refreshedCsvText);
-        Assert.Contains("\"2028-02\",\"Pausas programadas\",\"Sin dato\"", refreshedCsvText);
-        Assert.Contains("\"2028-02\",\"Pausas de ejercicio\",\"Sin dato\"", refreshedCsvText);
+        Assert.Contains("\"2028-02\",\"Pausas programadas\",\"0\"", refreshedCsvText);
+        Assert.Contains("\"2028-02\",\"Pausas de ejercicio\",\"0\"", refreshedCsvText);
 
         using var refreshedPdf = await Get(patient.Id, exportToken, suffix: "/export/pdf");
         Assert.Equal(HttpStatusCode.OK, refreshedPdf.StatusCode);
@@ -268,6 +295,40 @@ public sealed partial class NutritionPlanWorkflowTests
         Assert.Contains("\"2028-01\",\"Adherencia\",\"Sin dato\"", priorMonthCsvText);
         Assert.Contains("\"2028-01\",\"Cintura\",\"Sin dato\"", priorMonthCsvText);
         Assert.DoesNotContain("2028-02", priorMonthCsvText);
+
+        // Week 9 crosses March and April. The late entry also drives two exercise pause days.
+        clock.UtcNow = new(2028, 4, 2, 3, 0, 0, TimeSpan.Zero);
+        using var lateClose = await CloseDay(57, pain: 8);
+        Assert.Equal(HttpStatusCode.NoContent, lateClose.StatusCode);
+        var lateVersion = await Version();
+        using var lateRetry = await CloseDay(57, pain: 8);
+        Assert.Equal(HttpStatusCode.NoContent, lateRetry.StatusCode);
+        Assert.Equal(lateVersion, await Version());
+        var pauseDays = await db.Motor365PauseDays.AsNoTracking()
+            .Where(entry => entry.PersonId == patient.Id && entry.Day >= 57).ToArrayAsync();
+        Assert.Equal(7, pauseDays.Length);
+        Assert.All(pauseDays, entry => Assert.True(entry.Scheduled));
+        Assert.Equal(2, pauseDays.Count(entry => entry.SafetyExercise));
+        Assert.Contains(pauseDays, entry => entry.Date == new DateOnly(2028, 4, 1));
+
+        using var march = await Get(patient.Id, Token("erp"), month: "2028-03");
+        Assert.Equal(HttpStatusCode.OK, march.StatusCode);
+        var marchSummary = (await march.Content.ReadFromJsonAsync<Year365ReportResponse>())!.Report!.Summary;
+        Assert.Equal(6, marchSummary.ScheduledPauseDays);
+        Assert.Equal(2, marchSummary.SafetyExercisePauseDays);
+        using var april = await Get(patient.Id, Token("erp"), month: "2028-04");
+        Assert.Equal(HttpStatusCode.OK, april.StatusCode);
+        var aprilSummary = (await april.Content.ReadFromJsonAsync<Year365ReportResponse>())!.Report!.Summary;
+        Assert.Equal(0, aprilSummary.RecordedDays);
+        Assert.Equal(1, aprilSummary.ScheduledPauseDays);
+        Assert.Equal(0, aprilSummary.SafetyExercisePauseDays);
+        using var aprilCsv = await Get(patient.Id, exportToken, month: "2028-04", suffix: "/export/csv");
+        Assert.Equal(HttpStatusCode.OK, aprilCsv.StatusCode);
+        Assert.Contains("\"2028-04\",\"Pausas programadas\",\"1\",\"día\"", await aprilCsv.Content.ReadAsStringAsync());
+        using var aprilPdf = await Get(patient.Id, exportToken, month: "2028-04", suffix: "/export/pdf");
+        Assert.Equal(HttpStatusCode.OK, aprilPdf.StatusCode);
+        using var aprilDocument = PdfDocument.Open(await aprilPdf.Content.ReadAsByteArrayAsync());
+        Assert.Contains("1 día", aprilDocument.GetPage(1).Text);
         await app.StopAsync();
     }
 
@@ -310,6 +371,12 @@ public sealed partial class NutritionPlanWorkflowTests
 
     private sealed class Year365TestClock : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => new(2028, 2, 13, 3, 0, 0, TimeSpan.Zero);
+        public DateTimeOffset UtcNow { get; set; } = new(2028, 2, 13, 3, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => UtcNow;
+    }
+
+    private sealed class Year365TestGate : IWellnessPlanGate
+    {
+        public Task<WellnessBlock?> CheckAsync(Guid patientId, CancellationToken ct) => Task.FromResult<WellnessBlock?>(null);
     }
 }
