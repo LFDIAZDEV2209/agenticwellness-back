@@ -5,7 +5,7 @@ set -euo pipefail
 : "${ECS_CLUSTER:?ECS_CLUSTER requerido}"
 : "${MIGRATION_SERVICE:?MIGRATION_SERVICE requerido}"
 : "${MIGRATION_TASK_DEFINITION:?MIGRATION_TASK_DEFINITION requerida}"
-case "$MIGRATION_SERVICE" in cooppadresd-api|cooppadresd-telemedicine) ;; *) echo 'Servicio de migración no permitido' >&2; exit 1;; esac
+case "$MIGRATION_SERVICE" in cooppadresd-api|cooppadresd-telemedicine|agenticwellness-api|agenticwellness-telemedicine) ;; *) echo 'Servicio de migración no permitido' >&2; exit 1;; esac
 CONTAINER=$(aws ecs describe-task-definition --task-definition "$MIGRATION_TASK_DEFINITION" --region "$AWS_REGION" --query 'taskDefinition.containerDefinitions[0].name' --output text)
 NET_CFG=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$MIGRATION_SERVICE" --region "$AWS_REGION" --query 'services[0].networkConfiguration' --output json)
 OVERRIDES=$(jq -cn --arg name "$CONTAINER" '{containerOverrides:[{name:$name,command:["--migrate"]}]}')
