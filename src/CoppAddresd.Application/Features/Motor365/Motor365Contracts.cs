@@ -27,7 +27,10 @@ public sealed record MotorPersonDto(
 }
 public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDate, DateOnly StartDate,
     string TimeZoneId, string State, string LogStatus, double? Adherence, double? MeasuredWeightKg, int Streak,
-    int ParametersVersion, MotorExerciseSessionDto? Exercise);
+    int ParametersVersion, MotorExerciseSessionDto? Exercise, MotorNutritionTargets Nutrition);
+
+public sealed record MotorNutritionTargets(double Kcal, double ProteinG, double CarbsG, double FatG,
+    int FiberG, int WaterMl);
 
 public sealed record MotorExerciseSessionDto(char Type, MotorText Name, int Week, int Level, int Minutes, bool Deload,
     WellnessPhase Phase, IReadOnlyList<MotorGuidedExerciseDto> Items, IReadOnlyList<MotorExerciseUnlockDto> NextUnlocks);

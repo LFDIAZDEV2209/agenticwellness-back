@@ -137,7 +137,7 @@ public static class WellnessEngine
             var exercise = recordedOnly
                 ? WellnessExercise.ForDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost)
                 : WellnessExercise.ForReferenceDay(profile, day, daily.SwapForPain, daily.LevelDelta, daily.Boost);
-            var macros = MacroTargets(profile.Goal, mode, weight, kcal, exercise.Training, profile.Parameters);
+            var macros = MacroTargets(profile.Goal, mode, weight, kcal, exercise.Training, profile.Parameters, recordedOnly);
 
             var past = day < profile.CurrentDay;
             var hasLog = profile.Logs.TryGetValue(day, out var recorded);
@@ -204,17 +204,29 @@ public static class WellnessEngine
         return gain ? difference >= -.05m : difference <= .05m;
     }
 
-    private static WellnessMacros MacroTargets(WellnessGoal goal, WellnessMode mode, double weight, double kcal, bool train, WellnessParameters parameters)
+    private static WellnessMacros MacroTargets(WellnessGoal goal, WellnessMode mode, double weight, double kcal, bool train,
+        WellnessParameters parameters, bool enforcePublishedTargets)
     {
+        var proteinCap = parameters.ProCap * weight;
         var protein = WellnessRules.Round(Math.Min(parameters.ProCap, parameters.Pro.For(goal)) * weight);
+        if (enforcePublishedTargets) protein = Math.Min(protein, Math.Floor(proteinCap));
         var share = train && mode != WellnessMode.Maintain ? parameters.Fat.Train : parameters.Fat.Rest;
         var fat = WellnessRules.Round(kcal * share / 9);
         var carbs = WellnessRules.Round((kcal - 4 * protein - 9 * fat) / 4);
         if (carbs < parameters.CarbMin)
         {
             carbs = parameters.CarbMin;
+            // Si la grasa llega a cero, limitar la proteína al presupuesto restante.
+            // La simulación histórica del kit conserva sus reglas de referencia.
+            if (enforcePublishedTargets)
+                protein = Math.Min(protein, Math.Floor((kcal - 4 * carbs) / 4));
             fat = WellnessRules.Round((kcal - 4 * protein - 4 * carbs) / 9);
         }
+        if (enforcePublishedTargets &&
+            !(protein >= 0 && protein <= proteinCap && carbs >= parameters.CarbMin && fat >= 0 &&
+              Math.Abs(4 * protein + 4 * carbs + 9 * fat - kcal) <= .03 * kcal))
+            throw new InvalidOperationException("Los objetivos de macronutrientes están fuera del presupuesto energético.");
+
         return new(kcal, protein, carbs, fat);
     }
 
