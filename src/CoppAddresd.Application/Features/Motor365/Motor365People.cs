@@ -210,7 +210,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                     PersonId = id, PlanVersion = plan.Ver, ParamsVersion = plan.ParamsVersion,
                     SubmissionId = inputs.data.Screening!.SubmissionId, EngineVer = plan.EngineVersion,
                     GeneratedAt = inputs.capturedAt,
-                    PlanJson = JsonSerializer.Serialize(new SnapshotPayload(plan, age, EnergyCalculationRevision,
+                    PlanJson = JsonSerializer.Serialize(new SnapshotPayload(plan, age, EnergyCalculationRevision, ExercisePolicyVersion,
                         [receipts.Terms.Id, receipts.Privacy.Id]), JsonSerializerOptions.Web),
                 }, ct);
             }
@@ -231,8 +231,9 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         {
             var payload = JsonSerializer.Deserialize<SnapshotPayload>(snapshot.PlanJson, JsonSerializerOptions.Web);
             return payload is
-                { Plan: { Days.Count: WellnessEngine.PlanLength } plan, ConsentReceiptIds: [var terms, var privacy] } &&
-                payload.EnergyCalculationRevision == EnergyCalculationRevision && payload.Age == age &&
+                { Plan: { Days.Count: WellnessEngine.PlanLength } plan, ConsentReceiptIds: [var terms, var privacy],
+                    EnergyCalculationRevision: EnergyCalculationRevision, ExercisePolicy: ExercisePolicyVersion } &&
+                payload.Age == age &&
                 terms == receipts.Terms.Id && privacy == receipts.Privacy.Id &&
                 plan.Id == person.PatientId && plan.Today == day && plan.Ver == person.PlanVersion &&
                 plan.EngineVersion == person.EngineVer && plan.ParamsVersion == snapshot.ParamsVersion
@@ -241,7 +242,9 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         catch (JsonException) { return null; }
     }
 
-    private sealed record SnapshotPayload(MotorPlanDto Plan, int? Age, int EnergyCalculationRevision, Guid[] ConsentReceiptIds);
+    private const int ExercisePolicyVersion = 1;
+    private sealed record SnapshotPayload(MotorPlanDto Plan, int? Age, int EnergyCalculationRevision, int ExercisePolicy,
+        Guid[] ConsentReceiptIds);
 
     internal Task<T> CalculateAsync<T>(Guid id, Func<MotorView, MotorCalculation, T> project, CancellationToken ct,
         int? requestedDay = null, string? readPermission = null, bool includeProjections = true, string operation = "calendar") =>
@@ -276,7 +279,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             var state = value.Paused ? "paused" : value.Mode == WellnessMode.Maintain ? "maint" : "active";
             return new MotorCalendarDay(value.Day, view.Day, view.Person.TodayLocalDate, view.Person.StartDate,
                 view.Person.TimeZoneId, state, recorded ? "recorded" : value.Past ? "missing" : "open",
-                recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak, computation.Version);
+                recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak,
+                computation.Version, MotorProjection.ExerciseSession(value));
         }, ct, day, "Program.Profile360View", includeProjections: false);
 
     private static void ValidateRequestedDay(int? requested, int today)

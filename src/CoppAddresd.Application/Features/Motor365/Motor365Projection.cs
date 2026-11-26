@@ -4,8 +4,25 @@ namespace CoppAddresd.Application.Features.Motor365;
 
 internal static class MotorProjection
 {
+    internal static MotorExerciseSessionDto? ExerciseSession(WellnessDay day)
+    {
+        if (day.Paused) return null;
+        var exercise = day.Exercise;
+        return new(exercise.Type, Text(exercise.Name), exercise.Week, exercise.Level, exercise.Minutes, exercise.Deload,
+            exercise.Phase, exercise.Items.Select(item => new MotorGuidedExerciseDto(item.Id, item.Minutes,
+                item.Definition.Impact == "bajo", Text(WellnessExercise.Descriptions[item.Id]),
+                WellnessExercise.Guides[item.Id], item.Strength)).ToArray(),
+            WellnessExercise.OrderedCatalog.Select(item => (item.Id, Week: WellnessExercise.UnlockWeek(item.Id)))
+                .Where(unlock => unlock.Week > exercise.Week).OrderBy(unlock => unlock.Week)
+                .ThenBy(unlock => unlock.Id, StringComparer.Ordinal).Take(3).Select(unlock =>
+                {
+                    var guide = WellnessExercise.Guides[unlock.Id];
+                    return new MotorExerciseUnlockDto(unlock.Id, unlock.Week, new(guide.Es.Name, guide.En.Name));
+                }).ToArray());
+    }
+
     internal static MotorDayDto Day(WellnessDay day, int version) =>
-        new(day.Day, day.Week, day.Mode switch { WellnessMode.Break => "break", WellnessMode.Maintain => "maint", _ => "main" },
+        new(day.Day, day.Exercise.Week, day.Mode switch { WellnessMode.Break => "break", WellnessMode.Maintain => "maint", _ => "main" },
             day.Targets.Kcal, day.Targets.Protein, day.Targets.Carbs, day.Targets.Fat, day.FiberGrams, day.WaterMl,
             day.Log.MeasuredWeightKg, day.Type, day.Training && !day.Paused, day.Paused, day.SimpleMenu, day.CalorieAdjustment,
             new(day.Exercise.Level, day.Paused ? 0 : day.Exercise.Minutes, day.Exercise.Deload,

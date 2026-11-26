@@ -112,13 +112,13 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
 
 public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocalDate, DateOnly StartDate,
     string TimeZoneId, bool Real, WellnessPlanStatus Status, string LogStatus, double? Adherence,
-    double? MeasuredWeightKg, int Streak,
+    double? MeasuredWeightKg, int Streak, MotorExerciseSessionDto? Exercise,
     [property: JsonPropertyName("engine_ver")] string EngineVersion,
     [property: JsonPropertyName("params_version")] int ParametersVersion)
 {
     internal static Motor365DayResponse From(MotorCalendarDay day) =>
         new(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
-            day.Adherence, day.MeasuredWeightKg, day.Streak, CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
+            day.Adherence, day.MeasuredWeightKg, day.Streak, day.Exercise, CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
             day.ParametersVersion);
 }
 

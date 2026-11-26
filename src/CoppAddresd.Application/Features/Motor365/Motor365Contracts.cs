@@ -26,7 +26,14 @@ public sealed record MotorPersonDto(
     public string TimeZoneId { get; init; } = "";
 }
 public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDate, DateOnly StartDate,
-    string TimeZoneId, string State, string LogStatus, double? Adherence, double? MeasuredWeightKg, int Streak, int ParametersVersion);
+    string TimeZoneId, string State, string LogStatus, double? Adherence, double? MeasuredWeightKg, int Streak,
+    int ParametersVersion, MotorExerciseSessionDto? Exercise);
+
+public sealed record MotorExerciseSessionDto(char Type, MotorText Name, int Week, int Level, int Minutes, bool Deload,
+    WellnessPhase Phase, IReadOnlyList<MotorGuidedExerciseDto> Items, IReadOnlyList<MotorExerciseUnlockDto> NextUnlocks);
+public sealed record MotorGuidedExerciseDto(string Id, int Minutes, bool LowImpact, MotorText Description,
+    WellnessExerciseGuide Guide, WellnessStrengthDose? Strength);
+public sealed record MotorExerciseUnlockDto(string Id, int Week, MotorText Name);
 
 public sealed record MotorPlanDto(Guid Id, int Today, int Ver, IReadOnlyList<MotorDayDto> Days,
     [property: JsonPropertyName("engine_ver")] string EngineVersion,

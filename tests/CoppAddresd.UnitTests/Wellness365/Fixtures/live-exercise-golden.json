@@ -1,0 +1,25 @@
+{
+  "bajar": {
+    "target": 70,
+    "priorClosures": 13,
+    "days": [
+      { "day": 10, "week": 2, "type": "C", "phase": "Adaptación", "minutes": 15, "deload": false, "absent": ["ellip"] },
+      { "day": 57, "week": 9, "type": "C", "phase": "Construcción", "minutes": 16, "deload": false }
+    ]
+  },
+  "masa": {
+    "target": 85,
+    "days": [
+      { "day": 142, "week": 21, "type": "L", "phase": "Intensificación", "minutes": 18, "deload": false, "dose": { "sets": 3, "reps": 12, "rest": 60, "rir": "1–2" } },
+      { "day": 253, "week": 37, "type": "P", "phase": "Consolidación", "minutes": 20, "deload": false, "dose": { "sets": 3, "reps": 15, "rest": 60, "rir": "1–2" } },
+      { "day": 365, "week": 52, "type": "P", "phase": "Consolidación", "minutes": 20, "deload": true, "dose": { "sets": 3, "reps": 15, "rest": 60, "rir": "1–2" } }
+    ]
+  },
+  "def": {
+    "target": 73,
+    "days": [
+      { "day": 88, "week": 13, "type": "H", "phase": "Construcción", "minutes": 17, "deload": false, "absent": ["int"] },
+      { "day": 95, "week": 14, "type": "H", "phase": "Construcción", "minutes": 17, "deload": false, "present": ["int"] }
+    ]
+  }
+}
