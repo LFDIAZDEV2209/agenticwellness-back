@@ -77,6 +77,22 @@ test('masa respeta adherencia exacta, hambre de la semana y pausa', async ({ req
   });
 });
 
+test('conserva la protección diaria de KAN-132 al evaluar el cierre semanal', async ({ request }) => {
+  const person = await setup(request);
+  await moveTo(request, 14);
+  await person.save(entries([1, 2, 3, 8, 9, 10], 80));
+  await person.close(14, log(80));
+  expect(weekly(await person.events())[0]).toMatchObject({ delta: -100 });
+  for (const symptom of ['hambre', 'mareo']) {
+    await person.close(14, log(80, { sym: [symptom] }));
+    expect(weekly(await person.events())[0]).toMatchObject({
+      delta: 0, es: expect.stringContaining('cierre del día'),
+    });
+  }
+  await moveTo(request, 15);
+  expect((await person.day(15)).adjK).toBe(0);
+});
+
 test('exige pesajes de ambas semanas y conserva el tope en los días siguientes', async ({ request }) => {
   const person = await setup(request);
   await moveTo(request, 35);

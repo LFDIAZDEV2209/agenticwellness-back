@@ -119,4 +119,8 @@ public sealed record WellnessDay(
     int WaterMl, double WeightKg, bool Training, char Type, bool SimpleMenu, bool Paused,
     IReadOnlyList<WellnessText> Reasons, int LevelDelta, bool SwapForPain, int Tdee, double CalorieAdjustment,
     WellnessExerciseDay Exercise, WellnessDailyLog Log, bool Past, bool Today, double EndWeightKg,
-    double? WaistCm, int? Points, int? Streak);
+    double? WaistCm, int? Points, int? Streak)
+{
+    internal bool HasRecordedLog { get; init; }
+    public bool LighterDinner { get; init; }
+}

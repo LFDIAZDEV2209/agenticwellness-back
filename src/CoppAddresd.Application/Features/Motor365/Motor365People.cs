@@ -65,7 +65,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     IMotor365SnapshotQueue? snapshots = null, Motor365Telemetry? telemetry = null)
 {
     private const int EnergyCalculationRevision = 2;
-    private const int NutritionCalculationRevision = 1;
+    private const int NutritionCalculationRevision = 2;
 
     public async Task<MotorPersonWrite> WriteAsync(WriteMotorPerson request, CancellationToken ct)
     {
@@ -244,7 +244,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         catch (JsonException) { return null; }
     }
 
-    private const int ExercisePolicyVersion = 1;
+    private const int ExercisePolicyVersion = 2;
     private sealed record SnapshotPayload(MotorPlanDto Plan, int? Age, int EnergyCalculationRevision, int ExercisePolicy,
         int NutritionCalculationRevision, Guid[] ConsentReceiptIds);
 
@@ -286,6 +286,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 new(value.Targets.Kcal, value.Targets.Protein, value.Targets.Carbs, value.Targets.Fat,
                     value.FiberGrams, value.WaterMl))
             {
+                Why = MotorProjection.Reasons(value),
+                LighterDinner = value.LighterDinner,
                 Sync = historyDays is { } window ? ProjectSync(view, computation, value.Day, window) : null,
                 MealPlan = includeMenu ? MotorProjection.MealPlan(computation.Profile, value) : null,
             };

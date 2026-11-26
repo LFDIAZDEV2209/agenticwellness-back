@@ -29,6 +29,8 @@ public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDat
     string TimeZoneId, string State, string LogStatus, double? Adherence, double? MeasuredWeightKg, int Streak,
     int ParametersVersion, MotorExerciseSessionDto? Exercise, MotorNutritionTargets Nutrition)
 {
+    public IReadOnlyList<MotorText> Why { get; init; } = [];
+    public bool LighterDinner { get; init; }
     public MotorSyncSnapshot? Sync { get; init; }
     public MotorMealPlanDto? MealPlan { get; init; }
 }
@@ -73,6 +75,7 @@ public sealed record MotorDayDto(int D, int Wk, string Mode, double Kc,
     public MotorMacrosDto? Totals { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? DeviationPct { get; init; }
+    public bool LighterDinner { get; init; }
 }
 public sealed record MotorExerciseDto(int Level, int Minutes, bool Deload, string Phase,
     MotorText PhaseName, IReadOnlyList<MotorExerciseItemDto> Items);

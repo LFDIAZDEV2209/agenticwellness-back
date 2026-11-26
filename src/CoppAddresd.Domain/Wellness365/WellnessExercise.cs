@@ -117,14 +117,17 @@ public static class WellnessExercise
         var type = DayType(profile.Goal, dow);
         var pattern = Patterns[type];
         var phase = PhaseForWeek(week);
-        var level = Math.Clamp(phase.Level + profile.FitnessLevel + levelDelta, 0, 3);
+        // La progresión modifica la dosis, no la fase, los desbloqueos ni la descarga del calendario.
+        var doseWeek = reference ? week : Math.Max(week, rotationWeek);
+        var dosePhase = PhaseForWeek(doseWeek);
+        var level = Math.Clamp(dosePhase.Level + profile.FitnessLevel + levelDelta, 0, 3);
         var deload = baseWeek % 4 == 0;
-        var minutes = 15 + (int)WellnessRules.Round(7 * ((week - 1) / 51d)) +
+        var minutes = 15 + (int)WellnessRules.Round(7 * ((doseWeek - 1) / 51d)) +
                       (profile.FitnessLevel != 0 ? 1 : 0);
         if (!reference) minutes = Math.Min(minutes, 22);
         minutes = Math.Clamp(minutes - (deload ? 2 : 0) - (levelDelta < 0 ? 2 : 0), 15, 22);
 
-        var selected = SelectExercises(pattern, week, rotationWeek, dow, swapForPain);
+        var selected = SelectExercises(pattern, week, rotationWeek, dow, swapForPain, reference);
         var weights = selected.Select(x => x.Definition.Category switch
         {
             "Cardio" => 1.7, "Fuerza" => 1.2, _ => .6
@@ -147,7 +150,7 @@ public static class WellnessExercise
             Array.AsReadOnly(items), IsTrainingDay(type));
     }
 
-    private static Selection[] SelectExercises(DayPattern pattern, int week, int rotationWeek, int dow, bool swapForPain)
+    private static Selection[] SelectExercises(DayPattern pattern, int week, int rotationWeek, int dow, bool swapForPain, bool reference)
     {
         var used = new HashSet<string>(StringComparer.Ordinal);
         var selected = new Selection[pattern.Slots.Length];
@@ -159,6 +162,7 @@ public static class WellnessExercise
             {
                 var lowImpact = pool.Where(id => Catalog[id].Impact == "bajo").ToArray();
                 if (lowImpact.Length > 0) pool = lowImpact;
+                else if (!reference) pool = tag.StartsWith("card", StringComparison.Ordinal) ? ["walk"] : ["mob"];
             }
 
             var fresh = pool.FirstOrDefault(id => IsNew(id, week));

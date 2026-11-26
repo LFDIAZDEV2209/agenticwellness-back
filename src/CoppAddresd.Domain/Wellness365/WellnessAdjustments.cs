@@ -54,7 +54,8 @@ internal static class WellnessAdjustments
             new($"Semana {end.Week}: {message.Es}", $"Week {end.Week}: {message.En}"));
     }
 
-    internal static WellnessEvent WeeklyRecorded(WellnessProfile profile, ReadOnlySpan<WellnessDay> fortnight, double cap)
+    internal static WellnessEvent WeeklyRecorded(WellnessProfile profile, ReadOnlySpan<WellnessDay> fortnight,
+        double cap, bool blockFoodCut)
     {
         var end = fortnight[^1];
         var parameters = profile.Parameters;
@@ -95,8 +96,9 @@ internal static class WellnessAdjustments
             if (hungerDays >= 2)
                 return Decision(0, rate, new("Hambre reportada en al menos dos días: no se recorta.", "Hunger recorded on at least two days: no cut."));
             // El cierre de hoy afectaría la meta desde mañana.
-            if (end.Log.Symptoms.Contains("mareo"))
-                return Decision(0, rate, new("Se mantiene la meta por el último registro.", "The latest entry keeps the target unchanged."));
+            if (blockFoodCut)
+                return Decision(0, rate, new("Se mantuvo la comida por lo que registraste en el cierre del día.",
+                "Your food target stayed the same because of what you logged at the end of the day."));
         }
         if (delta != 0 && Math.Abs(end.CalorieAdjustment + delta) > cap)
             return Decision(0, rate, new("Se alcanzó el tope de ajuste.", "Adjustment cap reached."));
