@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 sealed class FixturePlanAuth
 {
     internal static readonly Guid AppUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a01");
+    internal static readonly Guid UnlinkedAppUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a05");
     internal static readonly Guid ErpUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a02");
     private static readonly Guid AdminUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a04");
     private static readonly Guid UnassignedUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a03");
@@ -34,10 +35,11 @@ sealed class FixturePlanAuth
 
     public string Token(string client)
     {
-        var isApp = client == "app";
+        var isApp = client is "app" or "app-unlinked";
         var actor = client switch
         {
             "app" => AppUser,
+            "app-unlinked" => UnlinkedAppUser,
             "erp-admin" => AdminUser,
             "erp-unassigned" => UnassignedUser,
             _ => ErpUser,

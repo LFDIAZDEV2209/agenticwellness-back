@@ -53,7 +53,7 @@ test('Inicio y Perfil 360 muestran el mismo día y un cierre de app aparece en E
     await expect(appPage.getByText('Guardado en este dispositivo. Se sincronizará al volver la conexión.')).toBeVisible();
     expect(requests.filter(([, method]) => method === 'PUT')).toHaveLength(0);
     const lostAck = appPage.waitForEvent('requestfailed', {
-      predicate: failed => failed.method() === 'PUT' && failed.url().endsWith('/logs/8'),
+      predicate: failed => failed.method() === 'PUT' && new URL(failed.url()).pathname.endsWith('/logs/8'),
       timeout: 15_000,
     });
     await appContext.setOffline(false);
@@ -66,7 +66,7 @@ test('Inicio y Perfil 360 muestran el mismo día y un cierre de app aparece en E
     await expect(appPage.getByText('Cierre sincronizado.')).toBeVisible();
     await erpPage.reload();
     await expect(card.getByText('79 kg', { exact: true })).toBeVisible();
-    expect(requests).toContainEqual([app.userId, 'PUT', '/api/v1/people/me/logs/8']);
+    expect(requests).toContainEqual([app.userId, 'PUT', '/api/v1/people/' + app.patientId + '/logs/8']);
     expect(await (await request.get('/fixture/persistence-stats')).json())
       .toMatchObject({ dates: ['2026-01-08'], events: 1, planVersion: 2 });
 

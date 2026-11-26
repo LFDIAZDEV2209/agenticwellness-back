@@ -14,7 +14,7 @@ public sealed record GetMotorPerson(Guid Id) : IRequest<MotorPersonDto>;
 public sealed record GetMotorPlan(Guid Id) : IRequest<MotorPlanDto>;
 public sealed record GetMotorDay(Guid Id, int Day) : IRequest<MotorDayDto>;
 public sealed record GetMotorEvents(Guid Id) : IRequest<IReadOnlyList<MotorEventDto>>;
-public sealed record PutMotorLog(Guid Id, int Day, MotorLogInput Input) : IRequest<MotorLogResult>;
+public sealed record PutMotorLog(Guid Id, int Day, MotorLogInput Input, bool CreateIfAbsent = false) : IRequest<MotorLogResult>;
 
 public sealed class WriteMotorPersonHandler(MotorPeople people) : IRequestHandler<WriteMotorPerson, MotorPersonWrite>
 {
@@ -58,7 +58,7 @@ public sealed class PutMotorLogHandler(MotorPeople people) : IRequestHandler<Put
     public Task<MotorLogResult> Handle(PutMotorLog request, CancellationToken ct) => people.CloseDayAsync(request, ct);
 }
 
-internal sealed record MotorView(MotorPersonDto Person, int Day);
+internal sealed record MotorView(MotorPersonDto Person, int Day, IReadOnlyList<Motor365DailyLog> Logs);
 internal sealed record MotorCalculation(WellnessProfile Profile, WellnessSimulation Result, int Version);
 
 /// <summary>Orquesta el perfil propio o asignado y el cálculo versionado del motor.</summary>
@@ -264,7 +264,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 var parameters = await store.FindParamsAsync(null, token);
                 return (person, data, dto, parameters);
             }, ct);
-            var result = project(new(inputs.dto, inputs.dto.Day), Calculate(inputs.person, inputs.data, inputs.dto.Day,
+            var result = project(new(inputs.dto, inputs.dto.Day, inputs.data.Logs), Calculate(inputs.person, inputs.data, inputs.dto.Day,
                 inputs.parameters, ct, includeProjections));
             if (!includeProjections && inputs.parameters is not null) snapshots?.TryEnqueue(id);
             return result;
@@ -273,7 +273,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     private Task<T> MeasureAsync<T>(string operation, Guid id, Func<Task<T>> work) =>
         telemetry is null ? work() : telemetry.MeasureAsync(operation, id, work);
 
-    public Task<MotorCalendarDay> ReadCalendarDayAsync(Guid id, int? day, CancellationToken ct) =>
+    public Task<MotorCalendarDay> ReadCalendarDayAsync(Guid id, int? day, CancellationToken ct, int? historyDays = null) =>
         CalculateAsync(id, (view, computation) =>
         {
             var value = computation.Result.Days[(day ?? view.Day) - 1];
@@ -285,8 +285,23 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak,
                 computation.Version, MotorProjection.ExerciseSession(value),
                 new(value.Targets.Kcal, value.Targets.Protein, value.Targets.Carbs, value.Targets.Fat,
-                    value.FiberGrams, value.WaterMl));
+                    value.FiberGrams, value.WaterMl))
+            {
+                Sync = historyDays is { } window ? ProjectSync(view, computation, value.Day, window) : null,
+            };
         }, ct, day, "Program.Profile360View", includeProjections: false);
+
+    private static MotorSyncSnapshot ProjectSync(MotorView view, MotorCalculation computation, int throughDay, int windowDays)
+    {
+        var fromDay = Math.Max(1, throughDay - windowDays + 1);
+        var logs = view.Logs.Where(log => log.Day >= fromDay && log.Day <= throughDay)
+            .OrderBy(log => log.Day)
+            .Select(log => new MotorSyncLog(log.Day, log.LogDate, log.Adherence, log.WeightKg, log.WaistCm, log.CompletedExercise))
+            .ToArray();
+        var events = computation.Result.Events.Where(item => item.Day >= fromDay && item.Day <= throughDay)
+            .Select(item => MotorProjection.Event(item, computation.Version)).ToArray();
+        return new(view.Person.Id, fromDay, throughDay, logs, events);
+    }
 
     private static void ValidateRequestedDay(int? requested, int today)
     {
@@ -297,15 +312,16 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     public async Task<MotorLogResult> CloseDayAsync(PutMotorLog request, CancellationToken ct)
     {
         int? adjustments = null;
-        var result = await store.InTransactionAsync(true, async token =>
+        async Task<MotorLogResult> CloseInTransactionAsync(CancellationToken token)
         {
+            adjustments = null;
             var (subject, person, data) = await ReadInputsAsync(request.Id, write: true, token);
             var now = clock.GetUtcNow();
             SyncCalendar(subject, person, now);
             var day = Day(person, LocalDate(subject, now));
             if (data.Receipts is null) RequirePlan(Status(person, data, day));
             var logs = data.Logs.ToDictionary(log => log.Day);
-            if (ApplyLog(person, day, logs, request.Day, request.Input))
+            if (ApplyLog(person, day, logs, request.Day, request.Input, request.CreateIfAbsent))
             {
                 person.PlanVersion++;
                 var revision = data with { Logs = logs.Values.ToArray() };
@@ -314,7 +330,11 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 Audit(person.PatientId, "log.put", now);
             }
             return new MotorLogResult(true, person.PlanVersion);
-        }, ct);
+        }
+
+        var result = request.CreateIfAbsent
+            ? await store.InConditionalLogWriteAsync(CloseInTransactionAsync, ct)
+            : await store.InTransactionAsync(true, CloseInTransactionAsync, ct);
         EnqueueAfterWrite(request.Id, adjustments);
         return result;
     }
@@ -433,7 +453,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         if (!status.Ok) throw new MotorException("plan_locked", status);
     }
 
-    private bool ApplyLog(Motor365Person person, int today, Dictionary<int, Motor365DailyLog> logs, int day, MotorLogInput input)
+    private bool ApplyLog(Motor365Person person, int today, Dictionary<int, Motor365DailyLog> logs, int day, MotorLogInput input,
+        bool createIfAbsent = false)
     {
         ValidateRequestedDay(day, today);
         input = input with { Adh = Decimal.Round(input.Adh!.Value, 4, MidpointRounding.AwayFromZero),
@@ -444,6 +465,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         if (logs.TryGetValue(day, out var log) && LogInput(log) with { Sym = null } == input with { Sym = null, Ex = input.Ex ?? 0 }
             && log.Symptoms.SequenceEqual(input.Sym ?? []))
             return false;
+        if (log is not null && createIfAbsent)
+            throw new MotorException("log_already_recorded");
         if (log is null)
         {
             log = new() { PersonId = person.PatientId, Day = day, LogDate = person.StartDate.AddDays(day - 1) };
