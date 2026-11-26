@@ -49,8 +49,7 @@ public sealed class GetMotorDayHandler(MotorPeople people) : IRequestHandler<Get
 public sealed class GetMotorEventsHandler(MotorPeople people) : IRequestHandler<GetMotorEvents, IReadOnlyList<MotorEventDto>>
 {
     public Task<IReadOnlyList<MotorEventDto>> Handle(GetMotorEvents request, CancellationToken ct) =>
-        people.CalculateAsync<IReadOnlyList<MotorEventDto>>(request.Id, (_, calculation) =>
-            calculation.Result.Events.Select(e => MotorProjection.Event(e, calculation.Version)).ToArray(), ct, operation: "events");
+        people.ReadEventsAsync(request.Id, ct);
 }
 
 public sealed class PutMotorLogHandler(MotorPeople people) : IRequestHandler<PutMotorLog, MotorLogResult>
@@ -312,6 +311,49 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         if (requested > today) throw new MotorException("future_day", issues: [new("future_day", "day")]);
     }
 
+    public Task<IReadOnlyList<MotorEventDto>> ReadEventsAsync(Guid id, CancellationToken ct, bool weeklyOnly = false) =>
+        MeasureAsync("events", id, () => store.InConditionalLogWriteAsync<IReadOnlyList<MotorEventDto>>(async token =>
+        {
+            var (subject, person, data) = await ReadInputsAsync(id, write: false, token, track: true,
+                readPermission: weeklyOnly ? "Program.Profile360View" : null);
+            var now = clock.GetUtcNow();
+            SyncCalendar(subject, person, now);
+            var day = Day(person, LocalDate(subject, now));
+            RequirePlan(Status(person, data, day));
+            var parameters = await store.FindParamsAsync(null, token);
+            var calculation = Calculate(person, data, day, parameters, token, includeProjections: false);
+            var weekly = calculation.Result.Events.Where(e => e.Kind is "sin" or "ajuste").ToArray();
+            if (weekly.Length == 0)
+                return weeklyOnly ? [] : calculation.Result.Events.Select(e => MotorProjection.Event(e, calculation.Version)).ToArray();
+
+            // Una semana vencida sin cierre también genera una decisión. Materializarla
+            // al consultar el historial, con la misma transacción serializable del cierre.
+            if (parameters is null)
+                store.AddParams(MotorParameterVersions.Initial(now, actor.UserId!.Value));
+
+            var persisted = (await store.ReadWeeklyEventsAsync(id, person.PlanVersion, calculation.Version, token))
+                .ToLookup(MotorProjection.Event);
+            var missing = new List<Motor365EngineEvent>();
+            var result = new List<MotorEventDto>();
+            foreach (var e in calculation.Result.Events)
+            {
+                var view = MotorProjection.Event(e, calculation.Version);
+                if (e.Kind is "sin" or "ajuste")
+                {
+                    var entry = persisted[view].FirstOrDefault();
+                    if (entry is null)
+                    {
+                        entry = EventEntry(person, view, now);
+                        missing.Add(entry);
+                    }
+                    result.Add(MotorProjection.Event(entry));
+                }
+                else if (!weeklyOnly) result.Add(view);
+            }
+            if (missing.Count > 0) store.AddEvents(missing);
+            return result;
+        }, ct));
+
     public async Task<MotorLogResult> CloseDayAsync(PutMotorLog request, CancellationToken ct)
     {
         int? adjustments = null;
@@ -384,16 +426,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             store.AddParams(parameters);
         }
         var calculation = Calculate(person, data, day, parameters, ct, includeProjections: false);
-        store.AddEvents(calculation.Result.Events.Where(e => e.Day <= day).Select(e =>
-        {
-            var view = MotorProjection.Event(e, calculation.Version);
-            return new Motor365EngineEvent
-            {
-                PersonId = person.PatientId, Day = e.Day, PlanVersion = person.PlanVersion,
-                ParamsVersion = calculation.Version, Kind = e.Kind, CalorieDelta = (decimal?)e.CalorieDelta,
-                RatePercent = (decimal?)e.RatePercent, MessageEs = view.Es, MessageEn = view.En, OccurredAt = now,
-            };
-        }));
+        store.AddEvents(calculation.Result.Events.Select(e =>
+            EventEntry(person, MotorProjection.Event(e, calculation.Version), now)));
         // Las fechas previas a una revisión conservan la decisión que ya quedó registrada.
         var pauseDays = calculation.Result.Days
             .Where(item => item.Day >= firstObservedDay && item.Day <= day)
@@ -405,6 +439,14 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         await store.SavePauseDaysAsync(person.PatientId, pauseDays, ct);
         return calculation.Result.Events.Count(e => e.Day == day && e.Kind == "ajuste");
     }
+
+    private static Motor365EngineEvent EventEntry(Motor365Person person, MotorEventDto view, DateTimeOffset now) => new()
+    {
+        PersonId = person.PatientId, Day = view.D, PlanVersion = person.PlanVersion,
+        ParamsVersion = view.ParamsVersion, EngineVer = view.EngineVersion, Kind = view.K,
+        CalorieDelta = (decimal?)view.Delta, RatePercent = (decimal?)view.Rate,
+        MessageEs = view.Es, MessageEn = view.En, OccurredAt = now,
+    };
 
     private static MotorCalculation Calculate(Motor365Person person, MotorData data, int day,
         Motor365EngineParams? stored, CancellationToken ct, bool includeProjections = true)
@@ -418,7 +460,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             Logs = data.Logs.ToDictionary(log => log.Day, log =>
                 new WellnessDailyLog((double)log.Adherence, (double)log.SleepHours, log.Energy, log.Pain,
                     (double?)log.WeightKg, log.CompletedExercise)
-                { Symptoms = log.Symptoms }),
+                { Symptoms = log.Symptoms, MeasuredWaistCm = log.WaistCm }),
         };
         return new(profile, WellnessEngine.EvaluateRecordedTimeline(profile, ct, includeProjections), version);
     }

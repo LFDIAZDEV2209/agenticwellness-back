@@ -71,6 +71,9 @@ internal static class MotorProjection
         return new(e.Day, e.Kind, e.CalorieDelta, e.RatePercent, text.Es, text.En, WellnessEngine.ReferenceVersion, version);
     }
 
+    internal static MotorEventDto Event(Motor365EngineEvent e) =>
+        new(e.Day, e.Kind, (double?)e.CalorieDelta, (double?)e.RatePercent, e.MessageEs, e.MessageEn, e.EngineVer, e.ParamsVersion);
+
     internal static IReadOnlyList<MotorText> Reasons(WellnessDay day) =>
         day.Reasons.Select(Text).ToArray();
 
