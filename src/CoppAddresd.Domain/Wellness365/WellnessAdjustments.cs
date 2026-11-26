@@ -3,7 +3,7 @@ namespace CoppAddresd.Domain.Wellness365;
 internal static class WellnessAdjustments
 {
     internal static WellnessEvent Weekly(WellnessGoal goal, ReadOnlySpan<WellnessDay> fortnight,
-        double waistChange, double cap, ref int hunger, WellnessParameters parameters)
+        double waistChange, double cap, ref int hunger, WellnessParameters parameters, bool blockFoodCut)
     {
         var end = fortnight[^1];
         var current = Measurements(fortnight[7..]);
@@ -42,6 +42,12 @@ internal static class WellnessAdjustments
             delta = 0;
             message = new("Hambre excesiva reportada: no se baja más; se evalúa pausa.",
                 "Excess hunger reported: no further cut; break is evaluated.");
+        }
+        if (delta < 0 && blockFoodCut)
+        {
+            delta = 0;
+            message = new("Se mantuvo la comida por lo que registraste en el cierre del día.",
+                "Your food target stayed the same because of what you logged at the end of the day.");
         }
         hunger = 0;
 
