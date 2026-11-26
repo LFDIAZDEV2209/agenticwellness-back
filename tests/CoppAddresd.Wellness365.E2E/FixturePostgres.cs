@@ -96,6 +96,59 @@ sealed class FixturePostgres
         return id;
     }
 
+    public async Task WithdrawConsentAsync(Guid patientId, CancellationToken ct)
+    {
+        await using var db = Open();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE app.legal_document_acceptances SET withdrawn_at = now()
+            WHERE id IN (SELECT acceptance_id FROM app.consent WHERE person_id = {patientId});
+            """, ct);
+    }
+
+    public async Task<int[]> SnapshotVersionsAsync(Guid patientId, CancellationToken ct)
+    {
+        await using var db = Open();
+        return await db.Motor365PlanSnapshots.Where(x => x.PersonId == patientId)
+            .Select(x => x.ParamsVersion).Order().ToArrayAsync(ct);
+    }
+
+    public async Task<Guid[]> SeedCohortAsync(Guid template, CancellationToken ct)
+    {
+        // Entradas sintéticas sin snapshots, con un titular y dos recibos por persona.
+        var ids = Enumerable.Range(0, 1000).Select(_ => Guid.NewGuid()).ToArray();
+        await using var db = Open();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO app.patient_profiles (id, user_id, status, first_name, last_name, timezone, date_of_birth)
+            SELECT c.id, c.id, p.status, 'Persona', 'Carga', p.timezone, p.date_of_birth
+            FROM unnest({ids}) AS c(id) CROSS JOIN app.patient_profiles p WHERE p.id = {template};
+
+            INSERT INTO app.person (patient_id, sex, birth_year, height_cm, initial_weight_kg, initial_waist_cm,
+                target_weight_kg, activity_level, goal, pace, vegetarian, lactose_free, fitness_level, start_date,
+                engine_ver, plan_version, calendar_timezone_id, calendar_anchor_date, calendar_anchor_day)
+            SELECT c.id, p.sex, p.birth_year, p.height_cm, p.initial_weight_kg + (c.n % 100) / 10.0, p.initial_waist_cm,
+                p.target_weight_kg, p.activity_level, p.goal, p.pace, p.vegetarian, p.lactose_free, p.fitness_level,
+                p.start_date, p.engine_ver, p.plan_version, profile.timezone, p.start_date, 1
+            FROM unnest({ids}) WITH ORDINALITY AS c(id, n) CROSS JOIN app.person p
+            JOIN app.patient_profiles profile ON profile.id = p.patient_id
+            WHERE p.patient_id = {template};
+
+            INSERT INTO app.screening (person_id, submission_id, par_q_1, par_q_2, par_q_3, par_q_4, par_q_5,
+                par_q_6, par_q_7, nqs_1, nqs_2, nqs_3, nqs_4, nqs_5, nqs_6)
+            SELECT id, id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 FROM unnest({ids}) AS c(id);
+
+            WITH receipts AS (
+                INSERT INTO app.legal_document_acceptances
+                SELECT gen_random_uuid(), c.id, r.legal_document_version_id, r.scope, r.locale, now(), null
+                FROM unnest({ids}) AS c(id) CROSS JOIN app.consent x
+                JOIN app.legal_document_acceptances r ON r.id = x.acceptance_id
+                WHERE x.person_id = {template}
+                RETURNING id, user_id
+            )
+            INSERT INTO app.consent (person_id, acceptance_id) SELECT user_id, id FROM receipts;
+            """, ct);
+        return ids;
+    }
+
     public async Task ProfileTimeZoneAsync(Guid patientId, string zone, CancellationToken ct)
     {
         await using var db = Open();

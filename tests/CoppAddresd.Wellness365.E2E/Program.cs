@@ -20,10 +20,11 @@ var calendar = service.Activate("America/Bogota");
 var fixtureConnection = Environment.GetEnvironmentVariable("COP_KAN131_TEST_DB_CONNECTION");
 var postgres = fixtureConnection is null ? null : new FixturePostgres(fixtureConnection);
 var patientId = Guid.Empty;
+Guid[] cohort = [];
 builder.Services.AddControllers().AddApplicationPart(typeof(Motor365PlanController).Assembly);
 builder.Services.AddMotor365Api();
 builder.Services.AddMediatR(registration => registration.RegisterServicesFromAssemblyContaining<MotorPeople>());
-builder.Services.AddScoped<IPatientScopeStore>(_ => new FixturePatientScope(() => patientId));
+builder.Services.AddScoped<IPatientScopeStore>(_ => new FixturePatientScope(() => patientId, () => cohort));
 builder.Services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
 builder.Services.AddScoped(_ => new WellnessPlanService(clock));
 
@@ -118,6 +119,31 @@ app.MapGet("/fixture/session/{client}", (string client) => new
     patientId,
 });
 
+if (postgres is not null && Environment.GetEnvironmentVariable("COP_KAN128_DIAGNOSTICS") == "1")
+{
+    var diagnostics = new FixtureMotorDiagnostics();
+    app.Lifetime.ApplicationStopped.Register(diagnostics.Dispose);
+    app.MapGet("/fixture/kan128/cache-counters", () => diagnostics.Read());
+    app.MapGet("/fixture/kan128/annual-trace", () => diagnostics.ReadAnnualTrace());
+    app.MapGet("/fixture/kan128/snapshots", async (CancellationToken ct) =>
+        Results.Ok(await postgres.SnapshotVersionsAsync(patientId, ct)));
+    app.MapPost("/fixture/kan128/withdraw-consent", async (CancellationToken ct) =>
+    {
+        if (patientId == Guid.Empty) return Results.BadRequest();
+        await postgres.WithdrawConsentAsync(patientId, ct);
+        return Results.NoContent();
+    });
+    if (Environment.GetEnvironmentVariable("COP_KAN128_LOAD") == "1")
+    {
+        app.MapPost("/fixture/kan128/cohort", async (CancellationToken ct) =>
+        {
+            if (patientId == Guid.Empty) return Results.BadRequest();
+            cohort = await postgres.SeedCohortAsync(patientId, ct);
+            return Results.Ok(cohort);
+        });
+    }
+}
+
 app.MapGet("/fixture/persistence-stats", async (CancellationToken ct) =>
     scenario.Postgres ? Results.Ok(await postgres!.StatsAsync(patientId, ct)) : Results.NotFound());
 
@@ -167,7 +193,16 @@ sealed record LogInput(double Adherence, double? Weight, int Pain = 0);
 sealed class FixtureClock : TimeProvider
 {
     internal static readonly DateTimeOffset Start = DateTimeOffset.Parse("2026-01-01T18:00:00Z");
+    private readonly object _clockLock = new();
     private DateTimeOffset _now = Start;
-    public override DateTimeOffset GetUtcNow() => _now;
-    public void Set(DateTimeOffset instant) => _now = instant;
+
+    public override DateTimeOffset GetUtcNow()
+    {
+        lock (_clockLock) return _now;
+    }
+
+    public void Set(DateTimeOffset instant)
+    {
+        lock (_clockLock) _now = instant;
+    }
 }

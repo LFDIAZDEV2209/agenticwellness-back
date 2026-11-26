@@ -18,30 +18,29 @@ public sealed class Motor365HandlerTests
     private readonly TimeProvider clock = new TestClock();
 
     [Fact]
-    public async Task Alta_calcula_plan_y_respeta_el_dia_local()
+    public async Task Alta_encola_plan_y_respeta_el_dia_local()
     {
         SetUp();
         Transactions<MotorPersonWrite>(true);
-        store.LoadAsync(id, true, Arg.Any<CancellationToken>()).Returns(new MotorData(null, null, false, null, [], null));
+        store.LoadAsync(id, true, Arg.Any<CancellationToken>()).Returns(new MotorData(null, null, false, null, []));
         var receipts = Receipts();
         store.FindCurrentReceiptsAsync(id, user, false, "1.0", Arg.Any<CancellationToken>()).Returns(receipts);
-        var handler = new WriteMotorPersonHandler(new(store, actor, scope, clock));
+        var queue = Substitute.For<IMotor365SnapshotQueue>();
+        var handler = new WriteMotorPersonHandler(new(store, actor, scope, clock, queue));
         using var cancellation = new CancellationTokenSource();
         var result = await handler.Handle(new(null, Input()), cancellation.Token);
         Assert.True(result.Created);
         Assert.True(result.Result.Status.Ok);
         Assert.Equal(id, result.Result.Id);
-        await store.Received(1).FlushAsync(cancellation.Token);
         store.Received(1).AddPerson(Arg.Is<Motor365Person>(p => p.StartDate == new DateOnly(2026, 11, 25)));
-        store.Received(1).AddSnapshot(Arg.Is<Motor365PlanSnapshot>(p =>
-            p.PersonId == id && p.SubmissionId == result.Result.SubmissionId && p.ParamsVersion == 1));
+        queue.Received(1).TryEnqueue(id);
     }
 
     [Fact]
     public async Task Plan_diario_devuelve_cuatro_comidas_y_respeta_la_pausa()
     {
         SetUp();
-        Transactions<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>(true);
+        PlanRead<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>();
         var log = new Motor365DailyLog { Day = 1, Adherence = .8m, SleepHours = 8, Energy = 5, Pain = 8 };
         var data = Existing() with { Logs = [log] };
         data.Person!.StartDate = data.Person.StartDate.AddDays(-1);
@@ -59,7 +58,7 @@ public sealed class Motor365HandlerTests
     public async Task Consentimiento_revocado_y_paciente_ajeno_no_entregan_plan()
     {
         SetUp();
-        Transactions<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>(true);
+        PlanRead<(Motor365Person, MotorData, int, Motor365EngineParams?, Motor365PlanSnapshot?, DateTimeOffset)>();
         store.LoadAsync(id, true, Arg.Any<CancellationToken>()).Returns(Existing() with { Receipts = null });
         var handler = new GetMotorPlanHandler(new(store, actor, scope, clock));
         var locked = await Assert.ThrowsAsync<MotorException>(() => handler.Handle(new(id), default));
@@ -128,6 +127,10 @@ public sealed class Motor365HandlerTests
         store.InTransactionAsync(write, Arg.Any<Func<CancellationToken, Task<T>>>(), Arg.Any<CancellationToken>())
             .Returns(call => call.Arg<Func<CancellationToken, Task<T>>>()(call.Arg<CancellationToken>()));
 
+    private void PlanRead<T>() =>
+        store.InPlanReadAsync(Arg.Any<Func<CancellationToken, Task<T>>>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<Func<CancellationToken, Task<T>>>()(call.Arg<CancellationToken>()));
+
     private static MotorPersonInput Input() => new(null, Guid.NewGuid(), null, "F", 35, 165, 75, 90, 70, 2, "bajar",
         "m", 0, 0, [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], null, null, new(null, "1.0"), null, null, null);
 
@@ -139,7 +142,7 @@ public sealed class Motor365HandlerTests
             PersonId = id, SubmissionId = Guid.NewGuid(),
             ParQ1 = 0, ParQ2 = 0, ParQ3 = 0, ParQ4 = 0, ParQ5 = 0, ParQ6 = 0, ParQ7 = 0,
             Nqs1 = 0, Nqs2 = 0, Nqs3 = 0, Nqs4 = 0, Nqs5 = 0, Nqs6 = 0,
-        }, false, Receipts(), [], null);
+        }, false, Receipts(), []);
     private sealed class TestClock : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => new(2026, 11, 26, 2, 0, 0, TimeSpan.Zero);

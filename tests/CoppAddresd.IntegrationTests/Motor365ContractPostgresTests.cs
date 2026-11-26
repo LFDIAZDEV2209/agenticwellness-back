@@ -69,7 +69,8 @@ public sealed class Motor365ContractPostgresTests
             var ids = db.Database.GetMigrations().ToArray();
             var position = Array.FindIndex(ids, x => x.EndsWith("_AddMotor365Persistence", StringComparison.Ordinal));
             Assert.True(position > 0);
-            await db.Database.ExecuteSqlRawAsync(db.GetService<IMigrator>().GenerateScript(ids[position - 1], ids[position],
+            var latest = ids.Single(id => id.EndsWith("_AllowMotor365NauseaObservation", StringComparison.Ordinal));
+            await db.Database.ExecuteSqlRawAsync(db.GetService<IMigrator>().GenerateScript(ids[position - 1], latest,
                 MigrationsSqlGenerationOptions.NoTransactions), ct);
             await db.Database.ExecuteSqlInterpolatedAsync($"""
                 INSERT INTO app.patient_profiles (id, user_id, first_name, last_name, timezone, status)
@@ -96,6 +97,8 @@ public sealed class Motor365ContractPostgresTests
             var store = new Motor365Store(db);
             var handler = new WriteMotorPersonHandler(new(store, actor, guard, clock));
             Assert.True((await handler.Handle(request, ct)).Created);
+            var plan = await new GetMotorPlanHandler(new(store, actor, guard, clock)).Handle(new(patient), ct);
+            Assert.Equal(1, plan.ParamsVersion);
             Assert.Single(await db.Motor365PlanSnapshots.ToListAsync(ct));
         }
 
@@ -108,7 +111,7 @@ public sealed class Motor365ContractPostgresTests
                 new(new(JsonSerializer.SerializeToElement(new { floorF = 2000 }), "Prueba", 1)), ct);
             Assert.Equal(2, parameters.ParamsVersion);
             var day = await new GetMotorDayHandler(people).Handle(new(patient, 1), ct);
-            Assert.Equal(1, day.ParamsVersion);
+            Assert.Equal(2, day.ParamsVersion);
             Assert.Equal(4, day.Menu!.Count);
 
             var close = new PutMotorLogHandler(people);
