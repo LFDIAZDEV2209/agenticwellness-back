@@ -163,6 +163,28 @@ internal sealed class Motor365DailyLogConfiguration : IEntityTypeConfiguration<M
     }
 }
 
+internal sealed class Motor365PauseDayConfiguration : IEntityTypeConfiguration<Motor365PauseDay>
+{
+    public void Configure(EntityTypeBuilder<Motor365PauseDay> builder)
+    {
+        builder.ToTable("engine_pause_day", "app", table =>
+        {
+            table.HasCheckConstraint("ck_motor365_pause_day", "day BETWEEN 1 AND 365");
+            table.HasCheckConstraint("ck_motor365_pause_plan_version", "plan_version >= 1");
+        });
+        builder.HasKey(x => new { x.PersonId, x.Day });
+        builder.Property(x => x.PersonId).HasColumnName("person_id");
+        builder.Property(x => x.Day).HasColumnName("day");
+        builder.Property(x => x.Date).HasColumnName("effective_date");
+        builder.Property(x => x.Scheduled).HasColumnName("scheduled");
+        builder.Property(x => x.SafetyExercise).HasColumnName("safety_exercise");
+        builder.Property(x => x.PlanVersion).HasColumnName("plan_version");
+        builder.HasIndex(x => new { x.PersonId, x.Date }).IsUnique();
+        builder.HasOne<Motor365Person>().WithMany().HasForeignKey(x => x.PersonId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
 internal sealed class Motor365EngineParamsConfiguration : IEntityTypeConfiguration<Motor365EngineParams>
 {
     public void Configure(EntityTypeBuilder<Motor365EngineParams> builder)

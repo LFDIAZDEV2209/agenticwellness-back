@@ -69,7 +69,7 @@ public sealed class Motor365ContractPostgresTests
             var ids = db.Database.GetMigrations().ToArray();
             var position = Array.FindIndex(ids, x => x.EndsWith("_AddMotor365Persistence", StringComparison.Ordinal));
             Assert.True(position > 0);
-            var latest = ids.Single(id => id.EndsWith("_AllowMotor365NauseaObservation", StringComparison.Ordinal));
+            var latest = ids.Single(id => id.EndsWith("_AddMotor365PauseDays", StringComparison.Ordinal));
             await db.Database.ExecuteSqlRawAsync(db.GetService<IMigrator>().GenerateScript(ids[position - 1], latest,
                 MigrationsSqlGenerationOptions.NoTransactions), ct);
             await db.Database.ExecuteSqlInterpolatedAsync($"""
