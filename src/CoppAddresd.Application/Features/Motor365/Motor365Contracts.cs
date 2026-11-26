@@ -20,7 +20,13 @@ public sealed record MotorPersonDto(
     Guid Id, string N, string Sex, int Age, decimal H, decimal W0, decimal Waist0, decimal? Target,
     int Act, string Goal, string Pace, int Veg, int Nolac, short?[]? ParqA, short?[]? NqA,
     bool Cons, bool Ncons, MotorTerms? Terms, DateOnly StartDate, int Day, int Ver,
-    Guid? SubmissionId, MotorStatus Status, IReadOnlyDictionary<int, MotorLogInput> Log);
+    Guid? SubmissionId, MotorStatus Status, IReadOnlyDictionary<int, MotorLogInput> Log)
+{
+    public DateOnly TodayLocalDate { get; init; }
+    public string TimeZoneId { get; init; } = "";
+}
+public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDate, DateOnly StartDate,
+    string TimeZoneId, string State, string LogStatus, double? Adherence, double? MeasuredWeightKg, int Streak, int ParametersVersion);
 
 public sealed record MotorPlanDto(Guid Id, int Today, int Ver, IReadOnlyList<MotorDayDto> Days,
     [property: JsonPropertyName("engine_ver")] string EngineVersion,
@@ -29,7 +35,7 @@ public sealed record MotorDayDto(int D, int Wk, string Mode, double Kc,
     [property: JsonPropertyName("P")] double Protein,
     [property: JsonPropertyName("C")] double Carbs,
     [property: JsonPropertyName("F")] double Fat,
-    int Fiber, int Water, double W, char Type, bool Train, bool Pause, bool Simple,
+    int Fiber, int Water, double? W, char Type, bool Train, bool Pause, bool Simple,
     double AdjK, MotorExerciseDto Exercise, IReadOnlyList<MotorText> Why,
     [property: JsonPropertyName("engine_ver")] string EngineVersion,
     [property: JsonPropertyName("params_version")] int ParamsVersion)

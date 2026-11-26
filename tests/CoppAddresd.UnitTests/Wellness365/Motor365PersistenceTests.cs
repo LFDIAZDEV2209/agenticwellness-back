@@ -11,7 +11,7 @@ namespace CoppAddresd.UnitTests.Wellness365;
 
 public sealed class Motor365PersistenceTests
 {
-    private const string AllowedSymptomsSql = "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio']::text[]";
+    private const string AllowedSymptomsSql = "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio','nauseas']::text[]";
 
     private static AppDbContext CreateContext() => new(new DbContextOptionsBuilder<AppDbContext>()
         .UseNpgsql("Host=127.0.0.1;Port=1;Database=motor365_model;Username=design_only").Options);
@@ -92,7 +92,7 @@ public sealed class Motor365PersistenceTests
         Assert.Contains("sleep_hours BETWEEN 0 AND 24", checks);
         Assert.Contains("energy BETWEEN 1 AND 5", checks);
         Assert.Contains("pain BETWEEN 0 AND 10", checks);
-        Assert.Contains(AllowedSymptomsSql, checks);
+        Assert.Contains("symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio']::text[]", checks);
 
         var screeningGate = Assert.Single(migration.UpOperations.OfType<AddForeignKeyOperation>());
         Assert.Equal("plan_snapshot", screeningGate.Table);

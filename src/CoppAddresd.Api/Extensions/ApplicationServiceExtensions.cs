@@ -1,3 +1,4 @@
+using CoppAddresd.Api.Controllers;
 using System.Text;
 using CoppAddresd.Api.Authorization;
 using CoppAddresd.Api.Configuration;
@@ -441,6 +442,7 @@ public static class ApplicationServiceExtensions
         services
             .AddAuthorizationBuilder()
             .AddPolicy(NutritionPolicies.Staff, NutritionPolicies.Configure)
+            .AddPolicy(Motor365PlanController.PatientWritePolicy, p => p.RequireAuthenticatedUser().RequireClaim("aud", "app"))
             .AddPolicy(
                 SosPolicies.AppPatient,
                 policy =>

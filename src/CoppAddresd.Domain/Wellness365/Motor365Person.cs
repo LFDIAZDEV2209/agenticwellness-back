@@ -17,6 +17,9 @@ public sealed class Motor365Person
     public bool LactoseFree { get; set; }
     public int FitnessLevel { get; set; }
     public DateOnly StartDate { get; set; }
+    public string? CalendarTimeZoneId { get; set; }
+    public DateOnly? CalendarAnchorDate { get; set; }
+    public int? CalendarAnchorDay { get; set; }
     public string EngineVer { get; set; } = WellnessEngine.ReferenceVersion;
     public int PlanVersion { get; set; } = 1;
 }

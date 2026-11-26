@@ -76,8 +76,8 @@ public sealed class MotorLogInputValidator : AbstractValidator<MotorLogInput>
         RuleFor(x => x.Ex).InclusiveBetween(0, 1);
         RuleFor(x => x.W).GreaterThanOrEqualTo(.01m).LessThanOrEqualTo(1000).PrecisionScale(6, 2, true);
         RuleFor(x => x.Waist).GreaterThanOrEqualTo(.01m).LessThanOrEqualTo(500).PrecisionScale(5, 2, true);
-        RuleFor(x => x.Sym).Must(sym => sym is null || sym.Length <= 4 && sym.Distinct().Count() == sym.Length);
-        RuleForEach(x => x.Sym).Must(s => s is "mareo" or "fatiga" or "hambre" or "insomnio");
+        RuleFor(x => x.Sym).Must(sym => sym is null || sym.Length <= 5 && sym.Distinct().Count() == sym.Length);
+        RuleForEach(x => x.Sym).Must(s => s is "mareo" or "fatiga" or "hambre" or "insomnio" or "nauseas");
     }
 }
 

@@ -47,13 +47,28 @@ public static class WellnessEngine
         IReadOnlyList<int>? swaps = null) =>
         new(day, WellnessNutrition.BuildDay(profile, day.Targets, day.Day, swaps, day.SimpleMenu));
 
-    public static WellnessSimulation Simulate(WellnessProfile profile, CancellationToken ct = default)
+    public static WellnessSimulation Simulate(WellnessProfile profile, CancellationToken ct = default) =>
+        RunTimeline(profile, PlanLength, recordedOnly: false, ct);
+
+    // La simulación de referencia conserva sus proyecciones v5.2.
+    public static WellnessSimulation EvaluateRecordedTimeline(WellnessProfile profile, CancellationToken ct = default, bool includeProjections = false)
     {
-        var days = new WellnessDay[PlanLength];
+        ArgumentOutOfRangeException.ThrowIfLessThan(profile.CurrentDay, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(profile.CurrentDay, PlanLength);
+        return RunTimeline(profile with
+        {
+            Real = true, CurrentWeightKg = null, CurrentCalorieAdjustment = null, CurrentStreak = null
+        }, includeProjections ? PlanLength : profile.CurrentDay, recordedOnly: true, ct);
+    }
+
+    private static WellnessSimulation RunTimeline(WellnessProfile profile, int length, bool recordedOnly, CancellationToken ct)
+    {
+        var days = new WellnessDay[length];
         var events = new List<WellnessEvent>();
         var waistHistory = new List<double> { profile.InitialWaistCm };
         var random = new WellnessRandom(profile.Seed);
         var weight = profile.InitialWeightKg;
+        var observedWeight = weight;
         double adjustment = 0;
         var share = WellnessRules.TargetShare(profile);
         var activity = WellnessRules.ActivityMultiplier(profile.ActivityLevel);
@@ -89,8 +104,9 @@ public static class WellnessEngine
                 }
             }
 
+            var targetCheckWeight = recordedOnly ? observedWeight : weight;
             if (!reached && day > 1 && profile.TargetWeightKg is { } target && target != 0 &&
-                (gain ? weight >= target - .05 : weight <= target + .05))
+                (gain ? targetCheckWeight >= target - .05 : targetCheckWeight <= target + .05))
             {
                 reached = true;
                 events.Add(new(day, "meta", null, null,
@@ -120,9 +136,12 @@ public static class WellnessEngine
 
             var past = day < profile.CurrentDay;
             var hasLog = profile.Logs.TryGetValue(day, out var recorded);
+            if (recordedOnly && day > profile.CurrentDay) { hasLog = false; recorded = null; }
             var log = recorded is not null
                 ? recorded with { Symptoms = Array.AsReadOnly(recorded.Symptoms.ToArray()) }
+                : recordedOnly ? new WellnessDailyLog(.8, 7, 3, 0, null, false)
                 : ReadUnloggedDay(profile, weight, past, daily.Paused, rolls);
+            if (recordedOnly && recorded?.MeasuredWeightKg is { } measured) observedWeight = measured;
             var deviation = (1 - log.Adherence) * (gain ? -.30 : .35);
             var eaten = kcal * (1 + deviation);
             var effectiveTdee = tdee * (1 + profile.MetabolicModifier);
@@ -139,13 +158,18 @@ public static class WellnessEngine
             }
 
             int? recordedPoints = null, recordedStreak = null;
-            if (past || hasLog)
+            if (hasLog || (!recordedOnly && past))
             {
                 points += (log.CompletedExercise ? 15 : 0) + (int)WellnessRules.Round(log.Adherence * 20) +
                           (log.MeasuredWeightKg.HasValue ? 3 : 0) + 2;
                 streak = log.Adherence >= .6 ? streak + 1 : 0;
                 recordedPoints = points;
                 recordedStreak = streak;
+            }
+            else if (past)
+            {
+                streak = 0;
+                recordedStreak = 0;
             }
 
             days[index] = new(day, week, dow, mode, macros, Math.Max(25, (int)WellnessRules.Round(14 * kcal / 1000)),

@@ -41,10 +41,11 @@ public sealed class Motor365HandlerTests
     public async Task Plan_diario_devuelve_cuatro_comidas_y_respeta_la_pausa()
     {
         SetUp();
-        Transactions<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>(false);
+        Transactions<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>(true);
         var log = new Motor365DailyLog { Day = 1, Adherence = .8m, SleepHours = 8, Energy = 5, Pain = 8 };
         var data = Existing() with { Logs = [log] };
-        store.LoadAsync(id, false, Arg.Any<CancellationToken>()).Returns(data);
+        data.Person!.StartDate = data.Person.StartDate.AddDays(-1);
+        store.LoadAsync(id, true, Arg.Any<CancellationToken>()).Returns(data);
         var handler = new GetMotorDayHandler(new(store, actor, scope, clock));
         var result = await handler.Handle(new(id, 2), default);
         Assert.True(result.Pause);
@@ -58,8 +59,8 @@ public sealed class Motor365HandlerTests
     public async Task Consentimiento_revocado_y_paciente_ajeno_no_entregan_plan()
     {
         SetUp();
-        Transactions<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>(false);
-        store.LoadAsync(id, false, Arg.Any<CancellationToken>()).Returns(Existing() with { Receipts = null });
+        Transactions<(Motor365Person, MotorData, MotorPersonDto, Motor365EngineParams?)>(true);
+        store.LoadAsync(id, true, Arg.Any<CancellationToken>()).Returns(Existing() with { Receipts = null });
         var handler = new GetMotorPlanHandler(new(store, actor, scope, clock));
         var locked = await Assert.ThrowsAsync<MotorException>(() => handler.Handle(new(id), default));
         Assert.Equal("plan_locked", locked.Code);

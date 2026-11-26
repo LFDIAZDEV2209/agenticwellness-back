@@ -1,3 +1,4 @@
+using CoppAddresd.Application.Features.Wellness365;
 using CoppAddresd.Application.Common;
 using CoppAddresd.Application.Features.HealthTests.Notifications;
 using CoppAddresd.Application.Features.HealthTests.Scoring;
@@ -40,6 +41,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPatientScopeStore, PatientScopeStore>();
         services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
+        services.AddScoped<IWellnessPlanGate, WellnessPlanGate>();
         services.Configure<CoppAddresd.Application.Features.Medications.MedicationControlSettings>(
             configuration.GetSection(CoppAddresd.Application.Features.Medications.MedicationControlSettings.SectionName));
         services.AddScoped<CoppAddresd.Application.Features.Medications.IMedicationControlStore, MedicationControlStore>();

@@ -23,6 +23,10 @@ internal sealed class Motor365PersonConfiguration : IEntityTypeConfiguration<Mot
             table.HasCheckConstraint("ck_motor365_person_pace", "pace IN ('Slow', 'Moderate', 'Maximum')");
             table.HasCheckConstraint("ck_motor365_person_fitness", "fitness_level BETWEEN 0 AND 3");
             table.HasCheckConstraint("ck_motor365_person_versions", "plan_version > 0 AND btrim(engine_ver) <> ''");
+            table.HasCheckConstraint("ck_motor365_person_calendar",
+                "(calendar_timezone_id IS NULL AND calendar_anchor_date IS NULL AND calendar_anchor_day IS NULL) OR " +
+                "(calendar_timezone_id IS NOT NULL AND btrim(calendar_timezone_id) <> '' AND " +
+                "calendar_anchor_date IS NOT NULL AND calendar_anchor_day IS NOT NULL AND calendar_anchor_day BETWEEN 1 AND 365)");
         });
 
         builder.HasKey(x => x.PatientId);
@@ -40,6 +44,9 @@ internal sealed class Motor365PersonConfiguration : IEntityTypeConfiguration<Mot
         builder.Property(x => x.LactoseFree).HasColumnName("lactose_free");
         builder.Property(x => x.FitnessLevel).HasColumnName("fitness_level");
         builder.Property(x => x.StartDate).HasColumnName("start_date");
+        builder.Property(x => x.CalendarTimeZoneId).HasColumnName("calendar_timezone_id").HasMaxLength(64);
+        builder.Property(x => x.CalendarAnchorDate).HasColumnName("calendar_anchor_date");
+        builder.Property(x => x.CalendarAnchorDay).HasColumnName("calendar_anchor_day");
         builder.Property(x => x.EngineVer).HasColumnName("engine_ver").HasMaxLength(32);
         builder.Property(x => x.PlanVersion).HasColumnName("plan_version").IsConcurrencyToken();
 
@@ -129,7 +136,7 @@ internal sealed class Motor365DailyLogConfiguration : IEntityTypeConfiguration<M
             table.HasCheckConstraint("ck_motor365_daily_log_day", "day BETWEEN 1 AND 365");
             table.HasCheckConstraint("ck_motor365_daily_log_adherence", "adherence BETWEEN 0 AND 1");
             table.HasCheckConstraint("ck_motor365_daily_log_sleep", "sleep_hours BETWEEN 0 AND 24");
-            table.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio']::text[]");
+            table.HasCheckConstraint("ck_motor365_daily_log_symptoms", "symptoms <@ ARRAY['mareo','hambre','fatiga','insomnio','nauseas']::text[]");
             table.HasCheckConstraint("ck_motor365_daily_log_energy", "energy BETWEEN 1 AND 5");
             table.HasCheckConstraint("ck_motor365_daily_log_pain", "pain BETWEEN 0 AND 10");
             table.HasCheckConstraint("ck_motor365_daily_log_weight", "weight_kg > 0 AND weight_kg <= 1000");

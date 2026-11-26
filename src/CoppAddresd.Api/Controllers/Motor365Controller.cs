@@ -77,6 +77,7 @@ public sealed class Motor365Controller(ISender sender) : ControllerBase
     [ProducesResponseType<MotorApiError>(403)]
     [ProducesResponseType<MotorApiError>(404)]
     [ProducesResponseType<MotorApiError>(409)]
+    [ProducesResponseType<MotorApiError>(422)]
     public Task<MotorDayDto> GetPlanDay(Guid id, int day, CancellationToken ct) => sender.Send(new GetMotorDay(id, day), ct);
 
     [HttpPut("people/{id}/logs/{day}", Name = "Motor365CloseDay")]

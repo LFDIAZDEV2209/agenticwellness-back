@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Text.Json;
 using CoppAddresd.Application.Interfaces;
+using CoppAddresd.Application.Features.Wellness365;
 using CoppAddresd.Domain.Wellness365;
 using MediatR;
 
@@ -42,7 +43,7 @@ public sealed class GetMotorDayHandler(MotorPeople people) : IRequestHandler<Get
 {
     public Task<MotorDayDto> Handle(GetMotorDay request, CancellationToken ct) =>
         people.CalculateAsync(request.Id, (_, calculation) => MotorProjection.WithMenu(
-            WellnessEngine.PlanDay(calculation.Profile, calculation.Result.Days[request.Day - 1]), calculation.Version), ct);
+            WellnessEngine.PlanDay(calculation.Profile, calculation.Result.Days[request.Day - 1]), calculation.Version), ct, request.Day);
 }
 
 public sealed class GetMotorEventsHandler(MotorPeople people) : IRequestHandler<GetMotorEvents, IReadOnlyList<MotorEventDto>>
@@ -74,6 +75,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             var created = data.Person is null;
             if (created && request.Id.HasValue) throw new MotorException("person_not_found");
             var person = data.Person ?? new Motor365Person { PatientId = subject.Id, StartDate = local };
+            SyncCalendar(subject, person, now);
             var previous = created ? null : ToPerson(subject, person, data, local);
             var receipt = data.Receipts;
             if (input.Terms is not null && subject.UserId is { } owner)
@@ -140,25 +142,49 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     public Task<MotorPersonDto> ReadAsync(Guid id, CancellationToken ct) =>
         store.InTransactionAsync(true, async token =>
         {
-            var (subject, person, data) = await ReadInputsAsync(id, write: false, token);
+            var (subject, person, data) = await ReadInputsAsync(id, write: false, token, track: true);
             var now = clock.GetUtcNow();
+            SyncCalendar(subject, person, now);
             Audit(person.PatientId, "person.read", now);
             return ToPerson(subject, person, data, LocalDate(subject, now));
         }, ct);
 
-    internal async Task<T> CalculateAsync<T>(Guid id, Func<MotorView, MotorCalculation, T> project, CancellationToken ct)
+    internal async Task<T> CalculateAsync<T>(Guid id, Func<MotorView, MotorCalculation, T> project, CancellationToken ct,
+        int? requestedDay = null, string? readPermission = null, bool includeProjections = true)
     {
-        var inputs = await store.InTransactionAsync(false, async token =>
+        var inputs = await store.InTransactionAsync(true, async token =>
         {
-            var (subject, person, data) = await ReadInputsAsync(id, write: false, token);
-            var dto = ToPerson(subject, person, data, LocalDate(subject, clock.GetUtcNow()));
+            var (subject, person, data) = await ReadInputsAsync(id, write: false, token, track: true, readPermission);
+            var now = clock.GetUtcNow();
+            SyncCalendar(subject, person, now);
+            var dto = ToPerson(subject, person, data, LocalDate(subject, now));
             RequirePlan(dto.Status);
+            ValidateRequestedDay(requestedDay, dto.Day);
             var parameters = data.ParamsVersion.HasValue ? await store.FindParamsAsync(data.ParamsVersion, token) : null;
             if (data.ParamsVersion.HasValue && parameters is null)
                 throw new MotorException("service_unavailable");
             return (person, data, dto, parameters);
         }, ct);
-        return project(new(inputs.dto, inputs.dto.Day), Calculate(inputs.person, inputs.data, inputs.dto.Day, inputs.parameters, ct));
+        return project(new(inputs.dto, inputs.dto.Day), Calculate(inputs.person, inputs.data, inputs.dto.Day,
+            inputs.parameters, ct, includeProjections));
+    }
+
+    public Task<MotorCalendarDay> ReadCalendarDayAsync(Guid id, int? day, CancellationToken ct) =>
+        CalculateAsync(id, (view, computation) =>
+        {
+            var value = computation.Result.Days[(day ?? view.Day) - 1];
+            var recorded = computation.Profile.Logs.ContainsKey(value.Day);
+            var streak = value.Streak ?? (value.Day > 1 ? computation.Result.Days[value.Day - 2].Streak : null) ?? 0;
+            var state = value.Paused ? "paused" : value.Mode == WellnessMode.Maintain ? "maint" : "active";
+            return new MotorCalendarDay(value.Day, view.Day, view.Person.TodayLocalDate, view.Person.StartDate,
+                view.Person.TimeZoneId, state, recorded ? "recorded" : value.Past ? "missing" : "open",
+                recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak, computation.Version);
+        }, ct, day, "Program.Profile360View", includeProjections: false);
+
+    private static void ValidateRequestedDay(int? requested, int today)
+    {
+        if (requested is < 1 or > WellnessEngine.PlanLength) throw new MotorException("bad_day");
+        if (requested > today) throw new MotorException("future_day", issues: [new("future_day", "day")]);
     }
 
     public Task<MotorLogResult> CloseDayAsync(PutMotorLog request, CancellationToken ct) =>
@@ -166,7 +192,9 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         {
             var (subject, person, data) = await ReadInputsAsync(request.Id, write: true, token);
             var now = clock.GetUtcNow();
+            SyncCalendar(subject, person, now);
             var day = Day(person, LocalDate(subject, now));
+            if (data.Receipts is null) RequirePlan(Status(person, data, day));
             var logs = data.Logs.ToDictionary(log => log.Day);
             if (ApplyLog(person, day, logs, request.Day, request.Input))
             {
@@ -179,7 +207,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             return new MotorLogResult(true, person.PlanVersion);
         }, ct);
 
-    private async Task<MotorSubject> SubjectAsync(Guid? requested, bool write, CancellationToken ct)
+    private async Task<MotorSubject> SubjectAsync(Guid? requested, bool write, CancellationToken ct, string? readPermission = null)
     {
         var user = actor.UserId ?? throw new MotorException("forbidden");
         Guid id;
@@ -191,16 +219,16 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         else
         {
             id = requested ?? throw new MotorException("invalid_request", issues: [new("invalid_field", "id")]);
-            await scope.EnsureAsync(id, write ? "Wellness.Manage" : "Wellness.View", ct);
+            await scope.EnsureAsync(id, write ? "Wellness.Manage" : readPermission ?? "Wellness.View", ct);
         }
         return await store.FindSubjectAsync(id, ct) ?? throw new MotorException("person_not_found");
     }
 
     private async Task<(MotorSubject Subject, Motor365Person Person, MotorData Data)> ReadInputsAsync(
-        Guid id, bool write, CancellationToken ct)
+        Guid id, bool write, CancellationToken ct, bool track = false, string? readPermission = null)
     {
-        var subject = await SubjectAsync(id, write, ct);
-        var data = (await store.LoadAsync(id, write, ct)) with { BirthDate = subject.BirthDate };
+        var subject = await SubjectAsync(id, write, ct, readPermission);
+        var data = (await store.LoadAsync(id, write || track, ct)) with { BirthDate = subject.BirthDate };
         return (subject, data.Person ?? throw new MotorException("person_not_found"), data);
     }
 
@@ -239,7 +267,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     }
 
     private static MotorCalculation Calculate(Motor365Person person, MotorData data, int day,
-        Motor365EngineParams? stored, CancellationToken ct)
+        Motor365EngineParams? stored, CancellationToken ct, bool includeProjections = true)
     {
         if (person.EngineVer != WellnessEngine.ReferenceVersion)
             throw new MotorException("service_unavailable");
@@ -252,7 +280,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                     (double?)log.WeightKg, log.CompletedExercise)
                 { Symptoms = log.Symptoms }),
         };
-        return new(profile, WellnessEngine.Simulate(profile, ct), version);
+        return new(profile, WellnessEngine.EvaluateRecordedTimeline(profile, ct, includeProjections), version);
     }
 
     private static WellnessProfile Profile(Motor365Person person, int day, DateTime? birth) =>
@@ -290,7 +318,12 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
 
     private bool ApplyLog(Motor365Person person, int today, Dictionary<int, Motor365DailyLog> logs, int day, MotorLogInput input)
     {
-        if (day > today) throw new MotorException("future_day", issues: [new("future_day", "day")]);
+        ValidateRequestedDay(day, today);
+        input = input with { Adh = Decimal.Round(input.Adh!.Value, 4, MidpointRounding.AwayFromZero),
+            Sleep = Decimal.Round(input.Sleep!.Value, 2, MidpointRounding.AwayFromZero),
+            W = input.W is decimal w ? Decimal.Round(w, 2, MidpointRounding.AwayFromZero) : null,
+            Waist = input.Waist is decimal waist ? Decimal.Round(waist, 2, MidpointRounding.AwayFromZero) : null,
+            Sym = (input.Sym ?? []).Distinct().Order(StringComparer.Ordinal).ToArray() };
         if (logs.TryGetValue(day, out var log) && LogInput(log) with { Sym = null } == input with { Sym = null, Ex = input.Ex ?? 0 }
             && log.Symptoms.SequenceEqual(input.Sym ?? []))
             return false;
@@ -347,7 +380,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             p.Vegetarian ? 1 : 0, p.LactoseFree ? 1 : 0, ReadParq(data.Screening), ReadNqs(data.Screening),
             data.Approved, data.Approved, data.Receipts is { } receipts ? new(receipts.Terms.AcceptedAt, receipts.Terms.Version) : null,
             p.StartDate, day, p.PlanVersion, data.Screening?.SubmissionId, Status(p, data, day),
-            data.Logs.ToDictionary(l => l.Day, LogInput));
+            data.Logs.ToDictionary(l => l.Day, LogInput))
+        { TodayLocalDate = local, TimeZoneId = subject.Timezone };
     }
 
     private static int Age(Motor365Person person, DateTime? birth)
@@ -361,7 +395,21 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
 
     private static string Goal(WellnessGoal goal) => goal switch { WellnessGoal.LoseWeight => "bajar", WellnessGoal.GainMuscle => "masa", _ => "def" };
     private static string Pace(WellnessPace pace) => pace switch { WellnessPace.Slow => "s", WellnessPace.Maximum => "max", _ => "m" };
-    private static int Day(Motor365Person p, DateOnly local) => Math.Clamp(local.DayNumber - p.StartDate.DayNumber + 1, 1, 365);
+    private static int Day(Motor365Person p, DateOnly local) =>
+        Math.Clamp((p.CalendarAnchorDay ?? 1) + local.DayNumber - (p.CalendarAnchorDate ?? p.StartDate).DayNumber,
+            1, WellnessEngine.PlanLength);
+
+    private static void SyncCalendar(MotorSubject subject, Motor365Person person, DateTimeOffset now)
+    {
+        if (!TimeZoneInfo.TryFindSystemTimeZoneById(subject.Timezone, out _))
+            throw new MotorException("service_unavailable");
+        var previous = new WellnessPlanCalendar(person.StartDate, person.CalendarTimeZoneId ?? subject.Timezone,
+            person.CalendarAnchorDate ?? person.StartDate, person.CalendarAnchorDay ?? 1);
+        var current = WellnessPlanService.ChangeTimeZone(previous, subject.Timezone, now);
+        person.CalendarTimeZoneId = current.TimeZoneId;
+        person.CalendarAnchorDate = current.AnchorLocalDate;
+        person.CalendarAnchorDay = current.AnchorDay;
+    }
 
     private static DateOnly LocalDate(MotorSubject subject, DateTimeOffset now)
     {
