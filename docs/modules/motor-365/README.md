@@ -129,6 +129,11 @@ de pruebas. Desde `tests/CoppAddresd.Wellness365.E2E`, configurar
 Ejecutar `npm run test:exercise`. Se comprueban 365 días para cada objetivo y
 la pantalla de ejercicio de la app en español e inglés.
 
+El check de paridad en CI también compara días representativos del plan real
+con `live-exercise-golden.json`. La referencia incluye desbloqueos con racha,
+fronteras de fase, dosis de masa y la descarga del día 365. Es independiente
+de `golden.json`, que conserva la salida original del kit.
+
 ## Energía del plan (KAN-123)
 
 El motor calcula BMR por Mifflin–St Jeor con el peso del día: `10 × kg

@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const people = require('../CoppAddresd.UnitTests/Wellness365/Fixtures/people.json');
 const golden = require('../CoppAddresd.UnitTests/Wellness365/Fixtures/golden.json');
+const liveExerciseGolden = require('../CoppAddresd.UnitTests/Wellness365/Fixtures/live-exercise-golden.json');
 
 // UNL de engine.js v5.2. El catálogo HTTP no publica las semanas de desbloqueo.
 const unlockWeek = {
@@ -87,6 +88,43 @@ test.describe('KAN-129 · paridad y reglas por HTTP', () => {
         expect(day, label).toMatchObject({ ...provenance, d, w: null });
         expect(day.menu, label).toHaveLength(4);
         expect(Math.abs(day.totals.k - day.kc) / day.kc, label).toBeLessThanOrEqual(.08);
+      }
+    });
+  }
+
+  for (const [goal, scenario] of Object.entries(liveExerciseGolden)) {
+    test(`ejercicio real ${goal}: referencia KAN-125`, async ({ request }) => {
+      const call = await seed(request, { fit: 0 });
+      const patient = await call('', { method: 'PUT', data: { goal, target: scenario.target } });
+      expect(patient.status).toMatchObject({ ok: true });
+      if (scenario.priorClosures) {
+        await atDay(request, scenario.priorClosures);
+        for (let day = 1; day <= scenario.priorClosures; day++) {
+          const closure = await call(`/logs/${day}`, { method: 'PUT', data: {
+            adh: .95, sleep: 7, energy: 4, pain: 0, sym: [], ex: 1,
+          } });
+          expect(closure.ok).toBe(true);
+        }
+      }
+      const plan = await call('/plan');
+      for (const expected of scenario.days) {
+        const day = plan.days[expected.day - 1];
+        const { items, phase, minutes, deload } = day.exercise;
+        const label = `${goal}, día ${expected.day}`;
+        expect({ day: day.d, week: day.wk, type: day.type, phase, minutes, deload }, label).toEqual({
+          day: expected.day, week: expected.week, type: expected.type, phase: expected.phase,
+          minutes: expected.minutes, deload: expected.deload,
+        });
+        expect(items, label).toHaveLength(4);
+        expect(items.reduce((total, item) => total + item.minutes, 0), label).toBe(minutes);
+        const ids = items.map(item => item.id);
+        for (const id of expected.absent ?? []) expect(ids, label).not.toContain(id);
+        for (const id of expected.present ?? []) expect(ids, label).toContain(id);
+        if (expected.dose) {
+          const strength = items.filter(item => Number.isInteger(item.sets));
+          expect(strength, label).not.toHaveLength(0);
+          for (const item of strength) expect(item, `${label}, ${item.id}`).toMatchObject(expected.dose);
+        }
       }
     });
   }

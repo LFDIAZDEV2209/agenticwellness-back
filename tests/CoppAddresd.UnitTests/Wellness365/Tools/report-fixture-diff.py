@@ -7,7 +7,7 @@ import sys
 
 
 FIXTURES = "tests/CoppAddresd.UnitTests/Wellness365/Fixtures"
-NAMES = ("people.json", "golden.json", "reference-plans.json", "reference-histories.json")
+NAMES = ("people.json", "golden.json", "reference-plans.json", "reference-histories.json", "live-exercise-golden.json")
 MAX_DIFF_LINES = 160
 
 
