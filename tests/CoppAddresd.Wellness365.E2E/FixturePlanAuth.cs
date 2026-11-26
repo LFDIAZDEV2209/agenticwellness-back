@@ -10,6 +10,7 @@ sealed class FixturePlanAuth
 {
     internal static readonly Guid AppUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a01");
     internal static readonly Guid ErpUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a02");
+    private static readonly Guid AdminUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a04");
     private static readonly Guid UnassignedUser = new("71e0e3ce-8d21-4bfa-b20e-3f14b7ad6a03");
     private readonly SymmetricSecurityKey _key = new(RandomNumberGenerator.GetBytes(32));
 
@@ -34,10 +35,16 @@ sealed class FixturePlanAuth
     public string Token(string client)
     {
         var isApp = client == "app";
-        var actor = isApp ? AppUser : client == "erp-unassigned" ? UnassignedUser : ErpUser;
+        var actor = client switch
+        {
+            "app" => AppUser,
+            "erp-admin" => AdminUser,
+            "erp-unassigned" => UnassignedUser,
+            _ => ErpUser,
+        };
         Claim[] claims = [new(JwtRegisteredClaimNames.Sub, actor.ToString()),
             new("allowed", client is "erp" or "erp-unassigned" ? "yes" : "no"),
-            new(ClaimTypes.Role, isApp ? "Patient" : "Professional")];
+            new(ClaimTypes.Role, isApp ? "Patient" : client == "erp-admin" ? "Admin" : "Professional")];
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("motor365-test",
             isApp ? "app" : "erp", claims, expires: DateTime.UtcNow.AddMinutes(20),
             signingCredentials: new SigningCredentials(_key, SecurityAlgorithms.HmacSha256)));
@@ -48,19 +55,19 @@ sealed class FixturePlanActor(IHttpContextAccessor http) : IPatientScopeActor
 {
     public Guid? UserId => Guid.TryParse(http.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier),
         out var id) ? id : null;
-    public bool IsAdmin => false;
+    public bool IsAdmin => http.HttpContext?.User.IsInRole("Admin") == true;
     public Task<Guid?> ProfessionalIdAsync(CancellationToken ct) => Task.FromResult(UserId);
     public Task<bool> HasPermissionAsync(string permission, CancellationToken ct) =>
         Task.FromResult((permission is "Program.Profile360View" or "Wellness.View") &&
-            http.HttpContext?.User.HasClaim("allowed", "yes") == true);
+            (IsAdmin || http.HttpContext?.User.HasClaim("allowed", "yes") == true));
 }
 
-sealed class FixturePatientScope(Func<Guid> patient) : IPatientScopeStore
+sealed class FixturePatientScope(Func<Guid> patient, Func<Guid[]> cohort) : IPatientScopeStore
 {
     public Task<Guid?> SelfPatientAsync(Guid userId, CancellationToken ct) =>
         Task.FromResult<Guid?>(userId == FixturePlanAuth.AppUser ? patient() : null);
     public IQueryable<Guid> VisiblePatients(Guid? professionalId, bool isAdmin) =>
-        (professionalId == FixturePlanAuth.ErpUser ? new[] { patient() } : []).AsQueryable();
+        (isAdmin ? cohort() : professionalId == FixturePlanAuth.ErpUser ? new[] { patient() } : []).AsQueryable();
     public Task<bool> ContainsAsync(IQueryable<Guid> ids, Guid patientId, CancellationToken ct) =>
         Task.FromResult(ids.Contains(patientId));
     public Task<Guid?> OwnerAsync(PatientResource resource, Guid id, CancellationToken ct) =>
