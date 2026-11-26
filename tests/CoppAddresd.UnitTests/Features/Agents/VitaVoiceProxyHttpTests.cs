@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace CoppAddresd.UnitTests.Features.Agents;
 
@@ -28,7 +30,8 @@ public sealed class VitaVoiceProxyHttpTests
         { Interlocked.Increment(ref Calls); return send(request, ct); }
     }
 
-    private static WebApplicationFactory<ApiEntryPoint> Host(HttpMessageHandler upstream, bool enabled = true) =>
+    private static WebApplicationFactory<ApiEntryPoint> Host(HttpMessageHandler upstream, bool enabled = true,
+        OutcomeLog? outcomeLog = null) =>
         new WebApplicationFactory<ApiEntryPoint>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Testing");
@@ -44,6 +47,7 @@ public sealed class VitaVoiceProxyHttpTests
             {
                 services.RemoveAll<IHostedService>();
                 services.AddHttpClient("VitaVoice").ConfigurePrimaryHttpMessageHandler(() => upstream);
+                if (outcomeLog is not null) services.AddSingleton<ILogger<VitaVoiceProxyController>>(outcomeLog);
             });
         });
 
@@ -56,6 +60,81 @@ public sealed class VitaVoiceProxyHttpTests
         request.Headers.Add("X-Vita-Conversation", "conv_synthetic");
         request.Headers.Add("X-Vita-Turn", "1");
         return request;
+    }
+
+    [Theory]
+    [InlineData("data: [DONE]\n\n", "completed")]
+    [InlineData("data: [DONE]\r\n\r\n", "completed")]
+    [InlineData("data: [DONE]\n", "incomplete")]
+    [InlineData("data: [DONE]extra\n\n", "incomplete")]
+    [InlineData("data: first line\ndata: [DONE]\n\n", "incomplete")]
+    [InlineData("data: {\"content\":\"data: [DONE]\"}\n\n", "incomplete")]
+    [InlineData("", "incomplete")]
+    public async Task ProxyOutcome_RequiresACompleteTerminalFrameAndDoesNotChangeTheResponse(string tail, string expected)
+    {
+        const string payload = "data: {\"content\":\"qa-only-text\"}\n\n";
+        var output = payload + tail;
+        var upstream = new Upstream((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(new FragmentedStream(Encoding.UTF8.GetBytes(output)))
+                { Headers = { ContentType = new MediaTypeHeaderValue("text/event-stream") } }
+        }));
+        var log = new OutcomeLog();
+        await using var host = Host(upstream, outcomeLog: log); using var client = host.CreateClient();
+        using var request = Request(); using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(output, await response.Content.ReadAsStringAsync());
+        var entry = Assert.Single(log.Entries);
+        Assert.Equal(expected, entry["Outcome"]);
+        Assert.Equal(200, entry["StatusCode"]);
+        Assert.False(string.IsNullOrWhiteSpace(Assert.IsType<string>(entry["ProxyRequestId"])));
+        Assert.Equal(new[] { "DurationMs", "Outcome", "ProxyRequestId", "StatusCode", "{OriginalFormat}" },
+            entry.Keys.OrderBy(key => key, StringComparer.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false, "client_aborted")]
+    [InlineData(true, "transport_error")]
+    public async Task ProxyOutcome_HeadersAndForwardedMarkerAreNotCompletionIfTheStreamBreaks(bool upstreamFails, string expected)
+    {
+        var atEnd = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var finish = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stream = new WaitingStream(atEnd, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            Event, upstreamFails ? finish.Task : null);
+        var upstream = new Upstream((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream) { Headers = { ContentType = new MediaTypeHeaderValue("text/event-stream") } }
+        }));
+        var log = new OutcomeLog();
+        await using var host = Host(upstream, outcomeLog: log); using var client = host.CreateClient();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)); using var request = Request();
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        await atEnd.Task.WaitAsync(cts.Token);
+        Assert.Empty(log.Entries);
+        if (upstreamFails) finish.SetResult();
+        else { cts.Cancel(); response.Dispose(); }
+
+        await log.Written.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(expected, Assert.Single(log.Entries)["Outcome"]);
+        Assert.Equal(1, upstream.Calls);
+    }
+
+    [Fact]
+    public async Task ProxyOutcome_Upstream503DoesNotCountAsACompletedStream()
+    {
+        var upstream = new Upstream((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+        {
+            Content = new StringContent("synthetic upstream error details")
+        }));
+        var log = new OutcomeLog();
+        await using var host = Host(upstream, outcomeLog: log); using var client = host.CreateClient();
+        using var request = Request(); using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        var entry = Assert.Single(log.Entries);
+        Assert.Equal("upstream_rejected", entry["Outcome"]);
+        Assert.Equal(503, entry["StatusCode"]);
     }
 
     [Fact]
@@ -200,10 +279,12 @@ public sealed class VitaVoiceProxyHttpTests
     public async Task ClaveDedicadaObligatoria_NoInvocaAI(string? key)
     {
         var upstream = new Upstream((_, _) => throw new InvalidOperationException("No debe invocarse"));
-        await using var host = Host(upstream); using var client = host.CreateClient();
+        var log = new OutcomeLog();
+        await using var host = Host(upstream, outcomeLog: log); using var client = host.CreateClient();
         using var request = Request(key); request.Headers.Remove("X-Vita-Turn"); request.Headers.Add("X-Vita-Turn", "0");
         using var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode); Assert.Equal(0, upstream.Calls);
+        Assert.Empty(log.Entries);
     }
 
     [Theory]
@@ -267,7 +348,33 @@ public sealed class VitaVoiceProxyHttpTests
         await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10)); Assert.Equal(1, upstream.Calls);
     }
 
-    private sealed class WaitingStream(TaskCompletionSource blocked, TaskCompletionSource cancelled, string initial = "data: {}\n\n") : Stream
+    private sealed class OutcomeLog : ILogger<VitaVoiceProxyController>
+    {
+        public ConcurrentQueue<IReadOnlyDictionary<string, object?>> Entries { get; } = new();
+        public TaskCompletionSource Written { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            if (state is not IEnumerable<KeyValuePair<string, object?>> properties) return;
+            var fields = properties.ToDictionary();
+            if (fields.GetValueOrDefault("{OriginalFormat}") is not string format
+                || !format.StartsWith("VitaVoiceProxyOutcome ", StringComparison.Ordinal)) return;
+            Entries.Enqueue(fields);
+            Written.TrySetResult();
+        }
+    }
+
+    private sealed class FragmentedStream(byte[] content) : MemoryStream(content)
+    {
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default) =>
+            base.ReadAsync(buffer[..Math.Min(1, buffer.Length)], ct);
+    }
+
+    private sealed class WaitingStream(TaskCompletionSource blocked, TaskCompletionSource cancelled,
+        string initial = "data: {}\n\n", Task? failWhen = null) : Stream
     {
         private bool sent;
         public override bool CanRead => true; public override bool CanSeek => false; public override bool CanWrite => false;
@@ -277,6 +384,11 @@ public sealed class VitaVoiceProxyHttpTests
         {
             if (!sent) { sent = true; var bytes = Encoding.UTF8.GetBytes(initial); bytes.CopyTo(buffer); return bytes.Length; }
             blocked.TrySetResult();
+            if (failWhen is not null)
+            {
+                await failWhen.WaitAsync(ct);
+                throw new HttpRequestException("synthetic upstream failure");
+            }
             try { await Task.Delay(Timeout.Infinite, ct); return 0; }
             catch (OperationCanceledException) { cancelled.TrySetResult(); throw; }
         }
