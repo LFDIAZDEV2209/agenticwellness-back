@@ -10,7 +10,7 @@
 | `screening` | `(person_id, submission_id)` identifica las 7 respuestas PAR-Q y 6 NQS. Cada respuesta admite 0, 1 o NULL. `answers_complete` es una columna generada. Todo NULL impide publicar la caché para ese envío mediante una FK compuesta al paciente y cuestionario completo. El worker debe comprobar la misma compuerta antes de invocar el cálculo y resolver las indicaciones clínicas aplicables. |
 | `daily_log` | `(person_id, day)` y `(person_id, log_date)` son únicos. `log_date` es la fecha nominal del ordinal del plan. El día efectivo de cierre usa la zona local y el ancla de [KAN-131](../wellness-365/README.md#calendario-y-registros). El registro incluye adherencia, horas de sueño, energía, dolor, síntomas, peso/cintura opcionales y ejercicio completado. Los síntomas de referencia son `mareo`, `hambre`, `fatiga` e `insomnio`. La migración `AllowMotor365NauseaObservation` admite registrar también `nauseas` sin aplicar una regla adicional. Una lista vacía indica que no se reportaron síntomas. |
 | `engine_params` | Cada versión es un objeto JSON, con versión de motor, autor, fecha y razón. Publicar un cambio implica insertar una nueva versión. |
-| `plan_snapshot` | Caché reconstruible con clave `(person_id, plan_version, params_version)`, envío fuente y versión de motor. La integración debe avanzar la versión de plan al aceptar una nueva revisión de entradas e invalidar o regenerar la caché correspondiente. |
+| `plan_snapshot` | Caché reconstruible con clave `(person_id, plan_version, params_version)`, envío fuente y versión de motor. El servidor avanza la versión al aceptar nuevas entradas. Solo reutiliza la fila de la revisión y parámetros vigentes si corresponde al día y a las entradas verificadas. |
 | `engine_event` | Decisiones v5.2 con persona, día, versión de plan, motor y parámetros, mensaje bilingüe y ajuste cuando aplica. |
 | `audit_log` | Persona, acción, fecha y actor opcional. El actor por defecto usa `audit.user_id` que propaga el interceptor existente cuando hay contexto transaccional. El escritor del flujo registra las acciones de manera explícita. |
 | `professional_review` | FK al par persona/envío de `screening` y a `erp.professionals`, con decisión, fecha y nota opcional. La autorización del profesional conserva el alcance clínico existente. |
@@ -105,3 +105,123 @@ El flujo de generación asíncrona existente conserva sus rutas y estados.
 La [tabla de operaciones, roles, errores y gates](../../../.ai-coord/KAN130.md)
 documenta el contrato, la prueba optativa en BD efímera y las decisiones de
 integración pendientes.
+
+## Energía del plan (KAN-123)
+
+El motor calcula BMR por Mifflin–St Jeor con el peso del día: `10 × kg
++ 6.25 × cm − 5 × edad`, más 5 para M o menos 161 para F. El TDEE multiplica
+ese resultado por 1.2, 1.375, 1.55 o 1.725 para las actividades 1 a 4. En
+fase principal, bajar resta 10/15/20 %, masa suma 5/10/15 % y definir resta
+5/10/12 % según el ritmo. Mantenimiento parte del TDEE sin ese porcentaje.
+La meta suma el ajuste acotado a ±12 % del TDEE del día, se redondea a la
+decena más cercana (empates hacia arriba) y respeta los pisos predeterminados
+de 1200 kcal (F) y 1500 kcal (M).
+
+Para una persona y un día comparables, con el resto fijo y BMR positivo, el
+objetivo no disminuye al subir la actividad, el peso o la altura. Al subir
+el ritmo, no sube para bajar/definir y no baja para masa. El piso y el
+redondeo pueden producir empates. No se presupone monotonía entre días con
+distintos registros, ajustes o fases.
+
+El plan real decide mantenimiento a partir del pesaje observado al cierre:
+para bajar/definir acepta `peso ≤ meta + 0.05` y para masa `peso ≥ meta − 0.05`.
+Compara en decimal para incluir exactamente el límite registrado. El ajuste
+se vuelve a acotar aunque cambie el TDEE sin un nuevo ajuste semanal. La
+simulación del kit mantiene su comportamiento de referencia.
+
+Para ejecutar la suite del navegador contra los endpoints canónicos y un
+PostgreSQL local efímero, desde `tests/CoppAddresd.Wellness365.E2E`:
+
+```bash
+npm ci
+npx playwright install chromium
+COP_KAN131_TEST_DB_CONNECTION='<conexión a copp_motor365_test_* en puerto local no estándar>' npm run test:kan123
+```
+
+## Caché y observabilidad (KAN-128)
+
+El plan anual busca la PK de `app.plan_snapshot` con la versión actual del
+plan y de parámetros. Antes de atender un hit, la API vuelve a comprobar el
+alcance, los recibos vigentes y la elegibilidad. El contenido debe coincidir
+con el envío, motor, edad y día efectivo. Los cierres y cambios de perfil
+avanzan la revisión. Publicar parámetros invalida las lecturas siguientes
+sin modificar el perfil. Cambiar el día o la edad efectiva reemplaza el
+artefacto de la misma clave. Un payload sin la revisión interna vigente
+del cálculo energético se trata como miss y se reconstruye bajo demanda,
+sin alterar la versión pública del motor.
+
+En un miss anual la API calcula y guarda la proyección. El día individual
+y los cierres evalúan solo la línea temporal hasta hoy. Los cierres guardan
+decisiones en su transacción y, después del commit, pueden encolar el plan
+anual. Las lecturas diarias también lo encolan. La cola local tiene capacidad
+de 128 personas, un consumidor y deduplicación por persona en espera o en
+proceso. Si se llena o se reinicia la instancia, la lectura anual sigue
+reconstruyendo el plan. El worker vuelve a resolver el contexto vigente.
+No se hace un barrido masivo al cambiar parámetros. El upsert es idempotente
+entre réplicas y no reemplaza un artefacto producido desde una vista más nueva.
+
+Los snapshots no tienen TTL por tiempo. Se invalidan lógicamente según las
+entradas y el día. Las revisiones históricas existentes no se eliminan por
+este cambio. La persistencia de la caché no es requisito para devolver el
+plan calculado si falla su escritura. Las lecturas de planes usan
+`REPEATABLE READ` para ver entradas y versiones coherentes y solo guardan
+cambios del ancla de calendario. Las escrituras de datos de negocio
+conservan el aislamiento serializable.
+
+El meter y la fuente de trazas se llaman `CoppAddresd.Motor365`. La latencia y
+los errores se separan por operación (`annual`, `day`, `calendar`, `events` y
+`background`). Se registran bloqueos de elegibilidad, ajustes al confirmar
+una revisión, resultados de caché anual y fallos de escritura de caché. Las
+métricas incluyen la versión de motor y no incluyen identificadores de persona.
+Las trazas de cálculo usan un HMAC truncado a 128 bits de la identidad.
+Configurar `Motor365__TraceKey` con el mismo secreto aleatorio en las instancias
+si se requiere correlación entre ellas. Sin configuración la clave es efímera
+por proceso. El colector del entorno debe suscribirse al meter y ActivitySource.
+Los logs de aplicación redactan las rutas de paciente y no registran
+perfiles, identificadores directos, tokens ni el contenido de los planes.
+
+### E2E de caché y carga
+
+La suite Playwright optativa usa el host de pruebas de KAN-131 en Release y
+un PostgreSQL local vacío con prefijo `copp_motor365_test_` y puerto alternativo.
+El navegador llama a los endpoints reales de `/v1` con JWT sintéticos. No se
+simulan el cálculo, el almacenamiento, el control de versiones ni el JSON
+devuelto. La página del fixture no representa la app ni el ERP desplegados.
+
+Desde `tests/CoppAddresd.Wellness365.E2E`, con PostgreSQL efímero y las
+variables disponibles solo para el proceso de pruebas:
+
+```bash
+npm ci
+npx playwright install chromium
+export COP_KAN131_TEST_DB_CONNECTION='Host=127.0.0.1;Port=55438;Database=copp_motor365_test_kan128;Username=<owner>;Password=<efimera>'
+npm run test:kan128
+COP_KAN128_LOAD=1 PLAYWRIGHT_JSON_OUTPUT_FILE=kan128-results.json npm run test:kan128 -- --reporter=list,json
+```
+
+Descartar la BD al terminar. Usar una BD nueva para comparar corridas de
+rendimiento. La suite escribe revisiones y publica parámetros de prueba.
+
+- **Frescura.** Cambia el perfil, escribe un cierre y publica parámetros por
+  API. Un `200` con datos anteriores falla de inmediato. Solo se reintenta
+  un `503` marcado como reintentable mientras termina el recálculo. El
+  cambio de parámetros se verifica sin forzar otra escritura del paciente.
+- **Carga.** Siembra 1.000 personas sin snapshots y usa ocho solicitudes
+  simultáneas. Mide el p95 cliente desde el envío hasta leer y decodificar
+  el JSON. Hace un pase anual y uno diario, y luego repite ambos. El primer
+  pase diario puede reutilizar el trabajo del anual. Los cuatro pases
+  validan versiones y exigen p95 menor a 300 ms para el año y 150 ms para
+  el día. El JSON incluye el número de respuestas obsoletas por pase.
+- **Medición de caché.** El fixture escucha un contador `Counter<long>` de
+  .NET con meter `CoppAddresd.Motor365`, instrumento
+  `motor365.plan.cache.requests` y etiqueta `result=hit|miss`. La relación
+  es `hits / (hits + misses)` de las lecturas anuales, sin contar el worker.
+  Sin muestras se informa `null`, no 0 %. No se infieren hits por
+  latencia ni por la existencia de una fila en la BD.
+
+La suite también comprueba que el worker materializa el snapshot después
+de una lectura diaria, que el plan anual no conserva el día previo y que
+un snapshot caliente no evita la revocación de consentimiento. La traza
+de la respuesta contiene un seudónimo, no el identificador del paciente.
+El reporte se adjunta como `kan128-load.json`. La corrida local no valida
+capacidad ni exportación de telemetría de un entorno desplegado.

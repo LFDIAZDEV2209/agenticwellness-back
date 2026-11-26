@@ -1,3 +1,4 @@
+using CoppAddresd.Api.Features.Wellness365;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -29,6 +30,10 @@ public static class Motor365Api
         services.AddScoped<IMotor365Actor, MotorHttpActor>();
         services.AddScoped<IMotor365Store, Motor365Store>();
         services.AddScoped<MotorPeople>();
+        services.AddSingleton(sp => new Motor365Telemetry(sp.GetRequiredService<IConfiguration>()["Motor365:TraceKey"]));
+        services.AddSingleton<Motor365SnapshotWorker>();
+        services.AddSingleton<IMotor365SnapshotQueue>(sp => sp.GetRequiredService<Motor365SnapshotWorker>());
+        services.AddHostedService(sp => sp.GetRequiredService<Motor365SnapshotWorker>());
         services.AddAuthorizationBuilder()
             .AddPolicy(People, p => p.RequireAuthenticatedUser().RequireAssertion(c =>
                 ValidIdentity(c.User) && (c.User.HasClaim("aud", "app") || ErpRole(c.User, StaffRoles))))

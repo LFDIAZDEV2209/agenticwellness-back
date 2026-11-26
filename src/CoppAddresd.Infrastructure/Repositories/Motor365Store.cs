@@ -13,14 +13,20 @@ namespace CoppAddresd.Infrastructure.Repositories;
 public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalConsentSettings>? legal = null) : IMotor365Store
 {
     public Task<T> InTransactionAsync<T>(bool write, Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
+        ExecuteAsync(write ? IsolationLevel.Serializable : IsolationLevel.RepeatableRead, write, operation, ct);
+
+    public Task<T> InPlanReadAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
+        ExecuteAsync(IsolationLevel.RepeatableRead, saveChanges: true, operation, ct);
+
+    private Task<T> ExecuteAsync<T>(IsolationLevel isolation, bool saveChanges,
+        Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
         db.Database.CreateExecutionStrategy().ExecuteAsync(async token =>
         {
             try
             {
-                await using var transaction = await db.Database.BeginTransactionAsync(
-                    write ? IsolationLevel.Serializable : IsolationLevel.RepeatableRead, token);
+                await using var transaction = await db.Database.BeginTransactionAsync(isolation, token);
                 var result = await operation(token);
-                if (write) await db.SaveChangesAsync(token);
+                if (saveChanges) await db.SaveChangesAsync(token);
                 await transaction.CommitAsync(token);
                 return result;
             }
@@ -49,7 +55,7 @@ public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalC
     public async Task<MotorData> LoadAsync(Guid id, bool tracked, CancellationToken ct)
     {
         var person = await Tracking(db.Motor365People, tracked).SingleOrDefaultAsync(p => p.PatientId == id, ct);
-        if (person is null) return new(null, null, false, null, [], null);
+        if (person is null) return new(null, null, false, null, []);
         var screening = await db.Motor365Screenings.AsNoTracking().Where(x => x.PersonId == id)
             .OrderByDescending(x => x.RecordedAt).ThenByDescending(x => x.SubmissionId).FirstOrDefaultAsync(ct);
         var approved = screening is not null && await db.Motor365ProfessionalReviews.AsNoTracking()
@@ -59,9 +65,7 @@ public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalC
         var owner = await db.PatientProfiles.AsNoTracking().Where(x => x.Id == id).Select(x => x.UserId).SingleAsync(ct);
         var receipts = owner.HasValue ? await FindCurrentReceiptsAsync(id, owner.Value, true, null, ct) : null;
         var logs = await Tracking(db.Motor365DailyLogs, tracked).Where(x => x.PersonId == id).OrderBy(x => x.Day).ToListAsync(ct);
-        var version = await db.Motor365PlanSnapshots.AsNoTracking().Where(x => x.PersonId == id && x.PlanVersion == person.PlanVersion)
-            .OrderByDescending(x => x.ParamsVersion).Select(x => (int?)x.ParamsVersion).FirstOrDefaultAsync(ct);
-        return new(person, screening, approved, receipts, logs, version);
+        return new(person, screening, approved, receipts, logs);
 
         static IQueryable<T> Tracking<T>(DbSet<T> rows, bool enabled) where T : class => enabled ? rows : rows.AsNoTracking();
     }
@@ -139,12 +143,31 @@ public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalC
     }
 
     public Task<bool> CanConnectAsync(CancellationToken ct) => db.Database.CanConnectAsync(ct);
-    public Task FlushAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
     public void AddPerson(Motor365Person person) => db.Motor365People.Add(person);
     public void AddScreening(Motor365Screening screening) => db.Motor365Screenings.Add(screening);
     public void AddLog(Motor365DailyLog log) => db.Motor365DailyLogs.Add(log);
     public void AddParams(Motor365EngineParams parameters) => db.Motor365EngineParams.Add(parameters);
-    public void AddSnapshot(Motor365PlanSnapshot snapshot) => db.Motor365PlanSnapshots.Add(snapshot);
+    public Task<Motor365PlanSnapshot?> ReadSnapshotAsync(Guid personId, int planVersion, int paramsVersion, CancellationToken ct) =>
+        db.Motor365PlanSnapshots.AsNoTracking().SingleOrDefaultAsync(
+            x => x.PersonId == personId && x.PlanVersion == planVersion && x.ParamsVersion == paramsVersion, ct);
+
+    public async Task SaveSnapshotAsync(Motor365PlanSnapshot snapshot, CancellationToken ct)
+    {
+        // La clave única hace idempotente el fill incluso entre instancias. Una
+        // revisión que avanzó durante el cálculo no necesita materializarse.
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO app.plan_snapshot AS existing
+                (person_id, plan_version, params_version, submission_id, engine_ver, plan_json, generated_at)
+            SELECT {snapshot.PersonId}, {snapshot.PlanVersion}, {snapshot.ParamsVersion},
+                {snapshot.SubmissionId}, {snapshot.EngineVer}, CAST({snapshot.PlanJson} AS jsonb), {snapshot.GeneratedAt}
+            FROM app.person p
+            WHERE p.patient_id = {snapshot.PersonId} AND p.plan_version = {snapshot.PlanVersion}
+                AND (SELECT max(version) FROM app.engine_params) = {snapshot.ParamsVersion}
+            ON CONFLICT (person_id, plan_version, params_version) DO UPDATE
+            SET submission_id = excluded.submission_id, plan_json = excluded.plan_json, generated_at = excluded.generated_at
+            WHERE existing.generated_at <= excluded.generated_at
+            """, ct);
+    }
     public void AddEvents(IEnumerable<Motor365EngineEvent> events) => db.Motor365EngineEvents.AddRange(events);
 
     public async Task SavePauseDaysAsync(Guid personId, IReadOnlyList<Motor365PauseDay> days, CancellationToken ct)
