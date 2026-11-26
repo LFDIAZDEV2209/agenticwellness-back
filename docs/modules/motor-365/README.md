@@ -223,6 +223,41 @@ reinicia la lectura desde la fila confirmada, con hasta dos reintentos.
 Las correcciones de los consumidores existentes conservan su operación
 ordinaria. Desplegar el backend antes del cliente que envía este modo.
 
+## Menú diario y cambio de plato (KAN-124)
+
+El Motor 365 reparte la meta calórica en desayuno, almuerzo, merienda y
+cena (25 %, 35 %, 15 % y 25 %). FD/TPL determinan los alimentos, porciones
+y macros. El menú base se corrige si el redondeo de referencia deja el día
+fuera de ±8 % de la meta. Se excluyen carnes y pescados para dieta
+vegetariana y lácteos para la preferencia sin lácteos, tanto en el plato base
+como en cualquier opción. Dos cierres consecutivos con adherencia inferior
+a 60 % activan el menú simplificado el día siguiente.
+
+La consulta de calendario `GET /api/v1/people/{personId}/plan[/{day}]?includeMenu=true`
+añade `mealPlan` sin cambiar la meta `nutrition`. Cada comida trae una
+`targetKcal` y una lista `options` ordenada, con el plato base primero.
+Las opciones llevan ID de plantilla, nombres ES/EN, gramos y macros sin
+redondear. El motor descarta platos con los mismos alimentos y opciones que
+solo podrían sustituir al plato base alterando los macros diarios más de
+8 % o sacando las kcal del margen permitido. El modo simplificado publica
+como máximo una alternativa por comida. Si no hay una compatible, no se
+ofrece el cambio. La app vuelve a validar esos límites al combinar varias
+elecciones. La selección no modifica el calendario ni la meta del motor.
+
+Para repetir los escenarios de PostgreSQL y el cambio de plato en Chromium
+desde `tests/CoppAddresd.Wellness365.E2E`:
+
+```sh
+npm ci
+npx playwright install chromium
+COP_KAN131_TEST_DB_CONNECTION='<conexión a copp_motor365_test_* en puerto local no estándar>' \
+COP_KAN130_APP_DIR='<checkout de la app con KAN-124>' npm run test:kan124
+```
+
+Sin el checkout de la app, se ejecuta solo la matriz HTTP (días 1, 30, 90,
+180 y 365, variantes de preferencias y umbral de adherencia). El host de
+prueba usa sesión de fixture y el repositorio real de PostgreSQL.
+
 ## Caché y observabilidad (KAN-128)
 
 El plan anual busca la PK de `app.plan_snapshot` con la versión actual del

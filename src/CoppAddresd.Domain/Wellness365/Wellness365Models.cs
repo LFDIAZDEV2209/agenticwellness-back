@@ -64,6 +64,7 @@ public sealed record WellnessMacros(double Kcal, double Protein, double Carbs, d
 public sealed record WellnessMealItem(char Role, string FoodId, double Grams);
 public sealed record WellnessMeal(int TemplateIndex, WellnessText Name,
     IReadOnlyList<WellnessMealItem> Items, WellnessMacros Totals);
+public sealed record WellnessMealOptions(double TargetKcal, IReadOnlyList<WellnessMeal> Options);
 public sealed record WellnessMenu(IReadOnlyList<WellnessMeal> Meals, WellnessMacros Totals, double Deviation);
 public sealed record WellnessPlanDay(WellnessDay Recommendation, WellnessMenu Menu)
 {

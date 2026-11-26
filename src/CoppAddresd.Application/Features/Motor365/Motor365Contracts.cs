@@ -30,6 +30,7 @@ public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDat
     int ParametersVersion, MotorExerciseSessionDto? Exercise, MotorNutritionTargets Nutrition)
 {
     public MotorSyncSnapshot? Sync { get; init; }
+    public MotorMealPlanDto? MealPlan { get; init; }
 }
 
 public sealed record MotorSyncSnapshot(Guid PersonId, int FromDay, int ThroughDay,
@@ -40,6 +41,13 @@ public sealed record MotorSyncLog(int Day, DateOnly Date, decimal Adherence, dec
 
 public sealed record MotorNutritionTargets(double Kcal, double ProteinG, double CarbsG, double FatG,
     int FiberG, int WaterMl);
+
+public sealed record MotorMealPlanDto(bool Vegetarian, bool DairyFree, bool Simplified, MotorMealTotals Totals,
+    IReadOnlyList<MotorMenuSlot> Meals);
+public sealed record MotorMenuSlot(string Id, MotorText Name, double TargetKcal, IReadOnlyList<MotorMenuDish> Options);
+public sealed record MotorMenuDish(int Id, IReadOnlyList<MotorMenuIngredient> Items, MotorMealTotals Totals);
+public sealed record MotorMenuIngredient(string Food, MotorText Name, double Grams);
+public sealed record MotorMealTotals(double Kcal, double Protein, double Carbs, double Fat);
 
 public sealed record MotorExerciseSessionDto(char Type, MotorText Name, int Week, int Level, int Minutes, bool Deload,
     WellnessPhase Phase, IReadOnlyList<MotorGuidedExerciseDto> Items, IReadOnlyList<MotorExerciseUnlockDto> NextUnlocks);
