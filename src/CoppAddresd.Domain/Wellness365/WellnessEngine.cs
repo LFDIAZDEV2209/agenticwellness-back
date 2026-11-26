@@ -51,14 +51,14 @@ public static class WellnessEngine
         RunTimeline(profile, PlanLength, recordedOnly: false, ct);
 
     // La simulación de referencia conserva sus proyecciones v5.2.
-    public static WellnessSimulation EvaluateRecordedTimeline(WellnessProfile profile, CancellationToken ct = default)
+    public static WellnessSimulation EvaluateRecordedTimeline(WellnessProfile profile, CancellationToken ct = default, bool includeProjections = false)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(profile.CurrentDay, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(profile.CurrentDay, PlanLength);
         return RunTimeline(profile with
         {
             Real = true, CurrentWeightKg = null, CurrentCalorieAdjustment = null, CurrentStreak = null
-        }, profile.CurrentDay, recordedOnly: true, ct);
+        }, includeProjections ? PlanLength : profile.CurrentDay, recordedOnly: true, ct);
     }
 
     private static WellnessSimulation RunTimeline(WellnessProfile profile, int length, bool recordedOnly, CancellationToken ct)
@@ -136,6 +136,7 @@ public static class WellnessEngine
 
             var past = day < profile.CurrentDay;
             var hasLog = profile.Logs.TryGetValue(day, out var recorded);
+            if (recordedOnly && day > profile.CurrentDay) { hasLog = false; recorded = null; }
             var log = recorded is not null
                 ? recorded with { Symptoms = Array.AsReadOnly(recorded.Symptoms.ToArray()) }
                 : recordedOnly ? new WellnessDailyLog(.8, 7, 3, 0, null, false)

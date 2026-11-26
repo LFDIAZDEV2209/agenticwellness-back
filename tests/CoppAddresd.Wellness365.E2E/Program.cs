@@ -1,3 +1,7 @@
+using CoppAddresd.Application.Features.LegalDocuments;
+using CoppAddresd.Api.Configuration;
+using CoppAddresd.Application.Features.Motor365;
+using CoppAddresd.Infrastructure.Repositories;
 using CoppAddresd.Api.Controllers;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Application.Services;
@@ -17,6 +21,8 @@ var fixtureConnection = Environment.GetEnvironmentVariable("COP_KAN131_TEST_DB_C
 var postgres = fixtureConnection is null ? null : new FixturePostgres(fixtureConnection);
 var patientId = Guid.Empty;
 builder.Services.AddControllers().AddApplicationPart(typeof(Motor365PlanController).Assembly);
+builder.Services.AddMotor365Api();
+builder.Services.AddMediatR(registration => registration.RegisterServicesFromAssemblyContaining<MotorPeople>());
 builder.Services.AddScoped<IPatientScopeStore>(_ => new FixturePatientScope(() => patientId));
 builder.Services.AddScoped<IPatientScopeGuard, PatientScopeGuard>();
 builder.Services.AddScoped(_ => new WellnessPlanService(clock));
@@ -26,11 +32,20 @@ if (postgres is not null)
     builder.Services.AddScoped(_ => postgres.Open());
     builder.Services.AddSingleton<TimeProvider>(clock);
     builder.Services.AddScoped<IAccountLegalConsentService, FixtureAccountConsent>();
+    builder.Services.Configure<AccountLegalConsentSettings>(options =>
+    {
+        options.EnforcementEnabled = true;
+        options.Documents["es"] = new() { Terms = "fixture-account-terms", Privacy = "fixture-account-privacy" };
+    });
     builder.Services.AddScoped<CoppAddresd.Infrastructure.Services.WellnessJourneyStore>();
     builder.Services.AddScoped<IWellnessPlanGate, CoppAddresd.Infrastructure.Repositories.WellnessPlanGate>();
-    builder.Services.AddScoped<IWellnessPlanStore, CoppAddresd.Infrastructure.Repositories.WellnessPlanStore>();
+    builder.Services.AddScoped<IMotor365Actor, FixtureMotorActor>();
+    builder.Services.AddScoped<IMotor365Store, Motor365Store>();
+    builder.Services.AddScoped<MotorPeople>();
 }
 var app = builder.Build();
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/v1"),
+    pipeline => pipeline.UseMiddleware<Motor365Errors>());
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
@@ -86,6 +101,13 @@ app.MapPut("/fixture/zone", async (ZoneChange change, CancellationToken ct) =>
     }
     else
         calendar = service.ChangeTimeZone(calendar, change.TimeZone);
+    return Results.NoContent();
+});
+
+app.MapPut("/fixture/profile-zone", async (ZoneChange change, CancellationToken ct) =>
+{
+    if (postgres is null) return Results.NotFound();
+    await postgres.ProfileTimeZoneAsync(patientId, change.TimeZone, ct);
     return Results.NoContent();
 });
 

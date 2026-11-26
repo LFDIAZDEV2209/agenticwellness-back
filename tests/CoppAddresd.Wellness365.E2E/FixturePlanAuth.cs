@@ -36,7 +36,8 @@ sealed class FixturePlanAuth
         var isApp = client == "app";
         var actor = isApp ? AppUser : client == "erp-unassigned" ? UnassignedUser : ErpUser;
         Claim[] claims = [new(JwtRegisteredClaimNames.Sub, actor.ToString()),
-            new("allowed", client is "erp" or "erp-unassigned" ? "yes" : "no")];
+            new("allowed", client is "erp" or "erp-unassigned" ? "yes" : "no"),
+            new(ClaimTypes.Role, isApp ? "Patient" : "Professional")];
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("motor365-test",
             isApp ? "app" : "erp", claims, expires: DateTime.UtcNow.AddMinutes(20),
             signingCredentials: new SigningCredentials(_key, SecurityAlgorithms.HmacSha256)));
@@ -50,7 +51,7 @@ sealed class FixturePlanActor(IHttpContextAccessor http) : IPatientScopeActor
     public bool IsAdmin => false;
     public Task<Guid?> ProfessionalIdAsync(CancellationToken ct) => Task.FromResult(UserId);
     public Task<bool> HasPermissionAsync(string permission, CancellationToken ct) =>
-        Task.FromResult(permission == "Program.Profile360View" &&
+        Task.FromResult((permission is "Program.Profile360View" or "Wellness.View") &&
             http.HttpContext?.User.HasClaim("allowed", "yes") == true);
 }
 
@@ -77,4 +78,11 @@ sealed class FixtureAccountConsent : IAccountLegalConsentService
         GetJourneyStatusAsync(userId, locale, ct);
     public Task<LegalConsentReceiptDto> AcceptAsync(Guid userId, AcceptAccountLegalDocument request,
         AccountLegalAcceptanceMetadata metadata, CancellationToken ct) => throw new NotSupportedException();
+}
+
+sealed class FixtureMotorActor(IHttpContextAccessor http, IPatientScopeActor actor)
+    : CoppAddresd.Application.Features.Motor365.IMotor365Actor
+{
+    public Guid? UserId => actor.UserId;
+    public bool IsApp => http.HttpContext?.User.HasClaim("aud", "app") == true;
 }

@@ -147,7 +147,7 @@ public sealed class Motor365OpenApiOperation : IOperationFilter
                 "409" => "version_conflict",
                 "413" => "request_too_large",
                 "415" => "unsupported_media_type",
-                "422" when operation.OperationId == "Motor365CloseDay" => "future_day",
+                "422" when operation.OperationId is "Motor365CloseDay" or "Motor365GetPlanDay" => "future_day",
                 "422" when operation.OperationId == "Motor365UpdateParameters" => "invalid_parameters",
                 "422" => "eligibility_required o future_day",
                 "500" => "internal_error",
@@ -199,7 +199,7 @@ public sealed class Motor365Errors(RequestDelegate next, ILogger<Motor365Errors>
     {
         MotorException problem => (problem.Code, problem.Code switch
         {
-            "invalid_request" => 400,
+            "invalid_request" or "bad_day" => 400,
             "forbidden" => 403,
             "person_not_found" => 404,
             "version_conflict" or "submission_conflict" or "plan_locked" => 409,
@@ -245,7 +245,8 @@ public sealed class Motor365Errors(RequestDelegate next, ILogger<Motor365Errors>
             "submission_conflict" => new("El envío ya se registró con otros datos.", "This submission was already saved with different information."),
             "version_conflict" => new("Los datos cambiaron. Consulta la versión actual.", "The information changed. Check the current version."),
             "eligibility_required" => new("Confirma los términos vigentes para continuar.", "Confirm the current terms to continue."),
-            "future_day" => new("Ese día todavía no se puede cerrar.", "You cannot close that day yet."),
+            "bad_day" => new("Indica un día entre 1 y 365.", "Enter a day between 1 and 365."),
+            "future_day" => new("Ese día todavía no está disponible.", "That day is not available yet."),
             "invalid_parameters" => new("Revisa los valores de configuración.", "Check the settings values."),
             "request_too_large" => new("La solicitud es demasiado grande.", "The request is too large."),
             "unsupported_media_type" => new("Envía los datos en formato JSON.", "Send the information as JSON."),

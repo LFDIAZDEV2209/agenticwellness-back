@@ -23,13 +23,14 @@ public sealed class WellnessPlanService
         return new(start, zone.Id, start, 1);
     }
 
-    public WellnessPlanCalendar ChangeTimeZone(WellnessPlanCalendar calendar, string timeZoneId)
+    public WellnessPlanCalendar ChangeTimeZone(WellnessPlanCalendar calendar, string timeZoneId) =>
+        ChangeTimeZone(calendar, timeZoneId, _clock.GetUtcNow());
+
+    internal static WellnessPlanCalendar ChangeTimeZone(WellnessPlanCalendar calendar, string timeZoneId, DateTimeOffset now)
     {
         var zone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         if (zone.Id == calendar.TimeZoneId) return calendar;
 
-        // Una sola lectura del reloj para que ambos lados del cambio representen el mismo instante.
-        var now = _clock.GetUtcNow();
         return calendar with
         {
             TimeZoneId = zone.Id,
@@ -108,7 +109,7 @@ public sealed class WellnessPlanService
     private static int Today(WellnessPlanCalendar calendar, DateTimeOffset now) =>
         Today(calendar, LocalDate(now, TimeZoneInfo.FindSystemTimeZoneById(calendar.TimeZoneId)));
 
-    private static int Today(WellnessPlanCalendar calendar, DateOnly local) =>
+    internal static int Today(WellnessPlanCalendar calendar, DateOnly local) =>
         Math.Clamp(calendar.AnchorDay + local.DayNumber - calendar.AnchorLocalDate.DayNumber,
             1, WellnessEngine.PlanLength);
 

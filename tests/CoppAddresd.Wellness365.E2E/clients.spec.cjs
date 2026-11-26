@@ -38,6 +38,8 @@ test('Inicio y Perfil 360 muestran el mismo día y un cierre de app aparece en E
           scores: null, mediciones_clinicas: null, weaknesses: [], interventions: [], pending_adaptations: 0,
           clinical_reviews: [], daily_checkins: [] });
         if (path === '/api/v1/me/context') return respond({ userId: session.userId, clinics: [], organization: null, onboardingCompleted: true });
+        if (path === '/api/v1/me/account-legal-consents') return respond({
+          locale: 'es', enforcementEnabled: true, acceptanceRequired: false, documents: [] });
         if (path === '/api/v1/me/legal-consents') return respond({ locale: 'es', scopes: [] });
         if (path.includes('/biometria/')) return route.fulfill({ status: 404, json: {} });
         return respond([]);

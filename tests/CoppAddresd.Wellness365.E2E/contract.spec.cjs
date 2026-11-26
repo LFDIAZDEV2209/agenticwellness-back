@@ -33,6 +33,9 @@ test('JWT app y ERP comparten el día y solo la persona puede guardar el cierre'
   expect(self).toMatchObject({ status: 200, body: { today: 1, todayLocalDate: '2026-01-01', status: { state: 'active' } } });
   expect(await call(patient + '/plan', erp.accessToken)).toEqual(self);
   await expect(page.getByRole('status')).toHaveText('Día 1 · active');
+  const canonical = '/v1/people/' + app.patientId;
+  expect(await call(canonical + '/plan/1', app.accessToken)).toMatchObject({ status: 200, body: { d: 1, w: null } });
+  expect(await call(canonical + '/plan/2', app.accessToken)).toMatchObject({ status: 422, body: { code: 'future_day' } });
 
   const closure = { adh: .9, sleep: 7, energy: 4, pain: 0, sym: ["nauseas"], w: 79, ex: true };
   expect((await call(patient + '/logs/1', erp.accessToken, 'PUT', closure)).status).toBe(403);
@@ -43,7 +46,20 @@ test('JWT app y ERP comparten el día y solo la persona puede guardar el cierre'
   expect(await call(patient + '/plan/1', erp.accessToken)).toMatchObject({
     status: 200, body: { today: 1, logStatus: 'recorded', measuredWeightKg: 79 },
   });
+  expect(await call(canonical + '/plan/1', erp.accessToken)).toMatchObject({ status: 200, body: { d: 1, w: 79 } });
+  expect(await call(canonical + '/logs/1', app.accessToken, 'PUT', { ...closure, ex: 1 })).toMatchObject({
+    status: 200, body: { ok: true, ver: 2 },
+  });
   expect(await (await request.get('/fixture/persistence-stats')).json()).toMatchObject({ events: 1, planVersion: 2 });
+
+  expect((await request.put('/fixture/clock', { data: { instant: '2026-01-02T03:00:00Z' } })).ok()).toBeTruthy();
+  expect((await request.put('/fixture/profile-zone', { data: { timeZone: 'Asia/Tokyo' } })).ok()).toBeTruthy();
+  expect(await call(current, app.accessToken)).toMatchObject({ status: 200, body: {
+    today: 1, todayLocalDate: '2026-01-02', measuredWeightKg: 79,
+  } });
+  expect((await request.put('/fixture/clock', { data: { instant: '2026-01-02T15:00:00Z' } })).ok()).toBeTruthy();
+  expect(await call(canonical + '/plan/2', erp.accessToken)).toMatchObject({ status: 200, body: { d: 2, w: null } });
+  expect(await call(current, app.accessToken)).toMatchObject({ status: 200, body: { today: 2, measuredWeightKg: null } });
 
   for (const block of ['unanswered', 'doctor', 'membership_inactive']) {
     expect((await request.post('/fixture/reset', { data: { postgres: true, block } })).ok()).toBeTruthy();

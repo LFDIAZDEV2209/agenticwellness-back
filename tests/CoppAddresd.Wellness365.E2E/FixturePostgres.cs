@@ -1,7 +1,6 @@
 using CoppAddresd.Application.Features.Wellness365;
 using CoppAddresd.Domain.Wellness365;
 using CoppAddresd.Infrastructure.Persistence;
-using CoppAddresd.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -23,7 +22,7 @@ sealed class FixturePostgres
     }
 
     public AppDbContext Open() => new(_options);
-    public WellnessPlanStore Store(AppDbContext db, FixtureClock clock) => new(db, new WellnessPlanService(clock));
+    public FixtureWellnessPlanStore Store(AppDbContext db, FixtureClock clock) => new(db, new WellnessPlanService(clock));
 
     public async Task<Guid> SeedAsync(Scenario scenario, WellnessPlanCalendar calendar, CancellationToken ct)
     {
@@ -35,11 +34,15 @@ sealed class FixturePostgres
                 CREATE SCHEMA erp;
                 CREATE SCHEMA auth;
                 CREATE TABLE app.patient_profiles (id uuid PRIMARY KEY, user_id uuid, status text,
-                    timezone varchar(64), date_of_birth date, deleted_at timestamptz);
+                    first_name text, last_name text, timezone varchar(64), date_of_birth date, deleted_at timestamptz);
                 CREATE TABLE auth."PaidActivations" ("PaymentId" uuid PRIMARY KEY, "Language" text,
                     "LinkedUserId" uuid, "RedeemedAt" timestamptz, "MembershipState" text, "MembershipPaid" boolean,
                     "MembershipExpiresAt" timestamptz, "ConfirmedAt" timestamptz, "Plan" text);
-                CREATE TABLE app.legal_document_acceptances (id uuid PRIMARY KEY);
+                CREATE TABLE erp.legal_documents (id uuid PRIMARY KEY, code text, current_version_id uuid);
+                CREATE TABLE erp.legal_document_versions (
+                    id uuid PRIMARY KEY, document_id uuid, major int, minor int, is_published bool);
+                CREATE TABLE app.legal_document_acceptances (id uuid PRIMARY KEY, user_id uuid,
+                    legal_document_version_id uuid, scope text, locale text, accepted_at timestamptz, withdrawn_at timestamptz);
                 CREATE TABLE erp.professionals (id uuid PRIMARY KEY);
                 CREATE TABLE app.wellness_journey_generations (id uuid PRIMARY KEY, patient_id uuid REFERENCES app.patient_profiles);
                 CREATE TABLE public."__EFMigrationsHistory" (
@@ -55,8 +58,8 @@ sealed class FixturePostgres
         var id = Guid.NewGuid();
         await db.Database.ExecuteSqlInterpolatedAsync($"""
             UPDATE app.patient_profiles SET deleted_at = now() WHERE user_id = {FixturePlanAuth.AppUser};
-            INSERT INTO app.patient_profiles (id, user_id, status, timezone, date_of_birth)
-            VALUES ({id}, {FixturePlanAuth.AppUser}, 'Activo', {calendar.TimeZoneId}, '1990-01-01');
+            INSERT INTO app.patient_profiles (id, user_id, status, first_name, last_name, timezone, date_of_birth)
+            VALUES ({id}, {FixturePlanAuth.AppUser}, 'Activo', 'Persona', 'QA', {calendar.TimeZoneId}, '1990-01-01');
             INSERT INTO auth."PaidActivations" VALUES ({id}, 'es', {FixturePlanAuth.AppUser},
                 now(), 'active', {scenario.Block != "membership_inactive"}, '2030-01-01Z', '2025-01-01Z', 'annual');
             INSERT INTO app.wellness_journey_generations (id, patient_id) VALUES ({id}, {id})
@@ -77,7 +80,27 @@ sealed class FixturePostgres
             Nqs6 = scenario.Block == "unanswered" ? null : (short)0
         });
         await db.SaveChangesAsync(ct);
+        foreach (var scope in new[] { "account-terms", "account-privacy" })
+        {
+            var doc = Guid.NewGuid();
+            var version = Guid.NewGuid();
+            var receipt = Guid.NewGuid();
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO erp.legal_documents VALUES ({doc}, {"fixture-" + scope}, {version});
+                INSERT INTO erp.legal_document_versions VALUES ({version}, {doc}, 1, 0, true);
+                INSERT INTO app.legal_document_acceptances VALUES
+                    ({receipt}, {FixturePlanAuth.AppUser}, {version}, {scope}, 'es', now(), null);
+                INSERT INTO app.consent (person_id, acceptance_id) VALUES ({id}, {receipt})
+                """, ct);
+        }
         return id;
+    }
+
+    public async Task ProfileTimeZoneAsync(Guid patientId, string zone, CancellationToken ct)
+    {
+        await using var db = Open();
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE app.patient_profiles SET timezone = {zone} WHERE id = {patientId}", ct);
     }
 
     public async Task<object> StatsAsync(Guid patientId, CancellationToken ct)

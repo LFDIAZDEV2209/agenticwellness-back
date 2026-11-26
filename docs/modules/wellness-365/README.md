@@ -3,8 +3,8 @@
 [KAN-131](https://diomedescerda.atlassian.net/browse/KAN-131) agrega el
 servicio de aplicación y la persistencia de calendario y cierre. Este tramo
 de [KAN-130](https://diomedescerda.atlassian.net/browse/KAN-130) conecta la
-lectura autenticada a Inicio de App y a Perfil 360 del ERP. No cambia el
-worker de generación ni publica recomendaciones de ejercicio o nutrición.
+lectura autenticada a Inicio de App y a Perfil 360 del ERP. El resumen no
+entrega recomendaciones y el worker de generación no cambia.
 
 ## Calendario y registros
 
@@ -18,12 +18,11 @@ worker de generación ni publica recomendaciones de ejercicio o nutrición.
   23 o 25 horas. No se renumeran los registros previos.
 - El inicio original y las tres columnas del ancla viven en
   `app.person`. Si aún no tiene ancla, se toma el día 1, el inicio
-  persistido y la zona del perfil canónico. Al activar un plan nuevo,
-  el consumidor debe persistir el calendario devuelto por `Activate`
-  una sola vez. Los cambios posteriores de zona del plan pasan por
-  `ChangeTimeZoneAsync`.
-- El cierre y el cambio de zona se serializan con un bloqueo de la fila
-  del motor por paciente. El cierre escribe usando `(person_id, day)`
+  persistido y la zona del perfil canónico. El alta del motor fija y
+  persiste el ancla inicial.
+- La lectura y el cierre usan la transacción del repositorio canónico.
+  Al detectar un cambio en la zona del perfil se conserva el ordinal
+  y se persiste el ancla en la nueva zona. El cierre escribe usando `(person_id, day)`
   y asigna a `log_date` la fecha nominal del plan, inicio más día menos
   uno. Esa fecha no se reescribe y no sirve para decidir si el día es
   futuro. Así se mantiene el índice único de KAN-134 incluso si,
@@ -68,12 +67,16 @@ La app lee `GET /api/v1/people/me/plan` y registra el cierre por
 del servidor cuando queda pendiente y se reintenta en la misma cuenta.
 El ERP lee `GET /api/v1/people/{personId}/plan` con
 `Program.Profile360View` y el alcance clínico del paciente. Ambos pueden
-leer un día específico con `/plan/{day}`; el ERP no puede escribir cierres.
-El resumen expone día local, estado, racha y pesaje registrado. No expone
-las recomendaciones calculadas. La lectura comprueba membresía,
-consentimientos vigentes y el cuestionario persistido con revisión
-profesional cuando corresponde. Cerrar el día requiere membresía y
-consentimientos vigentes.
+leer un día específico con `/plan/{day}`. Las rutas de cliente solo
+aceptan cierres desde la app.
+Las rutas de cliente reutilizan los casos de uso del contrato canónico
+`/v1` de KAN-130, sin duplicar escrituras. El resumen expone día local,
+estado, racha y pesaje registrado, sin recomendaciones. El contrato
+canónico conserva el plan anual, pero devuelve `w: null` cuando no hubo
+pesaje y rechaza la lectura de un día futuro específico. Las rutas de
+cliente comprueban membresía y consentimientos vigentes. El contrato
+canónico valida los recibos vinculados y, para la lectura del plan,
+también las respuestas y la revisión profesional cuando corresponde.
 
 `AddMotor365Calendar` agrega el ancla sobre las tablas de
 [KAN-134](https://diomedescerda.atlassian.net/browse/KAN-134), sin reescribir
@@ -83,8 +86,8 @@ cambio de zona.
 
 Estas rutas consumen filas reales de `app.person` y `app.screening`.
 No convierten la generación de demostración ni aprovisionan pacientes.
-El alta de perfiles reales y la publicación de menús y sesiones quedan
-fuera de este tramo. Tampoco se resuelven las diferencias
+El alta y el contrato de planes de KAN-130 se conservan. Este tramo no
+resuelve las diferencias
 del kit registradas en el [ADR](../../decisions/2026-11-24-motor-365-dotnet.md#diferencias-detectadas-entre-la-guía-y-la-referencia-ejecutable).
 
 Las pruebas usan un host aislado, un reloj controlado y datos sintéticos.

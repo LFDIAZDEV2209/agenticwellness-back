@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using CoppAddresd.Api.Features.Wellness365;
 using CoppAddresd.Application.Features.Wellness365;
+using CoppAddresd.Application.Features.Motor365;
 using CoppAddresd.Application.Interfaces;
 using CoppAddresd.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +13,7 @@ namespace CoppAddresd.Api.Controllers;
 [ApiController, Authorize, Route("api/v1/people/{personId}")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientScopeActor actor,
-    IWellnessPlanStore store, IWellnessPlanGate gate, WellnessPlanService plans) : ControllerBase
+    MotorPeople people, IWellnessPlanGate gate) : ControllerBase
 {
     public const string PatientWritePolicy = "Motor365PatientWrite";
 
@@ -27,9 +28,16 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
     {
         var (patientId, failure) = await ResolveAsync(personId, write: false, ct);
         if (failure is not null) return failure;
-        var block = await gate.CheckAsync(patientId, includeScreening: true, ct);
-        var result = plans.GetDay(await store.ReadAsync(patientId, block, ct), day);
-        return result.Error is { } error ? error.ToHttpResult() : Results.Ok(Motor365DayResponse.From(result.Value!));
+        var block = await gate.CheckAsync(patientId, ct);
+        if (block is not null) return Locked(block);
+        int? requested = null;
+        if (day is not null)
+        {
+            if (!int.TryParse(day, out var number)) return new WellnessPlanError(WellnessPlanErrorCode.BadDay).ToHttpResult();
+            requested = number;
+        }
+        try { return Results.Ok(Motor365DayResponse.From(await people.ReadCalendarDayAsync(patientId, requested, ct))); }
+        catch (MotorException ex) { return MotorError(ex); }
     }
 
     [HttpPut("logs/{day}"), Authorize(Policy = PatientWritePolicy)]
@@ -45,11 +53,21 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
     {
         var (patientId, failure) = await ResolveAsync(personId, write: true, ct);
         if (failure is not null) return failure;
-        var block = await gate.CheckAsync(patientId, includeScreening: false, ct);
-        if (block is not null)
-            return new WellnessPlanError(WellnessPlanErrorCode.PlanLocked, new("locked", block.Code, block.Message)).ToHttpResult();
-        var result = await store.CloseAsync(patientId, actor.UserId!.Value, day, request.ToInput(), ct);
-        return result.Error is { } error ? error.ToHttpResult() : Results.NoContent();
+        var block = await gate.CheckAsync(patientId, ct);
+        if (block is not null) return Locked(block);
+        if (!int.TryParse(day, out var number) || number is < 1 or > 365)
+            return new WellnessPlanError(WellnessPlanErrorCode.BadDay).ToHttpResult();
+
+        var input = request.ToInput();
+        if (!input.IsValid()) return new WellnessPlanError(WellnessPlanErrorCode.BadLog).ToHttpResult();
+        try
+        {
+            await people.CloseDayAsync(new(patientId, number,
+                new(input.Adherence, input.SleepHours, input.Energy, input.Pain, input.Symptoms.ToArray(),
+                    input.WeightKg, input.WaistCm, input.CompletedExercise ? 1 : 0)), ct);
+            return Results.NoContent();
+        }
+        catch (MotorException ex) { return MotorError(ex); }
     }
 
     private async Task<(Guid Patient, IResult? Failure)> ResolveAsync(string personId, bool write, CancellationToken ct)
@@ -72,6 +90,22 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         catch (ForbiddenException) { return (default, Results.Forbid()); }
     }
 
+    private static IResult Locked(CoppAddresd.Domain.Wellness365.WellnessBlock block) =>
+        new WellnessPlanError(WellnessPlanErrorCode.PlanLocked, new("locked", block.Code, block.Message)).ToHttpResult();
+
+    private IResult MotorError(MotorException ex) => ex.Code switch
+    {
+        "bad_day" => new WellnessPlanError(WellnessPlanErrorCode.BadDay).ToHttpResult(),
+        "future_day" => new WellnessPlanError(WellnessPlanErrorCode.FutureDay).ToHttpResult(),
+        "person_not_found" => Missing().Item2,
+        "plan_locked" when ex.Status is { Code: { } code, Message: { } message } =>
+            Locked(new(code, new(message.Es, message.En))),
+        "forbidden" => Results.Forbid(),
+        "version_conflict" => Results.Conflict(new { error = ex.Code }),
+        "service_unavailable" => Results.StatusCode(StatusCodes.Status503ServiceUnavailable),
+        _ => throw ex
+    };
+
     private static (Guid, IResult) Missing() =>
         (default, new WellnessPlanError(WellnessPlanErrorCode.PersonNotFound).ToHttpResult());
 }
@@ -82,9 +116,10 @@ public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocal
     [property: JsonPropertyName("engine_ver")] string EngineVersion,
     [property: JsonPropertyName("params_version")] int ParametersVersion)
 {
-    internal static Motor365DayResponse From(WellnessPlanDayView day) =>
-        new(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, day.Real, day.Status, day.LogStatus,
-            day.Adherence, day.MeasuredWeightKg, day.Streak, day.EngineVersion, day.ParametersVersion);
+    internal static Motor365DayResponse From(MotorCalendarDay day) =>
+        new(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
+            day.Adherence, day.MeasuredWeightKg, day.Streak, CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
+            day.ParametersVersion);
 }
 
 public sealed record Motor365ClosureRequest(

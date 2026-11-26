@@ -1,14 +1,16 @@
 using System.Data;
 using CoppAddresd.Application.Features.Motor365;
+using CoppAddresd.Application.Features.LegalDocuments;
 using CoppAddresd.Domain.Wellness365;
 using CoppAddresd.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Microsoft.Extensions.Options;
 
 namespace CoppAddresd.Infrastructure.Repositories;
 
 /// <summary>Persistencia EF del contrato Motor 365 sobre el esquema existente.</summary>
-public sealed class Motor365Store(AppDbContext db) : IMotor365Store
+public sealed class Motor365Store(AppDbContext db, IOptionsMonitor<AccountLegalConsentSettings>? legal = null) : IMotor365Store
 {
     public Task<T> InTransactionAsync<T>(bool write, Func<CancellationToken, Task<T>> operation, CancellationToken ct) =>
         db.Database.CreateExecutionStrategy().ExecuteAsync(async token =>
@@ -69,29 +71,44 @@ public sealed class Motor365Store(AppDbContext db) : IMotor365Store
 
     public async Task<MotorReceipts?> FindCurrentReceiptsAsync(Guid id, Guid userId, bool linked, string? termsVersion, CancellationToken ct)
     {
+        var config = legal?.CurrentValue;
+        var pairs = new[] { "es", "en" }.Select(locale =>
+        {
+            var codes = config is { EnforcementEnabled: true } || config?.Documents.Count > 0
+                ? config?.Documents.GetValueOrDefault(locale)
+                : new AccountLegalDocumentCodes { Terms = "paid-demo-terms-" + locale, Privacy = "paid-demo-privacy-" + locale };
+            return (Locale: locale, Codes: codes);
+        }).Where(pair => pair.Codes is not null).ToDictionary(pair => pair.Locale, pair => pair.Codes!);
+        var documentCodes = pairs.Values.SelectMany(pair => new[] { pair.Terms, pair.Privacy }).Distinct().ToArray();
+        if (documentCodes.Length == 0) return null;
+
         var candidates = await (
             from acceptance in db.LegalDocumentAcceptances.AsNoTracking()
             join version in db.LegalDocumentVersions.AsNoTracking() on acceptance.LegalDocumentVersionId equals version.Id
             join document in db.LegalDocuments.AsNoTracking() on version.DocumentId equals document.Id
             where acceptance.UserId == userId && acceptance.WithdrawnAt == null && version.IsPublished &&
-                document.CurrentVersionId == version.Id && acceptance.Scope == document.Code &&
-                (document.Code == "paid-demo-terms-es" || document.Code == "paid-demo-terms-en" ||
-                    document.Code == "paid-demo-privacy-es" || document.Code == "paid-demo-privacy-en") &&
+                document.CurrentVersionId == version.Id && documentCodes.Contains(document.Code) &&
                 (!linked || db.Motor365Consents.Any(x => x.PersonId == id && x.AcceptanceId == acceptance.Id))
             orderby acceptance.AcceptedAt descending, acceptance.Id descending
-            select new { acceptance.Id, acceptance.Locale, acceptance.AcceptedAt, document.Code, version.Major, version.Minor })
+            select new { acceptance.Id, acceptance.Locale, acceptance.Scope, acceptance.AcceptedAt, document.Code, version.Major, version.Minor })
             .ToListAsync(ct);
 
-        foreach (var term in candidates.Where(x => x.Code == "paid-demo-terms-" + x.Locale))
+        foreach (var term in candidates)
         {
+            if (!pairs.TryGetValue(term.Locale, out var pair) || term.Code != pair.Terms ||
+                !IsScope(term.Scope, term.Code, term.Locale, AccountLegalScopes.Terms, "terms")) continue;
             var version = $"{term.Major}.{term.Minor}";
             if (!string.IsNullOrWhiteSpace(termsVersion) && termsVersion != version) continue;
-            var privacy = candidates.FirstOrDefault(x => x.Locale == term.Locale && x.Code == "paid-demo-privacy-" + term.Locale);
+            var privacy = candidates.FirstOrDefault(x => x.Locale == term.Locale && x.Code == pair.Privacy &&
+                IsScope(x.Scope, x.Code, x.Locale, AccountLegalScopes.Privacy, "privacy"));
             if (privacy is null) continue;
             return new(new(term.Id, version, Utc(term.AcceptedAt)),
                 new(privacy.Id, $"{privacy.Major}.{privacy.Minor}", Utc(privacy.AcceptedAt)));
         }
         return null;
+
+        static bool IsScope(string scope, string code, string locale, string accountScope, string demoKind) =>
+            scope == accountScope || (scope == code && code == $"paid-demo-{demoKind}-{locale}");
 
         static DateTimeOffset Utc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
     }

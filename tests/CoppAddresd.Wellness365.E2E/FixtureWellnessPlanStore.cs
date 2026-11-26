@@ -3,10 +3,10 @@ using CoppAddresd.Domain.Wellness365;
 using CoppAddresd.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace CoppAddresd.Infrastructure.Repositories;
 
-/// <summary>Usa la identidad canónica y las tablas del Motor 365, sin depender de la caché.</summary>
-public sealed class WellnessPlanStore(AppDbContext db, WellnessPlanService plans) : IWellnessPlanStore
+
+/// <summary>Persiste escenarios aislados del calendario sin exigir alta y recibos.</summary>
+sealed class FixtureWellnessPlanStore(AppDbContext db, WellnessPlanService plans)
 {
     public async Task<WellnessPlanPerson?> ReadAsync(Guid patientId, WellnessBlock? eligibilityBlock,
         CancellationToken ct)

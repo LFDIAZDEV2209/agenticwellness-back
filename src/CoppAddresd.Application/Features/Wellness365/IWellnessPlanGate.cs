@@ -4,6 +4,6 @@ namespace CoppAddresd.Application.Features.Wellness365;
 
 public interface IWellnessPlanGate
 {
-    // Cerrar el día requiere acceso vigente. Leer un plan exige además la compuerta del cuestionario.
-    Task<WellnessBlock?> CheckAsync(Guid patientId, bool includeScreening, CancellationToken ct);
+    // El adaptador de pacientes con membresía exige acceso vigente. MotorPeople aplica la compuerta del plan.
+    Task<WellnessBlock?> CheckAsync(Guid patientId, CancellationToken ct);
 }
