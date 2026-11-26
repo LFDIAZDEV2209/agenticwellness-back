@@ -250,6 +250,15 @@ test.describe('KAN-153 · Motor 365 sync', () => {
         const kcal = new Intl.NumberFormat('es-CO').format(updatedPlan.nutrition.kcal);
         await expect(appPage.getByText(`Meta diaria: ${kcal} kcal`, { exact: true })).toBeVisible();
         await expect(card.getByText(`Meta diaria: ${kcal} kcal`, { exact: true })).toBeVisible();
+        await erpPage.setViewportSize({ width: 390, height: 844 });
+        await expect(card.getByText(`Motor 5.2 · Parámetros ${version}`, { exact: true })).toBeVisible();
+        const refresh = erpPage.getByRole('button', { name: 'Actualizar' });
+        await refresh.focus();
+        await expect(refresh).toBeFocused();
+        await Promise.all([
+          erpPage.waitForResponse(response => new URL(response.url()).pathname.endsWith('/plan') && response.ok()),
+          refresh.press('Enter'),
+        ]);
       } finally {
         const restore = await request.put('/v1/engine/params', { headers, data: {
           params: { floorF: params.floorF }, reason: 'Restore isolated fixture parameters', expectedVersion: version,
