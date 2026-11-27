@@ -6,6 +6,7 @@ using CoppAddresd.Auth.Models;
 using CoppAddresd.Auth.Services;
 using CoppAddresd.UnitTests.Auth.TestDoubles;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -92,7 +93,8 @@ public sealed class AuthServicePatientAccessTests
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         ITokenService tokenService,
-        IPermissionService permissionService
+        IPermissionService permissionService,
+        ILogger<AuthService>? logger = null
     ) =>
         new(
             userManager,
@@ -104,8 +106,33 @@ public sealed class AuthServicePatientAccessTests
             seed.Db,
             Options.Create(new JwtSettings { AccessTokenExpirationMinutes = 15 }),
             Options.Create(new AccountDeletionSettings()),
-            NullLogger<AuthService>.Instance
+            logger ?? NullLogger<AuthService>.Instance
         );
+
+    [Theory]
+    [InlineData("unmatched-person@example.test", null)]
+    [InlineData(null, "SYNTHETIC-DOCUMENT-170")]
+    public async Task LoginAsync_IdentificadorNoEncontrado_NoLoEscribeEnLogs(string? email, string? document)
+    {
+        var seed = new Seed();
+        var users = IdentityTestDoubles.CreateUserManager(seed.User);
+        var log = new RecordingLogger<AuthService>();
+        var service = CreateAuthService(seed, Substitute.For<IPatientAccessGuard>(), users,
+            IdentityTestDoubles.CreateSignInManager(users), Substitute.For<ITokenService>(),
+            Substitute.For<IPermissionService>(), log);
+
+        var result = await service.LoginAsync(new LoginRequest
+        {
+            Email = email,
+            DocumentNumber = document,
+            Password = "Synthetic!Pass2026",
+            Application = "app"
+        });
+
+        Assert.Null(result);
+        Assert.NotEmpty(log.Messages);
+        Assert.DoesNotContain(log.Messages, message => message.Contains(email ?? document!, StringComparison.Ordinal));
+    }
 
     [Fact]
     public async Task LoginAsync_PacienteInactivo_DevuelveNullYNoEmiteTokens()

@@ -336,7 +336,7 @@ public class UserService : IUserService
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser is not null)
         {
-            _logger.LogWarning("Create user failed: email {Email} already exists", request.Email);
+            _logger.LogWarning("Create user failed: supplied email already exists");
             return (false, "Email ya está registrado", null);
         }
 
@@ -366,7 +366,8 @@ public class UserService : IUserService
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                _logger.LogWarning("Create user failed: {Errors}", errors);
+                _logger.LogWarning("Create user failed: {ErrorCodes}",
+                    string.Join(", ", result.Errors.Select(e => e.Code)));
                 return await FailAsync(errors);
             }
 
@@ -476,13 +477,13 @@ public class UserService : IUserService
         var user = await _userManager.FindByEmailAsync(request.Email.Trim());
         if (user is null)
         {
-            _logger.LogWarning("Link user failed: email {Email} not found", request.Email);
+            _logger.LogWarning("Link user failed: user not found for supplied email");
             return (false, "Usuario no encontrado", null, true);
         }
 
         if (!user.IsActive)
         {
-            _logger.LogWarning("Link user failed: email {Email} is inactive", request.Email);
+            _logger.LogWarning("Link user failed: matched account is inactive");
             return (
                 false,
                 "La cuenta está inactiva. Reactívala en Usuarios antes de vincularla.",

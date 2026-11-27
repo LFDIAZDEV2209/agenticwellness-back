@@ -85,6 +85,9 @@ Consulta de solo lectura, sin descargar contenido ni modificar políticas.
 El [preflight AWS por recurso](cloud-retention.md) protege la copia de
 recuperación del corte legado y separa versión no actual, antigüedad y
 elegibilidad comprobada.
+La [segunda captura del 27-nov](aws-evidence-2026-11-27.md) verifica la
+edad y el tipo de las cinco versiones, las políticas efectivas de logs y
+los estados de recuperación y compartición observables.
 
 | Fuente | Observado | Para cerrar |
 | --- | --- | --- |
