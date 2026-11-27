@@ -1,6 +1,7 @@
 extern alias ApiEntry;
 
 using System.Text.Json;
+using System.Globalization;
 using Amazon.GeoPlaces;
 using Amazon.GeoPlaces.Model;
 using Amazon.Runtime;
@@ -25,8 +26,9 @@ if (!connection.Contains("Database=copp_review_", StringComparison.Ordinal))
 if (!Path.GetFullPath(directory).StartsWith(Path.GetTempPath(), StringComparison.Ordinal))
     throw new InvalidOperationException("La evidencia E2E debe quedar fuera del repositorio.");
 Directory.CreateDirectory(directory);
+var port = int.TryParse(Environment.GetEnvironmentVariable("COP_E2E_PORT"), out var e2ePort) ? e2ePort : 5122;
 await using var factory = new TestApiFactory(directory);
-factory.UseKestrel(options => options.ListenLocalhost(5122));
+factory.UseKestrel(options => options.ListenLocalhost(port));
 using var client = factory.CreateClient();
 Console.WriteLine("API E2E lista: transportes de emergencia aislados; PostgreSQL real.");
 await Task.Delay(Timeout.Infinite);
@@ -39,6 +41,11 @@ sealed class TestApiFactory(string output) : WebApplicationFactory<ApiEntry::Pro
         builder.UseContentRoot(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/CoppAddresd.Api")));
         builder.ConfigureTestServices(services =>
         {
+            if (Environment.GetEnvironmentVariable("COP_E2E_FILE_CLOCK") == "true")
+            {
+                services.RemoveAll<TimeProvider>();
+                services.AddSingleton<TimeProvider>(new FixtureClock(Path.Combine(output, "utc-clock.txt")));
+            }
             if (Environment.GetEnvironmentVariable("COP_E2E_GEOCODING") == "synthetic")
             {
                 services.RemoveAll<IAmazonGeoPlaces>();
@@ -60,6 +67,12 @@ sealed class TestApiFactory(string output) : WebApplicationFactory<ApiEntry::Pro
             services.AddSingleton<IEmailService>(sp => sp.GetRequiredService<EmergencyTransport>());
         });
     }
+}
+
+sealed class FixtureClock(string path) : TimeProvider
+{
+    public override DateTimeOffset GetUtcNow() => DateTimeOffset.Parse(File.ReadAllText(path),
+        CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 }
 
 sealed class IsolatedSmsClient(string output, EmergencyTransport transport) : ITwilioRestClient

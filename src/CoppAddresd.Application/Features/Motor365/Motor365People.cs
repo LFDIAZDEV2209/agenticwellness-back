@@ -62,7 +62,7 @@ internal sealed record MotorCalculation(WellnessProfile Profile, WellnessSimulat
 
 /// <summary>Orquesta el perfil propio o asignado y el cálculo versionado del motor.</summary>
 public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPatientScopeGuard scope, TimeProvider clock,
-    IMotor365SnapshotQueue? snapshots = null, Motor365Telemetry? telemetry = null)
+    IMotor365SnapshotQueue? snapshots = null, Motor365Telemetry? telemetry = null, IProtocolRewards? protocolRewards = null)
 {
     private const int EnergyCalculationRevision = 2;
     private const int NutritionCalculationRevision = 2;
@@ -363,7 +363,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
             var (subject, person, data) = await ReadInputsAsync(request.Id, write: true, token);
             var now = clock.GetUtcNow();
             SyncCalendar(subject, person, now);
-            var day = Day(person, LocalDate(subject, now));
+            var localDate = LocalDate(subject, now);
+            var day = Day(person, localDate);
             if (data.Receipts is null) RequirePlan(Status(person, data, day));
             var logs = data.Logs.ToDictionary(log => log.Day);
             if (ApplyLog(person, day, logs, request.Day, request.Input, request.CreateIfAbsent))
@@ -374,6 +375,9 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                     adjustments = await PublishRevisionAsync(person, revision, day, request.Day, now, token);
                 Audit(person.PatientId, "log.put", now);
             }
+            if (protocolRewards is not null && actor.IsApp)
+                await protocolRewards.CloseMotorDayAsync(person.PatientId, request.Day,
+                    localDate.AddDays(request.Day - day), subject.Timezone, token);
             return new MotorLogResult(true, person.PlanVersion);
         }
 

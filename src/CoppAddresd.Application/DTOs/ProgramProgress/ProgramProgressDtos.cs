@@ -415,6 +415,7 @@ public static class ProgramTaskCatalog
 /// </summary>
 public static class XpLevels
 {
+    private static readonly string[] ProtocolNames = ["Principiante", "Iniciado", "Constante", "Disciplinado", "Transformación", "Bienestar", "Líder"];
     private static readonly (string Name, int Min, int Max)[] Ladder =
     [
         ("Explorador", 0, 499),
@@ -442,6 +443,14 @@ public static class XpLevels
         }
 
         return (Ladder[0].Name, Ladder[1].Min);
+    }
+
+    public static (int Level, string Name, int NextLevelAt) ForProtocolBalance(int balance)
+    {
+        // Conserva los umbrales de las siete categorías históricas.
+        var level = Array.FindLastIndex(Ladder, row => balance >= row.Min);
+        level = Math.Max(0, level);
+        return (level + 1, ProtocolNames[level], level + 1 < Ladder.Length ? Ladder[level + 1].Min : Ladder[level].Min);
     }
 }
 

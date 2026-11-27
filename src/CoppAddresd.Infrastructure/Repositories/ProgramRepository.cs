@@ -716,6 +716,17 @@ public sealed partial class ProgramRepository(
         // Un reintento de la última tarea sigue siendo replay después del cierre.
         if (enrollment.Status != ProgramEnrollmentStatus.Active)
             throw new BusinessRuleViolationException("ENROLLMENT_INACTIVE: la inscripción no está activa.");
+        // Las cuentas migradas no deben otorgar XP doble por la ruta legada.
+        // Los replays históricos se devuelven antes de este corte.
+        await dbContext.Database.SqlQuery<Guid>($"""
+            SELECT id AS "Value" FROM app.patient_profiles WHERE id = {enrollment.PatientId} FOR SHARE
+            """).SingleAsync(ct);
+        var rewardProtocol = await dbContext.Motor365People.AsNoTracking().AnyAsync(p => p.PatientId == enrollment.PatientId, ct)
+            || await dbContext.Database.SqlQuery<bool>($"""
+                SELECT EXISTS(SELECT 1 FROM app.protocol_reward_entries WHERE patient_id = {enrollment.PatientId}) AS "Value"
+                """).SingleAsync(ct);
+        if (rewardProtocol)
+            throw new UnprocessableEntityException("PROTOCOL_REWARDS_ONLY: este perfil usa los cinco pasos del protocolo.");
         if (input.LocalDate < enrollment.StartLocalDate || input.LocalDate >= enrollment.StartLocalDate.AddDays(EffectiveDayContentResolver.DurationDays(template)))
             throw new UnprocessableEntityException("DATE_OUTSIDE_ACTIVE_WEEK: la fecha no pertenece al programa.");
 
@@ -1276,7 +1287,7 @@ public sealed partial class ProgramRepository(
             // semántica de la respuesta más allá de quitar el literal. La
             // equivalencia con el replay es condicional a que la regla no
             // cambie entre las dos lecturas (ver ComputeDayPointsMax).
-            ComputeDayPointsMax(scheduledForDay, await ResolveDayBonusBaseAsync(ct))
+            ComputeDayPointsMax(scheduledForDay, await ResolveDayBonusBaseAsync(input.LocalDate, enrollment.Timezone, ct))
         );
     }
 
@@ -2582,7 +2593,7 @@ public sealed partial class ProgramRepository(
         // de la regla DAY_BONUS (50 si no existe/está inactiva) alimenta el
         // máximo del día y se expone para la tarjeta de bonus del móvil (sin
         // multiplicador: el máximo histórico siempre usó la base plana).
-        var dayBonusBase = await ResolveDayBonusBaseAsync(ct);
+        var dayBonusBase = await ResolveDayBonusBaseAsync(todayLocalDate, row.Timezone, ct);
 
         return new ProgramSnapshotDto(
             enrollmentId,
@@ -3551,9 +3562,11 @@ public sealed partial class ProgramRepository(
 
         var weekday = ToIsoWeekday(localDate);
         var snapshot = ParseSnapshot(week.TasksSnapshot);
+        var timezone = await dbContext.ProgramEnrollments.Where(e => e.Id == enrollmentId)
+            .Select(e => e.Timezone).SingleAsync(ct);
         return ComputeDayPointsMax(
             ProgramDayMissionPolicy.ForDay(snapshot, weekday, snapshot.Any(t => t.Weekday == weekday && t.TaskCode == "ejercicio" && t.Rest == true)),
-            await ResolveDayBonusBaseAsync(ct)
+            await ResolveDayBonusBaseAsync(localDate, timezone, ct)
         );
     }
 
@@ -3563,15 +3576,8 @@ public sealed partial class ProgramRepository(
     /// fallback si no existe/está inactiva). Única computación compartida por
     /// la primera escritura y el replay (SPEC §7.2).
     ///
-    /// <b>Invariante</b>: ambos caminos resuelven la MISMA base de regla
-    /// (<see cref="ResolveDayBonusBaseAsync"/>), por lo que el body del replay
-    /// es idéntico al de la primera respuesta MIENTRAS la regla DAY_BONUS no
-    /// cambie entre las dos lecturas. Riesgo aceptado y documentado: una
-    /// edición de la regla en el ERP a mitad de día (o un rollover de
-    /// <c>ValidFrom</c>/<c>ValidUntil</c> al cambiar el día UTC del servidor)
-    /// entre la escritura y el replay puede hacer divergir el valor. El máximo
-    /// NO se persiste deliberadamente por ahora (persistirlo exigiría una
-    /// migración que este cambio no contempla).
+    /// Ambos caminos resuelven la regla que estaba vigente al inicio del
+    /// mismo día local, incluso si el ERP editó su valor después.
     /// </summary>
     private static int ComputeDayPointsMax(IEnumerable<WeekSnapshotTaskRow> dayTasks, int bonusAmount)
     {
@@ -3585,25 +3591,23 @@ public sealed partial class ProgramRepository(
     /// Resuelve la regla del catálogo vigente para un código (SPEC §14.3): una
     /// regla <c>Active</c> dentro de su ventana <see cref="XpRule.ValidFrom"/>..
     /// <see cref="XpRule.ValidUntil"/> gana sobre el comportamiento por defecto.
-    /// La referencia de "hoy" es la fecha UTC del servidor: el catálogo es
-    /// configuración global de administración (no por paciente), por lo que no
-    /// depende de la zona del paciente. Devuelve null si la regla no existe o
-    /// no está vigente (fallback documentado en <see cref="ResolveXpAwardAsync"/>).
+    /// El catálogo es global, pero cada edición aplica desde el siguiente
+    /// día en la zona horaria de la persona.
     /// </summary>
-    private async Task<XpRule?> ResolveActiveRuleAsync(string ruleCode, CancellationToken ct)
+    private Task<XpRule?> ResolveActiveRuleAsync(string ruleCode, DateOnly date, string timezone, CancellationToken ct)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        return await dbContext
-            .XpRules.AsNoTracking()
-            .FirstOrDefaultAsync(
-                r =>
-                    r.Code == ruleCode
-                    && r.Active
-                    && r.ValidFrom <= today
-                    && (r.ValidUntil == null || r.ValidUntil >= today),
-                ct
-            );
+        // Mantiene las fechas aceptadas por la API legada sin habilitar
+        // anticipadamente una edición del ERP al enviar una fecha futura.
+        var now = (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime;
+        var today = PatientLocalToday(timezone, now);
+        // Las ventanas de vigencia del catálogo legado eran globales en UTC.
+        // El protocolo nuevo usa la fecha local también para esa ventana.
+        return XpRuleTimeline.ResolveAsync(dbContext, ruleCode, date > today ? today : date,
+            ResolveTimeZone(timezone), ct, DateOnly.FromDateTime(now));
     }
+
+    private Task<XpRule?> ResolveActiveRuleTodayAsync(string ruleCode, string timezone, CancellationToken ct) =>
+        ResolveActiveRuleAsync(ruleCode, PatientLocalToday(timezone, (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime), timezone, ct);
 
     /// <summary>
     /// Base por defecto del bonus de día perfecto (SPEC §6.5): fallback cuando
@@ -3623,9 +3627,9 @@ public sealed partial class ProgramRepository(
     /// <c>TodayPointsMax</c> (el máximo histórico siempre usó la base plana) y
     /// el <c>DailyBonusAmount</c> del snapshot para la tarjeta de bonus móvil.
     /// </summary>
-    private async Task<int> ResolveDayBonusBaseAsync(CancellationToken ct)
+    private async Task<int> ResolveDayBonusBaseAsync(DateOnly date, string timezone, CancellationToken ct)
     {
-        var rule = await ResolveActiveRuleAsync(XpRuleCodes.DayBonus, ct);
+        var rule = await ResolveActiveRuleAsync(XpRuleCodes.DayBonus, date, timezone, ct);
         return rule?.BaseXp ?? DefaultDayBonusBase;
     }
 
@@ -3664,7 +3668,7 @@ public sealed partial class ProgramRepository(
         // misma transacción del otorgamiento).
         var patientMultiplier = await ResolvePatientMultiplierAsync(enrollmentId, ct);
 
-        var rule = await ResolveActiveRuleAsync(ruleCode, ct);
+        var rule = await ResolveActiveRuleAsync(ruleCode, localDate, timezone, ct);
         if (rule is null)
         {
             // Fallback (SPEC §14.3): sin regla o regla inactiva/vencida →
@@ -6325,10 +6329,10 @@ public sealed partial class ProgramRepository(
             .Select(x => new ActivityLogEntryDto(
                 x.Id,
                 x.OccurredAt,
-                x.Action.ToString(),
+                x.Action.ToString().ToUpperInvariant(),
                 x.TableName,
                 x.RecordId,
-                x.ActorType.ToString(),
+                x.ActorType.ToString().ToUpperInvariant(),
                 x.UserEmail,
                 x.UserRole
             ))
@@ -7354,7 +7358,9 @@ public sealed partial class ProgramRepository(
         CancellationToken ct
     )
     {
-        var rule = await ResolveActiveRuleAsync(ruleCode, ct);
+        var timezone = await dbContext.ProgramEnrollments.Where(e => e.Id == enrollmentId)
+            .Select(e => e.Timezone).SingleAsync(ct);
+        var rule = await ResolveActiveRuleTodayAsync(ruleCode, timezone, ct);
         if (rule is null)
         {
             return 0;
@@ -7533,7 +7539,7 @@ public sealed partial class ProgramRepository(
         string sourceRefType = "clinical_period"
     )
     {
-        var rule = await ResolveActiveRuleAsync(ruleCode, ct);
+        var rule = await ResolveActiveRuleTodayAsync(ruleCode, timezone, ct);
         if (rule is null)
         {
             // Fallback documentado (SPEC §15, C.3 y §18, C): sin regla vigente
@@ -8091,11 +8097,8 @@ public sealed partial class ProgramRepository(
     /// Convierte una fecha local del paciente al instante UTC de su inicio
     /// (medianoche local), respetando DST de la zona IANA.
     /// </summary>
-    private static DateTime LocalDateToUtcStart(DateOnly date, TimeZoneInfo tz)
-    {
-        var local = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
-        return TimeZoneInfo.ConvertTimeToUtc(local, tz);
-    }
+    private static DateTime LocalDateToUtcStart(DateOnly date, TimeZoneInfo tz) =>
+        XpRuleTimeline.StartOfDayUtc(date, tz);
 
     private sealed record EnrollmentWindow(Guid EnrollmentId, Guid PatientId, string Timezone);
 
