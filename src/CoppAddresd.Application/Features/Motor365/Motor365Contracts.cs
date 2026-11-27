@@ -37,6 +37,18 @@ public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDat
     public MotorMealPlanDto? MealPlan { get; init; }
 }
 
+public sealed record MotorPlanOverview(string Goal, decimal? TargetWeightKg,
+    IReadOnlyList<MotorOverviewExerciseDay> Week, MotorOverviewProgress Progress,
+    IReadOnlyList<MotorEventDto> RecentEvents);
+
+public sealed record MotorOverviewExerciseDay(int Day, MotorText? Exercise, int Minutes, bool Paused, bool Future,
+    bool? CompletedExercise);
+
+public sealed record MotorOverviewMeasurement(int Day, decimal Value);
+
+public sealed record MotorOverviewProgress(int RecordedDays, bool? CompletedExercise,
+    MotorOverviewMeasurement? WeightKg, MotorOverviewMeasurement? WaistCm);
+
 public sealed record MotorSyncSnapshot(Guid PersonId, int FromDay, int ThroughDay,
     IReadOnlyList<MotorSyncLog> Logs, IReadOnlyList<MotorEventDto> Events);
 

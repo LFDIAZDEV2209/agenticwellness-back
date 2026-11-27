@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 const { connectClients } = require('./client-fixtures.cjs');
 
 const ownPlan = '/api/v1/people/me/plan';
+const isOverview = path => path.endsWith('/plan/overview');
 const syncQuery = '?includeSync=true';
 const closure = { adh: 0.9, sleep: 7, energy: 4, pain: 0, sym: [], w: 79, waist: 84, ex: true };
 const appOrigin = 'http://127.0.0.1:51382';
@@ -137,7 +138,7 @@ test.describe('KAN-153 · Motor 365 sync', () => {
       await connectClients(appContext, patient, erpContext, erp, {
         api: gateway, appOrigin, erpOrigin, instant: beforeMidnight,
         onMotorRequest: async ({ req, path, route }) => {
-          if (req.method() !== 'GET' || !path.endsWith('/plan') ||
+          if (req.method() !== 'GET' || !(path === ownPlan || isOverview(path)) ||
             !(path === ownPlan ? appReadUnavailable : erpReadUnavailable)) return false;
           await route.fulfill({ status: 503, json: { error: 'service_unavailable' } });
           return true;
@@ -157,7 +158,7 @@ test.describe('KAN-153 · Motor 365 sync', () => {
         appPage.goto(appOrigin),
         erpPage.goto(erpOrigin + '/patients/' + patient.patientId + '/360'),
       ]);
-      const card = erpPage.getByRole('region', { name: 'Motor 365' });
+      const card = erpPage.getByRole('region', { name: 'Motor 365', exact: true });
       await expect(appPage.getByText('Día 7 de 365', { exact: true })).toBeVisible({ timeout: 25_000 });
       await expect(card.locator('time[datetime="2026-01-07"]')).toBeVisible();
       await at(request, midnight);
@@ -256,7 +257,7 @@ test.describe('KAN-153 · Motor 365 sync', () => {
         await refresh.focus();
         await expect(refresh).toBeFocused();
         await Promise.all([
-          erpPage.waitForResponse(response => new URL(response.url()).pathname.endsWith('/plan') && response.ok()),
+          erpPage.waitForResponse(response => isOverview(new URL(response.url()).pathname) && response.ok()),
           refresh.press('Enter'),
         ]);
       } finally {
@@ -291,7 +292,7 @@ test.describe('KAN-153 · Motor 365 sync', () => {
       await connectClients(appContext, app, erpContext, erp, {
         api: gateway, appOrigin, erpOrigin, instant,
         onMotorRequest: async ({ req, path, route }) => {
-          if (!path.endsWith('/plan') || path === ownPlan) return false;
+          if (!isOverview(path)) return false;
           const clinic = req.headers()['x-clinic-id'];
           if (holdOldClinic && clinic === erp.clinics[0].id) await holdOldClinic;
           if (clinic !== erp.clinics[1].id) return false;
@@ -308,11 +309,11 @@ test.describe('KAN-153 · Motor 365 sync', () => {
       await appPage.clock.setFixedTime(new Date(instant));
       await Promise.all([appPage.goto(appOrigin), erpPage.goto(erpOrigin + '/patients/' + app.patientId + '/360')]);
       await expect(appPage.getByText('Día 9 de 365', { exact: true })).toBeVisible({ timeout: 25_000 });
-      const card = erpPage.getByRole('region', { name: 'Motor 365' });
+      const card = erpPage.getByRole('region', { name: 'Motor 365', exact: true });
       await expect(card.getByText('Día 9 de 365')).toBeVisible();
       let releaseClinic;
       holdOldClinic = new Promise(resolve => { releaseClinic = resolve; });
-      const oldClinicRequest = erpPage.waitForRequest(req => req.url().endsWith('/plan') &&
+      const oldClinicRequest = erpPage.waitForRequest(req => isOverview(new URL(req.url()).pathname) &&
         req.headers()['x-clinic-id'] === erp.clinics[0].id);
       await erpPage.getByRole('button', { name: 'Actualizar' }).click();
       await oldClinicRequest;

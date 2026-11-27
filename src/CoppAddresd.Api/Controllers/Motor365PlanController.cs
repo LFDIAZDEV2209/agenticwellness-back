@@ -50,6 +50,28 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         catch (MotorException ex) { return MotorError(ex); }
     }
 
+    [HttpGet("plan/overview")]
+    [EndpointSummary("Consultar el panel del Motor 365 para una persona autorizada del ERP")]
+    [ProducesResponseType<Motor365DayResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IResult> GetOverview(string personId, CancellationToken ct)
+    {
+        if (!User.HasClaim("aud", "erp") || User.HasClaim("aud", "app")) return Results.Forbid();
+        var (patientId, failure) = await ResolveAsync(personId, write: false, ct);
+        if (failure is not null) return failure;
+        var block = await gate.CheckAsync(patientId, ct);
+        if (block is not null) return Locked(block);
+        try
+        {
+            var (day, overview) = await people.ReadOverviewAsync(patientId, ct);
+            return Results.Ok(Motor365DayResponse.From(day) with { Overview = overview });
+        }
+        catch (MotorException ex) { return MotorError(ex); }
+    }
+
     [HttpPost("plan/{day:int}/ai-adjustment"), Authorize(Policy = PatientWritePolicy)]
     [EnableRateLimiting(Motor365Api.AiAdjustmentRate)]
     [RequestSizeLimit(0)]
@@ -191,6 +213,9 @@ public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocal
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MotorMealPlanDto? MealPlan { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MotorPlanOverview? Overview { get; init; }
 
     public IReadOnlyList<MotorText> Why { get; init; } = [];
     public bool LighterDinner { get; init; }

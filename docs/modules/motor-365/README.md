@@ -422,3 +422,31 @@ y ejecuta `npm run test:kan133` desde `tests/CoppAddresd.Wellness365.E2E`.
 Para incluir el recorrido de Perfil 360 en Chromium, instala sus dependencias,
 configura `COP_KAN130_ERP_DIR` con la ruta absoluta del checkout de ERP y
 ejecuta `npx playwright install chromium` en el directorio de la suite.
+
+### Panel Motor 365 de Perfil 360 (KAN-150)
+
+`GET /api/v1/people/{patientId}/plan/overview` exige una sesión ERP con
+`Program.Profile360View` y acceso a la persona. Usa el mismo calendario local y
+las mismas compuertas que el plan de la app. Si el plan está bloqueado, devuelve
+`409` con un motivo ES/EN y no devuelve el menú ni el seguimiento. El panel no
+incluye ajustes opcionales del proveedor de IA ni selecciones de menú guardadas
+solo en el dispositivo.
+
+Además del ejercicio y menú base del día, devuelve los días de la semana de
+programa hasta el día 365, los últimos peso y cintura **registrados**, los
+cierres y un resumen de eventos no semanales. La proyección de ejercicio futuro
+no cuenta como registro. Los ajustes semanales y el calendario Año 365
+conservan sus lecturas existentes.
+
+La prueba usa PostgreSQL local desechable, los clientes ERP y Antares y cuentas
+sintéticas. Instala las dependencias de ambos clientes y luego ejecuta desde
+`tests/CoppAddresd.Wellness365.E2E`:
+
+```sh
+npm ci
+npx playwright install chromium
+COP_KAN131_TEST_DB_CONNECTION='<conexión local a copp_motor365_test_*>' \
+COP_KAN130_ERP_DIR='<ruta del checkout ERP>' \
+COP_KAN130_APP_DIR='<ruta del checkout Antares>' \
+npm run test:kan150
+```

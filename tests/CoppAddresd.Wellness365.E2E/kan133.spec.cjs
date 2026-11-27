@@ -142,7 +142,7 @@ test.describe('ERP en Chromium', () => {
       await context.addInitScript(() => localStorage.setItem('copp_lang', 'es'));
       const page = await context.newPage();
       await page.goto(erpOrigin + '/patients/' + person.app.patientId + '/360');
-      const card = page.getByRole('region', { name: 'Motor 365' });
+      const card = page.getByRole('region', { name: 'Motor 365', exact: true });
       const history = card.getByRole('region', { name: 'Ajustes semanales' });
       await expect(history.getByText('Aún no hay decisiones semanales.')).toBeVisible({ timeout: 30_000 });
       const first = await person.close(14, log(80));
