@@ -82,6 +82,9 @@ autorizado antes de revocar acceso o retirar la carga exportada.
 ## Evidencia observada en AWS · 27-11-2026
 
 Consulta de solo lectura, sin descargar contenido ni modificar políticas.
+El [preflight AWS por recurso](cloud-retention.md) protege la copia de
+recuperación del corte legado y separa versión no actual, antigüedad y
+elegibilidad comprobada.
 
 | Fuente | Observado | Para cerrar |
 | --- | --- | --- |
