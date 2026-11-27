@@ -1,5 +1,7 @@
 using CoppAddresd.WhatsApp.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 
 namespace CoppAddresd.WhatsApp.Tests;
@@ -21,10 +23,31 @@ public sealed class PostgresFixture : IAsyncLifetime
         if (appSchemaCreated) return;
         await using var app = CreateAppDb();
         await app.Database.OpenConnectionAsync(ct);
-        await using var command = app.Database.GetDbConnection().CreateCommand();
+        var connection = app.Database.GetDbConnection();
+        await using var transaction = await connection.BeginTransactionAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         // El modelo de RxTerms usa gin_trgm_ops. En producción lo instala la migración de catálogos.
         command.CommandText = "CREATE EXTENSION IF NOT EXISTS pg_trgm;\n" + app.Database.GenerateCreateScript();
         await command.ExecuteNonQueryAsync(ct);
+
+        // GenerateCreateScript solo crea el modelo EF, no las tablas SQL de KAN-178.
+        // Aplicar el mismo DDL y las mismas reglas iniciales que en el despliegue.
+        command.CommandText = """
+            DO $$ BEGIN
+                IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_user') THEN
+                    CREATE ROLE app_user NOLOGIN;
+                END IF;
+            EXCEPTION WHEN duplicate_object OR unique_violation THEN
+                -- Otro fixture puede crear el mismo rol global en paralelo.
+                NULL;
+            END $$;
+            """ + "\n" + app.GetService<IHistoryRepository>().GetCreateIfNotExistsScript() + "\n"
+            + app.GetService<IMigrator>().GenerateScript(
+                "20261126140856_AddMotor365PauseDays", "20261127142700_AddProtocolRewards",
+                MigrationsSqlGenerationOptions.NoTransactions);
+        await command.ExecuteNonQueryAsync(ct);
+        await transaction.CommitAsync(ct);
         appSchemaCreated = true;
     }
 
