@@ -4,6 +4,11 @@ Este preflight convierte inventario de AWS y decisiones por recurso en una
 lista de revisión. Es de solo lectura. No escribe políticas, no elimina datos
 y no genera comandos de borrado. Su resultado `eligible` significa elegible
 para revisión de ejecución, no una prueba de que algo se borró.
+El [acuerdo de producto][kan114] y la [matriz operativa](retention-proposal.md)
+son la base. No se reabren los plazos. Se revisa si corresponden a cada copia
+y si existe una excepción de custodia o recuperación.
+
+[kan114]: https://diomedescerda.atlassian.net/browse/KAN-114?focusedCommentId=10073
 
 ## Decisión registrada para la copia del 22-nov
 
@@ -49,6 +54,9 @@ umask 077
 python3 scripts/qa/kan-170/cloud_retention_review.py \
   --account 933629770820 --evidence "$MANIFIESTO_PRIVADO"
 ```
+
+Las pruebas locales no necesitan AWS.
+`python3 -m unittest discover -s scripts/qa/kan-170 -p 'test*.py'`
 
 Las claves de objetos y los IDs de versión quedan en el manifiesto privado,
 fuera de Git, Jira y chats. La salida solo usa IDs derivados. El preflight
