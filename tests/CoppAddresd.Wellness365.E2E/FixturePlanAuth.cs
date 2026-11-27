@@ -46,7 +46,12 @@ sealed class FixturePlanAuth
         };
         Claim[] claims = [new(JwtRegisteredClaimNames.Sub, actor.ToString()),
             new("allowed", client is "erp" or "erp-unassigned" ? "yes" : "no"),
-            new(ClaimTypes.Role, isApp ? "Patient" : client == "erp-admin" ? "Admin" : "Professional")];
+            new(ClaimTypes.Role, client switch
+            {
+                "erp-admin" => "Admin",
+                "erp-clinical-admin" => "clinical_admin",
+                _ => isApp ? "Patient" : "Professional",
+            })];
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("motor365-test",
             isApp ? "app" : "erp", claims, expires: DateTime.UtcNow.AddMinutes(20),
             signingCredentials: new SigningCredentials(_key, SecurityAlgorithms.HmacSha256)));
