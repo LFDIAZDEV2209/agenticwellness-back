@@ -32,6 +32,7 @@ public static class Motor365Api
     {
         services.AddScoped<IMotor365Actor, MotorHttpActor>();
         services.AddScoped<IMotor365Store, Motor365Store>();
+        services.AddScoped<IMotorTimelineStore, MotorTimelineStore>();
         services.AddScoped<MotorPeople>();
         services.AddScoped<MotorAiAdjustments>();
         services.AddScoped<IMotorAiDecisionStore, MotorAiDecisionStore>();
