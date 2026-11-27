@@ -77,6 +77,14 @@ Reducir la retención de grupo afecta logs históricos, y el vencimiento no
 prueba purga inmediata. No cambiar todos los grupos por prefijo. [Retención de
 CloudWatch Logs][logs]
 
+El piloto usa el grupo nuevo `/ecs/cooppadresd-auth-ordinary` con 30 días en
+Ohio y deja intacto `/ecs/cooppadresd-auth`. Lo enruta únicamente el
+despliegue de Auth. Verificar grupo, retención, tareas sanas y que lleguen
+streams después del rollout, sin leer su contenido. Para volver al grupo
+histórico, fijar la variable `AUTH_ORDINARY_LOGS_ENABLED_DEV=false` antes
+de un nuevo despliegue. Esto no borra ni modifica la retención de ningún
+grupo. Mantener el resguardo de incidentes por el canal correspondiente.
+
 [s3-age]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/intro-lifecycle-rules.html
 [s3-existing]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html
 [logs]: https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/Working-with-log-groups-and-streams.html

@@ -252,6 +252,7 @@ jobs:
         shell: bash
         env:
           DEMO_REMINDERS_ONLY: ${{ vars.MEDICATION_DEMO_REMINDERS_ONLY_DEV || 'false' }}
+          AUTH_ORDINARY_LOGS_ENABLED: ${{ vars.AUTH_ORDINARY_LOGS_ENABLED_DEV || 'true' }}
         run: |
           TD_NAME="agenticwellness-${{ matrix.service }}"
           TASK_DEF_JSON=$(aws ecs describe-task-definition --task-definition "$TD_NAME" --region "${{ env.AWS_REGION }}" --query "taskDefinition" --output json)
@@ -298,6 +299,13 @@ jobs:
               ((.containerDefinitions[0].secrets // []) as $cur |
                [$cur[] | select(. as $e | ([$secs[].name] | index($e.name)) | not)] + $secs)
           ')
+          if [ "${{ matrix.service }}" = "auth" ]; then
+            # El grupo ordinario ya existe con 30 días (KAN-170). Solo se
+            # cambia el destino de eventos nuevos, no la retención histórica.
+            PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/scripts -p test_ecs_auth_log_group.py
+            NEW_TASK_DEF_JSON=$(jq -ce --arg enabled "$AUTH_ORDINARY_LOGS_ENABLED" \
+              -f scripts/ecs-auth-ordinary-logs.jq <<< "$NEW_TASK_DEF_JSON")
+          fi
           # ECS rechaza un secret cuyo nombre choque con una env var del
           # contenedor (p. ej. Sms__AuthToken ya existía como secret manual y
           # el workflow lo reintroducía como env). El merge descarta la env
