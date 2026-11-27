@@ -119,6 +119,16 @@ builder.Services.AddMotor365Api();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("vita-tap-voice", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "unauthenticated",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 8,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true,
+            }));
     options.AddPolicy(
         "assessment-analysis",
         context =>

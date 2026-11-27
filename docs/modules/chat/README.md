@@ -455,3 +455,14 @@ ANTES de emitir el signed URL (con sesiones por signed URL los overrides del
 cliente no aplican). Fail-open: si el PATCH falla, la sesión continúa con la
 config vigente del agente. Detalle y caveats:
 `ai-service/docs/elevenlabs/agent-config.md`.
+
+### Piloto privado de voz (KAN-165)
+
+`POST /api/v1/chat/voice/turn` recibe audio WebM, MP4 o WAV de hasta 2 MiB y
+`X-Vita-Language: es|en`. Exige JWT de app, paciente activo y consentimiento
+actual de chat y voz antes de enviar datos al AI Service. Cuota de 8 turnos por
+cuenta y minuto. Responde JSON con `transcript`, `reply` y `audioBase64` (WAV)
+sin caché. No reenvía la identidad, JWT ni los nombres de archivo del cliente.
+
+`Vita__PrivateTapVoiceEnabled=true` activa esta ruta solo en el piloto.
+No modifica `/voice/session` y no usa ese endpoint como fallback ante un error.

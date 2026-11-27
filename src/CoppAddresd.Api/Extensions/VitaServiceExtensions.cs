@@ -57,6 +57,15 @@ public static class VitaServiceExtensions
             client.BaseAddress = ApplicationServiceExtensions.ResolveBaseUri(settings.BaseUrl, "http://localhost:8000");
             client.Timeout = TimeSpan.FromSeconds(90);
         }).RedactLoggedHeaders(_ => true);
+        services.AddHttpClient("VitaTapVoice", (sp, client) =>
+        {
+            var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<
+                CoppAddresd.Application.Common.AiServiceSettings>>().Value;
+            client.BaseAddress = ApplicationServiceExtensions.ResolveBaseUri(settings.BaseUrl, "http://localhost:8000");
+            client.Timeout = TimeSpan.FromSeconds(35);
+            client.MaxResponseContentBufferSize = 4 * 1024 * 1024;
+        }).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false })
+            .RemoveAllLoggers();
         return services;
     }
 }
