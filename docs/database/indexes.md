@@ -455,3 +455,11 @@ validaciones eficientes al consultar o borrar los registros referenciados.
 | `app.engine_event` | PK `(id)`, índices `(person_id, day)`, `(occurred_at)` y FK `(params_version, engine_ver)`. |
 | `app.audit_log` | PK `(id)`, índices `(person_id, occurred_at)` y `(occurred_at)` para auditoría temporal por paciente y global. |
 | `app.professional_review` | PK `(id)`, índices FK `(person_id, submission_id)` y `(professional_id)`, e índice `(person_id, reviewed_at)` para historial. |
+
+
+## Ajustes de IA del Motor 365
+
+`app.ai_plan_decision` tiene un índice único por `(person_id, day, sequence)`
+para la última decisión y el histórico paginado con cursor. El índice único de
+`reverts` impide revertir dos veces la misma decisión. Ambos se crean con la
+tabla vacía, sin construir índices sobre tablas pobladas.

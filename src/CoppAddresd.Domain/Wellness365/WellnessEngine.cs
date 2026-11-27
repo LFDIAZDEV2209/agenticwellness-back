@@ -225,6 +225,32 @@ public static class WellnessEngine
         return gain ? difference >= -.05m : difference <= .05m;
     }
 
+    public static (double Floor, double Ceiling) AiCalorieBounds(WellnessProfile profile, WellnessDay day)
+    {
+        var tdee = BasalMetabolicRate(profile, day.WeightKg) * WellnessRules.ActivityMultiplier(profile.ActivityLevel);
+        var share = WellnessRules.TargetShare(profile);
+        var baseline = day.Mode == WellnessMode.Main
+            ? tdee * (profile.Goal == WellnessGoal.GainMuscle ? 1 + share : 1 - share)
+            : tdee;
+        var cap = Math.Max(0, tdee * WellnessRules.AdjustmentCap);
+        var floor = Math.Max(CalorieFloor(profile), WellnessRules.RoundTo(baseline - cap, 10));
+        var ceiling = Math.Max(floor, WellnessRules.RoundTo(baseline + cap, 10));
+        if (profile.Logs.TryGetValue(day.Day - 1, out var yesterday) &&
+            (yesterday.Symptoms.Contains("hambre") || yesterday.Symptoms.Contains("mareo")))
+            floor = Math.Max(floor, day.Targets.Kcal);
+        if (day.Targets.Kcal > ceiling) floor = ceiling = day.Targets.Kcal;
+        return (floor, ceiling);
+    }
+
+    public static bool AreAiMacrosAllowed(WellnessProfile profile, WellnessDay day, WellnessMacros candidate)
+    {
+        var p = profile.Parameters;
+        var minimum = MacroTargets(profile.Goal, day.Mode, day.WeightKg, candidate.Kcal, day.Training, p, true);
+        return candidate.Protein >= minimum.Protein && candidate.Protein <= Math.Floor(p.ProCap * day.WeightKg)
+            && candidate.Carbs >= p.CarbMin && candidate.Fat >= 0 && Math.Abs(candidate.Fat - minimum.Fat) <= 1
+            && Math.Abs(4 * candidate.Protein + 4 * candidate.Carbs + 9 * candidate.Fat - candidate.Kcal) <= .03 * candidate.Kcal;
+    }
+
     private static WellnessMacros MacroTargets(WellnessGoal goal, WellnessMode mode, double weight, double kcal, bool train,
         WellnessParameters parameters, bool enforcePublishedTargets)
     {

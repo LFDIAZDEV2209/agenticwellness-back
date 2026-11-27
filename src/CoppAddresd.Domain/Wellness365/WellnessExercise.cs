@@ -183,6 +183,33 @@ public static class WellnessExercise
 
     private static bool IsNew(string id, int week) => UnlockWeek(id) > 1 && UnlockWeek(id) > week - 3;
 
+    public static WellnessExerciseDay? ReduceDose(WellnessExerciseDay basis, WellnessGoal goal, int level, int minutes)
+    {
+        if (level < 0 || level > basis.Level || basis.Items.Any(x => x.Definition.MinimumLevel > level && level != basis.Level)
+            || minutes < 15 || minutes > basis.Minutes)
+            return null;
+        var items = basis.Items.ToArray();
+        var remaining = basis.Minutes - minutes;
+        foreach (var i in Enumerable.Range(0, items.Length).Where(i => items[i].Strength is null)
+            .OrderByDescending(i => items[i].Minutes))
+        {
+            var cut = Math.Min(remaining, items[i].Minutes - 2);
+            items[i] = items[i] with { Minutes = items[i].Minutes - cut };
+            remaining -= cut;
+        }
+        if (remaining != 0) return null;
+        if (level != basis.Level)
+            for (var i = 0; i < items.Length; i++)
+            {
+                var item = items[i];
+                if (item.Strength is not { } old || StrengthDose(
+                    new(item.Id, item.Tag, item.NewlyUnlocked, item.Definition), goal, level, false) is not { } dose)
+                    continue;
+                items[i] = item with { Strength = dose with { RestSeconds = Math.Max(old.RestSeconds, dose.RestSeconds) } };
+            }
+        return basis with { Level = level, Minutes = minutes, Items = items };
+    }
+
     private static WellnessStrengthDose? StrengthDose(Selection selection, WellnessGoal goal, int level, bool reference)
     {
         if (selection.Definition.Category != "Fuerza") return null;

@@ -1,5 +1,7 @@
 # Persistencia del Motor 365
 
+[Pruebas de aceptación del ajuste de plan con IA (KAN-162)](kan162-e2e.md)
+
 `AppDbContext` y la migración `AddMotor365Persistence` definen el esquema
 `app` para el motor v5.2. [ADR del Motor 365](../../decisions/2026-11-24-motor-365-dotnet.md)
 

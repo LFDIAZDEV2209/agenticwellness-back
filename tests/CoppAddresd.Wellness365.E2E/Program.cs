@@ -49,6 +49,7 @@ var app = builder.Build();
 app.UseWhen(context => context.Request.Path.StartsWithSegments("/v1"),
     pipeline => pipeline.UseMiddleware<Motor365Errors>());
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
 

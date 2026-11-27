@@ -273,25 +273,50 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         telemetry is null ? work() : telemetry.MeasureAsync(operation, id, work);
 
     public Task<MotorCalendarDay> ReadCalendarDayAsync(Guid id, int? day, CancellationToken ct, int? historyDays = null, bool includeMenu = false) =>
-        CalculateAsync(id, (view, computation) =>
+        CalculateAsync(id, (view, computation) => ProjectCalendarDay(view, computation,
+            computation.Result.Days[(day ?? view.Day) - 1], historyDays, includeMenu),
+            ct, day, "Program.Profile360View", includeProjections: false);
+
+    internal static MotorCalendarDay ProjectCalendarDay(MotorView view, MotorCalculation computation,
+        WellnessDay value, int? historyDays, bool includeMenu)
+    {
+        var recorded = computation.Profile.Logs.ContainsKey(value.Day);
+        var streak = value.Streak ?? (value.Day > 1 ? computation.Result.Days[value.Day - 2].Streak : null) ?? 0;
+        var state = value.Paused ? "paused" : value.Mode == WellnessMode.Maintain ? "maint" : "active";
+        return new(value.Day, view.Day, view.Person.TodayLocalDate, view.Person.StartDate,
+            view.Person.TimeZoneId, state, recorded ? "recorded" : value.Past ? "missing" : "open",
+            recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak,
+            computation.Version, MotorProjection.ExerciseSession(value),
+            new(value.Targets.Kcal, value.Targets.Protein, value.Targets.Carbs, value.Targets.Fat,
+                value.FiberGrams, value.WaterMl))
         {
-            var value = computation.Result.Days[(day ?? view.Day) - 1];
-            var recorded = computation.Profile.Logs.ContainsKey(value.Day);
-            var streak = value.Streak ?? (value.Day > 1 ? computation.Result.Days[value.Day - 2].Streak : null) ?? 0;
-            var state = value.Paused ? "paused" : value.Mode == WellnessMode.Maintain ? "maint" : "active";
-            return new MotorCalendarDay(value.Day, view.Day, view.Person.TodayLocalDate, view.Person.StartDate,
-                view.Person.TimeZoneId, state, recorded ? "recorded" : value.Past ? "missing" : "open",
-                recorded || value.Past ? value.Log.Adherence : null, value.Log.MeasuredWeightKg, streak,
-                computation.Version, MotorProjection.ExerciseSession(value),
-                new(value.Targets.Kcal, value.Targets.Protein, value.Targets.Carbs, value.Targets.Fat,
-                    value.FiberGrams, value.WaterMl))
-            {
-                Why = MotorProjection.Reasons(value),
-                LighterDinner = value.LighterDinner,
-                Sync = historyDays is { } window ? ProjectSync(view, computation, value.Day, window) : null,
-                MealPlan = includeMenu ? MotorProjection.MealPlan(computation.Profile, value) : null,
-            };
-        }, ct, day, "Program.Profile360View", includeProjections: false);
+            Why = MotorProjection.Reasons(value),
+            LighterDinner = value.LighterDinner,
+            Sync = historyDays is { } window ? ProjectSync(view, computation, value.Day, window) : null,
+            MealPlan = includeMenu ? MotorProjection.MealPlan(computation.Profile, value) : null,
+        };
+    }
+
+    internal Task<T> WithAiDayAsync<T>(Guid id, int? requestedDay, bool write,
+        Func<MotorAiBase, CancellationToken, Task<T>> operation, CancellationToken ct)
+    {
+        return write ? store.InConditionalLogWriteAsync(LoadAsync, ct) : store.InPlanReadAsync(LoadAsync, ct);
+
+        async Task<T> LoadAsync(CancellationToken token)
+        {
+            var (subject, person, data) = await ReadInputsAsync(id, write: false, token, track: true,
+                readPermission: "Program.Profile360View");
+            var now = clock.GetUtcNow();
+            SyncCalendar(subject, person, now);
+            var view = ToPerson(subject, person, data, LocalDate(subject, now));
+            RequirePlan(view.Status);
+            ValidateRequestedDay(requestedDay, view.Day);
+            var parameters = await store.FindParamsAsync(null, token);
+            var calculation = Calculate(person, data, view.Day, parameters, token, includeProjections: false);
+            return await operation(new(new(view, view.Day, data.Logs), calculation,
+                calculation.Result.Days[(requestedDay ?? view.Day) - 1]), token);
+        }
+    }
 
     private static MotorSyncSnapshot ProjectSync(MotorView view, MotorCalculation computation, int throughDay, int windowDays)
     {

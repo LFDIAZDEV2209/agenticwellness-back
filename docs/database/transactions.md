@@ -406,3 +406,19 @@ se actualiza por clave primaria dentro de la transacción. Deshacer conserva el
 evento original, agrega una corrección, vuelve a pendiente y concilia el stock
 si el consumo original era posterior al último conteo físico. Las notificaciones
 externas se despachan después del commit del planificador.
+
+
+## Ajuste de plan con IA · Motor 365
+
+El POST captura una revisión consistente del día, sin mantener una transacción
+durante la llamada HTTP al simulador. Luego, una transacción serializable vuelve
+a comprobar día, compuertas, huella del cálculo, revisión, último evento y
+parámetros. Persiste en una sola inserción la decisión y sus metadatos de
+auditoría. También se auditan rechazos y fallos del simulador. No se escriben las
+entradas del motor ni su caché.
+
+La reversión añade una fila que referencia la decisión aplicada. El índice único
+de reversión y la lectura serializable impiden duplicados concurrentes. En un
+conflicto de versión se recarga la revisión en una transacción nueva, sin
+reintentar la llamada HTTP. No se devuelve una decisión de aplicación antes del
+commit. El trigger append-only impide actualizar, borrar o truncar el historial.
