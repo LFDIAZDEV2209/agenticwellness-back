@@ -249,7 +249,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         int NutritionCalculationRevision, Guid[] ConsentReceiptIds);
 
     internal Task<T> CalculateAsync<T>(Guid id, Func<MotorView, MotorCalculation, T> project, CancellationToken ct,
-        int? requestedDay = null, string? readPermission = null, bool includeProjections = true, string operation = "calendar") =>
+        int? requestedDay = null, string? readPermission = null, bool includeProjections = true, string operation = "calendar",
+        bool includeCurrentWeek = false) =>
         MeasureAsync(operation, id, async () =>
         {
             var inputs = await store.InPlanReadAsync(async token =>
@@ -264,7 +265,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                 return (person, data, dto, parameters);
             }, ct);
             var result = project(new(inputs.dto, inputs.dto.Day, inputs.data.Logs), Calculate(inputs.person, inputs.data, inputs.dto.Day,
-                inputs.parameters, ct, includeProjections));
+                inputs.parameters, ct, includeProjections, includeCurrentWeek));
             if (!includeProjections && inputs.parameters is not null) snapshots?.TryEnqueue(id);
             return result;
         });
@@ -276,6 +277,15 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
         CalculateAsync(id, (view, computation) => ProjectCalendarDay(view, computation,
             computation.Result.Days[(day ?? view.Day) - 1], historyDays, includeMenu),
             ct, day, "Program.Profile360View", includeProjections: false);
+
+    public Task<(MotorCalendarDay Day, MotorPlanOverview Overview)> ReadOverviewAsync(Guid id, CancellationToken ct) =>
+        CalculateAsync(id, (view, calculation) =>
+        {
+            var today = calculation.Result.Days[view.Day - 1];
+            return (ProjectCalendarDay(view, calculation, today, historyDays: null, includeMenu: true),
+                MotorProjection.Overview(view, calculation));
+        }, ct, readPermission: "Program.Profile360View", includeProjections: false,
+            operation: "overview", includeCurrentWeek: true);
 
     internal static MotorCalendarDay ProjectCalendarDay(MotorView view, MotorCalculation computation,
         WellnessDay value, int? historyDays, bool includeMenu)
@@ -478,7 +488,7 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
     };
 
     private static MotorCalculation Calculate(Motor365Person person, MotorData data, int day,
-        Motor365EngineParams? stored, CancellationToken ct, bool includeProjections = true)
+        Motor365EngineParams? stored, CancellationToken ct, bool includeProjections = true, bool includeCurrentWeek = false)
     {
         if (person.EngineVer != WellnessEngine.ReferenceVersion)
             throw new MotorException("service_unavailable");
@@ -491,7 +501,8 @@ public sealed class MotorPeople(IMotor365Store store, IMotor365Actor actor, IPat
                     (double?)log.WeightKg, log.CompletedExercise)
                 { Symptoms = log.Symptoms, MeasuredWaistCm = log.WaistCm }),
         };
-        return new(profile, WellnessEngine.EvaluateRecordedTimeline(profile, ct, includeProjections), version);
+        int? throughDay = includeCurrentWeek ? ((day + 6) / 7) * 7 : null;
+        return new(profile, WellnessEngine.EvaluateRecordedTimeline(profile, ct, includeProjections, throughDay), version);
     }
 
     private static WellnessProfile Profile(Motor365Person person, int day, DateTime? birth) =>

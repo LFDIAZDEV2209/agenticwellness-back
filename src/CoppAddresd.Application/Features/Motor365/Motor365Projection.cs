@@ -19,6 +19,27 @@ internal static class MotorProjection
                 }).ToArray(), MealTotals(dish.Totals))).ToArray())).ToArray());
     }
 
+    internal static MotorPlanOverview Overview(MotorView view, MotorCalculation calculation)
+    {
+        var logs = view.Logs.Where(log => log.Day <= view.Day).ToDictionary(log => log.Day);
+        var weekStart = ((view.Day - 1) / 7) * 7 + 1;
+        var week = calculation.Result.Days.Skip(weekStart - 1).Select(day =>
+            new MotorOverviewExerciseDay(day.Day, day.Paused ? null : Text(day.Exercise.Name),
+                day.Paused ? 0 : day.Exercise.Minutes, day.Paused, day.Day > view.Day,
+                logs.GetValueOrDefault(day.Day)?.CompletedExercise)).ToArray();
+        var events = calculation.Result.Events.Where(item => item.Day <= view.Day && item.Kind is not ("ajuste" or "sin"))
+            .OrderByDescending(item => item.Day).Take(10).Select(item => Event(item, calculation.Version)).ToArray();
+        return new(view.Person.Goal, view.Person.Target, week,
+            new(logs.Count, logs.GetValueOrDefault(view.Day)?.CompletedExercise,
+                LastMeasurement(log => log.WeightKg), LastMeasurement(log => log.WaistCm)), events);
+
+        MotorOverviewMeasurement? LastMeasurement(Func<Motor365DailyLog, decimal?> select)
+        {
+            var latest = logs.Values.Where(log => select(log).HasValue).MaxBy(log => log.Day);
+            return latest is null ? null : new(latest.Day, select(latest)!.Value);
+        }
+    }
+
     private static MotorMealTotals MealTotals(WellnessMacros macros) =>
         new(macros.Kcal, macros.Protein, macros.Carbs, macros.Fat);
 
