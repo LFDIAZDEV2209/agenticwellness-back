@@ -2038,12 +2038,19 @@ public sealed class ProgramRepositoryTests(ProgramRepositoryTestDb fixture)
         await new ProgramRepository(db, Configuration()).CompleteTaskAsync(new CompleteTaskInput(
             enrollmentId, date, TaskCode.emocional, "emo-migration", null, 4, "tiempo", null));
         var migrations = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.EndsWith("_AddStructuredEmotionalAssessment", migrations[^1]);
+        var index = Array.FindIndex(migrations, migration => migration.EndsWith("_AddStructuredEmotionalAssessment", StringComparison.Ordinal));
+        Assert.True(index > 0);
         var migrator = db.GetService<IMigrator>();
-        await migrator.MigrateAsync(migrations[^2]);
-        var count = await db.Database.SqlQuery<int>($"SELECT COUNT(*)::integer AS \"Value\" FROM app.emotional_records WHERE program_enrollment_id = {enrollmentId}").SingleAsync();
-        Assert.Equal(1, count);
-        await migrator.MigrateAsync(migrations[^1]);
+        try
+        {
+            await migrator.MigrateAsync(migrations[index - 1]);
+            var count = await db.Database.SqlQuery<int>($"SELECT COUNT(*)::integer AS \"Value\" FROM app.emotional_records WHERE program_enrollment_id = {enrollmentId}").SingleAsync();
+            Assert.Equal(1, count);
+        }
+        finally
+        {
+            await migrator.MigrateAsync(migrations[^1]);
+        }
         var restored = await db.EmotionalRecords.AsNoTracking().SingleAsync(r => r.ProgramEnrollmentId == enrollmentId);
         Assert.Equal(4, restored.MoodScore);
         Assert.Equal("tiempo", restored.Barriers);
@@ -2531,12 +2538,15 @@ public sealed class ProgramRepositoryTests(ProgramRepositoryTestDb fixture)
     }
 
     private static async Task ResetProgramTablesAsync(AppDbContext db) =>
+        // Cada test crea perfiles con GUID propio. No truncar patient_profiles:
+        // CASCADE alcanza la bitácora de Motor 365, diseñada como append-only.
         await db.Database.ExecuteSqlRawAsync(
             """
             TRUNCATE app.task_completions, app.xp_ledger, app.daily_checkins, app.streak_states,
                      app.streak_freezes, app.emotional_records, app.program_weeks,
                      app.program_enrollments, app.adaptation_recommendations,
-                     app.weekly_day_templates, app.program_templates, app.patient_profiles CASCADE;
+                     app.weekly_day_templates, app.program_templates,
+                     app.protocol_reward_entries, app.xp_rule_revisions CASCADE;
             """
         );
 
