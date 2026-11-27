@@ -8,6 +8,7 @@
     "test:kan123": "playwright test --config playwright.kan123.config.cjs",
     "test:kan127": "playwright test --config playwright.kan127.config.cjs",
     "test:kan128": "playwright test --config playwright.kan128.config.cjs",
+    "test:kan148": "playwright test --config playwright.kan148.config.cjs",
     "test:kan133": "playwright test --config playwright.kan133.config.cjs",
     "test:kan150": "playwright test --config playwright.kan150.config.cjs",
     "test:kan162": "playwright test --config playwright.kan162.config.cjs",

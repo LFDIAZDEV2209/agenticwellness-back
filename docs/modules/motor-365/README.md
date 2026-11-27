@@ -24,6 +24,24 @@ elegibilidad clínica corresponde al motor. Las FK de historial restringen
 borrados físicos con registros dependientes. El rollback elimina exclusivamente
 los objetos del módulo y sus datos.
 
+## Historial de parámetros en el ERP (KAN-148)
+
+En Configuración, una sesión ERP con el rol `clinical_admin` puede consultar y
+comparar versiones publicadas. Cada revisión posterior a la referencia del
+motor muestra versión, fecha, motivo y cuenta que publicó. La referencia nunca
+expone el actor de la inicialización del primer plan.
+
+- `GET /api/v1/erp/motor365/parameters/versions?before={version}&limit={limit}`
+  lista revisiones en orden descendente, con cursor exclusivo.
+- `GET /api/v1/erp/motor365/parameters/versions/{version}` devuelve la revisión
+  inmutable y los valores que se publicaron.
+- Esta lectura no cambia la política del endpoint legado de publicación.
+  No implementa edición, recálculo, impacto futuro ni reversión.
+
+La prueba de navegador usa PostgreSQL desechable y agrega dos versiones
+sintéticas. Ejecuta `npm run test:kan148` desde `tests/CoppAddresd.Wellness365.E2E`
+con `COP_KAN131_TEST_DB_CONNECTION` local y `COP_KAN130_ERP_DIR` apuntando al ERP.
+
 ## Pago, envío y Home
 
 `paymentId → userId → patientId → submissionId → generationId`. La activación

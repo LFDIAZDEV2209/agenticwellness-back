@@ -23,6 +23,7 @@ public static class Motor365Api
     public const string People = "Motor365.People";
     public const string ReadParams = "Motor365.Params.Read";
     public const string WriteParams = "Motor365.Params.Write";
+    public const string ReadParameterHistory = "Motor365.Params.History";
     public const string Audit = "Motor365.Audit";
     public const string AiAdjustmentRate = "motor365-ai-adjustment";
 
@@ -32,6 +33,8 @@ public static class Motor365Api
     {
         services.AddScoped<IMotor365Actor, MotorHttpActor>();
         services.AddScoped<IMotor365Store, Motor365Store>();
+        services.AddScoped<IMotorParameterVersionStore, MotorParameterVersionStore>();
+        services.AddScoped<MotorParameterHistory>();
         services.AddScoped<MotorPeople>();
         services.AddScoped<MotorAiAdjustments>();
         services.AddScoped<IMotorAiDecisionStore, MotorAiDecisionStore>();
@@ -63,6 +66,8 @@ public static class Motor365Api
                 ValidIdentity(c.User) && ErpRole(c.User, [.. StaffRoles, "clinical_admin"])))
             .AddPolicy(WriteParams, p => p.RequireAuthenticatedUser().RequireAssertion(c =>
                 ValidIdentity(c.User) && ErpRole(c.User, ["Admin", "clinical_admin"])))
+            .AddPolicy(ReadParameterHistory, p => p.RequireAuthenticatedUser().RequireAssertion(c =>
+                ValidIdentity(c.User) && ErpRole(c.User, ["clinical_admin"])))
             .AddPolicy(Audit, p => p.RequireAuthenticatedUser().RequireAssertion(c =>
                 ValidIdentity(c.User) && ErpRole(c.User, ["Admin", "Auditor"])));
 
