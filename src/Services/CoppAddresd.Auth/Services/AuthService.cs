@@ -71,10 +71,7 @@ public class AuthService : IAuthService
                 return await _userManager.FindByIdAsync(userId.ToString());
             }
 
-            _logger.LogWarning(
-                "Login failed: no user linked to document {Document}",
-                request.DocumentNumber
-            );
+            _logger.LogWarning("Login failed: no user linked to supplied document");
             return null;
         }
 
@@ -87,7 +84,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
         {
-            _logger.LogWarning("Login failed: user not found for email {Email}", request.Email);
+            _logger.LogWarning("Login failed: user not found for supplied email");
         }
         return user;
     }

@@ -4,11 +4,14 @@
 [Decisión KAN-114](https://diomedescerda.atlassian.net/browse/KAN-114) ·
 [Handoff KAN-157](https://diomedescerda.atlassian.net/browse/KAN-157)
 
-**Este cambio recibe solicitudes, entrega copias acotadas de perfil y vitales,
+**El canal recibe solicitudes, entrega copias acotadas de perfil y vitales,
 y entrega la copia integral cuando un operador publica un paquete revisado.**
-No extrae automáticamente todos los almacenes, no elimina datos ni cierra cuentas. KAN-114 autorizó el trabajo. El comentario de
-KAN-170 exige acordar los plazos por dato con Legal. El expediente consultado no
-contiene esa matriz aprobada.
+El flujo de borrado verifica comprobantes y permite un paso acotado sobre
+preferencias no clínicas. No extrae automáticamente todos los almacenes,
+no ejecuta borrado integral ni cierra cuentas. KAN-114 autorizó el trabajo.
+La [decisión operativa de Diomedes](retention-proposal.md)
+fija las metas de producto. KAN-170 requiere verificar la regla jurídica
+aplicable por fuente antes de habilitar la disposición.
 
 ## Contrato de recepción
 
@@ -21,7 +24,7 @@ resolver el comprobante de otro aunque conozca su UUID.
 | --- | --- |
 | `GET /api/auth/privacy/requests` | `{ export: Receipt \| null, deletion: Receipt \| null, downloadAvailable: boolean, fullExport: ReadyExport \| null }`, solo pendientes del titular. |
 | `POST /api/auth/privacy/requests` | `{"kind":"export","format":"json"}` (o `csv`) o `{"kind":"deletion","confirmed":true}`. |
-| `GET /api/auth/privacy/requests/{id}` | Devuelve el comprobante del titular o `404`. |
+| `GET /api/auth/privacy/requests/{id}` | Devuelve el comprobante del titular o `404`. Cuando se verificó una solicitud de borrado, incluye `review.verifiedAt` y `review.dueAt`. |
 | `GET /api/auth/privacy/requests/{id}/download` | Con un comprobante pendiente de exportación del mismo titular, devuelve la copia acotada. |
 | `PUT /api/auth/privacy/fulfillment/{id}` | Un operador ERP con `Privacy.PublishExport` publica el expediente revisado para el titular. |
 | `GET /api/auth/privacy/requests/{id}/full-download` | Entrega el expediente revisado en el formato solicitado al titular autenticado. |
@@ -98,9 +101,46 @@ contener el cifrado hasta su expiración y necesitan su propia política.
 La clave no se rota hasta que caduquen los archivos vigentes, salvo revocación
 deliberada de las copias activas. No se habilitó en producción.
 
+## Verificación y ejecución de borrado
+
+Los operadores ERP con permiso `Privacy.ReviewDeletion` pueden actuar
+únicamente con `PrivacyRequests__Enabled=true` y
+`PrivacyRequests__DeletionEnabled=true`. El segundo interruptor está
+apagado por defecto. La app no puede invocar estos pasos con un token de
+paciente. El ID de titular aportado se verifica contra el comprobante
+pendiente. No se aceptan nombres de tablas ni instrucciones SQL.
+
+| Operación | Contrato |
+| --- | --- |
+| `PUT /api/auth/privacy/deletions/{id}/verification` | Requiere `userId`, `identityEvidence` y `policyReference`. Puede incluir `earlierDueAt` si la regla aplicable tiene una fecha anterior. Devuelve `verifiedAt` y `dueAt`. |
+| `PUT /api/auth/privacy/deletions/{id}/preferences` | Requiere un comprobante ya verificado, `userId`, `confirmedEligible: true` y `evidenceReference` del cotejo de preferencias. Borra solo la fila `auth."UserPreferences"` del titular y devuelve `completedAt` y `rowsErased`. |
+
+La fecha inicial se registra en el servidor. El vencimiento es el menor
+entre verificación más 90 días y el plazo anterior aplicable que aportó el
+operador con su referencia. Una corrección documentada solo puede acortar
+el plazo. La verificación no autoriza el borrado por sí sola. Las referencias
+son opacas y no llevan PII, tokens ni datos clínicos.
+
+Al ejecutar el paso, el operador confirma que esas preferencias están
+autorizadas para borrado y no tienen que conservarse. La supresión y el
+asiento de evidencia comparten transacción. Los reintentos del mismo paso
+devuelven el comprobante persistido, no vuelven a ejecutar. El proceso no
+espera hasta la fecha límite. La app muestra verificación y vencimiento
+del trámite sin mostrar las referencias internas ni confundir el paso de
+preferencias con el borrado completo.
+
+Los pasos de preferencias y tokens de dispositivos no cierran la cuenta,
+no tocan el expediente ni cambian `AccountPurgeService` o la baja heredada.
+La [guía de cierre por fuente](coverage.md) describe el comprobante de cada
+almacén, los requisitos de archivo y restauración y las verificaciones
+pendientes en producción. No usar estos contadores para declarar que se
+borró el perfil completo.
+
 ## Inventario para la matriz de retención
 
-La [propuesta operativa](retention-proposal.md) es un borrador sin aprobación.
+La [decisión operativa](retention-proposal.md) fija hasta 90 días calendario
+para la eliminación elegible desde la verificación, sin espera mínima y
+sin sustituir un plazo aplicable anterior. No activa la ejecución.
 Esta tabla es un mapa técnico inicial, no una política. Para cada fila faltan
 confirmar el titular y los sistemas de custodia, el evento que inicia el plazo,
 el plazo aprobado, las excepciones o suspensiones, la disposición y el
@@ -116,7 +156,9 @@ responsable. Una exclusión de exportación también requiere motivo documentado
 | Módulos retirados | Inventario KAN-118 de Chat IA, Historia Clínica, métricas, historial, Citas, Academia, INFINITO, Marketplace y Podcast. Reconciliación KAN-122. | Apagar escrituras primero. Archivar solo lo inventariado, generar manifiesto de conteos y sumas de comprobación, restaurar en aislamiento y reconciliar. No usar el cambio de estado de `default-83w` como prueba de archivo de todos los módulos. |
 | Copias | RDS/PITR, snapshots manuales, S3 con versiones, y copias externas por verificar. | Ver inventario observado. Falta comprobar vencimiento, copias externas y reconciliación después de restaurar. |
 
-## Inventario de copias observado en AWS (25-11-2026, solo lectura)
+## Inventario anterior de copias en AWS (25-11-2026, solo lectura)
+
+La consulta más reciente del 27 de noviembre está en la [guía de cierre](coverage.md).
 
 | Almacén | Observación | Lo que no demuestra |
 | --- | --- | --- |
@@ -135,7 +177,9 @@ el entorno. Inventariar también los objetos/versiones y copias en proveedores.
 
 `scripts/qa/kan-170/retention_review.py` solo lee manifiestos locales y devuelve
 conteos sin datos de paciente. No hay modo de ejecución destructiva.
-`retention-policy.pending.json` representa el estado actual sin aprobación.
+`retention-policy.pending.json` sigue sin reglas ejecutables aprobadas y no
+se usa para registrar la decisión de producto. El campo `days` del preflight
+indica retención mínima, no fecha límite de un trámite.
 Con `disposition`, se pasan `--policy`, `--records` y `--now` con hora UTC.
 Las reglas requieren una referencia de aprobación y una fecha efectiva,
 acción y días por categoría. Para acciones de baja se requiere fecha ancla
@@ -144,8 +188,12 @@ elegibles sin referencia, SHA-256 y evidencia de restauración. El preflight
 valida forma y cobertura, no autentica la aprobación o el informe externo.
 
 Con `reconcile-restore`, usar `--snapshot-at`, `--ledger` (comprobantes de
-borrado con categoría y fecha efectiva) y `--findings` (lecturas verificadas
-del entorno aislado por comprobante, con conteo de registros). Devuelve código
+borrado con categoría, fuente y fecha efectiva) y `--findings` (lecturas
+verificadas del entorno aislado por comprobante y fuente, con conteo de
+registros). Las nuevas evidencias usan `source`, por ejemplo
+`auth.UserPreferences`. Una lectura de cero filas en una fuente no cubre
+otra fuente de la misma categoría. La evidencia histórica sin `source`
+solo coincide con lecturas históricas sin `source`. Devuelve código
 2 si faltan lecturas o reaparecen datos. En ese caso, no devolver tráfico al
 entorno restaurado. Reaplicar solo acciones autorizadas y volver a medir.
 Estas lecturas las ejecutan los custodios por fuente, no el script.
@@ -187,6 +235,9 @@ entrega integral, configurar también `PrivacyRequests__FulfillmentEnabled=true`
 una clave de QA separada, habilitar la audiencia `erp` y pasar
 `COP_PRIVACY_QA_FULFILLMENT=1`. El fixture asigna ERP al segundo usuario
 sintético; Playwright firma el token de QA con el permiso de publicación.
+Para verificar borrado acotado, habilitar `PrivacyRequests__DeletionEnabled=true`
+y pasar `COP_PRIVACY_QA_DELETION=1`. El fixture también carga una fila de
+preferencias para cada titular.
 
 Playwright sustituye los endpoints no relacionados con el ticket. Los endpoints
 de solicitudes, firma JWT, aislamiento y persistencia usan Auth y PostgreSQL
@@ -227,3 +278,26 @@ reales. No se usan datos de pacientes ni servicios externos.
   plazo y archivo sin restauración. Un ensayo PostgreSQL de restauración
   detectó un registro sintético reaparecido y no aprobó la reapertura hasta
   quitarlo del clon. La fila ajena al trámite quedó intacta.
+
+### Evidencia de verificación y borrado acotado (27-11-2026)
+
+- Playwright falló primero contra el backend anterior porque la operación
+  de verificación no existía. Con el nuevo flujo, verificó el plazo de 90
+  días, un vencimiento anterior, la posibilidad de acortar sin extender,
+  la denegación a un titular y a un token ERP sin permiso, y la fecha
+  visible al reabrir el comprobante.
+- Se ejecutó el borrado explícito de una fila de preferencias en PostgreSQL
+  antes del vencimiento. Dos llamadas concurrentes devolvieron el mismo
+  resultado y el trámite quedó abierto. Se mantuvo activa la cuenta, se
+  conservó la preferencia del segundo titular y el hash clínico no cambió.
+  Una falla inducida al escribir la auditoría revirtió la supresión.
+- Una copia PostgreSQL anterior al borrado restauró esa preferencia.
+  A partir del asiento posterior al snapshot, el preflight identificó
+  `auth.UserPreferences` como pendiente de reconciliar y rechazó reabrir.
+  Pasó tras reaplicar la supresión solo en el clon. Las cuatro pruebas
+  Python incluyen la separación de fuentes, además de fechas, excepciones
+  y registros reaparecidos.
+- Builds de Auth y app correctos, 458 pruebas Auth y 2.241 de app aprobadas.
+  Ocho pruebas Auth quedaron omitidas por la suite. No se usaron ni
+  restauraron datos de producción, no se modificaron los plazos de AWS y
+  no se habilitó el flujo de borrado en producción.

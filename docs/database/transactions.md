@@ -422,3 +422,14 @@ de reversión y la lectura serializable impiden duplicados concurrentes. En un
 conflicto de versión se recarga la revisión en una transacción nueva, sin
 reintentar la llamada HTTP. No se devuelve una decisión de aplicación antes del
 commit. El trigger append-only impide actualizar, borrar o truncar el historial.
+
+## Verificación y supresión acotada de preferencias (KAN-170)
+
+En Auth, una transacción corta en Read Committed bloquea el comprobante
+pendiente del titular con `SELECT FOR UPDATE`. La verificación inserta o
+acorta la fecha límite en `auth."PrivacyDeletionCases"`. La ejecución
+comprueba la verificación y la elegibilidad confirmada. Borra la fila
+`auth."UserPreferences"` por su PK y guarda operador, referencia, hora y
+conteo en la misma transacción. Si falla la auditoría, el DB revierte también
+la supresión. No hay I/O externo dentro del bloqueo. Dos ejecuciones del mismo
+paso se serializan y el reintento devuelve el asiento ya persistido.

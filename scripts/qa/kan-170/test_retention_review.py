@@ -39,5 +39,18 @@ class RetentionReviewTests(unittest.TestCase):
         self.assertTrue(reconcile_restore(snapshot, ledger, findings)["ready"])
 
 
+    def test_zero_rows_in_one_source_does_not_clear_another_source(self):
+        common = {"receiptId": "receipt-1", "category": "profile"}
+        ledger = [dict(common, completedAt="2026-11-19T00:00:00Z", source="auth.UserPreferences"),
+                  dict(common, completedAt="2026-11-19T00:00:00Z", source="app.patient_profiles")]
+        findings = [dict(common, source="auth.UserPreferences", matchingRecords=0)]
+        result = reconcile_restore("2026-11-18T00:00:00Z", ledger, findings)
+        self.assertEqual(result["requiredChecks"], 2)
+        self.assertFalse(result["ready"])
+        self.assertEqual(result["unverified"], {"profile": 1})
+        findings.append(dict(common, source="app.patient_profiles", matchingRecords=0))
+        self.assertTrue(reconcile_restore("2026-11-18T00:00:00Z", ledger, findings)["ready"])
+
+
 if __name__ == "__main__":
     unittest.main()

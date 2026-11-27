@@ -10,4 +10,5 @@ public sealed class PrivacyRequest
     public DateTime ReceivedAt { get; set; }
     public DateTime? ExportPreparedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
+    public PrivacyDeletionCase? DeletionCase { get; set; }
 }

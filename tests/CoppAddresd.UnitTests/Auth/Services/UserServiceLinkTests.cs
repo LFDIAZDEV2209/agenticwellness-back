@@ -3,11 +3,11 @@ using CoppAddresd.Auth.Entities;
 using CoppAddresd.Auth.Interfaces;
 using CoppAddresd.Auth.Models;
 using CoppAddresd.Auth.Services;
+using CoppAddresd.UnitTests.Auth.TestDoubles;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CoppAddresd.UnitTests.Auth.Services;
 
@@ -67,12 +67,13 @@ public class UserServiceLinkTests
                 RoleManager,
                 Db,
                 _provider.GetRequiredService<ITokenInvalidationService>(),
-                NullLogger<UserService>.Instance
+                Logs
             );
         }
 
         public AuthDbContext Db => _provider.GetRequiredService<AuthDbContext>();
         public UserService Users { get; }
+        public RecordingLogger<UserService> Logs { get; } = new();
         public UserManager<ApplicationUser> UserManager =>
             _provider.GetRequiredService<UserManager<ApplicationUser>>();
         public RoleManager<ApplicationRole> RoleManager =>
@@ -142,6 +143,7 @@ public class UserServiceLinkTests
         Assert.True(notFound);
         Assert.Null(user);
         Assert.Equal("Usuario no encontrado", error);
+        Assert.DoesNotContain(h.Logs.Messages, m => m.Contains("nadie@test.com", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -158,6 +160,25 @@ public class UserServiceLinkTests
         Assert.False(notFound);
         Assert.Null(user);
         Assert.Contains("inactiva", error!);
+        Assert.DoesNotContain(h.Logs.Messages, m => m.Contains("inactivo@test.com", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CreateAsync_CorreoDuplicado_NoLoEscribeEnLogs()
+    {
+        using var h = new Harness();
+        const string duplicate = "duplicate@example.test";
+        await h.CreateUserAsync(duplicate);
+
+        var result = await h.Users.CreateAsync(new CreateUserRequest
+        {
+            Email = duplicate, Password = "Synthetic!Pass2026", FirstName = "Alta", LastName = "Prueba"
+        });
+
+        Assert.False(result.Success);
+        Assert.Equal("Email ya está registrado", result.Error);
+        Assert.NotEmpty(h.Logs.Messages);
+        Assert.DoesNotContain(h.Logs.Messages, m => m.Contains(duplicate, StringComparison.Ordinal));
     }
 
     [Fact]
