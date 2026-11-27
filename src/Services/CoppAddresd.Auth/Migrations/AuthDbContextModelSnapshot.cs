@@ -574,6 +574,133 @@ namespace CoppAddresd.Auth.Migrations
                     b.ToTable("Permissions", "auth");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyDeletionCase", b =>
+                {
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ClosedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("CompletionSourceCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeadlineChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeadlineChangedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("DueAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IdentityEvidence")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("InventoryReference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("PolicyReference")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("PreferencesErasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("PreferencesErasedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PreferencesErasureEvidence")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int?>("PreferencesRowsErased")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RestoreReference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("VerifiedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RequestId");
+
+                    b.ToTable("PrivacyDeletionCases", "auth");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyDispositionEvidence", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActionReference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("ArchiveReference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("EvidenceReference")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("PolicyReference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecordedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("RemainingCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RestoreReference")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("ReviewAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("RowsErased")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId", "SourceKey", "EvidenceReference")
+                        .IsUnique();
+
+                    b.HasIndex("RequestId", "SourceKey", "RecordedAt");
+
+                    b.ToTable("PrivacyDispositionEvidence", "auth");
+                });
+
             modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyExportArtifact", b =>
                 {
                     b.Property<Guid>("RequestId")
@@ -1107,6 +1234,24 @@ namespace CoppAddresd.Auth.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyDeletionCase", b =>
+                {
+                    b.HasOne("CoppAddresd.Auth.Entities.PrivacyRequest", null)
+                        .WithOne("DeletionCase")
+                        .HasForeignKey("CoppAddresd.Auth.Entities.PrivacyDeletionCase", "RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyDispositionEvidence", b =>
+                {
+                    b.HasOne("CoppAddresd.Auth.Entities.PrivacyDeletionCase", null)
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyExportArtifact", b =>
                 {
                     b.HasOne("CoppAddresd.Auth.Entities.PrivacyRequest", null)
@@ -1337,6 +1482,11 @@ namespace CoppAddresd.Auth.Migrations
                     b.Navigation("RolePermissions");
 
                     b.Navigation("UserPermissions");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Auth.Entities.PrivacyRequest", b =>
+                {
+                    b.Navigation("DeletionCase");
                 });
 #pragma warning restore 612, 618
         }

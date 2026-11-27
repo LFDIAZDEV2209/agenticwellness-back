@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CoppAddresd.Auth.Services;
 
 public sealed record SubmitPrivacyRequest(string? Kind, string? Format, bool Confirmed = false);
-public sealed record PrivacyReceipt(Guid Id, string Kind, string? Format, DateTime ReceivedAt);
+public sealed record PrivacyReceipt(Guid Id, string Kind, string? Format, DateTime ReceivedAt, PrivacyDeletionReview? Review = null, DateTime? CompletedAt = null);
 public sealed record PendingPrivacyRequests(PrivacyReceipt? Export, PrivacyReceipt? Deletion, bool DownloadAvailable = false, ReadyPrivacyExport? FullExport = null);
 
 public sealed class PrivacyRequestService(AuthDbContext db)
@@ -77,5 +77,7 @@ public sealed class PrivacyRequestService(AuthDbContext db)
     }
 
     private static IQueryable<PrivacyReceipt> Project(IQueryable<PrivacyRequest> query) =>
-        query.Select(x => new PrivacyReceipt(x.Id, x.Kind, x.Format, x.ReceivedAt));
+        query.Select(x => new PrivacyReceipt(x.Id, x.Kind, x.Format, x.ReceivedAt,
+            x.DeletionCase == null ? null : new PrivacyDeletionReview(x.DeletionCase.VerifiedAt, x.DeletionCase.DueAt),
+            x.Kind == Deletion ? x.ClosedAt : null));
 }

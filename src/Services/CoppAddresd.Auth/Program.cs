@@ -174,6 +174,8 @@ builder.Services.Configure<CoppAddresd.Auth.Configuration.AccountDeletionSetting
     builder.Configuration.GetSection(CoppAddresd.Auth.Configuration.AccountDeletionSettings.SectionName));
 builder.Services.AddScoped<CoppAddresd.Auth.Services.IAccountDeletionSessionService, CoppAddresd.Auth.Services.AccountDeletionSessionService>();
 builder.Services.AddScoped<PrivacyRequestService>();
+builder.Services.AddScoped<PrivacyDeletionService>();
+builder.Services.AddScoped<PrivacyDeletionCoverageService>();
 builder.Services.AddScoped<PrivacyDownloadService>();
 builder.Services.AddScoped<PrivacyFulfillmentService>();
 builder.Services.AddHostedService<PrivacyArtifactExpiryService>();

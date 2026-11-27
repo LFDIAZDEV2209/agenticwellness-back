@@ -124,6 +124,7 @@ public static class PermissionCodes
     public const string MediaDelete = "Media.Delete";
 
     /// <summary>Configuraciones administrativas del módulo Sistema (IA, integraciones, etc.).</summary>
+    public const string PrivacyReviewDeletion = "Privacy.ReviewDeletion";
     public const string PrivacyPublishExport = "Privacy.PublishExport";
     public const string SystemAdminSettings = "System.AdminSettings";
 
@@ -263,6 +264,7 @@ public static class PermissionCodes
         yield return AuditView;
         yield return SystemAdminSettings;
         yield return PrivacyPublishExport;
+        yield return PrivacyReviewDeletion;
         yield return CommunityView;
         yield return CommunityModerate;
         yield return CommunityProfiles;

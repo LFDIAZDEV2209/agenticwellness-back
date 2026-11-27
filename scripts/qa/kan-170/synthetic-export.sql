@@ -11,6 +11,9 @@ CREATE TABLE app.patient_profiles (
     id uuid PRIMARY KEY, user_id uuid UNIQUE, first_name text, middle_name text, last_name text,
     date_of_birth date, email text, phone_country_code text, phone_number text, gender text, timezone text
 );
+CREATE TABLE app.device_tokens (
+    id uuid PRIMARY KEY, user_id uuid NOT NULL, token text NOT NULL, UNIQUE(user_id, token)
+);
 CREATE TABLE app.vital_signs (
     id uuid PRIMARY KEY, patient_id uuid, measured_at timestamptz, systolic integer, diastolic integer,
     heart_rate integer, temperature_c numeric, o2_saturation integer, height_cm numeric, weight_kg numeric

@@ -32,6 +32,8 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
     public DbSet<PaidMembershipDemoEvent> PaidMembershipDemoEvents => Set<PaidMembershipDemoEvent>();
 
     public DbSet<PrivacyExportArtifact> PrivacyExportArtifacts => Set<PrivacyExportArtifact>();
+    public DbSet<PrivacyDispositionEvidence> PrivacyDispositionEvidence => Set<PrivacyDispositionEvidence>();
+    public DbSet<PrivacyDeletionCase> PrivacyDeletionCases => Set<PrivacyDeletionCase>();
     public DbSet<PrivacyRequest> PrivacyRequests => Set<PrivacyRequest>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -71,6 +73,34 @@ public class AuthDbContext : IdentityDbContext<ApplicationUser, ApplicationRole,
             b.HasOne<PrivacyRequest>().WithOne().HasForeignKey<PrivacyExportArtifact>(x => x.RequestId)
                 .OnDelete(DeleteBehavior.Cascade);
             b.HasIndex(x => x.ExpiresAt).HasFilter("\"ProtectedContent\" IS NOT NULL");
+        });
+        builder.Entity<PrivacyDispositionEvidence>(b =>
+        {
+            b.ToTable("PrivacyDispositionEvidence", "auth");
+            b.HasKey(x => x.Id);
+            b.HasOne<PrivacyDeletionCase>().WithMany().HasForeignKey(x => x.RequestId)
+                .OnDelete(DeleteBehavior.Restrict);
+            b.Property(x => x.SourceKey).HasMaxLength(64).IsRequired();
+            b.Property(x => x.Outcome).HasMaxLength(16).IsRequired();
+            b.Property(x => x.EvidenceReference).HasMaxLength(128).IsRequired();
+            b.Property(x => x.ActionReference).HasMaxLength(128);
+            b.Property(x => x.PolicyReference).HasMaxLength(128);
+            b.Property(x => x.ArchiveReference).HasMaxLength(128);
+            b.Property(x => x.RestoreReference).HasMaxLength(128);
+            b.HasIndex(x => new { x.RequestId, x.SourceKey, x.EvidenceReference }).IsUnique();
+            b.HasIndex(x => new { x.RequestId, x.SourceKey, x.RecordedAt });
+        });
+        builder.Entity<PrivacyDeletionCase>(b =>
+        {
+            b.ToTable("PrivacyDeletionCases", "auth");
+            b.HasKey(x => x.RequestId);
+            b.HasOne<PrivacyRequest>().WithOne(x => x.DeletionCase)
+                .HasForeignKey<PrivacyDeletionCase>(x => x.RequestId).OnDelete(DeleteBehavior.Restrict);
+            b.Property(x => x.IdentityEvidence).HasMaxLength(128).IsRequired();
+            b.Property(x => x.PolicyReference).HasMaxLength(128).IsRequired();
+            b.Property(x => x.PreferencesErasureEvidence).HasMaxLength(128);
+            b.Property(x => x.InventoryReference).HasMaxLength(128);
+            b.Property(x => x.RestoreReference).HasMaxLength(128);
         });
         builder.Entity<PrivacyRequest>(b =>
         {

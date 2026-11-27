@@ -81,9 +81,12 @@ def reconcile_restore(snapshot_at, ledger, findings):
 
     def key(row):
         receipt_id, category = row.get("receiptId"), row.get("category")
-        if not isinstance(receipt_id, str) or not receipt_id or category not in CATEGORIES:
-            raise ValueError("invalid_receipt_or_category")
-        return receipt_id, category
+        source = row.get("source")
+        if (not isinstance(receipt_id, str) or not receipt_id or category not in CATEGORIES or
+                source is not None and (not isinstance(source, str) or
+                                        not re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", source))):
+            raise ValueError("invalid_receipt_category_or_source")
+        return receipt_id, category, source
 
     observed = {}
     for row in findings:
