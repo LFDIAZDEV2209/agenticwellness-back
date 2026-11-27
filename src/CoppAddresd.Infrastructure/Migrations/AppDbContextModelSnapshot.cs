@@ -11640,6 +11640,98 @@ namespace CoppAddresd.Infrastructure.Migrations
                     b.ToTable("welcome_email_finalizations", "erp");
                 });
 
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365AiDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<string>("BaseFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("base_fingerprint");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("code");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer")
+                        .HasColumnName("day");
+
+                    b.Property<string>("EngineVersion")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("engine_ver");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<int>("ParametersVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("params_version");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("ProposedJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("proposed");
+
+                    b.Property<string>("ReasonEn")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)")
+                        .HasColumnName("reason_en");
+
+                    b.Property<string>("ReasonEs")
+                        .IsRequired()
+                        .HasMaxLength(240)
+                        .HasColumnType("character varying(240)")
+                        .HasColumnName("reason_es");
+
+                    b.Property<Guid?>("Reverts")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reverts");
+
+                    b.Property<long>("Sequence")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("sequence");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Sequence"));
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Reverts")
+                        .IsUnique();
+
+                    b.HasIndex("PersonId", "Day", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("ai_plan_decision", "app", t =>
+                        {
+                            t.HasCheckConstraint("ck_motor_ai_day", "day BETWEEN 1 AND 365");
+
+                            t.HasCheckConstraint("ck_motor_ai_status", "(status = 'applied' AND proposed IS NOT NULL AND code IS NULL AND reverts IS NULL) OR\n(status IN ('rejected', 'unavailable') AND code IS NOT NULL AND reverts IS NULL) OR\n(status = 'reverted' AND reverts IS NOT NULL AND proposed IS NULL AND code IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -14332,6 +14424,20 @@ namespace CoppAddresd.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365AiDecision", b =>
+                {
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365Person", null)
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CoppAddresd.Domain.Wellness365.Motor365AiDecision", null)
+                        .WithMany()
+                        .HasForeignKey("Reverts")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("CoppAddresd.Domain.Wellness365.Motor365AuditLog", b =>

@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using CoppAddresd.Api.Features.Wellness365;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -7,6 +8,7 @@ using CoppAddresd.Api.Localization;
 using CoppAddresd.Application.Features.Motor365;
 using CoppAddresd.Domain.Exceptions;
 using CoppAddresd.Infrastructure.Repositories;
+using CoppAddresd.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -22,6 +24,7 @@ public static class Motor365Api
     public const string ReadParams = "Motor365.Params.Read";
     public const string WriteParams = "Motor365.Params.Write";
     public const string Audit = "Motor365.Audit";
+    public const string AiAdjustmentRate = "motor365-ai-adjustment";
 
     private static readonly string[] StaffRoles = ["Admin", "Professional", "ClinicalDirector", "CareCoordinator", "Nurse"];
 
@@ -30,6 +33,25 @@ public static class Motor365Api
         services.AddScoped<IMotor365Actor, MotorHttpActor>();
         services.AddScoped<IMotor365Store, Motor365Store>();
         services.AddScoped<MotorPeople>();
+        services.AddScoped<MotorAiAdjustments>();
+        services.AddScoped<IMotorAiDecisionStore, MotorAiDecisionStore>();
+        services.AddScoped<IMotorAiProposalSource, LocalMotorAiProposalSource>();
+        services.AddRateLimiter(options => options.AddPolicy(AiAdjustmentRate, context =>
+            RateLimitPartition.GetFixedWindowLimiter(context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = Math.Clamp(context.RequestServices.GetRequiredService<IConfiguration>()
+                        .GetValue<int?>("Motor365Ai:RequestsPerMinute") ?? 4, 1, 100),
+                    Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
+                })));
+        services.AddHttpClient(LocalMotorAiProposalSource.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
+            client.MaxResponseContentBufferSize = 8192;
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            AllowAutoRedirect = false, UseProxy = false, UseCookies = false,
+        });
         services.AddSingleton(sp => new Motor365Telemetry(sp.GetRequiredService<IConfiguration>()["Motor365:TraceKey"]));
         services.AddSingleton<Motor365SnapshotWorker>();
         services.AddSingleton<IMotor365SnapshotQueue>(sp => sp.GetRequiredService<Motor365SnapshotWorker>());

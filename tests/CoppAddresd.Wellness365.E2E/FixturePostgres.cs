@@ -53,6 +53,9 @@ sealed class FixturePostgres
             var latest = ids.Single(id => id.EndsWith("_AddMotor365PauseDays", StringComparison.Ordinal));
             var sql = db.GetService<IMigrator>().GenerateScript(ids[motor - 1], latest);
             await db.Database.ExecuteSqlRawAsync(sql, ct);
+            // El fixture no instala recompensas ni tablas ajenas al Motor 365.
+            var ai = Array.FindIndex(ids, id => id.EndsWith("_AddMotor365AiDecisions", StringComparison.Ordinal));
+            await db.Database.ExecuteSqlRawAsync(db.GetService<IMigrator>().GenerateScript(ids[ai - 1], ids[ai]), ct);
         }
 
         var id = Guid.NewGuid();

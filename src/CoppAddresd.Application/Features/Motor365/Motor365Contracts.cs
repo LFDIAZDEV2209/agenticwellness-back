@@ -32,6 +32,8 @@ public sealed record MotorCalendarDay(int Day, int Today, DateOnly TodayLocalDat
     public IReadOnlyList<MotorText> Why { get; init; } = [];
     public bool LighterDinner { get; init; }
     public MotorSyncSnapshot? Sync { get; init; }
+    public bool AiAdjustmentAvailable { get; init; }
+    public MotorAiDecision? AiAdjustment { get; init; }
     public MotorMealPlanDto? MealPlan { get; init; }
 }
 

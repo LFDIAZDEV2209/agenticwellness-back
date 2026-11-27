@@ -1,3 +1,5 @@
+using CoppAddresd.Api.Configuration;
+using Microsoft.AspNetCore.RateLimiting;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using CoppAddresd.Api.Features.Wellness365;
@@ -13,7 +15,7 @@ namespace CoppAddresd.Api.Controllers;
 [ApiController, Authorize, Route("api/v1/people/{personId}")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientScopeActor actor,
-    MotorPeople people, IWellnessPlanGate gate) : ControllerBase
+    MotorPeople people, IWellnessPlanGate gate, MotorAiAdjustments? ai = null) : ControllerBase
 {
     public const string PatientWritePolicy = "Motor365PatientWrite";
 
@@ -39,10 +41,52 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         }
         try
         {
-            return Results.Ok(Motor365DayResponse.From(
-                await people.ReadCalendarDayAsync(patientId, requested, ct, includeSync ? historyDays : null, includeMenu)));
+            var window = includeSync ? historyDays : (int?)null;
+            var result = ai is { Enabled: true }
+                ? await ai.ReadDayAsync(patientId, requested, window, includeMenu, ct)
+                : await people.ReadCalendarDayAsync(patientId, requested, ct, window, includeMenu);
+            return Results.Ok(Motor365DayResponse.From(result));
         }
         catch (MotorException ex) { return MotorError(ex); }
+    }
+
+    [HttpPost("plan/{day:int}/ai-adjustment"), Authorize(Policy = PatientWritePolicy)]
+    [EnableRateLimiting(Motor365Api.AiAdjustmentRate)]
+    [RequestSizeLimit(0)]
+    [EndpointSummary("Solicitar un ajuste acotado del plan propio")]
+    public async Task<IResult> RequestAiAdjustment(string personId, [Range(1, 365)] int day, CancellationToken ct)
+    {
+        if (ai is not { Enabled: true }) return Results.NotFound();
+        var (patientId, failure) = await ResolveAsync(personId, write: true, ct);
+        if (failure is not null) return failure;
+        try { return Results.Ok(await ai.RequestAsync(patientId, day, ct)); }
+        catch (MotorException ex) { return MotorError(ex); }
+    }
+
+    [HttpDelete("plan/{day:int}/ai-adjustment"), Authorize(Policy = PatientWritePolicy)]
+    [EndpointSummary("Revertir el ajuste del plan propio sin borrar su auditoría")]
+    public async Task<IResult> RevertAiAdjustment(string personId, [Range(1, 365)] int day, CancellationToken ct)
+    {
+        if (ai is null) return Results.NotFound();
+        var (patientId, failure) = await ResolveAsync(personId, write: true, ct);
+        if (failure is not null) return failure;
+        try
+        {
+            return await ai.RevertAsync(patientId, day, ct) is { } result ? Results.Ok(result) : Results.NotFound();
+        }
+        catch (MotorException ex) { return MotorError(ex); }
+    }
+
+    [HttpGet("plan/{day:int}/ai-adjustment/audit"), Authorize(Policy = Motor365Api.People)]
+    [EndpointSummary("Consultar las decisiones del ajuste para un paciente autorizado")]
+    public async Task<IResult> GetAiAdjustmentAudit(string personId, [Range(1, 365)] int day, CancellationToken ct,
+        [FromQuery, Range(0, long.MaxValue)] long after = 0, [FromQuery, Range(1, 100)] int limit = 20)
+    {
+        if (!User.HasClaim("aud", "erp")) return Results.Forbid();
+        if (ai is null) return Results.NotFound();
+        var (patientId, failure) = await ResolveAsync(personId, write: false, ct);
+        if (failure is not null) return failure;
+        return Results.Ok(await ai.ReadAuditAsync(patientId, day, after, limit, ct));
     }
 
     [HttpGet("weekly-events")]
@@ -127,7 +171,7 @@ public sealed class Motor365PlanController(IPatientScopeGuard scope, IPatientSco
         "plan_locked" when ex.Status is { Code: { } code, Message: { } message } =>
             Locked(new(code, new(message.Es, message.En))),
         "forbidden" => Results.Forbid(),
-        "version_conflict" or "log_already_recorded" => Results.Conflict(new { error = ex.Code }),
+        "version_conflict" or "log_already_recorded" or "adjustment_not_available" => Results.Conflict(new { error = ex.Code }),
         "service_unavailable" => Results.StatusCode(StatusCodes.Status503ServiceUnavailable),
         _ => throw ex
     };
@@ -151,11 +195,21 @@ public sealed record Motor365DayResponse(int Day, int Today, DateOnly TodayLocal
     public IReadOnlyList<MotorText> Why { get; init; } = [];
     public bool LighterDinner { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool AiAdjustmentAvailable { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MotorAiDecision? AiAdjustment { get; init; }
+
     internal static Motor365DayResponse From(MotorCalendarDay day) =>
         new Motor365DayResponse(day.Day, day.Today, day.TodayLocalDate, day.StartDate, day.TimeZoneId, true, new(day.State), day.LogStatus,
             day.Adherence, day.MeasuredWeightKg, day.Streak, day.Exercise, day.Nutrition,
             CoppAddresd.Domain.Wellness365.WellnessEngine.ReferenceVersion,
-            day.ParametersVersion) { Sync = day.Sync, MealPlan = day.MealPlan, Why = day.Why, LighterDinner = day.LighterDinner };
+            day.ParametersVersion)
+        {
+            Sync = day.Sync, MealPlan = day.MealPlan, Why = day.Why, LighterDinner = day.LighterDinner,
+            AiAdjustmentAvailable = day.AiAdjustmentAvailable, AiAdjustment = day.AiAdjustment,
+        };
 }
 
 public sealed record Motor365ClosureRequest(
